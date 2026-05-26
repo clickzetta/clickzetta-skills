@@ -16,10 +16,7 @@ TBLPROPERTIES('mv_const_tables'='dim_table1,dim_table2')
 AS SELECT ...;
 
 -- 方式2：Session 配置（在 REFRESH 前设置，灵活可动态调整）
--- set CZ_OPTIMIZER_INCREMENTAL_DIMENSION_TABLES=dim_table1:dim_table2
-
--- 查看已设置的 TBLPROPERTIES（使用 SHOW CREATE TABLE，不支持 SHOW TBLPROPERTIES）
-SHOW CREATE TABLE my_dt;
+set CZ_OPTIMIZER_INCREMENTAL_DIMENSION_TABLES=dim_table1:dim_table2
 ```
 
 ## 各 JOIN 类型下的增量行为
@@ -154,21 +151,20 @@ LEFT JOIN t3 ON t1.id = t3.id;
 
 ```sql
 -- 强制全量刷新（推荐）
--- set cz.optimizer.incremental.force.full.refresh=true
+set cz.optimizer.incremental.force.full.refresh=true
 REFRESH DYNAMIC TABLE my_dt;
 -- 刷新完成后记得关闭，否则后续每次都是全量
-SET cz.optimizer.incremental.force.full.refresh = false;
+set cz.optimizer.incremental.force.full.refresh=false
 
--- 如果是分区表，也可以只全量刷新指定分区（在 Studio 任务中执行）
-SET cz.optimizer.incremental.force.full.refresh = true;
+-- 如果是分区表，也可以只全量刷新指定分区
+set cz.optimizer.incremental.force.full.refresh=true
+set dt.args.ds=2025-01-01
 REFRESH DYNAMIC TABLE my_dt PARTITION(ds = '2025-01-01');
-SET cz.optimizer.incremental.force.full.refresh = false;
+set cz.optimizer.incremental.force.full.refresh=false
 ```
 
 配置说明：
 - `cz.optimizer.incremental.force.full.refresh`：默认 `false`。设为 `true` 后，下一次 REFRESH 会忽略增量逻辑，对所有源表做全量扫描重算
-- `SET cz.optimizer.*` 配置项在交互式 SQL 中可用
-- `dt.args.*` 参数仅在 Studio 任务中可用，不能在交互式 SQL 中 SET
 - 该配置是 session 级别的，刷新完成后需要手动设回 `false`，否则后续所有 REFRESH 都会走全量
 - backfill 模式（`cz.optimizer.incremental.backfill.enabled=TRUE`）也会自动开启全量刷新
 

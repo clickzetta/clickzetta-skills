@@ -87,9 +87,6 @@ CREATE DYNAMIC TABLE my_dt
 TBLPROPERTIES('mv_const_tables' = 'dim_product,dim_region')
 AS SELECT ...;
 
--- 查看已设置的 TBLPROPERTIES（⚠️ 不支持 SHOW TBLPROPERTIES 语法）
-SHOW CREATE TABLE my_dt;
-
 -- 或通过 Session 配置（在 REFRESH 语句前执行）
 SET cz.optimizer.incremental.dimension.tables = 'dim_product,dim_region';
 REFRESH DYNAMIC TABLE my_dt;
@@ -352,8 +349,9 @@ SET cz.sql.mv.check.before.replacing.sql = true;
 - 回填通常配合 `INSERT OVERWRITE` 使用，覆盖目标分区的已有数据。
 
 ```sql
--- 在 Studio 任务中，参数通过任务配置传入：
+-- 回填指定历史分区（在 REFRESH 语句前执行）
 SET cz.optimizer.incremental.backfill.enabled = true;
+SET dt.args.ds = '2025-01-01';
 REFRESH DYNAMIC TABLE my_dt PARTITION(ds = '2025-01-01');
 SET cz.optimizer.incremental.backfill.enabled = false;
 
