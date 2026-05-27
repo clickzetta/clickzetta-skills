@@ -1,45 +1,45 @@
-# DDL 完整语法参考
+# DDL Complete Syntax Reference
 
-> 基于 ClickZetta Lakehouse 产品文档整理，含与 Snowflake / Spark SQL 的差异标注
+> Based on ClickZetta Lakehouse product documentation, with Snowflake / Spark SQL difference annotations
 
 ---
 
-## SCHEMA 操作
+## SCHEMA Operations
 
 ```sql
--- 创建
-CREATE SCHEMA IF NOT EXISTS my_schema COMMENT '说明';
+-- Create
+CREATE SCHEMA IF NOT EXISTS my_schema COMMENT 'description';
 
--- 修改
+-- Alter
 ALTER SCHEMA my_schema RENAME TO new_schema;
-ALTER SCHEMA my_schema SET COMMENT '新注释';
+ALTER SCHEMA my_schema SET COMMENT 'new comment';
 
--- 删除（级联删除所有对象）
+-- Drop (cascades all objects)
 DROP SCHEMA IF EXISTS my_schema;
 
--- 查看
+-- Show
 SHOW SCHEMAS;
-SHOW SCHEMAS EXTENDED;                          -- 含 type 列（MANAGED/EXTERNAL）
+SHOW SCHEMAS EXTENDED;                          -- includes type column (MANAGED/EXTERNAL)
 SHOW SCHEMAS LIKE 'sales%';
 SHOW SCHEMAS WHERE schema_name = 'public';
 
--- 切换
+-- Switch
 USE SCHEMA my_schema;
-USE my_schema;                                  -- SCHEMA 关键字可省略
+USE my_schema;                                  -- SCHEMA keyword is optional
 ```
 
-**与 Snowflake 差异：**
-- Snowflake 用 `USE DATABASE` + `USE SCHEMA`；ClickZetta 无 DATABASE 层，直接 `USE SCHEMA`
-- Snowflake 支持 `CREATE OR REPLACE SCHEMA`；ClickZetta 不支持，用 `IF NOT EXISTS`
+**Differences from Snowflake:**
+- Snowflake uses `USE DATABASE` + `USE SCHEMA`; ClickZetta has no DATABASE layer, use `USE SCHEMA` directly
+- Snowflake supports `CREATE OR REPLACE SCHEMA`; ClickZetta does not, use `IF NOT EXISTS`
 
 ---
 
-## TABLE 操作
+## TABLE Operations
 
 ### CREATE TABLE
 
 ```sql
--- 基本建表
+-- Basic table creation
 CREATE TABLE IF NOT EXISTS orders (
     id          BIGINT,
     customer_id INT,
@@ -48,35 +48,35 @@ CREATE TABLE IF NOT EXISTS orders (
     created_at  TIMESTAMP,
     tags        ARRAY<STRING>,
     meta        JSON,
-    COMMENT '订单表'
+    COMMENT 'Orders table'
 );
 
--- 主键表（ENABLE VALIDATE RELY：SQL写入也去重）
+-- Primary key table (ENABLE VALIDATE RELY: SQL writes also deduplicate)
 CREATE TABLE pk_orders (
     id     BIGINT PRIMARY KEY,
     amount DECIMAL(18, 2)
 );
 
--- 主键表（DISABLE NOVALIDATE RELY：仅实时写入去重，SQL写入不去重）
+-- Primary key table (DISABLE NOVALIDATE RELY: only real-time writes deduplicate, SQL writes do not)
 CREATE TABLE cdc_orders (
     id     BIGINT PRIMARY KEY DISABLE NOVALIDATE RELY,
     amount DECIMAL(18, 2)
 );
 
--- 自增列（仅 BIGINT，不保证连续）
+-- Auto-increment column (BIGINT only, not guaranteed sequential)
 CREATE TABLE auto_id_table (
-    id  BIGINT IDENTITY(1),    -- 从1开始
+    id  BIGINT IDENTITY(1),    -- starts from 1
     col STRING
 );
 
--- 生成列（确定性表达式，不可手动插入）
+-- Generated column (deterministic expression, cannot be manually inserted)
 CREATE TABLE orders_with_year (
     id         BIGINT,
     created_at TIMESTAMP,
     year       INT GENERATED ALWAYS AS (YEAR(created_at))
 );
 
--- 默认值（支持非确定性函数）
+-- Default values (supports non-deterministic functions)
 CREATE TABLE t_default (
     id         INT,
     created_at TIMESTAMP DEFAULT current_timestamp(),
@@ -84,19 +84,19 @@ CREATE TABLE t_default (
     score      DOUBLE    DEFAULT random()
 );
 
--- 分区表（Iceberg 隐藏分区）
+-- Partitioned table (Iceberg hidden partitions)
 CREATE TABLE orders_partitioned (
     id         BIGINT,
     amount     DECIMAL(18, 2),
     created_at TIMESTAMP
 )
-PARTITIONED BY (days(created_at));             -- 按天分区
+PARTITIONED BY (days(created_at));             -- partition by day
 
--- 分区转换函数
+-- Partition transform functions
 -- years(col)   months(col)   days(col)   hours(col)
 -- bucket(N, col)   truncate(col, W)
 
--- 分桶表
+-- Bucketed table
 CREATE TABLE orders_bucketed (
     id         BIGINT,
     customer_id INT,
@@ -106,15 +106,15 @@ CLUSTERED BY (customer_id)
 SORTED BY (id ASC)
 INTO 16 BUCKETS;
 
--- 数据保留周期
+-- Data retention period
 CREATE TABLE orders (id BIGINT)
-PROPERTIES ('data_lifecycle' = '30');          -- 保留30天
+PROPERTIES ('data_lifecycle' = '30');          -- retain for 30 days
 
--- CTAS（从查询建表）
+-- CTAS (Create Table As Select)
 CREATE TABLE orders_copy AS
 SELECT * FROM orders WHERE status = 'completed';
 
--- 外部表（映射对象存储）
+-- External table (maps to object storage)
 CREATE EXTERNAL TABLE ext_orders (
     id     BIGINT,
     amount DECIMAL(18, 2)
@@ -123,159 +123,159 @@ LOCATION 'oss://bucket/orders/'
 STORED AS PARQUET;
 ```
 
-**与 Snowflake 差异：**
+**Differences from Snowflake:**
 - Snowflake `CREATE OR REPLACE TABLE` → ClickZetta `CREATE TABLE IF NOT EXISTS`
 - Snowflake `CLUSTER BY (col)` → ClickZetta `CLUSTERED BY (col) INTO N BUCKETS`
 - Snowflake `AUTOINCREMENT` → ClickZetta `IDENTITY[(seed)]`
-- Snowflake `TRANSIENT TABLE` → ClickZetta 无对应（用 `data_lifecycle` 控制保留期）
-- Snowflake `TEMPORARY TABLE` → ClickZetta 无临时表概念
-- Snowflake `COPY GRANTS` → ClickZetta 不支持
+- Snowflake `TRANSIENT TABLE` → ClickZetta has no equivalent (use `data_lifecycle` to control retention)
+- Snowflake `TEMPORARY TABLE` → ClickZetta has no temporary table concept
+- Snowflake `COPY GRANTS` → ClickZetta does not support
 
-**与 Spark SQL 差异：**
-- Spark `USING PARQUET` → ClickZetta 不需要（默认 Parquet）
+**Differences from Spark SQL:**
+- Spark `USING PARQUET` → ClickZetta does not need it (default is Parquet)
 - Spark `TBLPROPERTIES` → ClickZetta `PROPERTIES`
-- Spark `LOCATION` 外部表语法基本相同
+- Spark `LOCATION` external table syntax is basically the same
 
 ### ALTER TABLE
 
 ```sql
--- 重命名
+-- Rename
 ALTER TABLE orders RENAME TO orders_v2;
 
--- 注释
-ALTER TABLE orders SET COMMENT '新注释';
+-- Comment
+ALTER TABLE orders SET COMMENT 'new comment';
 
--- 数据保留周期
+-- Data retention period
 ALTER TABLE orders SET PROPERTIES ('data_retention_days' = '7');
 
--- 添加列
+-- Add column
 ALTER TABLE orders ADD COLUMN region STRING AFTER status;
 ALTER TABLE orders ADD COLUMN region STRING FIRST;
 
--- 添加复杂类型嵌套字段
-ALTER TABLE t ADD COLUMN address.zip STRING;           -- STRUCT 嵌套
-ALTER TABLE t ADD COLUMN items.ELEMENT.price DOUBLE;   -- ARRAY<STRUCT> 嵌套
+-- Add nested field in complex types
+ALTER TABLE t ADD COLUMN address.zip STRING;           -- STRUCT nested
+ALTER TABLE t ADD COLUMN items.ELEMENT.price DOUBLE;   -- ARRAY<STRUCT> nested
 
--- 修改列类型（有限制）
+-- Alter column type (limited)
 ALTER TABLE orders ALTER COLUMN amount TYPE DOUBLE;
 
--- 重命名列
+-- Rename column
 ALTER TABLE orders RENAME COLUMN old_col TO new_col;
 
--- 删除列
+-- Drop column
 ALTER TABLE orders DROP COLUMN unnecessary_col;
 
--- 修改列注释
-ALTER TABLE orders ALTER COLUMN amount COMMENT '订单金额';
+-- Alter column comment
+ALTER TABLE orders ALTER COLUMN amount COMMENT 'Order amount';
 
--- 添加索引（含 ARRAY/JSON 列的表必须单独添加）
--- ⚠️ 索引语法：BLOOMFILTER（不是 USING BLOOM_FILTER）
+-- Add index (tables with ARRAY/JSON columns must add separately)
+-- ⚠️ Index syntax: BLOOMFILTER (not USING BLOOM_FILTER)
 CREATE BLOOMFILTER INDEX IF NOT EXISTS id_bf ON TABLE orders(id);
 CREATE BLOOMFILTER INDEX IF NOT EXISTS name_bf ON TABLE orders(name)
-    PROPERTIES ('analyzer' = 'ngram', 'n' = '3');  -- ngram 分词
+    PROPERTIES ('analyzer' = 'ngram', 'n' = '3');  -- ngram tokenizer
 
--- 倒排索引
+-- Inverted index
 CREATE INVERTED INDEX IF NOT EXISTS content_inv ON TABLE articles(content);
 
--- 向量索引（建表时内联）
--- 见 CREATE TABLE 示例
+-- Vector index (inline at table creation)
+-- See CREATE TABLE examples
 
--- 删除索引（⚠️ 不需要 ON table_name）
+-- Drop index (⚠️ does not need ON table_name)
 DROP INDEX IF EXISTS id_bf;
 DROP INDEX id_bf;
 ```
 
-**与 Snowflake 差异：**
-- Snowflake `ALTER TABLE ... ADD COLUMN` 只能加到末尾；ClickZetta 支持 `FIRST/AFTER/BEFORE`
-- Snowflake 不支持 `DROP COLUMN`（需重建表）；ClickZetta 支持
-- Snowflake 无 BLOOM_FILTER/INVERTED/VECTOR 索引
+**Differences from Snowflake:**
+- Snowflake `ALTER TABLE ... ADD COLUMN` can only add to the end; ClickZetta supports `FIRST/AFTER/BEFORE`
+- Snowflake does not support `DROP COLUMN` (requires table rebuild); ClickZetta supports it
+- Snowflake has no BLOOM_FILTER/INVERTED/VECTOR indexes
 
 ### DROP / TRUNCATE TABLE
 
 ```sql
--- 删除表（可 UNDROP 恢复）
+-- Drop table (can be recovered with UNDROP)
 DROP TABLE IF EXISTS orders;
 DROP TABLE my_schema.orders;
 
--- 清空表（保留结构）
+-- Truncate table (preserves structure)
 TRUNCATE TABLE orders;
-TRUNCATE TABLE IF EXISTS orders;               -- ✅ 支持 IF EXISTS
+TRUNCATE TABLE IF EXISTS orders;               -- ✅ supports IF EXISTS
 
--- 清空指定分区
+-- Truncate specific partition
 TRUNCATE TABLE orders PARTITION (dt = '2024-01-01');
 TRUNCATE TABLE orders PARTITION (dt > '2024-01-01');
 TRUNCATE TABLE orders PARTITION (dt >= '2024-01-01' AND dt < '2024-02-01');
 ```
 
-**与 Snowflake 差异：**
-- Snowflake `TRUNCATE TABLE` 不支持分区条件；ClickZetta 支持
-- Snowflake `DROP TABLE ... PURGE` 立即删除；ClickZetta 删除后在保留期内可 UNDROP
+**Differences from Snowflake:**
+- Snowflake `TRUNCATE TABLE` does not support partition conditions; ClickZetta does
+- Snowflake `DROP TABLE ... PURGE` deletes immediately; ClickZetta can UNDROP within retention period
 
 ---
 
-## VIEW 操作
+## VIEW Operations
 
 ```sql
--- 创建视图
+-- Create view
 CREATE VIEW IF NOT EXISTS order_summary AS
 SELECT customer_id, COUNT(*) AS cnt, SUM(amount) AS total
 FROM orders GROUP BY customer_id;
 
--- 替换视图（ClickZetta 支持 OR REPLACE，与 Snowflake 相同）
+-- Replace view (ClickZetta supports OR REPLACE, same as Snowflake)
 CREATE OR REPLACE VIEW order_summary AS
 SELECT customer_id, SUM(amount) AS total FROM orders GROUP BY customer_id;
 
--- 带列别名和注释
-CREATE VIEW order_summary (cust_id COMMENT '客户ID', total COMMENT '总金额')
-COMMENT '订单汇总视图'
+-- With column aliases and comments
+CREATE VIEW order_summary (cust_id COMMENT 'Customer ID', total COMMENT 'Total amount')
+COMMENT 'Order summary view'
 AS SELECT customer_id, SUM(amount) FROM orders GROUP BY 1;
 
--- 删除
+-- Drop
 DROP VIEW IF EXISTS order_summary;
 
--- 查看
+-- Show
 SHOW TABLES WHERE is_view = true;
 SHOW TABLES IN my_schema WHERE is_view = true;
 ```
 
-**注意：** ClickZetta 的 `CREATE OR REPLACE VIEW` 与 Snowflake 相同，但 `CREATE OR REPLACE TABLE` 不支持。
+**Note:** ClickZetta's `CREATE OR REPLACE VIEW` is the same as Snowflake, but `CREATE OR REPLACE TABLE` is not supported.
 
 ---
 
-## INDEX 操作
+## INDEX Operations
 
 ```sql
--- 查看索引
+-- Show indexes
 SHOW INDEX FROM table_name;
 SHOW INDEX FROM my_schema.table_name;
 
--- 查看索引详情
+-- Show index details
 DESC INDEX index_name;
 DESC INDEX EXTENDED index_name;
 
--- 构建存量数据索引（仅向量索引和倒排索引，不支持 Bloom Filter）
+-- Build index on existing data (vector and inverted indexes only, not Bloom Filter)
 BUILD INDEX index_name ON table_name;
 BUILD INDEX index_name ON table_name WHERE partition_col = '2024-01-01';
 ```
 
 ---
 
-## 查看对象信息
+## Viewing Object Information
 
 ```sql
--- 表结构
+-- Table structure
 DESC table_name;
-DESC EXTENDED table_name;                      -- 含大小、记录数等扩展信息
-DESCRIBE TABLE table_name;                     -- 同 DESC
+DESC EXTENDED table_name;                      -- includes size, record count, etc.
+DESCRIBE TABLE table_name;                     -- same as DESC
 
--- 列信息
+-- Column information
 SHOW COLUMNS IN table_name;
 SHOW COLUMNS FROM table_name IN schema_name;
 
--- 建表语句
+-- Create table statement
 SHOW CREATE TABLE table_name;
 
--- 表列表
+-- Table list
 SHOW TABLES;
 SHOW TABLES IN my_schema;
 SHOW TABLES LIKE 'order%';
@@ -283,68 +283,68 @@ SHOW TABLES WHERE is_view = false AND is_materialized_view = false;
 SHOW TABLES WHERE is_dynamic = true;
 SHOW TABLES WHERE is_external = true;
 
--- 分区信息
+-- Partition information
 SHOW PARTITIONS table_name;
-SHOW PARTITIONS EXTENDED table_name;           -- 含文件数、大小、修改时间
+SHOW PARTITIONS EXTENDED table_name;           -- includes file count, size, modification time
 SHOW PARTITIONS table_name PARTITION (dt = '2024-01-01');
 SHOW PARTITIONS table_name WHERE total_rows > 1000;
 
--- 历史版本
+-- History versions
 DESC HISTORY table_name;
-SHOW TABLES HISTORY;                           -- 含已删除的表
+SHOW TABLES HISTORY;                           -- includes deleted tables
 ```
 
 ---
 
-## SYNONYM（同义词）操作
+## SYNONYM Operations
 
 ```sql
--- 为表创建同义词（跨 Schema 访问）
+-- Create synonym for a table (cross-schema access)
 CREATE SYNONYM my_orders FOR TABLE other_schema.orders;
 
--- 为 Volume 创建同义词
+-- Create synonym for a Volume
 CREATE SYNONYM my_vol FOR VOLUME other_schema.data_volume;
 
--- 为函数创建同义词
+-- Create synonym for a function
 CREATE SYNONYM my_func FOR FUNCTION other_schema.udf_name;
 
--- 查看同义词
+-- Show synonyms
 SHOW SYNONYMS;
 SHOW SYNONYMS IN my_schema;
 SHOW SYNONYMS LIKE 'my_%';
 
--- 删除同义词（需指定对象类型）
+-- Drop synonym (must specify object type)
 DROP SYNONYM my_orders FOR TABLE;
 DROP SYNONYM my_vol FOR VOLUME;
 DROP SYNONYM my_func FOR FUNCTION;
 ```
 
-> 同义词支持的对象类型：TABLE（含普通表、Table Stream、物化视图、动态表）、VOLUME、FUNCTION。
-> 使用场景：跨 Schema 访问、数据一致性维护、应用层解耦。
+> Supported object types for synonyms: TABLE (including regular tables, Table Streams, materialized views, dynamic tables), VOLUME, FUNCTION.
+> Use cases: cross-schema access, data consistency maintenance, application layer decoupling.
 
 ---
 
-## Time Travel & 数据恢复
+## Time Travel & Data Recovery
 
 ```sql
--- 查询历史版本
+-- Query historical version
 SELECT * FROM orders TIMESTAMP AS OF '2024-01-01 00:00:00';
 SELECT * FROM orders TIMESTAMP AS OF CURRENT_TIMESTAMP() - INTERVAL 12 HOURS;
 SELECT * FROM orders TIMESTAMP AS OF CAST('2024-01-01' AS TIMESTAMP);
 
--- 恢复表到历史版本（表未删除）
+-- Restore table to historical version (table not deleted)
 RESTORE TABLE orders TO TIMESTAMP AS OF '2024-01-01 00:00:00';
 
--- 恢复已删除的表
+-- Restore deleted table
 UNDROP TABLE orders;
 UNDROP TABLE my_schema.orders;
 
--- 设置保留周期（0-90天，默认1天）
+-- Set retention period (0-90 days, default 1 day)
 ALTER TABLE orders SET PROPERTIES ('data_retention_days' = '7');
 ```
 
-**与 Snowflake 差异：**
+**Differences from Snowflake:**
 - Snowflake `AT (TIMESTAMP => ...)` → ClickZetta `TIMESTAMP AS OF ...`
-- Snowflake `BEFORE (STATEMENT => ...)` → ClickZetta 不支持按 statement_id 回溯
-- Snowflake `UNDROP TABLE` → ClickZetta 相同
-- Snowflake 默认保留 1 天（Enterprise 90 天）；ClickZetta 默认 1 天，最长 90 天
+- Snowflake `BEFORE (STATEMENT => ...)` → ClickZetta does not support rollback by statement_id
+- Snowflake `UNDROP TABLE` → ClickZetta same
+- Snowflake default retention 1 day (Enterprise 90 days); ClickZetta default 1 day, max 90 days

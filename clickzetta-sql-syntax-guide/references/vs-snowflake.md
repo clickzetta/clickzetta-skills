@@ -1,87 +1,87 @@
-# ClickZetta Lakehouse vs Snowflake SQL 差异
+# ClickZetta Lakehouse vs Snowflake SQL Differences
 
-> 来源：产品文档 + 迁移实践
+> Source: Product documentation + migration practice
 
-## 对象概念映射
+## Object Concept Mapping
 
-| ClickZetta Lakehouse | Snowflake | 说明 |
+| ClickZetta Lakehouse | Snowflake | Description |
 |---|---|---|
-| WORKSPACE | DATABASE | 工作空间 ≈ 数据库 |
-| SCHEMA | SCHEMA | 相同 |
-| VCLUSTER | WAREHOUSE | 计算集群 |
-| STORAGE CONNECTION | STORAGE INTEGRATION | 对象存储认证 |
-| VOLUME | STAGE | 文件存储区域 |
-| TABLE | TABLE | 相同 |
-| PIPE | SNOWPIPE | 持续导入管道 |
-| TABLE STREAM | STREAM | 变更数据捕获 |
-| DYNAMIC TABLE | DYNAMIC TABLE | 增量计算表（语法不同） |
-| Studio 任务 | TASK | 调度任务 |
+| WORKSPACE | DATABASE | Workspace ≈ Database |
+| SCHEMA | SCHEMA | Same |
+| VCLUSTER | WAREHOUSE | Compute cluster |
+| STORAGE CONNECTION | STORAGE INTEGRATION | Object storage authentication |
+| VOLUME | STAGE | File storage area |
+| TABLE | TABLE | Same |
+| PIPE | SNOWPIPE | Continuous ingestion pipeline |
+| TABLE STREAM | STREAM | Change data capture |
+| DYNAMIC TABLE | DYNAMIC TABLE | Incremental computation table (different syntax) |
+| Studio Task | TASK | Scheduled tasks |
 
 ---
 
-## DDL 差异
+## DDL Differences
 
 ### CREATE OR REPLACE vs IF NOT EXISTS
 
 ```sql
--- Snowflake：支持 CREATE OR REPLACE
+-- Snowflake: supports CREATE OR REPLACE
 CREATE OR REPLACE TABLE orders (id INT, amount DECIMAL);
 
--- ClickZetta：不支持 CREATE OR REPLACE，用 IF NOT EXISTS
+-- ClickZetta: does not support CREATE OR REPLACE, use IF NOT EXISTS
 CREATE TABLE IF NOT EXISTS orders (id INT, amount DECIMAL);
--- 修改已有表用 ALTER TABLE
+-- Use ALTER TABLE to modify existing tables
 ```
 
-### 注释语法
+### Comment Syntax
 
 ```sql
--- Snowflake：支持 // 和 ///
-// 这是注释
-/// 这也是注释
+-- Snowflake: supports // and ///
+// This is a comment
+/// This is also a comment
 
--- ClickZetta：只支持 -- 和 /* */
--- 这是注释
-/* 这也是注释 */
+-- ClickZetta: only supports -- and /* */
+-- This is a comment
+/* This is also a comment */
 ```
 
-### 数据类型差异
+### Data Type Differences
 
-| ClickZetta | Snowflake | 说明 |
+| ClickZetta | Snowflake | Description |
 |---|---|---|
-| `STRING` | `VARCHAR` / `TEXT` | ClickZetta 推荐用 STRING |
-| `TIMESTAMP` | `TIMESTAMP_LTZ` | 本地时区时间戳 |
-| `TIMESTAMP_NTZ` | `TIMESTAMP_NTZ` | 无时区时间戳 |
-| `JSON` | `VARIANT` | 半结构化数据 |
-| `ARRAY<T>` | `ARRAY` | ClickZetta 需指定元素类型 |
-| `MAP<K,V>` | `OBJECT` | 键值对 |
-| `STRUCT<f:T,...>` | `OBJECT` | 结构体 |
-| `VECTOR(FLOAT, N)` | 无原生支持 | 向量类型（ClickZetta 特有） |
-| `TINYINT` | `NUMBER(3,0)` | 1字节整数 |
-| `SMALLINT` | `NUMBER(5,0)` | 2字节整数 |
-| 无 `NUMBER` | `NUMBER(p,s)` | ClickZetta 用 `DECIMAL(p,s)` |
+| `STRING` | `VARCHAR` / `TEXT` | ClickZetta recommends STRING |
+| `TIMESTAMP` | `TIMESTAMP_LTZ` | Local timezone timestamp |
+| `TIMESTAMP_NTZ` | `TIMESTAMP_NTZ` | Without timezone timestamp |
+| `JSON` | `VARIANT` | Semi-structured data |
+| `ARRAY<T>` | `ARRAY` | ClickZetta requires element type |
+| `MAP<K,V>` | `OBJECT` | Key-value pairs |
+| `STRUCT<f:T,...>` | `OBJECT` | Struct type |
+| `VECTOR(FLOAT, N)` | No native support | Vector type (ClickZetta-specific) |
+| `TINYINT` | `NUMBER(3,0)` | 1-byte integer |
+| `SMALLINT` | `NUMBER(5,0)` | 2-byte integer |
+| No `NUMBER` | `NUMBER(p,s)` | ClickZetta uses `DECIMAL(p,s)` |
 
-### ⚠️ 写入时隐式类型转换（重要差异）
+### ⚠️ Implicit Type Conversion on Write (Important Difference)
 
-Snowflake 允许写入时字符串隐式转换为日期/布尔等类型，ClickZetta **不允许**：
+Snowflake allows implicit string conversion to date/boolean types on write; ClickZetta **does not**:
 
-| 操作 | Snowflake | ClickZetta |
+| Operation | Snowflake | ClickZetta |
 |---|---|---|
-| INSERT 字符串→DATE | ✅ 允许 | ❌ 报错，需 `CAST` 或 `DATE '...'` |
-| INSERT 字符串→TIMESTAMP | ✅ 允许 | ❌ 报错，需 `CAST` 或 `TIMESTAMP '...'` |
-| INSERT 字符串→BOOLEAN | ✅ 允许 | ❌ 报错，需 `TRUE`/`FALSE` 或 `CAST` |
-| INSERT 字符串→INT | ✅ 允许 | ❌ 报错，需 `CAST('123' AS INT)` |
-| INSERT 字符串→JSON | ✅ 允许 | ❌ 报错，需 `PARSE_JSON(...)` 或 `CAST` |
-| UPDATE 字符串→DATE | ✅ 允许 | ❌ 报错，需 `CAST` |
-| WHERE 字符串=DATE | ✅ 允许 | ✅ 允许（查询中可隐式比较） |
+| INSERT string→DATE | ✅ Allowed | ❌ Error, requires `CAST` or `DATE '...'` |
+| INSERT string→TIMESTAMP | ✅ Allowed | ❌ Error, requires `CAST` or `TIMESTAMP '...'` |
+| INSERT string→BOOLEAN | ✅ Allowed | ❌ Error, requires `TRUE`/`FALSE` or `CAST` |
+| INSERT string→INT | ✅ Allowed | ❌ Error, requires `CAST('123' AS INT)` |
+| INSERT string→JSON | ✅ Allowed | ❌ Error, requires `PARSE_JSON(...)` or `CAST` |
+| UPDATE string→DATE | ✅ Allowed | ❌ Error, requires `CAST` |
+| WHERE string=DATE | ✅ Allowed | ✅ Allowed (implicit comparison in queries) |
 
-### 建表语法差异
+### Table Creation Syntax Differences
 
 ```sql
--- Snowflake：CLUSTER BY
+-- Snowflake: CLUSTER BY
 CREATE TABLE orders (id INT, dt DATE)
 CLUSTER BY (dt);
 
--- ClickZetta：CLUSTERED BY + PARTITIONED BY
+-- ClickZetta: CLUSTERED BY + PARTITIONED BY
 CREATE TABLE orders (
     id INT,
     dt DATE
@@ -89,7 +89,7 @@ CREATE TABLE orders (
 PARTITIONED BY (dt)
 CLUSTERED BY (id) INTO 8 BUCKETS;
 
--- ClickZetta 特有：Sort Key（内联索引）
+-- ClickZetta-specific: Sort Key (inline index)
 CREATE TABLE orders (
     id INT,
     amount DECIMAL,
@@ -99,14 +99,14 @@ CREATE TABLE orders (
 
 ---
 
-## DML 差异
+## DML Differences
 
 ### INSERT
 
 ```sql
--- 两者基本相同，ClickZetta 额外支持：
-INSERT OVERWRITE TABLE orders SELECT * FROM staging;  -- 覆盖写入（Hive 风格）
-INSERT INTO orders PARTITION (dt='2024-01-01') VALUES (1, 100);  -- 静态分区
+-- Both are basically the same; ClickZetta additionally supports:
+INSERT OVERWRITE TABLE orders SELECT * FROM staging;  -- overwrite (Hive style)
+INSERT INTO orders PARTITION (dt='2024-01-01') VALUES (1, 100);  -- static partition
 ```
 
 ### UPDATE
@@ -115,7 +115,7 @@ INSERT INTO orders PARTITION (dt='2024-01-01') VALUES (1, 100);  -- 静态分区
 -- Snowflake
 UPDATE orders SET amount = amount * 1.1 WHERE status = 'VIP';
 
--- ClickZetta：相同语法，额外支持 ORDER BY + LIMIT
+-- ClickZetta: same syntax, additionally supports ORDER BY + LIMIT
 UPDATE orders SET amount = amount * 1.1
 WHERE status = 'VIP'
 ORDER BY created_at DESC
@@ -125,10 +125,10 @@ LIMIT 1000;
 ### MERGE INTO
 
 ```sql
--- ClickZetta 限制：WHEN NOT MATCHED 只能有一个
--- Snowflake 支持多个 WHEN NOT MATCHED
+-- ClickZetta limitation: WHEN NOT MATCHED can only appear once
+-- Snowflake supports multiple WHEN NOT MATCHED
 
--- ClickZetta MERGE 示例（⚠️ UPDATE 必须在 DELETE 之前）
+-- ClickZetta MERGE example (⚠️ UPDATE must come before DELETE)
 MERGE INTO target t
 USING source s ON t.id = s.id
 WHEN MATCHED THEN UPDATE SET t.amount = s.amount
@@ -138,58 +138,58 @@ WHEN NOT MATCHED THEN INSERT (id, amount) VALUES (s.id, s.amount);
 
 ---
 
-## 查询语法差异
+## Query Syntax Differences
 
-### SELECT 扩展
+### SELECT Extensions
 
 ```sql
--- ClickZetta 特有：SELECT * EXCEPT(col)
+-- ClickZetta-specific: SELECT * EXCEPT(col)
 SELECT * EXCEPT(sensitive_col) FROM users;
 
--- ClickZetta 特有：GROUP BY ALL（自动推断分组列）
+-- ClickZetta-specific: GROUP BY ALL (auto-infer grouping columns)
 SELECT year, month, SUM(amount)
 FROM orders
 GROUP BY ALL;
 
--- 两者都支持：GROUPING SETS / ROLLUP / CUBE
+-- Both support: GROUPING SETS / ROLLUP / CUBE
 SELECT region, product, SUM(sales)
 FROM orders
 GROUP BY GROUPING SETS ((region), (product), ());
 ```
 
-### JSON 查询
+### JSON Queries
 
 ```sql
--- Snowflake：VARIANT 类型，用 : 访问
+-- Snowflake: VARIANT type, access with :
 SELECT data:address:city FROM users;
 SELECT data[0]:name FROM users;
 
--- ClickZetta：JSON 类型，用 [] 访问
+-- ClickZetta: JSON type, access with []
 SELECT data['address']['city'] FROM users;
 SELECT data['phoneNumbers'][0]['number'] FROM users;
 
--- 两者都支持 PARSE_JSON
+-- Both support PARSE_JSON
 SELECT parse_json('{"name":"Alice"}')['name'];
 ```
 
-### LATERAL VIEW（展开数组）
+### LATERAL VIEW (Array Expansion)
 
 ```sql
--- ClickZetta（Hive 风格）
+-- ClickZetta (Hive style)
 SELECT e.id, s.skill
 FROM employees e
 LATERAL VIEW EXPLODE(e.skills) s AS skill;
 
--- Snowflake（用 FLATTEN）
+-- Snowflake (uses FLATTEN)
 SELECT e.id, f.value::STRING AS skill
 FROM employees e,
 LATERAL FLATTEN(input => e.skills) f;
 ```
 
-### QUALIFY（窗口函数过滤）
+### QUALIFY (Window Function Filtering)
 
 ```sql
--- 两者都支持 QUALIFY
+-- Both support QUALIFY
 SELECT * FROM orders
 QUALIFY ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY created_at DESC) = 1;
 ```
@@ -197,11 +197,11 @@ QUALIFY ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY created_at DESC) = 
 ### PIVOT / UNPIVOT
 
 ```sql
--- Snowflake 原生支持 PIVOT
+-- Snowflake natively supports PIVOT
 SELECT * FROM sales
 PIVOT (SUM(amount) FOR month IN ('Jan', 'Feb', 'Mar'));
 
--- ClickZetta：用 CASE WHEN 实现
+-- ClickZetta: use CASE WHEN
 SELECT
     product,
     SUM(CASE WHEN month = 'Jan' THEN amount END) AS Jan,
@@ -211,23 +211,23 @@ FROM sales GROUP BY product;
 
 ---
 
-## 流（Stream）差异
+## Stream Differences
 
 ```sql
--- Snowflake Stream 元数据字段
+-- Snowflake Stream metadata fields
 METADATA$ACTION        -- 'INSERT' / 'DELETE'
 METADATA$ISUPDATE      -- TRUE/FALSE
-METADATA$ROW_ID        -- 行唯一标识
+METADATA$ROW_ID        -- row unique identifier
 
--- ClickZetta Table Stream 元数据字段
+-- ClickZetta Table Stream metadata fields
 __change_type          -- 'INSERT' / 'UPDATE_BEFORE' / 'UPDATE_AFTER' / 'DELETE'
-__commit_version       -- 提交版本号
-__commit_timestamp     -- 提交时间戳
+__commit_version       -- commit version number
+__commit_timestamp     -- commit timestamp
 ```
 
 ---
 
-## 动态表（Dynamic Table）差异
+## Dynamic Table Differences
 
 ```sql
 -- Snowflake Dynamic Table
@@ -236,7 +236,7 @@ CREATE DYNAMIC TABLE product_sales
     WAREHOUSE = my_warehouse
 AS SELECT ...;
 
--- ClickZetta Dynamic Table（不支持 TARGET_LAG）
+-- ClickZetta Dynamic Table (does not support TARGET_LAG)
 CREATE DYNAMIC TABLE product_sales
     REFRESH INTERVAL 1 MINUTE VCLUSTER default_ap
 AS SELECT ...;
@@ -244,17 +244,17 @@ AS SELECT ...;
 
 ---
 
-## 对象存储（Stage vs Volume）
+## Object Storage (Stage vs Volume)
 
 ```sql
--- Snowflake：Stage
+-- Snowflake: Stage
 CREATE STAGE my_stage
     URL = 's3://bucket/path'
     STORAGE_INTEGRATION = my_integration;
 
 COPY INTO orders FROM @my_stage/data.csv;
 
--- ClickZetta：Volume
+-- ClickZetta: Volume
 CREATE EXTERNAL VOLUME my_volume
     LOCATION = 'oss://bucket/path'
     USING CONNECTION my_oss_conn;
@@ -264,9 +264,9 @@ COPY INTO orders FROM VOLUME my_volume USING CSV;
 
 ---
 
-## 函数差异
+## Function Differences
 
-### 日期函数
+### Date Functions
 
 ```sql
 -- Snowflake
@@ -276,32 +276,32 @@ DATE_TRUNC('month', order_date)
 TO_DATE('2024-01-01')
 CURRENT_TIMESTAMP()
 
--- ClickZetta（兼容 Hive/Spark 风格，同时也支持 Snowflake 风格）
-DATEADD(day, 7, order_date)       -- ✅ 与 Snowflake 相同语法也支持
-DATE_ADD(order_date, 7)           -- 或 Hive 风格
-DATEDIFF(end_date, start_date)    -- 注意参数顺序相反！
-DATE_TRUNC('month', order_date)   -- 相同
-TO_DATE('2024-01-01')             -- 相同
-CURRENT_TIMESTAMP()               -- 相同，也支持 NOW()
+-- ClickZetta (compatible with Hive/Spark style, also supports Snowflake style)
+DATEADD(day, 7, order_date)       -- ✅ same Snowflake syntax also supported
+DATE_ADD(order_date, 7)           -- or Hive style
+DATEDIFF(end_date, start_date)    -- note: parameter order reversed!
+DATE_TRUNC('month', order_date)   -- same
+TO_DATE('2024-01-01')             -- same
+CURRENT_TIMESTAMP()               -- same, also supports NOW()
 ```
 
-### 字符串函数
+### String Functions
 
 ```sql
 -- Snowflake
-CHARINDEX('sub', str)     -- 查找子串位置
-EDITDISTANCE(s1, s2)      -- 编辑距离
-SOUNDEX(str)              -- 语音相似度
-INITCAP(str)              -- 首字母大写
+CHARINDEX('sub', str)     -- find substring position
+EDITDISTANCE(s1, s2)      -- edit distance
+SOUNDEX(str)              -- phonetic similarity
+INITCAP(str)              -- capitalize first letter
 
 -- ClickZetta
-INSTR(str, 'sub')         -- 查找子串位置（Hive 风格）
-LOCATE('sub', str)        -- 也支持
-LEVENSHTEIN(s1, s2)       -- 编辑距离
-INITCAP(str)              -- 相同
+INSTR(str, 'sub')         -- find substring position (Hive style)
+LOCATE('sub', str)        -- also supported
+LEVENSHTEIN(s1, s2)       -- edit distance
+INITCAP(str)              -- same
 ```
 
-### 条件函数
+### Conditional Functions
 
 ```sql
 -- Snowflake
@@ -311,13 +311,13 @@ NULLIFZERO(expr)
 DECODE(expr, val1, res1, val2, res2, default)
 
 -- ClickZetta
-IF(condition, true_val, false_val)   -- 或 CASE WHEN
-COALESCE(expr, 0)                    -- 替代 ZEROIFNULL
-NULLIF(expr, 0)                      -- 替代 NULLIFZERO
-DECODE(expr, val1, res1, ...)        -- 支持（兼容）
+IF(condition, true_val, false_val)   -- or CASE WHEN
+COALESCE(expr, 0)                    -- replaces ZEROIFNULL
+NULLIF(expr, 0)                      -- replaces NULLIFZERO
+DECODE(expr, val1, res1, ...)        -- supported (compatible)
 ```
 
-### 聚合函数
+### Aggregate Functions
 
 ```sql
 -- Snowflake
@@ -327,20 +327,20 @@ OBJECT_AGG(key, value)
 APPROX_COUNT_DISTINCT(col)
 
 -- ClickZetta
-GROUP_CONCAT(col ORDER BY col SEPARATOR ',')  -- 替代 LISTAGG
-ARRAY_AGG(col)                                -- 相同
-MAP_AGG(key, value)                           -- 替代 OBJECT_AGG
-APPROX_COUNT_DISTINCT(col)                    -- 相同
+GROUP_CONCAT(col ORDER BY col SEPARATOR ',')  -- replaces LISTAGG
+ARRAY_AGG(col)                                -- same
+MAP_AGG(key, value)                           -- replaces OBJECT_AGG
+APPROX_COUNT_DISTINCT(col)                    -- same
 ```
 
 ---
 
-## 权限体系差异
+## Permission System Differences
 
-| 概念 | ClickZetta | Snowflake |
+| Concept | ClickZetta | Snowflake |
 |---|---|---|
-| 顶层容器 | WORKSPACE | DATABASE |
-| 权限对象 | VCLUSTER / SCHEMA / TABLE / VIEW | WAREHOUSE / DATABASE / SCHEMA / TABLE |
-| 角色授予 | `GRANT ROLE r TO USER u` | `GRANT ROLE r TO USER u` |
-| 查看权限 | `SHOW GRANTS TO USER u` | `SHOW GRANTS TO USER u` |
-| 系统角色 | instance_admin / workspace_admin / workspace_dev / workspace_analyst | ACCOUNTADMIN / SYSADMIN / USERADMIN |
+| Top-level container | WORKSPACE | DATABASE |
+| Permission objects | VCLUSTER / SCHEMA / TABLE / VIEW | WAREHOUSE / DATABASE / SCHEMA / TABLE |
+| Role grant | `GRANT ROLE r TO USER u` | `GRANT ROLE r TO USER u` |
+| View permissions | `SHOW GRANTS TO USER u` | `SHOW GRANTS TO USER u` |
+| System roles | instance_admin / workspace_admin / workspace_dev / workspace_analyst | ACCOUNTADMIN / SYSADMIN / USERADMIN |
