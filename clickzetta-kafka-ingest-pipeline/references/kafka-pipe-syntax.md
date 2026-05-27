@@ -1,220 +1,161 @@
-# Kafka Pipe SQL 语法参考
+# Kafka Pipe SQL Syntax Reference
 
-> 来源：https://www.yunqi.tech/documents/pipe-kafka 和 https://www.yunqi.tech/documents/pipe-kafka-bestpractice-1
+> Canonical syntax reference for ClickZetta Kafka Pipe operations.
+> For workflow guidance, see `SKILL.md`.
 
-> **⚠️ ClickZetta READ_KAFKA 使用位置参数（positional parameters）**
-> - ❌ 不支持 `=>` 命名参数语法（如 `KAFKA_BROKER => 'host:port'`）
-> - ❌ 不支持 `TABLE(READ_KAFKA(...))` 包装
-> - ✅ 正确：`FROM read_kafka('broker', 'topic', '', 'group', '', '', '', '', 'raw', 'raw', 0, MAP(...))`
+---
 
-## CREATE PIPE（READ_KAFKA 方式）
+## READ_KAFKA Function Signature
 
 ```sql
-CREATE [ OR REPLACE ] PIPE <pipe_name>
+read_kafka(
+  '<bootstrap_servers>',   -- Pos 1: Kafka broker addresses (required)
+  '<topic_name>',          -- Pos 2: Topic name (required)
+  '',                      -- Pos 3: Topic pattern (RESERVED — always empty string)
+  '<group_id>',            -- Pos 4: Consumer group ID (required)
+  '<starting_offsets>',    -- Pos 5: Starting offsets (empty in Pipe; 'earliest'/'latest' standalone)
+  '<ending_offsets>',      -- Pos 6: Ending offsets (typically empty)
+  '<starting_timestamp>',  -- Pos 7: Starting timestamp (typically empty)
+  '<ending_timestamp>',    -- Pos 8: Ending timestamp (typically empty)
+  '<key_format>',          -- Pos 9: Key format (only 'raw' supported)
+  '<value_format>',        -- Pos 10: Value format (only 'raw' supported)
+  <max_errors>,            -- Pos 11: Max errors (integer, typically 0)
+  MAP(<kafka_config>)      -- Pos 12: Kafka configuration key-value pairs
+)
+```
+
+> ⚠️ **Positional parameters only.**
+> - ❌ `=>` named parameters not supported
+> - ❌ `TABLE(READ_KAFKA(...))` wrapper not supported
+> - ✅ `FROM read_kafka('broker','topic','','group','','','','','raw','raw',0,MAP(...))`
+
+### Output Columns
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `key` | BINARY | Message key |
+| `value` | BINARY | Message value (payload) |
+| `topic` | STRING | Source topic name |
+| `partition` | INT | Partition number |
+| `offset` | BIGINT | Message offset |
+| `timestamp` | TIMESTAMP | Message timestamp |
+| `timestamp_type` | STRING | Timestamp type |
+
+### Behavior: Standalone vs. Inside Pipe
+
+| Aspect | Standalone | Inside Pipe |
+|--------|-----------|-------------|
+| Consumer group | Temporary, destroyed after query | Persistent, offset committed |
+| Offset management | Via MAP `kafka.auto.offset.reset` | Pipe manages; positions 5–8 **must be empty** |
+| Execution | One-shot query | Continuously scheduled |
+| Default start | latest (override in MAP) | latest (override via `RESET_KAFKA_GROUP_OFFSETS`) |
+
+---
+
+## MAP Configuration Parameters
+
+| Key | Values | Description |
+|-----|--------|-------------|
+| `kafka.security.protocol` | `PLAINTEXT`, `SASL_PLAINTEXT` | Security protocol (SSL not supported) |
+| `kafka.sasl.mechanism` | `PLAIN` | SASL mechanism |
+| `kafka.sasl.username` | string | SASL username |
+| `kafka.sasl.password` | string | SASL password |
+| `kafka.auto.offset.reset` | `earliest`, `latest` | Standalone exploration only; ignored in Pipe |
+| `cz.kafka.fetch.retry.enable` | `true`, `false` | Enable fetch retry |
+| `cz.kafka.fetch.retry.times` | integer | Retry count |
+| `cz.kafka.fetch.retry.intervalMs` | integer | Retry interval (ms) |
+
+---
+
+## CREATE PIPE (READ_KAFKA)
+
+```sql
+CREATE PIPE <pipe_name>
   VIRTUAL_CLUSTER = '<vcluster_name>'
   [ BATCH_INTERVAL_IN_SECONDS = '<seconds>' ]
   [ BATCH_SIZE_PER_KAFKA_PARTITION = '<count>' ]
   [ MAX_SKIP_BATCH_COUNT_ON_ERROR = '<count>' ]
   [ INITIAL_DELAY_IN_SECONDS = '<seconds>' ]
   [ RESET_KAFKA_GROUP_OFFSETS = '<offset_value>' ]
-  [ COPY_JOB_HINT = '<json>' ]
+  [ COPY_JOB_HINT = '<json_string>' ]
 AS
-COPY INTO <target_table> FROM (
-  SELECT <expr> [, ...]
-  FROM read_kafka(
-    '<bootstrap_servers>',   -- 位置 1：Kafka 集群地址（必填）
-    '<topic_name>',          -- 位置 2：Topic 名称（必填）
-    '',                      -- 位置 3：Topic pattern（保留，填空字符串）
-    '<group_id>',            -- 位置 4：消费者组 ID（必填）
-    '',                      -- 位置 5：starting_offsets（Pipe 中留空）
-    '',                      -- 位置 6：ending_offsets（Pipe 中留空）
-    '',                      -- 位置 7：starting_timestamp（Pipe 中留空）
-    '',                      -- 位置 8：ending_timestamp（Pipe 中留空）
-    'raw',                   -- 位置 9：key 格式（目前只支持 raw）
-    'raw',                   -- 位置 10：value 格式（目前只支持 raw）
-    0,                       -- 位置 11：max_errors
-    MAP(<kafka_config>)      -- 位置 12：Kafka 配置参数
-  )
-);
-```
-
-### Pipe 参数说明
-
-| 参数 | 必填 | 默认值 | 说明 |
-|------|------|--------|------|
-| `VIRTUAL_CLUSTER` | 是 | — | 执行 Pipe 任务的计算集群 |
-| `BATCH_INTERVAL_IN_SECONDS` | 否 | 60 | 批处理间隔（秒），即数据新鲜度 |
-| `BATCH_SIZE_PER_KAFKA_PARTITION` | 否 | 500000 | 每个 Kafka 分区每批最大消息数 |
-| `MAX_SKIP_BATCH_COUNT_ON_ERROR` | 否 | 30 | 出错时跳过批次的最大重试次数 |
-| `INITIAL_DELAY_IN_SECONDS` | 否 | 0 | 首个作业调度延迟 |
-| `RESET_KAFKA_GROUP_OFFSETS` | 否 | — | 启动时消费位点（仅创建时生效） |
-| `COPY_JOB_HINT` | 否 | — | JSON 格式的作业参数 |
-
-### RESET_KAFKA_GROUP_OFFSETS 可选值
-
-| 值 | 说明 |
-|----|------|
-| `'none'` | 无操作，使用 Kafka `auto.offset.reset`（默认 latest） |
-| `'valid'` | 检查当前位点是否过期，将过期分区重置到 earliest |
-| `'earliest'` | 重置到最早位点 |
-| `'latest'` | 重置到最新位点 |
-| `'<毫秒时间戳>'` | 重置到指定时间戳对应位点（如 `'1737789688000'`） |
-
-### READ_KAFKA 参数（在 Pipe 中 vs 独立使用）
-
-| 特性 | 独立使用 read_kafka | 在 Pipe 中使用 |
-|------|-------------------|---------------|
-| 消费者组 | 临时，执行完即销毁 | 持久，保持消费位置 |
-| 位置管理 | 在 MAP 中设置 `kafka.auto.offset.reset` | Pipe 自动管理，位置参数**必须留空** |
-| 执行方式 | 一次性查询 | 持续调度执行 |
-| 默认起始位置 | latest（可在 MAP 中改为 earliest） | latest（由 RESET_KAFKA_GROUP_OFFSETS 控制） |
-
-### MAP 配置参数
-
-| 参数 | 说明 |
-|------|------|
-| `kafka.security.protocol` | 安全协议：`PLAINTEXT` 或 `SASL_PLAINTEXT` |
-| `kafka.sasl.mechanism` | SASL 机制：`PLAIN` |
-| `kafka.sasl.username` | SASL 用户名 |
-| `kafka.sasl.password` | SASL 密码 |
-| `kafka.auto.offset.reset` | 独立探查时的起始位点（`earliest` / `latest`） |
-| `cz.kafka.fetch.retry.enable` | 启用 fetch 重试（`true`/`false`） |
-| `cz.kafka.fetch.retry.times` | 重试次数 |
-| `cz.kafka.fetch.retry.intervalMs` | 重试间隔（毫秒） |
-
-### JSON 字段提取语法
-
-```sql
--- key 和 value 都是 binary 类型，需要先转换
-value::string                                    -- 转为字符串
-parse_json(value::string)                        -- 解析为 JSON 对象
-parse_json(value::string)['field']::TYPE         -- 提取顶层字段
-parse_json(value::string)['nested']['key']::TYPE -- 提取嵌套字段
-
--- 推荐模式：在子查询中先 parse_json，外层直接用 j['field']
-SELECT j['order_id']::STRING, j['amount']::DECIMAL(10,2)
-FROM (
-  SELECT parse_json(value::string) AS j
-  FROM read_kafka(...)
-)
-```
-
-### 完整示例
-
-```sql
--- 无认证 Kafka Pipe
-CREATE PIPE kafka_orders_pipe
-  VIRTUAL_CLUSTER = 'default'
-  BATCH_INTERVAL_IN_SECONDS = '60'
-AS
-COPY INTO ods.orders FROM (
-  SELECT
-    j['order_id']::STRING AS order_id,
-    j['user_id']::STRING AS user_id,
-    j['amount']::DECIMAL(10,2) AS amount,
-    CAST(`timestamp` AS TIMESTAMP) AS kafka_ts
+COPY INTO <schema>.<table> FROM (
+  SELECT <expressions>
   FROM (
     SELECT `timestamp`, parse_json(value::string) AS j
-    FROM read_kafka(
-      'kafka.example.com:9092',
-      'orders',
-      '',
-      'lakehouse_orders',
-      '', '', '', '',
-      'raw', 'raw', 0,
-      MAP('kafka.security.protocol', 'PLAINTEXT')
-    )
-  )
-);
-
--- SASL 认证 + 指定时间点消费
-CREATE PIPE kafka_secure_pipe
-  VIRTUAL_CLUSTER = 'pipe_vc'
-  BATCH_INTERVAL_IN_SECONDS = '60'
-  RESET_KAFKA_GROUP_OFFSETS = '1737789688000'
-AS
-COPY INTO ods.secure_events FROM (
-  SELECT
-    j['id']::STRING AS event_id,
-    j['payload']::STRING AS payload,
-    CAST(`timestamp` AS TIMESTAMP) AS kafka_ts
-  FROM (
-    SELECT `timestamp`, parse_json(value::string) AS j
-    FROM read_kafka(
-      'kafka.example.com:9092',
-      'secure_events',
-      '',
-      'cz_secure',
-      '', '', '', '',
-      'raw', 'raw', 0,
-      MAP(
-        'kafka.security.protocol', 'SASL_PLAINTEXT',
-        'kafka.sasl.mechanism', 'PLAIN',
-        'kafka.sasl.username', 'my_user',
-        'kafka.sasl.password', 'my_password'
-      )
-    )
+    FROM read_kafka(...)
   )
 );
 ```
+
+> `CREATE OR REPLACE PIPE` is **not supported**. Use `DROP PIPE` + `CREATE PIPE`.
+
+### Pipe Parameters
+
+| Parameter | Required | Default | Description |
+|-----------|----------|---------|-------------|
+| `VIRTUAL_CLUSTER` | Yes | — | Compute cluster for Pipe execution |
+| `BATCH_INTERVAL_IN_SECONDS` | No | `'60'` | Batch interval = data freshness (seconds) |
+| `BATCH_SIZE_PER_KAFKA_PARTITION` | No | `'500000'` | Max messages per partition per batch |
+| `MAX_SKIP_BATCH_COUNT_ON_ERROR` | No | `'30'` | Consecutive error batches before Pipe pauses |
+| `INITIAL_DELAY_IN_SECONDS` | No | `'0'` | Delay before first scheduled job |
+| `RESET_KAFKA_GROUP_OFFSETS` | No | — | Initial offset (creation-time only) |
+| `COPY_JOB_HINT` | No | — | JSON job hints |
+
+### RESET_KAFKA_GROUP_OFFSETS Values
+
+| Value | Effect |
+|-------|--------|
+| `'none'` | No reset; use Kafka default (`auto.offset.reset` = latest) |
+| `'valid'` | Reset only expired partitions to earliest |
+| `'earliest'` | Consume from beginning |
+| `'latest'` | Consume only new messages |
+| `'<epoch_millis>'` | Consume from specific timestamp (e.g., `'1737789688000'`) |
+
+### COPY_JOB_HINT Keys
+
+| Key | Default | Description |
+|-----|---------|-------------|
+| `cz.sql.split.kafka.strategy` | `simple` | `simple` = 1 task/partition; `size` = split by message count |
+| `cz.mapper.kafka.message.size` | `1000000` | Messages per task when strategy = `size` |
+
+> Must be valid JSON: `'{"key":"value","key2":"value2"}'`. Setting overwrites all previous hints.
 
 ---
 
-## 独立探查（验证连接和数据格式）
+## CREATE PIPE (Table Stream)
 
 ```sql
--- 无认证
-SELECT value::string
-FROM read_kafka(
-  'kafka.example.com:9092',
-  'orders',
-  '',
-  'test_explore',
-  '', '', '', '',
-  'raw', 'raw', 0,
-  MAP('kafka.security.protocol', 'PLAINTEXT', 'kafka.auto.offset.reset', 'earliest')
-)
-LIMIT 10;
-
--- SASL 认证
-SELECT value::string
-FROM read_kafka(
-  'kafka.example.com:9092',
-  'orders',
-  '',
-  'test_explore',
-  '', '', '', '',
-  'raw', 'raw', 0,
-  MAP(
-    'kafka.security.protocol', 'SASL_PLAINTEXT',
-    'kafka.sasl.mechanism', 'PLAIN',
-    'kafka.sasl.username', 'my_user',
-    'kafka.sasl.password', 'my_password',
-    'kafka.auto.offset.reset', 'earliest'
-  )
-)
-LIMIT 10;
+CREATE PIPE <pipe_name>
+  VIRTUAL_CLUSTER = '<vcluster_name>'
+  [ BATCH_INTERVAL_IN_SECONDS = '<seconds>' ]
+AS
+INSERT INTO <schema>.<table>
+SELECT <expressions>
+FROM <stream_name>;
 ```
+
+> Table Stream Pipe uses `INSERT INTO ... SELECT`, **not** `COPY INTO`.
 
 ---
 
-## CREATE PIPE（Kafka 外部表 + Table Stream 方式）
-
-### 步骤 1：创建 Kafka Storage Connection
+## CREATE STORAGE CONNECTION
 
 ```sql
-CREATE STORAGE CONNECTION IF NOT EXISTS <conn_name>
+CREATE STORAGE CONNECTION [ IF NOT EXISTS ] <conn_name>
   TYPE KAFKA
   BOOTSTRAP_SERVERS = ['<host1>:<port1>', '<host2>:<port2>']
-  SECURITY_PROTOCOL = 'PLAINTEXT';
+  SECURITY_PROTOCOL = '<PLAINTEXT | SASL_PLAINTEXT>';
 ```
 
-### 步骤 2：创建 Kafka 外部表
+Drop: `DROP CONNECTION [ IF EXISTS ] <conn_name>;`
+
+---
+
+## CREATE EXTERNAL TABLE (Kafka)
 
 ```sql
--- ⚠️ 必须显式指定列定义（不能省略）
--- ⚠️ offset 是保留字，必须用反引号转义
-CREATE EXTERNAL TABLE <ext_table_name> (
+CREATE EXTERNAL TABLE <table_name> (
   topic STRING,
   partition INT,
   `offset` BIGINT,
@@ -233,29 +174,18 @@ OPTIONS (
 CONNECTION <conn_name>;
 ```
 
-> **注意**：
-> - 列定义是**必须的**，省略会报错 `failed to detect columns`
-> - `offset` 和 `timestamp` 是保留字，需要反引号转义
-> - 删除外部表用 `DROP TABLE`（不是 `DROP EXTERNAL TABLE`）
+> - Column definitions **required** (error: `failed to detect columns` if omitted)
+> - `offset`, `timestamp` are reserved words — backtick-escape always
+> - Drop with `DROP TABLE` (not `DROP EXTERNAL TABLE`)
 
-### 步骤 3：创建 Table Stream
+---
+
+## CREATE TABLE STREAM
 
 ```sql
 CREATE TABLE STREAM <stream_name>
-  ON TABLE <ext_table_name>
+  ON TABLE <source_table>
   WITH PROPERTIES ('TABLE_STREAM_MODE' = 'APPEND_ONLY');
-```
-
-### 步骤 4：创建 Pipe
-
-```sql
-CREATE PIPE <pipe_name>
-  VIRTUAL_CLUSTER = '<vcluster_name>'
-  BATCH_INTERVAL_IN_SECONDS = '60'
-AS
-COPY INTO <target_table>
-SELECT <expr> [, ...]
-FROM <stream_name>;
 ```
 
 ---
@@ -263,48 +193,19 @@ FROM <stream_name>;
 ## ALTER PIPE
 
 ```sql
--- 暂停
-ALTER PIPE <pipe_name> SET PIPE_EXECUTION_PAUSED = true;
-
--- 恢复
-ALTER PIPE <pipe_name> SET PIPE_EXECUTION_PAUSED = false;
-
--- 修改 VCluster
-ALTER PIPE <pipe_name> SET VIRTUAL_CLUSTER = 'new_vc';
-
--- 修改 COPY_JOB_HINT
-ALTER PIPE <pipe_name> SET COPY_JOB_HINT = '{"cz.sql.split.kafka.strategy":"size","cz.mapper.kafka.message.size":"200000"}';
+ALTER PIPE <pipe_name> SET <property> = <value>;
 ```
 
-> ⚠️ **ALTER PIPE 支持的属性**：
-> - ✅ `PIPE_EXECUTION_PAUSED`
-> - ✅ `VIRTUAL_CLUSTER`
-> - ✅ `COPY_JOB_HINT`
-> - ❌ `BATCH_INTERVAL_IN_SECONDS`（不支持，需删除重建）
-> - ❌ `BATCH_SIZE_PER_KAFKA_PARTITION`（不支持，需删除重建）
->
-> 不支持修改 COPY/INSERT 语句逻辑，需删除 Pipe 后重建。
-> 修改 `COPY_JOB_HINT` 会覆盖所有已有 hints，需一次性设置全部参数。
+Supported properties (one per ALTER):
 
----
-
-## 监控
-
-```sql
--- 查看 Pipe 详情（含延迟信息 pipe_latency）
-DESC PIPE EXTENDED <pipe_name>;
-
--- 查看所有 Pipe
-SHOW PIPES;
-
--- 查看加载历史
-SELECT * FROM load_history('<schema>.<table>')
-ORDER BY last_load_time DESC LIMIT 20;
-
--- 通过 query_tag 查看 Pipe 作业
--- 格式：pipe.<workspace_name>.<schema_name>.<pipe_name>
-SHOW JOBS WHERE query_tag = 'pipe.my_workspace.ods.kafka_orders_pipe';
-```
+| Property | Alterable | Notes |
+|----------|-----------|-------|
+| `PIPE_EXECUTION_PAUSED` | ✅ | `true` / `false` |
+| `VIRTUAL_CLUSTER` | ✅ | New VCluster name |
+| `COPY_JOB_HINT` | ✅ | JSON string; overwrites all hints |
+| `BATCH_INTERVAL_IN_SECONDS` | ❌ | Drop + recreate |
+| `BATCH_SIZE_PER_KAFKA_PARTITION` | ❌ | Drop + recreate |
+| SELECT logic | ❌ | Drop + recreate |
 
 ---
 
@@ -314,11 +215,76 @@ SHOW JOBS WHERE query_tag = 'pipe.my_workspace.ods.kafka_orders_pipe';
 DROP PIPE [ IF EXISTS ] <pipe_name>;
 ```
 
-## 参考文档
+---
 
-- [Pipe 简介](https://www.yunqi.tech/documents/pipe-summary)
-- [借助 read_kafka 函数持续导入](https://www.yunqi.tech/documents/pipe-kafka)
-- [借助 Kafka 外表 Table Stream 持续导入](https://www.yunqi.tech/documents/pipe-kafka-table-stream)
-- [最佳实践：使用 Pipe 高效接入 Kafka 数据](https://www.yunqi.tech/documents/pipe-kafka-bestpractice-1)
-- [Kafka 外部表](https://www.yunqi.tech/documents/kafka-external-table)
+## Monitoring Queries
+
+```sql
+-- Pipe details (includes pipe_latency JSON)
+DESC PIPE EXTENDED <pipe_name>;
+
+-- List all Pipes
+SHOW PIPES;
+
+-- Load history (retained 7 days)
+SELECT * FROM load_history('<schema>.<table>') ORDER BY last_load_time DESC LIMIT 20;
+
+-- Pipe jobs by query_tag
+SHOW JOBS WHERE query_tag = 'pipe.<workspace>.<schema>.<pipe_name>';
+```
+
+### pipe_latency Fields
+
+| Field | Description |
+|-------|-------------|
+| `lastConsumeTimestamp` | Timestamp of last consumed offset |
+| `offsetLag` | Number of unconsumed messages |
+| `timeLag` | Consumer lag in ms (-1 = abnormal) |
+
+---
+
+## JSON Field Extraction Patterns
+
+```sql
+-- Binary → String
+value::string
+
+-- String → JSON object
+parse_json(value::string)
+
+-- Extract top-level field
+parse_json(value::string)['field']::TYPE
+
+-- Extract nested field
+parse_json(value::string)['parent']['child']::TYPE
+
+-- Deeply nested (string-within-string)
+parse_json(parse_json(value::string)['outer']::STRING)['inner']::TYPE
+
+-- Recommended: parse once in subquery
+SELECT j['id']::STRING, j['amount']::DECIMAL(10,2)
+FROM (SELECT parse_json(value::string) AS j FROM read_kafka(...))
+```
+
+---
+
+## CSV Field Extraction Pattern
+
+```sql
+split(value::string, ',')[0]::STRING   -- first field
+split(value::string, ',')[1]::STRING   -- second field
+CAST(split(value::string, ',')[2] AS DECIMAL(10,2))  -- with type cast
+```
+
+---
+
+## Reference Links
+
+- [Pipe Overview](https://www.yunqi.tech/documents/pipe-summary)
+- [read_kafka Continuous Import](https://www.yunqi.tech/documents/pipe-kafka)
+- [Kafka External Table + Table Stream](https://www.yunqi.tech/documents/pipe-kafka-table-stream)
+- [Kafka Pipe Best Practice](https://www.yunqi.tech/documents/pipe-kafka-bestpractice-1)
+- [read_kafka Function](https://www.yunqi.tech/documents/read_kafka)
+- [Kafka External Table](https://www.yunqi.tech/documents/kafka-external-table)
 - [Kafka Storage Connection](https://www.yunqi.tech/documents/Kafka_connection)
+- [PIPE Syntax](https://www.yunqi.tech/documents/pipe-syntax)
