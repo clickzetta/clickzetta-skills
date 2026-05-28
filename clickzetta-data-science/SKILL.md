@@ -105,7 +105,7 @@ my-ds-project/
 | `BEGIN; COMMIT; ROLLBACK;` | 用 MERGE 实现原子操作 |
 | `NOW()` | `CURRENT_TIMESTAMP()` |
 
-遇到其他语法报错，加载 `clickzetta-sql-syntax-guide` skill。
+遇到其他语法报错，加载 `clickzetta-sql-migration` skill 查看 Snowflake/Databricks/Spark 与 ClickZetta 的语法差异。
 
 ---
 

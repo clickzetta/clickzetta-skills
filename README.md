@@ -12,7 +12,7 @@
 |---|---|---|
 | 基础与连接 | [clickzetta-overview](./clickzetta-overview/) | ClickZetta 产品全貌、对象模型、架构、Studio 模块、品牌与服务地址 |
 | 基础与连接 | [clickzetta-lakehouse-connect](./clickzetta-lakehouse-connect/) | Python SDK、ZettaPark、SQLAlchemy、JDBC 等连接配置 |
-| 基础与连接 | [clickzetta-sql-syntax-guide](./clickzetta-sql-syntax-guide/) | SQL 语法参考、函数、数据类型、Snowflake/Databricks/Spark 迁移差异 |
+| 基础与连接 | [clickzetta-sql-migration](./clickzetta-sql-migration/) | 从 Snowflake / Databricks / Spark SQL 迁移到 ClickZetta 的语法差异、函数对照、隐式转换规则 |
 | 基础与连接 | [clickzetta-metadata](./clickzetta-metadata/) | SHOW/DESC 命令族、INFORMATION_SCHEMA 元数据、费用和用量统计 |
 | 基础与连接 | [clickzetta-manage-comments](./clickzetta-manage-comments/) | Schema、表、字段、动态表、物化视图、VCluster、Workspace 注释管理 |
 | 数据导入与管道 | [clickzetta-data-ingest-pipeline](./clickzetta-data-ingest-pipeline/) | 数据导入方案路由，根据数据源、实时性、范围选择最佳导入方式 |
@@ -62,7 +62,7 @@
 | 管理 Studio 任务、调度、依赖、补数、任务目录 | `clickzetta-studio-task-manager` |
 | 设计数据管道、动态表、流式增量 ETL | `clickzetta-sql-pipeline-manager` / `clickzetta-dynamic-table` / `clickzetta-table-stream-pipeline` |
 | 诊断管道质量、任务失败、链路缺陷 | `clickzetta-pipeline-review` |
-| 写 SQL、迁移 SQL、查函数或语法差异 | `clickzetta-sql-syntax-guide` |
+| 写 SQL、迁移 SQL、查函数或语法差异 | `clickzetta-sql-migration`（迁移/对比时）+ ClickZetta 官方文档（写 ClickZetta 原生 SQL 时） |
 | 查询元数据、表结构、作业历史、成本归因 | `clickzetta-metadata` / `clickzetta-monitoring` |
 | 查询慢、作业慢、小文件、缓存、执行计划 | `clickzetta-query-optimizer` |
 | 用户、角色、授权、脱敏、网络策略 | `clickzetta-access-control` |
@@ -85,9 +85,9 @@ ClickZetta Lakehouse 产品全貌入口，帮助新用户建立对象模型和�
 
 Skill 内包含本地配置文件读取、连接参数说明、国内版与国际版服务地址差异、常见连接报错排查，以及 JDBC/SQLAlchemy/Python/ZettaPark 的参考示例。
 
-#### [clickzetta-sql-syntax-guide](./clickzetta-sql-syntax-guide/)
+#### [clickzetta-sql-migration](./clickzetta-sql-migration/)
 
-ClickZetta Lakehouse SQL 语法参考和迁移指南。覆盖 DDL、DML、DQL、函数、数据类型、隐式类型转换，以及从 Snowflake、Databricks、Spark SQL 迁移时最容易写错的语法差异。
+ClickZetta Lakehouse SQL 迁移指南，专注于从 Snowflake、Databricks、Spark SQL 迁移到 ClickZetta 时的语法差异、函数对照、隐式类型转换规则。原生 ClickZetta SQL 语法请参考 ClickZetta Lakehouse 官方文档。
 
 适用于查询“ClickZetta 怎么写某个 SQL”“Snowflake/Databricks 语法怎么迁移”“日期/JSON/BOOLEAN/集合运算怎么写”“某个函数是否支持”等问题。
 

@@ -1,3 +1,0 @@
-{"case_id":"001","type":"should_call","user_input":"How do I write Snowflake's IFF, ARRAY_SIZE, and LISTAGG in ClickZetta?","expected_skill":"clickzetta-sql-syntax-guide","expected_output_contains":["IF(","SIZE("]}
-{"case_id":"002","type":"should_call","user_input":"How to replace Databricks APPLY CHANGES INTO in ClickZetta?","expected_skill":"clickzetta-sql-syntax-guide","expected_output_contains":["MERGE INTO"]}
-{"case_id":"003","type":"should_call","user_input":"What are ClickZetta's implicit type conversion rules?","expected_skill":"clickzetta-sql-syntax-guide","expected_output_contains":["implicit","conversion"]}

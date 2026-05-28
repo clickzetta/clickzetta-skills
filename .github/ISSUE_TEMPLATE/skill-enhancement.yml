@@ -36,7 +36,7 @@ body:
         - clickzetta-realtime-sync-pipeline
         - clickzetta-semantic-view
         - clickzetta-sql-pipeline-manager
-        - clickzetta-sql-syntax-guide
+        - clickzetta-sql-migration
         - clickzetta-studio-overview
         - clickzetta-table-stream-pipeline
         - clickzetta-vcluster-manager

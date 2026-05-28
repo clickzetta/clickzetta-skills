@@ -256,7 +256,7 @@ CDC/Kafka 持续写入 Bronze → Silver（REFRESH INTERVAL 10 MINUTE）→ Gold
 
 ### DDL 模板
 
-加载 `clickzetta-sql-syntax-guide` 确认语法，生成各层 DDL。
+参考 ClickZetta Lakehouse 官方文档确认语法，生成各层 DDL。如果是从 Snowflake / Databricks 迁移过来的 DDL，加载 `clickzetta-sql-migration` skill 处理语法差异。
 
 **数仓开发代码资产化原则：每段 SQL 都应保存为 Studio 任务，作为可管理的代码资产。**
 
