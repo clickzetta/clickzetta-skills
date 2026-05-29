@@ -102,6 +102,14 @@
       ]
     },
     {
+      "name": "clickzetta-ai-function",
+      "description": "Use built-in AI functions in ClickZetta Lakehouse — AI_COMPLETE (call LLMs for text generation, summarization, classification) and AI_EMBEDDING (generate text vectors for semantic search). Covers CREATE API CONNECTION (TYPE ai_function) and platform Endpoint usage.",
+      "files": [
+        "SKILL.md",
+        "references/ai-function-ddl.md"
+      ]
+    },
+    {
       "name": "clickzetta-external-catalog",
       "description": "配置和使用 ClickZetta Lakehouse External Catalog，实现对 Hive、Iceberg、Databricks、",
       "files": [
@@ -111,7 +119,7 @@
     },
     {
       "name": "clickzetta-external-function",
-      "description": "在 ClickZetta Lakehouse 中创建和使用外部函数（External Function / UDF），",
+      "description": "Create and use External Functions (custom UDFs) in ClickZetta Lakehouse using Python or Java, deployed on Alibaba Cloud FC / Tencent Cloud SCF / AWS Lambda. Covers CREATE API CONNECTION (TYPE CLOUD_FUNCTION), CREATE EXTERNAL FUNCTION, Python/Java UDF code structure and packaging.",
       "files": [
         "SKILL.md",
         "references/external-function-ddl.md"
