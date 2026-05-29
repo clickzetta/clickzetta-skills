@@ -1,17 +1,17 @@
-# 数据科学统计分析函数参考
+# Statistical Analysis Functions Reference for Data Science
 
 ---
 
-## 近似聚合函数（大表高效统计）
+## Approximate Aggregate Functions (Efficient for Large Tables)
 
-### approx_count_distinct — 近似 UV
+### approx_count_distinct — Approximate Distinct Count
 
 ```sql
--- 使用 HyperLogLog 算法，误差约 2%，比 COUNT(DISTINCT) 快 10x+
+-- Uses HyperLogLog algorithm, ~2% error, 10x+ faster than COUNT(DISTINCT)
 SELECT approx_count_distinct(user_id) AS approx_uv
 FROM my_schema.events;
 
--- 按天统计 DAU
+-- Daily active users (DAU)
 SELECT
     DATE(event_time) AS dt,
     approx_count_distinct(user_id) AS dau
@@ -20,10 +20,10 @@ GROUP BY 1
 ORDER BY 1;
 ```
 
-### approx_percentile — 近似分位数
+### approx_percentile — Approximate Percentiles
 
 ```sql
--- 中位数、四分位数、P95、P99
+-- Median, quartiles, P95, P99
 SELECT
     approx_percentile(amount, 0.25) AS p25,
     approx_percentile(amount, 0.50) AS median,
@@ -32,7 +32,7 @@ SELECT
     approx_percentile(amount, 0.99) AS p99
 FROM my_schema.orders;
 
--- 分组分位数
+-- Grouped percentiles
 SELECT
     category,
     approx_percentile(price, 0.5) AS median_price
@@ -40,14 +40,14 @@ FROM my_schema.products
 GROUP BY category;
 ```
 
-### approx_histogram — 近似直方图
+### approx_histogram — Approximate Histogram
 
 ```sql
--- 返回结构体数组：[{min, max, count}, ...]
+-- Returns a struct array: [{min, max, count}, ...]
 SELECT approx_histogram(amount, 10) AS hist
 FROM my_schema.orders;
 
--- 解析直方图（展开为行）
+-- Parse histogram (expand to rows)
 SELECT
     bucket.min AS bucket_min,
     bucket.max AS bucket_max,
@@ -58,15 +58,15 @@ FROM (
 );
 ```
 
-### approx_top_k — 近似 TOP-K 高频值
+### approx_top_k — Approximate Top-K High-Frequency Values
 
 ```sql
--- 找出出现最多的前 10 个城市
+-- Find the top 10 most frequent cities
 SELECT approx_top_k(city, 10) AS top_cities
 FROM my_schema.orders;
 
--- 返回结构体数组：[{value, count}, ...]
--- 解析展开（字段名是 value 和 count）
+-- Returns a struct array: [{value, count}, ...]
+-- Expand to rows (fields are value and count)
 SELECT item.value AS city, item.count AS cnt
 FROM (
     SELECT EXPLODE(approx_top_k(city, 10)) AS item
@@ -77,59 +77,59 @@ ORDER BY cnt DESC;
 
 ---
 
-## 精确统计函数
+## Exact Statistical Functions
 
 ### percentile / median
 
 ```sql
--- 精确中位数（小表用，大表用 approx_percentile）
+-- Exact median (use for small tables; use approx_percentile for large tables)
 SELECT
     percentile(amount, 0.5)  AS exact_median,
-    median(amount)           AS median_alias  -- 等价写法
+    median(amount)           AS median_alias  -- equivalent
 FROM my_schema.orders;
 
--- 多分位数
+-- Multiple percentiles
 SELECT percentile(amount, ARRAY(0.25, 0.5, 0.75, 0.9, 0.99))
 FROM my_schema.orders;
 ```
 
 ---
 
-## TABLESAMPLE 采样
+## TABLESAMPLE Sampling
 
 ```sql
--- ROW 模式：精确行级采样（适合 ML 训练集，< 1000万行）
-SELECT * FROM my_schema.events TABLESAMPLE ROW (10);      -- 精确 10%
-SELECT * FROM my_schema.events TABLESAMPLE ROW (5 ROWS);  -- 精确 5 行
+-- ROW mode: exact row-level sampling (good for ML training sets, <10M rows)
+SELECT * FROM my_schema.events TABLESAMPLE ROW (10);      -- exact 10%
+SELECT * FROM my_schema.events TABLESAMPLE ROW (5 ROWS);  -- exact 5 rows
 
--- SYSTEM 模式：文件级采样（适合大表快速预览，> 1000万行）
-SELECT * FROM my_schema.events TABLESAMPLE SYSTEM (0.1) LIMIT 50000;  -- 约 0.1%
+-- SYSTEM mode: file-level sampling (good for large table quick preview, >10M rows)
+SELECT * FROM my_schema.events TABLESAMPLE SYSTEM (0.1) LIMIT 50000;  -- ~0.1%
 
--- 分层采样（按类别等比例采样）
+-- Stratified sampling (proportional by category)
 SELECT * FROM (
     SELECT *,
            ROW_NUMBER() OVER (PARTITION BY category ORDER BY RAND()) AS rn,
            COUNT(*) OVER (PARTITION BY category) AS cat_total
     FROM my_schema.products
 )
-WHERE rn <= CEIL(cat_total * 0.1);  -- 每类取 10%
+WHERE rn <= CEIL(cat_total * 0.1);  -- 10% per category
 ```
 
-| 场景 | 推荐模式 | 说明 |
+| Use Case | Recommended Mode | Notes |
 |---|---|---|
-| 快速数据预览 | SYSTEM | 极快，适合 > 100万行 |
-| ML 训练集构建 | ROW | 精确随机，保证代表性 |
-| 数据质量抽检 | SYSTEM | 快速抽样验证 |
-| 统计分析 | ROW | 精确概率采样 |
+| Quick data preview | SYSTEM | Very fast, good for >1M rows |
+| ML training set | ROW | Exact random, ensures representativeness |
+| Data quality spot check | SYSTEM | Fast sampling for validation |
+| Statistical analysis | ROW | Exact probability sampling |
 
-> ⚠️ **注意**：TABLESAMPLE 在小表（< 数万行）上可能返回全部数据，百分比采样不精确。小表直接用 `LIMIT` 即可。
+> ⚠️ **Note**: TABLESAMPLE on small tables (<tens of thousands of rows) may return all data — percentage sampling is not precise. Use `LIMIT` directly for small tables.
 
 ---
 
-## 窗口函数（时序/排名特征）
+## Window Functions (Time Series / Ranking Features)
 
 ```sql
--- 移动平均（7日）
+-- 7-day moving average
 SELECT
     dt,
     revenue,
@@ -139,7 +139,7 @@ SELECT
     ) AS revenue_7d_ma
 FROM daily_stats;
 
--- 环比增长率
+-- Month-over-month growth rate
 SELECT
     dt,
     revenue,
@@ -148,7 +148,7 @@ SELECT
           / NULLIF(LAG(revenue, 1) OVER (ORDER BY dt), 0), 2) AS mom_growth_pct
 FROM daily_stats;
 
--- 用户行为排名（RFM 分析）
+-- User behavior ranking (RFM analysis)
 SELECT
     user_id,
     total_amount,
@@ -157,7 +157,7 @@ SELECT
     NTILE(5) OVER (ORDER BY last_order_date DESC) AS recency_quintile
 FROM user_rfm;
 
--- 去重保留最新（数据清洗常用）
+-- Deduplication keeping latest (common in data cleaning)
 SELECT * FROM (
     SELECT *,
            ROW_NUMBER() OVER (
@@ -170,25 +170,25 @@ SELECT * FROM (
 
 ---
 
-## 数据质量检查模板
+## Data Quality Check Template
 
 ```sql
--- 一次性输出所有关键质量指标
+-- Output all key quality metrics in one query
 SELECT
     COUNT(*)                                                    AS total_rows,
     COUNT(DISTINCT user_id)                                     AS unique_users,
-    -- 缺失率
+    -- Null rates
     ROUND(100.0 * COUNT(*) FILTER (WHERE user_id IS NULL)
           / COUNT(*), 2)                                        AS user_id_null_pct,
     ROUND(100.0 * COUNT(*) FILTER (WHERE amount IS NULL)
           / COUNT(*), 2)                                        AS amount_null_pct,
-    -- 异常值
+    -- Anomalies
     SUM(CASE WHEN amount < 0 THEN 1 ELSE 0 END)                AS negative_amount_cnt,
     SUM(CASE WHEN amount > 1000000 THEN 1 ELSE 0 END)          AS extreme_amount_cnt,
-    -- 时间范围
+    -- Time range
     MIN(order_date)                                             AS earliest_date,
     MAX(order_date)                                             AS latest_date,
-    -- 分布
+    -- Distribution
     approx_percentile(amount, 0.5)                             AS median_amount,
     approx_percentile(amount, 0.99)                            AS p99_amount
 FROM my_schema.orders;
