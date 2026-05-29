@@ -1,12 +1,12 @@
-# BulkloadStream 详细参考
+# BulkloadStream Detailed Reference
 
-> 适合：定时 ETL、本地文件导入、数据库迁移
-> 不适合：主键表、5 分钟以内高频写入
+> Best for: scheduled ETL, local file imports, and database migration.
+> Not for: primary-key tables or high-frequency writes under 5 minutes.
 
-## Maven 依赖
+## Maven Dependency
 
 ```xml
-<!-- 最新版本见 https://central.sonatype.com/artifact/com.clickzetta/clickzetta-java -->
+<!-- See https://central.sonatype.com/artifact/com.clickzetta/clickzetta-java for the latest version. -->
 <dependency>
     <groupId>com.clickzetta</groupId>
     <artifactId>clickzetta-java</artifactId>
@@ -14,17 +14,17 @@
 </dependency>
 ```
 
-最新版本见 [Maven Central](https://central.sonatype.com/artifact/com.clickzetta/clickzetta-java)
+See [Maven Central](https://central.sonatype.com/artifact/com.clickzetta/clickzetta-java) for the latest version.
 
-## 使用限制
+## Usage Limits
 
-- **不支持主键（pk）表写入**
-- **不适合时间间隔小于 5 分钟的高频写入**
-- 写入完成 `close()` 后数据才可见
+- **Primary-key table writes are not supported.**
+- **High-frequency writes at intervals shorter than 5 minutes are not recommended.**
+- Data becomes visible only after writing is complete and `close()` has been called.
 
-## 完整示例：读取本地 CSV 写入 Lakehouse
+## Complete Example: Read a Local CSV and Write to Lakehouse
 
-### 建表
+### Create the Table
 
 ```sql
 CREATE TABLE bulk_order_items (
@@ -38,7 +38,7 @@ CREATE TABLE bulk_order_items (
 );
 ```
 
-### Java 代码（BulkloadFile 类）
+### Java Code: BulkloadFile Class
 
 ```java
 import com.clickzetta.client.BulkloadStream;
@@ -66,12 +66,12 @@ public class BulkloadFile {
         initialize();
         File csvFile = new File("olist_order_items_dataset.csv");
         BufferedReader reader = new BufferedReader(new FileReader(csvFile));
-        reader.readLine(); // 跳过 header 行
+        reader.readLine(); // Skip the header row.
 
         String line;
         while ((line = reader.readLine()) != null) {
             String[] values = line.split(",");
-            // 类型转换必须与建表 DDL 一致
+            // Type conversion must match the table DDL.
             String orderId = values[0];
             int orderItemId = Integer.parseInt(values[1]);
             String productId = values[2];
@@ -81,7 +81,7 @@ public class BulkloadFile {
             double freightValue = Double.parseDouble(values[6]);
 
             Row row = bulkloadStream.createRow();
-            // ⚠️ BulkloadStream 用列索引（从 0 开始），顺序与建表 DDL 一致
+            // BulkloadStream uses column indexes starting at 0. The order must match the table DDL.
             row.setValue(0, orderId);
             row.setValue(1, orderItemId);
             row.setValue(2, productId);
@@ -89,7 +89,7 @@ public class BulkloadFile {
             row.setValue(4, shippingLimitDate);
             row.setValue(5, price);
             row.setValue(6, freightValue);
-            // ⚠️ 必须调用 apply()，否则数据不发送到服务端
+            // apply() is required. Otherwise the row is not sent to the server.
             bulkloadStream.apply(row);
         }
 
@@ -101,7 +101,7 @@ public class BulkloadFile {
     }
 
     private static void initialize() throws Exception {
-        // 推荐：显式参数方式（2.0.0+ 支持）
+        // Recommended: explicit parameters. Supported in 2.0.0+.
         client = ClickZettaClient.newBuilder()
             .service("cn-shanghai-alicloud.api.clickzetta.com")
             .instance("your_instance")
@@ -129,20 +129,20 @@ public class BulkloadFile {
 }
 ```
 
-## 关键 API
+## Key APIs
 
-| API | 说明 |
+| API | Description |
 |---|---|
-| `bulkloadStream.createRow()` | 创建行对象（无参数） |
-| `row.setValue(int index, Object value)` | 按列索引设值（从 0 开始） |
-| `bulkloadStream.apply(row)` | 发送行到服务端（必须调用） |
-| `bulkloadStream.close()` | 关闭并触发提交 |
-| `bulkloadStream.getState()` | 获取状态：RUNNING / SUCCEEDED / FAILED |
-| `bulkloadStream.getErrorMessage()` | 获取失败原因 |
+| `bulkloadStream.createRow()` | Create a row object without arguments. |
+| `row.setValue(int index, Object value)` | Set a value by column index, starting at 0. |
+| `bulkloadStream.apply(row)` | Send the row to the server. This call is required. |
+| `bulkloadStream.close()` | Close the stream and trigger the commit. |
+| `bulkloadStream.getState()` | Get the state: RUNNING, SUCCEEDED, or FAILED. |
+| `bulkloadStream.getErrorMessage()` | Get the failure reason. |
 
-## 类型映射
+## Type Mapping
 
-| Java 类型 | Lakehouse 类型 |
+| Java type | Lakehouse type |
 |---|---|
 | `Long` / `long` | BIGINT |
 | `Integer` / `int` | INT |
@@ -153,11 +153,11 @@ public class BulkloadFile {
 | `java.sql.Date` | DATE |
 | `BigDecimal` | DECIMAL |
 
-## 常见问题
+## FAQ
 
-| 问题 | 原因 | 解决方案 |
+| Issue | Cause | Solution |
 |---|---|---|
-| 数据写入后查不到 | 未调用 `apply()` 或未等待 RUNNING 结束 | 确认每行都调用 `apply()`，等待状态变为 SUCCEEDED |
-| 主键表写入报错 | BulkloadStream 不支持主键表 | 改用 JDBC + MERGE 或 Flink igs-dynamic-table |
-| 列值类型不匹配 | Java 类型与建表 DDL 不一致 | 写入前做类型转换（parseInt、parseDouble 等） |
-| 连接失败 | URL 参数名错误 | BulkloadStream 用 `virtualcluster=`，不是 `vcluster=` |
+| Data cannot be queried after writing | `apply()` was not called or the RUNNING state has not finished | Call `apply()` for every row and wait until the state becomes SUCCEEDED. |
+| Primary-key table write fails | BulkloadStream does not support primary-key tables | Use JDBC with MERGE or Flink `igs-dynamic-table` instead. |
+| Column value type mismatch | Java types do not match the table DDL | Convert values before writing, for example with `parseInt` or `parseDouble`. |
+| Connection fails | Wrong URL parameter name | BulkloadStream uses `virtualcluster=`, not `vcluster=`. |

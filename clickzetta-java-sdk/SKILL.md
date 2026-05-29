@@ -1,30 +1,31 @@
 ---
 name: clickzetta-java-sdk
 description: |
-  使用 ClickZetta Java SDK 将数据批量或实时写入 Lakehouse 表。
-  覆盖 BulkloadStream（本地文件/数据库批量上传）和 RealtimeStream（Kafka 实时消费写入）
-  两种接口的完整使用模式，包括 Maven 依赖、连接 URL 格式、行写入 API、
-  状态监控、Options 调优和常见错误处理。
-  当用户说"Java SDK"、"BulkloadStream"、"RealtimeStream"、
-  "Java 写入 Lakehouse"、"Java 批量上传"、"Kafka Java 写入"、
-  "clickzetta-java"、"Maven 依赖"、"Java 数据导入"时触发。
+  Use the ClickZetta Java SDK to write data to Lakehouse tables in batch or in real time.
+  Covers complete usage patterns for BulkloadStream (local file/database batch uploads)
+  and RealtimeStream (Kafka real-time consumption and writes), including Maven dependencies,
+  connection URL formats, row write APIs, status monitoring, Options tuning, and common error handling.
+  Trigger when users say "Java SDK", "BulkloadStream", "RealtimeStream",
+  "write to Lakehouse with Java", "Java batch upload", "Kafka Java write",
+  "clickzetta-java", "Maven dependency", "Java data import",
+  "Java 写入 Lakehouse", "Java 批量上传", or "Kafka Java 写入".
   Keywords: Java SDK, BulkloadStream, RealtimeStream, Kafka consumer, batch write, real-time write
 ---
 
 # ClickZetta Java SDK
 
-Java SDK 提供两种写入接口：
-- **BulkloadStream** — 批量写入，适合定时 ETL、本地文件导入（不支持主键表，不适合 5 分钟以内的高频写入）
-- **RealtimeStream** — 实时写入，适合 Kafka 消费、流式数据接入（秒级可查）
+The Java SDK provides two write interfaces:
+- **BulkloadStream** - batch writes for scheduled ETL and local file imports. It does not support primary-key tables and is not recommended for high-frequency writes under 5 minutes.
+- **RealtimeStream** - real-time writes for Kafka consumption and streaming ingestion. Data can be queried within seconds.
 
-阅读 [references/bulkload.md](references/bulkload.md) 了解批量写入，[references/realtime.md](references/realtime.md) 了解实时写入。
+Read [references/bulkload.md](references/bulkload.md) for batch writes and [references/realtime.md](references/realtime.md) for real-time writes.
 
 ---
 
-## Maven 依赖
+## Maven Dependency
 
 ```xml
-<!-- clickzetta-java 最新版本见 https://central.sonatype.com/artifact/com.clickzetta/clickzetta-java -->
+<!-- See https://central.sonatype.com/artifact/com.clickzetta/clickzetta-java for the latest clickzetta-java version. -->
 <dependency>
     <groupId>com.clickzetta</groupId>
     <artifactId>clickzetta-java</artifactId>
@@ -32,7 +33,7 @@ Java SDK 提供两种写入接口：
 </dependency>
 ```
 
-RealtimeStream + Kafka 还需要：
+RealtimeStream with Kafka also requires:
 
 ```xml
 <dependency>
@@ -44,10 +45,10 @@ RealtimeStream + Kafka 还需要：
 
 ---
 
-## 连接 URL 格式
+## Connection URL Format
 
 ```java
-// 推荐：显式参数方式（2.0.0+ 支持，不依赖 URL 解析）
+// Recommended: explicit parameters. Supported in 2.0.0+ and does not depend on URL parsing.
 ClickZettaClient client = ClickZettaClient.newBuilder()
     .service("cn-shanghai-alicloud.api.clickzetta.com")
     .instance("your_instance")
@@ -58,7 +59,7 @@ ClickZettaClient client = ClickZettaClient.newBuilder()
     .vcluster("default")
     .build();
 
-// 兼容：URL 方式（BulkloadStream 用 virtualcluster=，RealtimeStream 用 vcluster=）
+// Compatible URL-based mode. BulkloadStream uses virtualcluster=, while RealtimeStream uses vcluster=.
 String bulkUrl = MessageFormat.format(
     "jdbc:clickzetta://{0}.{1}/{2}?schema={3}&username={4}&password={5}&virtualcluster={6}",
     instance, region_endpoint, workspace, schema, username, password, vcluster
@@ -70,35 +71,35 @@ String rtUrl = MessageFormat.format(
 ClickZettaClient client = ClickZettaClient.newBuilder().url(url).build();
 ```
 
-JDBC 连接（DDL / 查询）：
+JDBC connection for DDL and queries:
 
 ```java
-// 2.0.0+ 驱动类：com.clickzetta.client.jdbc.ClickZettaDriver
-// 1.x 驱动类：com.clickzetta.jdbc.ClickZettaDriver
+// Driver class for 2.0.0+: com.clickzetta.client.jdbc.ClickZettaDriver
+// Driver class for 1.x: com.clickzetta.jdbc.ClickZettaDriver
 Class.forName("com.clickzetta.client.jdbc.ClickZettaDriver");
 Connection conn = DriverManager.getConnection(jdbcUrl);
 ```
 
 ---
 
-## BulkloadStream 快速示例
+## BulkloadStream Quick Example
 
 ```java
-// 创建 BulkloadStream
+// Create a BulkloadStream.
 BulkloadStream stream = client.newBulkloadStreamBuilder()
     .schema("public")
     .table("orders")
     .operate(RowStream.BulkLoadOperate.APPEND)
     .build();
 
-// 写入数据（列索引从 0 开始，顺序与建表 DDL 一致）
+// Write data. Column indexes start at 0 and must match the table DDL order.
 Row row = stream.createRow();
 row.setValue(0, "order-001");   // STRING
 row.setValue(1, 1);             // INT
 row.setValue(2, 299.99);        // DOUBLE
-stream.apply(row);              // ⚠️ 必须调用，否则数据不发送到服务端
+stream.apply(row);              // Required. Otherwise the row is not sent to the server.
 
-// 关闭并等待完成
+// Close and wait for completion.
 stream.close();
 while (stream.getState() == StreamState.RUNNING) {
     Thread.sleep(1000);
@@ -111,15 +112,15 @@ client.close();
 
 ---
 
-## RealtimeStream 快速示例
+## RealtimeStream Quick Example
 
 ```java
-// Options 调优
+// Options tuning.
 Options options = Options.builder()
-    .withMutationBufferLinesNum(10)  // 缓冲行数
+    .withMutationBufferLinesNum(10)  // Number of buffered rows.
     .build();
 
-// 创建 RealtimeStream（普通表，APPEND_ONLY）
+// Create a RealtimeStream for a regular table in APPEND_ONLY mode.
 RealtimeStream stream = client.newRealtimeStreamBuilder()
     .operate(RowStream.RealTimeOperate.APPEND_ONLY)
     .options(options)
@@ -127,7 +128,7 @@ RealtimeStream stream = client.newRealtimeStreamBuilder()
     .table("events")
     .build();
 
-// 写入数据（用列名，不用索引）
+// Write data by column name, not by index.
 Row row = stream.createRow(Stream.Operator.INSERT);
 row.setValue("id", 1);
 row.setValue("event", "{\"type\":\"click\"}");
@@ -135,26 +136,26 @@ stream.apply(row);
 stream.close();
 ```
 
-## RealtimeStream CDC 示例（主键表 UPSERT / DELETE）
+## RealtimeStream CDC Example for Primary-Key Tables
 
 ```java
-// 建表：CREATE TABLE orders (txid STRING NOT NULL PRIMARY KEY, amount DOUBLE, status STRING);
+// Table DDL: CREATE TABLE orders (txid STRING NOT NULL PRIMARY KEY, amount DOUBLE, status STRING);
 
 RealtimeStream stream = client.newRealtimeStreamBuilder()
-    .operate(RowStream.RealTimeOperate.CDC)   // 主键表必须用 CDC
+    .operate(RowStream.RealTimeOperate.CDC)   // Primary-key tables must use CDC.
     .options(options)
     .schema("public")
     .table("orders")
     .build();
 
-// UPSERT：存在则更新，不存在则插入
+// UPSERT: update an existing row or insert a new row.
 Row row = stream.createRow(Stream.Operator.UPSERT);
 row.setValue("txid", "order-001");
 row.setValue("amount", 299.99);
 row.setValue("status", "paid");
 stream.apply(row);
 
-// DELETE_IGNORE：删除，目标行不存在时自动忽略
+// DELETE_IGNORE: delete the row and ignore the operation if the target row does not exist.
 Row del = stream.createRow(Stream.Operator.DELETE_IGNORE);
 del.setValue("txid", "order-001");
 stream.apply(del);
@@ -164,23 +165,23 @@ stream.close();
 
 ---
 
-## 选择指南
+## Selection Guide
 
-| 场景 | 推荐接口 |
+| Scenario | Recommended interface |
 |---|---|
-| 定时批量 ETL（每小时/每天） | BulkloadStream |
-| Kafka 实时消费 | RealtimeStream |
-| 5 分钟以内高频写入 | RealtimeStream |
-| 主键表写入（UPSERT / DELETE） | RealtimeStream CDC 模式 |
+| Scheduled batch ETL, hourly or daily | BulkloadStream |
+| Kafka real-time consumption | RealtimeStream |
+| High-frequency writes under 5 minutes | RealtimeStream |
+| Primary-key table writes with UPSERT or DELETE | RealtimeStream CDC mode |
 
 ---
 
-## 使用限制
+## Usage Limits
 
-| 限制 | BulkloadStream | RealtimeStream |
+| Limit | BulkloadStream | RealtimeStream |
 |---|---|---|
-| 主键表 | ❌ 不支持 | ✅ CDC 模式支持 |
-| 高频写入（< 5 分钟） | ❌ 不适合 | ✅ 支持 |
-| 数据可见延迟 | 写完 close() 后可见 | ~1 分钟后可见 |
-| Table Stream/Dynamic Table 可见 | close() 后 | ~1 分钟后 |
-| 表结构变更 | 重建 Stream | 停止任务，变更后约 90 分钟重启 |
+| Primary-key tables | Not supported | Supported in CDC mode |
+| High-frequency writes under 5 minutes | Not recommended | Supported |
+| Data visibility latency | Visible after `close()` | Visible after about 1 minute |
+| Table Stream/Dynamic Table visibility | After `close()` | After about 1 minute |
+| Schema changes | Recreate the stream | Stop the task and restart about 90 minutes after the schema change |

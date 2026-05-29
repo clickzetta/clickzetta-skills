@@ -1,11 +1,11 @@
-# RealtimeStream 实时写入参考
+# RealtimeStream Real-Time Write Reference
 
-> 适合：Kafka 消费写入、高频实时数据接入（秒级可查）、主键表 CDC 写入
+> Best for: Kafka consumption and writes, high-frequency real-time ingestion with second-level queryability, and CDC writes to primary-key tables.
 
-## Maven 依赖
+## Maven Dependency
 
 ```xml
-<!-- 最新版本见 https://central.sonatype.com/artifact/com.clickzetta/clickzetta-java -->
+<!-- See https://central.sonatype.com/artifact/com.clickzetta/clickzetta-java for the latest version. -->
 <dependency>
     <groupId>com.clickzetta</groupId>
     <artifactId>clickzetta-java</artifactId>
@@ -18,23 +18,23 @@
 </dependency>
 ```
 
-## 使用限制
+## Usage Limits
 
-- 实时写入的数据可以秒级查询
-- table stream、dynamic table 需等待约 **1 分钟**才能看到写入数据
-- 表结构变更时，需停止任务，变更后约 **90 分钟**重新启动
+- Real-time written data can be queried within seconds.
+- Table Streams and Dynamic Tables need about **1 minute** before they can see the written data.
+- When the table schema changes, stop the task and restart it about **90 minutes** after the schema change.
 
-## 操作模式
+## Operation Modes
 
-| 模式 | 适用表 | 可用 Operator |
+| Mode | Target table | Available operators |
 |---|---|---|
-| `RealTimeOperate.APPEND_ONLY` | 普通表 | `Stream.Operator.INSERT` |
-| `RealTimeOperate.CDC` | 主键表 | `Stream.Operator.UPSERT`、`Stream.Operator.DELETE_IGNORE` |
+| `RealTimeOperate.APPEND_ONLY` | Regular table | `Stream.Operator.INSERT` |
+| `RealTimeOperate.CDC` | Primary-key table | `Stream.Operator.UPSERT`, `Stream.Operator.DELETE_IGNORE` |
 
-## 普通表写入（APPEND_ONLY）
+## Write to a Regular Table: APPEND_ONLY
 
 ```java
-// 推荐：显式参数方式（2.0.0+ 支持，不依赖 URL 解析）
+// Recommended: explicit parameters. Supported in 2.0.0+ and does not depend on URL parsing.
 ClickZettaClient client = ClickZettaClient.newBuilder()
     .service("cn-shanghai-alicloud.api.clickzetta.com")
     .instance("your_instance")
@@ -53,17 +53,17 @@ RealtimeStream stream = client.newRealtimeStreamBuilder()
     .table("events")
     .build();
 
-// ⚠️ RealtimeStream 用列名（不是索引）
+// RealtimeStream uses column names, not indexes.
 Row row = stream.createRow(Stream.Operator.INSERT);
 row.setValue("id", 1);
 row.setValue("event", "{\"type\":\"click\"}");
 stream.apply(row);
 ```
 
-## 主键表写入（CDC 模式）
+## Write to a Primary-Key Table: CDC Mode
 
 ```java
-// 建表（主键表）
+// Create a primary-key table.
 // CREATE TABLE orders (`txid` STRING PRIMARY KEY, `amount` DOUBLE, `status` STRING);
 
 RealtimeStream stream = client.newRealtimeStreamBuilder()
@@ -73,22 +73,22 @@ RealtimeStream stream = client.newRealtimeStreamBuilder()
     .table("orders")
     .build();
 
-// UPSERT：存在则更新，不存在则插入
+// UPSERT: update an existing row or insert a new row.
 Row row = stream.createRow(Stream.Operator.UPSERT);
 row.setValue("txid", "order-001");
 row.setValue("amount", 299.99);
 row.setValue("status", "paid");
 stream.apply(row);
 
-// DELETE_IGNORE：删除，目标行不存在时自动忽略
+// DELETE_IGNORE: delete the row and ignore the operation if the target row does not exist.
 Row delRow = stream.createRow(Stream.Operator.DELETE_IGNORE);
 delRow.setValue("txid", "order-001");
 stream.apply(delRow);
 ```
 
-## 完整示例：Kafka → Lakehouse
+## Complete Example: Kafka to Lakehouse
 
-### KafkaReader 类
+### KafkaReader Class
 
 ```java
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -119,7 +119,7 @@ public class KafkaReader {
 }
 ```
 
-### Kafka2Lakehouse 主类
+### Kafka2Lakehouse Main Class
 
 ```java
 import com.clickzetta.client.ClickZettaClient;
@@ -180,33 +180,33 @@ public class Kafka2Lakehouse {
 }
 ```
 
-## 关键 API
+## Key APIs
 
-| API | 说明 |
+| API | Description |
 |---|---|
-| `realtimeStream.createRow(Stream.Operator.INSERT)` | 普通表插入行 |
-| `realtimeStream.createRow(Stream.Operator.UPSERT)` | 主键表 upsert 行 |
-| `realtimeStream.createRow(Stream.Operator.DELETE_IGNORE)` | 主键表删除行 |
-| `row.setValue(String columnName, Object value)` | 按列名设值（不是索引） |
-| `realtimeStream.apply(row)` | 发送行到服务端 |
-| `Options.builder().withMutationBufferLinesNum(n)` | 设置缓冲行数（默认 10） |
+| `realtimeStream.createRow(Stream.Operator.INSERT)` | Create an insert row for a regular table. |
+| `realtimeStream.createRow(Stream.Operator.UPSERT)` | Create an upsert row for a primary-key table. |
+| `realtimeStream.createRow(Stream.Operator.DELETE_IGNORE)` | Create a delete row for a primary-key table. |
+| `row.setValue(String columnName, Object value)` | Set a value by column name, not by index. |
+| `realtimeStream.apply(row)` | Send the row to the server. |
+| `Options.builder().withMutationBufferLinesNum(n)` | Set the number of buffered rows. The default is 10. |
 
-## BulkloadStream vs RealtimeStream 对比
+## BulkloadStream vs RealtimeStream
 
-| 维度 | BulkloadStream | RealtimeStream |
+| Dimension | BulkloadStream | RealtimeStream |
 |---|---|---|
-| 列设值方式 | `setValue(int index, value)` | `setValue(String name, value)` |
-| URL 参数 | `virtualcluster=` | `vcluster=` |
-| createRow 参数 | 无参数 | `Stream.Operator.INSERT/UPSERT/DELETE_IGNORE` |
-| 适用频率 | 低频（≥5 分钟/批） | 高频（秒级） |
-| 数据可见延迟 | close() 后可见 | ~1 分钟后可见 |
-| 主键表 | ❌ | ✅ CDC 模式 |
+| Column value setter | `setValue(int index, value)` | `setValue(String name, value)` |
+| URL parameter | `virtualcluster=` | `vcluster=` |
+| `createRow` argument | No argument | `Stream.Operator.INSERT/UPSERT/DELETE_IGNORE` |
+| Suitable write frequency | Low frequency, >=5 minutes per batch | High frequency, second-level writes |
+| Data visibility latency | Visible after `close()` | Visible after about 1 minute |
+| Primary-key table support | Not supported | Supported in CDC mode |
 
-## 常见问题
+## FAQ
 
-| 问题 | 原因 | 解决方案 |
+| Issue | Cause | Solution |
 |---|---|---|
-| 连接失败 | URL 参数名错误 | RealtimeStream 用 `vcluster=`，不是 `virtualcluster=` |
-| 列名找不到 | 列名拼写错误 | 列名区分大小写，与建表 DDL 保持一致 |
-| 表结构变更后写入失败 | 旧 Stream 实例缓存了旧 schema | 停止任务，变更后等约 90 分钟再重启 |
-| dynamic table 看不到数据 | 实时写入有 ~1 分钟确认延迟 | 等待 1 分钟后再查询 |
+| Connection fails | Wrong URL parameter name | RealtimeStream uses `vcluster=`, not `virtualcluster=`. |
+| Column name not found | Column name is misspelled | Column names are case-sensitive and must match the table DDL. |
+| Writes fail after a schema change | The old Stream instance cached the old schema | Stop the task and restart it about 90 minutes after the schema change. |
+| Dynamic Table cannot see the data | Real-time writes have about 1 minute of confirmation latency | Query again after about 1 minute. |

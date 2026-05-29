@@ -34,7 +34,7 @@
 | 建模与计算 | [clickzetta-semantic-view](./clickzetta-semantic-view/) | Semantic View 语义层、逻辑表、维度、指标、过滤器和查询 |
 | SDK 与外部集成 | [clickzetta-app-python-sdk](./clickzetta-app-python-sdk/) | Python 应用 SDK：connector、BulkLoad、IGS 实时写入、SQLAlchemy |
 | SDK 与外部集成 | [clickzetta-zettapark](./clickzetta-zettapark/) | ZettaPark DataFrame API、Session、表读写、文件操作、SQL 执行 |
-| SDK 与外部集成 | [clickzetta-java-sdk](./clickzetta-java-sdk/) | Java SDK BulkloadStream 批量写入、RealtimeStream Kafka 实时写入 |
+| SDK 与外部集成 | [clickzetta-java-sdk](./clickzetta-java-sdk/) | Java SDK BulkloadStream batch writes and RealtimeStream Kafka real-time writes |
 | SDK 与外部集成 | [clickzetta-spark-flink-connector](./clickzetta-spark-flink-connector/) | Spark Connector 读写、Flink CDC/append-only 写入 |
 | SDK 与外部集成 | [clickzetta-bi-connect](./clickzetta-bi-connect/) | Superset、Tableau、Metabase、DBeaver、DataGrip、FineBI、PowerBI 连接 |
 | SDK 与外部集成 | [clickzetta-external-function](./clickzetta-external-function/) | External Function、Python/Java UDF、AI_COMPLETE、AI_EMBEDDING |
@@ -225,9 +225,9 @@ ZettaPark Python DataFrame API 使用指南。ZettaPark 提供类 pandas 的开�
 
 #### [clickzetta-java-sdk](./clickzetta-java-sdk/)
 
-ClickZetta Java SDK 数据写入指南，覆盖 BulkloadStream 和 RealtimeStream 两种接口。BulkloadStream 适合本地文件或数据库批量上传，RealtimeStream 适合 Kafka 实时消费写入。
+ClickZetta Java SDK data write guide covering the BulkloadStream and RealtimeStream interfaces. BulkloadStream is best for local file or database batch uploads, while RealtimeStream is best for Kafka real-time consumption and writes.
 
-包含 Maven 依赖、JDBC URL 参数、行写入 API、状态监控、Options 调优和常见错误处理。
+Includes Maven dependencies, JDBC URL parameters, row write APIs, status monitoring, Options tuning, and common error handling.
 
 #### [clickzetta-spark-flink-connector](./clickzetta-spark-flink-connector/)
 

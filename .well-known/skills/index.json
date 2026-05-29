@@ -137,7 +137,7 @@
     },
     {
       "name": "clickzetta-java-sdk",
-      "description": "使用 ClickZetta Java SDK 将数据批量或实时写入 Lakehouse 表。",
+      "description": "Use the ClickZetta Java SDK to write data to Lakehouse tables in batch or in real time.",
       "files": [
         "SKILL.md",
         "references/bulkload.md",
