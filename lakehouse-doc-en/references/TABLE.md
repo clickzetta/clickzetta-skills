@@ -1,10 +1,12 @@
 # Table
 
-In Singdata Lakehouse, a Table is the basic unit for storing data and is the core structure for organizing data. Lakehouse tables use columnar storage, which is highly efficient for processing analytical queries because it allows queries to read only the required column data instead of entire rows. This storage structure is particularly suitable for data warehousing and big data analytics scenarios, significantly improving data processing speed.
+Table DDL commands are used to create, modify, query, and delete regular tables in a workspace.
+
+---
 
 ## Table Types
 
-Lakehouse provides multiple table types for different scenarios:
+Singdata Lakehouse provides multiple table types. Use the following comparison when choosing:
 
 | Table Type | Description | Use Case |
 |---|---|---|
@@ -16,64 +18,166 @@ Lakehouse provides multiple table types for different scenarios:
 
 ## Storage Format
 
-Lakehouse tables use the **Parquet** columnar storage format by default, offering the following advantages:
+Regular tables use **Parquet** columnar storage by default, with the following advantages:
 
-- **Efficient compression**: Columnar storage keeps same-type data contiguous, achieving high compression ratios
-- **Query optimization**: Only reads the columns required by the query, reducing I/O
-- **Schema evolution**: Supports adding columns, changing column types, and other schema changes
+- **Columnar storage**: reads only the columns involved in the query, reducing I/O
+- **Efficient compression**: saves 50%–80% storage space compared to row-based storage
+- **Vectorized execution**: combined with the Lakehouse execution engine, aggregation and filter performance is better
 
 ## Table Constraints
 
-Table constraints ensure the integrity and accuracy of data in the table. Lakehouse supports the following constraints:
-
 ### NOT NULL
 
-The **NOT NULL** constraint ensures that values in a column cannot be NULL. This is set at table creation time, and once set, the constraint cannot be removed to ensure the column always has valid data.
+Add `NOT NULL` to a column definition; the system validates that the column cannot be empty on write.
+
+```SQL
+CREATE TABLE orders (
+  order_id BIGINT NOT NULL,
+  amount   DECIMAL(10, 2) NOT NULL,
+  note     STRING  -- nullable
+);
+```
 
 ### PRIMARY KEY
 
-The **PRIMARY KEY** is used to ensure the uniqueness of each record in the table. In big data scenarios, checking every key one by one to guarantee data uniqueness is impractical and inefficient due to the typically massive data volumes, so using primary key constraints is generally not recommended in big data environments. However, Lakehouse still provides primary key support to meet data integrity requirements in specific scenarios. In the Lakehouse architecture, when a table with a defined primary key receives real-time data writes, the system automatically deduplicates based on the primary key values, which is especially important for Change Data Capture (CDC) scenarios. For example, you can synchronize MySQL binlog logs to Lakehouse in real time to ensure data consistency. After setting the primary key, you need to process data through the [Real-time Data Interface](java_reference/realtime-upload.md). During CDC real-time writes, the system automatically deduplicates based on the primary key to maintain data accuracy and integrity.
+The primary key constraint has two behavior modes; understand the differences when choosing:
 
-#### Lakehouse Primary Key Support and Default Behavior
+| Mode | Syntax | Deduplication Scope | Use Case |
+|---|---|---|---|
+| `ENABLE VALIDATE RELY` (default) | `PRIMARY KEY (col)` | Both SQL writes and real-time writes deduplicate | General scenarios |
+| `DISABLE NOVALIDATE RELY` | `PRIMARY KEY (col) DISABLE NOVALIDATE RELY` | Only real-time writes deduplicate; SQL writes are not checked | Tables written only via CDC real-time sync |
 
-Lakehouse supports two ways of directly specifying a primary key, and by default, its behavior is set to `ENABLE VALIDATE RELY`. This means that when you specify a primary key at table creation without explicitly specifying other behaviors, the system automatically enables primary key validation and dependency.
+```SQL
+-- Default mode: both SQL writes and real-time writes perform primary key deduplication
+CREATE TABLE customers (
+  customer_id BIGINT PRIMARY KEY,
+  name        STRING,
+  updated_at  TIMESTAMP
+);
 
-Under this default behavior, whether for real-time writes or SQL-based data writes, the system performs deduplication based on the defined primary key. If an attempt is made to insert a record with a duplicate primary key value, the system will reject the insert operation to ensure primary key uniqueness. For example:
-
-```sql
-create table test_primary(id int primary key,name string);
-desc extended test_primary;
-insert into test_primary values(1,"1");
-insert into test_primary values(2,"1");
--- Insert succeeds because primary key values 1 and 2 are not duplicates
-insert into test_primary values(1,"1");
--- Insert fails because primary key value 1 already exists
-select * from test_primary;
+-- DISABLE NOVALIDATE RELY: only real-time writes deduplicate; SQL writes do not check primary key uniqueness
+-- Suitable for tables written only via CDC real-time sync, not via INSERT SQL
+CREATE TABLE customers_cdc (
+  customer_id BIGINT,
+  name        STRING,
+  updated_at  TIMESTAMP,
+  PRIMARY KEY (customer_id) DISABLE NOVALIDATE RELY
+);
 ```
 
-As shown above, under the default `ENABLE VALIDATE RELY` mode, the system strictly enforces primary key uniqueness, performing primary key conflict checks for both single-record and batch inserts.
+> ⚠️ **Note**: When using `DISABLE NOVALIDATE RELY`, inserting duplicate primary keys via INSERT SQL will not raise an error and will not auto-deduplicate. Only real-time sync (CDC) writes trigger deduplication logic.
 
-#### Custom Primary Key Behavior
+---
 
-If, based on actual business needs, you want deduplication to be performed only by the real-time write mechanism and not by SQL writes when inserting data, you can achieve this by setting the primary key behavior to `disable NOVALIDATE RELY`. Here is an example:
+## This Chapter
 
-```sql
-create table test_primary_di(id int primary key disable NOVALIDATE RELY ,name string);
-insert into test_primary_di values(1,"1");
-insert into test_primary_di values(2,"1");
--- Insert succeeds, primary key check performed as expected
-insert into test_primary_di values(1,"1");
--- Insert succeeds because in disable NOVALIDATE RELY mode, SQL writes do not perform primary key deduplication
+| Page | Description |
+|------|-------------|
+| [CREATE TABLE](create-table-ddl.md) | Create a regular table with options for partitioning, bucketing, primary keys, and identity columns |
+| [Partition](partition_table.md) | Partition by time or other fields to accelerate partition pruning |
+| [Bucket](cluster-table.md) | Hash-bucket by column values to optimize JOIN and aggregation |
+| [Primary Key](primary-key.md) | Define primary key constraints for CDC real-time deduplication writes |
+| [Identity Column](IDENTITY-Column.md) | Columns that auto-generate unique incrementing integer values |
+| [Generated Column](generated-column.md) | Columns automatically computed from expressions on other columns |
+| [Default Value](default-value.md) | Default value definition when a column value is not specified on insert |
+| [CREATE...CLONE](clone-doc.md) | Quickly clone table structure (and optionally data) into a new table |
+| [ALTER TABLE](alter-table.md) | Modify table properties such as renaming, adding/modifying columns, and setting lifecycle |
+| [ALTER TABLE COLUMN](alter-table-column.md) | Add, rename, modify column types, or drop columns |
+| [DROP TABLE](drop-table.md) | Delete a table and its data |
+| [RESTORE TABLE](restore.md) | Roll back a table to a historical version |
+| [UNDROP TABLE](UNDROP-TABLE.md) | Recover a deleted table (within the data retention period) |
+| [DESC TABLE](desc-table.md) | View a table's column definitions, types, and constraints |
+| [DESC HISTORY TABLE](desc-history-table.md) | View a table's list of historical versions |
+| [SHOW TABLES](show-tables.md) | List all tables under the current schema |
+| [SHOW COLUMNS](show-columns.md) | List all column information for a table |
+| [SHOW CREATE TABLE](show-create-table.md) | View the table creation statement |
+| [SHOW PARTITIONS](list-partition.md) | List all partitions of a partitioned table |
+| [SHOW TABLES HISTORY](show-tables-history.md) | List deleted tables (available for UNDROP) |
+| [ANALYZE TABLE](analyze-table.md) | Collect table statistics to help the optimizer generate better execution plans |
+| [OPTIMIZE](OPTIMIZE.md) | Merge small files to improve query performance |
+
+---
+
+## Common Operations
+
+### Create Table
+
+```SQL
+-- Basic table creation
+CREATE TABLE IF NOT EXISTS public.orders (
+  order_id   BIGINT,
+  customer_id BIGINT,
+  amount     DECIMAL(10, 2),
+  status     STRING,
+  created_at TIMESTAMP
+);
+
+-- With partitioning (partition by day, recommended for time-series data)
+CREATE TABLE IF NOT EXISTS public.events (
+  event_id   BIGINT,
+  event_type STRING,
+  user_id    BIGINT,
+  created_at TIMESTAMP
+) PARTITIONED BY (days(created_at));
+
+-- With primary key (CDC real-time write scenario)
+CREATE TABLE IF NOT EXISTS public.customers (
+  customer_id BIGINT PRIMARY KEY,
+  name        STRING,
+  email       STRING,
+  updated_at  TIMESTAMP
+);
 ```
 
-Note that in `disable NOVALIDATE RELY` mode, although real-time writes still deduplicate based on the primary key, SQL-based write operations are not subject to primary key uniqueness constraints, which may lead to duplicate primary keys in the data. Therefore, when choosing this mode, you need to carefully consider and manage the source and method of data writes to avoid potential data quality issues.
+### Modify Table
+
+```SQL
+-- Add column
+ALTER TABLE public.orders ADD COLUMN discount DECIMAL(5, 2);
+
+-- Rename table
+ALTER TABLE public.orders RENAME TO public.orders_v2;
+
+-- Set data retention period (days)
+ALTER TABLE public.orders SET data_retention_days = 7;
+```
+
+### View Table
+
+```SQL
+-- View table structure
+DESC TABLE public.orders;
+
+-- View table creation statement
+SHOW CREATE TABLE public.orders;
+
+-- List all tables
+SHOW TABLES;
+
+-- View partition list
+SHOW PARTITIONS public.events;
+```
+
+### Delete and Restore
+
+```SQL
+-- Delete table
+DROP TABLE IF EXISTS public.temp_orders;
+
+-- Restore deleted table
+UNDROP TABLE public.temp_orders;
+
+-- Roll back table to historical version
+RESTORE TABLE public.orders TO TIMESTAMP AS OF '2024-01-15 00:00:00';
+```
+
+---
 
 ## Related Documents
 
-- [Create Table](create-table-ddl.md)
-- [ALTER TABLE](alter-table.md)
-- [DROP TABLE](drop-table.md)
-- [Dynamic Table](dynamic-table-introduce.md)
-- [Materialized View](MATERIALIZEDVIEW.md)
-- [View](VIEW.md)
-- [External Table](external-table-guide.md)
+| Document | Description |
+|----------|-------------|
+| [SQL Commands Overview](sql-commands.md) | Categorized navigation for all SQL commands |
+| [Regular Table (Object Model)](om-table.md) | Table storage format, type selection, and best practices |
+| [COPY INTO (Import)](copy-into-table.md) | Batch import data from Volume or external storage |
+| [Time Travel Guide](time_travel_guide.md) | Historical data queries and table rollback operations |

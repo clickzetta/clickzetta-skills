@@ -21,7 +21,7 @@ A BloomFilter index is an efficient data structure used to quickly determine whe
 
 For example, when executing a query such as `SELECT * FROM table WHERE col_name = 'xxx'`, the BloomFilter will first determine whether the target data file contains the value. If it does not, the system will skip the file, avoiding unnecessary reads. If the index indicates that the file might contain the target data, the file will be read for further querying.
 
-The BloomFilter index is effective in the following operations: `AND`, `OR`, `IN`, `=`. It is important to note that after creating a BloomFilter index, only newly written data will include the index. For old data, it is recommended to use the `INSERT OVERWRITE` statement to rewrite the data and add the index.
+The BloomFilter index is effective in the following operations: `AND`, `OR`, `IN`, `=`. It is important to note that after creating a BloomFilter index, only newly written data will include the index. For existing data, use `BUILD INDEX` to backfill the index.
 
 ### Specific Use Cases for Bloom Filter
 

@@ -13,18 +13,27 @@ This method allows for easy execution of SQL and file uploads. One way to load d
 #### Implementation Steps
 
 Open VS Code on your computer, create a file named [py\_zettapark\_sql\_insert.py ](https://github.com/yunqiqiliang/clickzetta_quickstart/blob/main/a_comprehensive_guide_to_ingesting_data_into_clickzetta/py_zettapark_sql_insert.py), and copy the following code into the py\_zettapark\_sql\_insert.py file.
+
 ```JSON
 import json,gzip
 from clickzetta.zettapark.session import Session
 from datetime import datetime
 
-# Read parameters from the configuration file
+```
+
+Read parameters from the configuration file:
+
+```JSON
 with open('config-ingest.json', 'r') as config_file:
     config = json.load(config_file)
 
 print("Connecting to Singdata Lakehouse.....\n")
 
-# Create session
+```
+
+Create session:
+
+```JSON
 session = Session.builder.configs(config).create()
 
 print("Connection successful!...\n")
@@ -53,7 +62,7 @@ session.sql(create_target_table_query).collect()
 
 def save_to_clickzetta(session, message):
     record = json.loads(message)
-    print('inserting record to Clickzetta Lakehouse')
+    print('inserting record to Singdata Lakehouse')
 
     # Convert date and time fields
     purchase_time = datetime.strptime(record['purchase_time'], '%Y-%m-%d %H:%M:%S')
@@ -88,14 +97,19 @@ if __name__ == "__main__":
     print("Ingest complete")
 
 ```
+
 In VS Code, open a new "Terminal" and run the following command to activate the Python environment created in the "Environment Setup" step. If you are already in the cz-ingest-examples environment, please skip this step.
+
 ```Shell
 conda activate cz-ingest-examples
 ```
+
 Then run the following command in the same terminal:
+
 ```Shell
 python py_zettapark_sql_insert.py
 ```
+
 #### Next Steps Recommendations
 
 Optimization: This is not an efficient method for loading large amounts of data. You can improve performance by increasing task concurrency and inserting multiple records with each INSERT INTO.

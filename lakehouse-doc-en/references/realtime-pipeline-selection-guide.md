@@ -91,7 +91,7 @@ Files that are too small increase scheduling overhead; files that are too large 
 | Suitable Scenario | Latency-sensitive, files need to be preserved | Low latency requirement, file deletion acceptable |
 | Cloud Provider Support | Alibaba Cloud OSS, AWS S3 | All object storage |
 
-> **Note**: LIST_PURGE mode deletes source files after successful import. Confirm that your scenario allows deletion of original files before using this mode.
+> ⚠️ **Note**: LIST_PURGE mode deletes source files after successful import. Confirm that your scenario allows deletion of original files before using this mode.
 
 ---
 

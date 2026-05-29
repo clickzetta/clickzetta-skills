@@ -1,4 +1,4 @@
-### groupArray Function
+# groupArray Function
 ```sql
 groupArray([DISTINCT] expr [, limit]) [FILTER (WHERE condition)]
 

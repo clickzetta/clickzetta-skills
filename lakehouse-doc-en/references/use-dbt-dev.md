@@ -4,7 +4,7 @@
 
 # Preparation
 
-1. Install DBT and ClickZetta Lakehouse plugin
+1. Install DBT and Singdata Lakehouse plugin
 ```PowerShell
 pip install dbt-core
 ```
@@ -24,7 +24,7 @@ Which database would you like to use?
 (Don't see the one you want? https://docs.getdbt.com/docs/available-adapters)
 
 Enter a number: 1
-base_url (https://singdata.com): uat-api.sindata.com
+base_url (https://singdata.com): api.singdata.com
 workspace (dev workspace): ql_ws
 instance_name (dev instance name): jnsxwfyr
 vc_name (vc name): default
@@ -37,7 +37,7 @@ Your new dbt project "cz_dbt_project" was created!
 
 $ cd cz_dbt_project
 ```
-4. Configure ClickZetta dbt project profiles
+4. Configure Singdata dbt project profiles
 
 Open and edit the `~/.dbt/profiles.yml` file, and add the production environment configuration. Refer to the following content:
 ```PowerShell
@@ -63,9 +63,8 @@ cz_dbt_project:
       schema: dbt_dev
       vcluster: default
 ```
-```markdown
 5. Verify Configuration
-```
+
 ```PowerShell
 $ dbt debug
 

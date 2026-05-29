@@ -7,7 +7,7 @@ Notes
 * **Default Filename**: When exporting from Lakehouse, the default filename is the same. Therefore, if you run the export operation multiple times and specify the same subdirectory (SUBDIRECTORY), the new file will overwrite the previously exported file.
 * **Avoid Overwriting**: To prevent accidentally overwriting existing files, make sure to use a unique filename or subdirectory each time you export.
 
-# Syntax
+## Syntax
 ```SQL
 ---Syntax
 COPY INTO { VOLUME external_volume_name | TABLE VOLUME table_name  | USER VOLUME }  
@@ -45,7 +45,7 @@ SHOW  USER VOLUME DIRECTORY  SUBDIRECTORY 'dau_unload/';
 +--------------------------+-------------------------------------------------------------------------------------------------------------------+------+---------------------+
 |      relative_path       |                                                        url                                                        | size | last_modified_time  |
 +--------------------------+-------------------------------------------------------------------------------------------------------------------+------+---------------------+
-| dau_unload/part00001.csv | oss://lakehouse-hz-uat/86/workspaces/qingyun_6552637055735457988/internal_volume/user_13/dau_unload/part00001.csv | 105  | 2024-12-27 16:52:06 |
+| dau_unload/part00001.csv | oss://lakehouse-hz-uat/86/workspaces/example_6552637055735457988/internal_volume/user_13/dau_unload/part00001.csv | 105  | 2024-12-27 16:52:06 |
 +--------------------------+-------------------------------------------------------------------------------------------------------------------+------+---------------------+
 --Delete files in user volume
 REMOVE  VOLUME my_volume  FILE 'dau_unload/part00001.csv'
@@ -58,7 +58,7 @@ SHOW  TABLE VOLUME  DIRECTORY  birds SUBDIRECTORY 'dau_unload/';
 +--------------------------+-------------------------------------------------------------------------------------------------------------------------------------+------+---------------------+
 |      relative_path       |                                                                 url                                                                 | size | last_modified_time  |
 +--------------------------+-------------------------------------------------------------------------------------------------------------------------------------+------+---------------------+
-| dau_unload/part00001.csv | oss://lakehouse-hz-uat/86/workspaces/qingyun_6552637055735457988/internal_volume/table_6808843871866704121/dau_unload/part00001.csv | 105  | 2024-12-27 16:57:54 |
+| dau_unload/part00001.csv | oss://lakehouse-hz-uat/86/workspaces/example_6552637055735457988/internal_volume/table_6808843871866704121/dau_unload/part00001.csv | 105  | 2024-12-27 16:57:54 |
 +--------------------------+-------------------------------------------------------------------------------------------------------------------------------------+------+---------------------+
 --Delete files in table volume
 REMOVE TABLE VOLUME birds  FILE 'dau_unload/part00001.csv';
@@ -203,7 +203,7 @@ include_job_id = 'TRUE' ;
 -- Default export to data.csvCOPY INTO USER VOLUME SUBDIRECTORY 'export_single/'FROM TABLE birdsfile_format = (type = CSV)single = true;-- Verify resultSHOW USER VOLUME DIRECTORY SUBDIRECTORY 'export_single/';
 ```
 
-#  Example
+##  Example
 
 **Export data to user volume**
 ```SQL

@@ -1,4 +1,4 @@
-### CURRENT_WORKSPACE 
+# CURRENT_WORKSPACE 
 
 #### Description
 The `CURRENT_WORKSPACE` function is used to obtain the name of the workspace to which the current database session is connected. This function does not require any parameters and returns a string representing the name of the workspace that the current session is operating on.

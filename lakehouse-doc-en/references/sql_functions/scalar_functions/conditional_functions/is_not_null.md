@@ -21,7 +21,7 @@ SELECT is_not_null(NULL);     -- Returns false
 2. Check if the string is not null
 ```sql
 SELECT is_not_null('hello');  -- Returns true
-SELECT is_not_null('');       -- Returns false
+SELECT is_not_null('');       -- Returns true
 ```
 3. Check if the date is not null
 ```sql

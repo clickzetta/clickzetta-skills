@@ -15,6 +15,12 @@ Singdata Lakehouse supports creating dependencies across workspaces. You can con
 * When the dependent node is not online, the downstream node cannot go online.
 * If the current node is dependent on by other tasks, and the downstream periodic scheduling task of this node is in normal scheduling, the current node is not allowed to go offline directly.
 
+## Dependency Configuration Entry
+
+![](.topwrite/assets/image_1756107294537.png)
+After entering a specific task, click "Scheduling" in the task toolbar to open the scheduling configuration dialog.
+Click "Scheduling Dependencies" to select dependent tasks and configure dependency strategies and other behaviors.
+
 ## Explanation of Instance Dependencies
 
 Singdata Lakehouse supports three types of scheduling tasks: minute, hour, and day, which can depend on each other. Different scheduling types have different task execution cycles. When a periodic task runs, the downstream periodic instance will depend on the upstream periodic instance.
@@ -57,7 +63,7 @@ Note: Once the downstream task is mounted with dependencies, two conditions must
 | Minute Task B depends on Hourly Task A | Task A: Interval from 00:15 to 00:59, generate an instance every 1 hour. A total of 1 instance is generated, with the first instance at 00:15. Task B: Interval from 00:08 to 01:59, generate an instance every 10 minutes. A total of 12 instances are generated, with the first instance at 00:08. | ![](.topwrite/assets/7b129dadfb/809a2068b534db2d520a5f2fd421136cfdc17f22.jpeg) |
 | Minute Task B Depends on Minute Task A | Task A: 00:38-01:59 interval, generates an instance every 20 minutes. A total of 4 instances are generated, with the first instance at 00:38. Task B: 00:00-01:59 interval, generates an instance every 10 minutes. A total of 12 instances are generated, with the first instance at 00:00.         | ![](.topwrite/assets/7b129dadfb/02eb9c9b349e305232f514e8d917769c9403d98c.jpeg) |
 
-Frequently Asked Questions
+## Frequently Asked Questions
 
 Q1: In the periodic task process submitted to the production environment, after finding an instance running error at a certain node, why does the erroneous instance still exist after taking the task offline and replacing it with another task for resubmission?
 

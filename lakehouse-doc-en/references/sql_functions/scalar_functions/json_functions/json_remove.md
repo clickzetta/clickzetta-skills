@@ -1,37 +1,39 @@
-### JSON_REMOVE
-```sql
-json_remove(jsonObj, jsonPath)
+# JSON_REMOVE
+
+## Overview
+
+Removes the element at the specified path from a JSON object and returns the resulting JSON. If the path does not exist, the original JSON is returned without error.
+
+> ⚠️ **Note**: `<path>` does not support wildcards.
+
+## Syntax
+
+```Plain
+JSON_REMOVE(<json_obj>, <path>)
 ```
 
-#### Function
-Removes elements that match the `jsonPath` from the `jsonObj` and returns the remaining elements.
-- `jsonPath` does not support wildcards.
-- If the `jsonPath` does not exist, the original `jsonObj` is returned.
+## Parameters
 
-#### Parameters
-- `jsonObj`: json
-- `jsonPath`: string
+- `<json_obj>`: JSON type, the source JSON object. Typically used together with `PARSE_JSON()`.
+- `<path>`: STRING type, a JSONPath expression such as `$.key` or `$.a.b`. Wildcards are not supported; if the path does not exist, the original JSON is returned.
 
-#### Return Value
-- json
+## Examples
 
-#### Example
 ```sql
-> SELECT parse_json(j), json_remove(parse_json(j), '$.b'), json_remove(parse_json(j), '$.b.c')
-FROM VALUES
-('{}'),
-('{"a":1}'),
-('{"a":2, "b":"y"}'),
-('{"a":3, "b":{"c":"x"}}'),
-('{"b":"y"}'),
-(NULL),
-('{"c":3}')
-AS t(j);
-{}      {}      {}
-{"a":1} {"a":1} {"a":1}
-{"a":2,"b":"y"} {"a":2} {"a":2,"b":"y"}
-{"a":3,"b":{"c":"x"}}   {"a":3} {"a":3,"b":{}}
-{"b":"y"}       {}      {"b":"y"}
-NULL    NULL    NULL
-{"c":3} {"c":3} {"c":3}
+SELECT json_remove(parse_json('{"a":2, "b":"y"}'), '$.b');
+-- {"a":2}
+
+SELECT json_remove(parse_json('{"a":3, "b":{"c":"x"}}'), '$.b.c');
+-- {"a":3,"b":{}}
+
+SELECT json_remove(parse_json('{"a":1}'), '$.z');
+-- {"a":1}
+
+SELECT json_remove(NULL, '$.a');
+-- NULL
 ```
+
+## Related Documentation
+
+- [PARSE_JSON](parse_json.md) — Parse a string into a JSON object
+- [JSON_EXTRACT](json_extract.md) — Extract the value at a specified path from JSON

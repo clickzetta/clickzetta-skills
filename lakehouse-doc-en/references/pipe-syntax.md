@@ -138,7 +138,7 @@ DESC PIPE EXTENDED kafka_pipe_stream;
 | last_modified_time | 2025-03-05 10:40:55.405                             |
 | comment            |                                                     |
 | properties         | ((virtual_cluster,test_alter))                      |
-| copy_statement     | COPY INTO TABLE qingyun.pipe_schema.sink_table ...  |
+| copy_statement     | COPY INTO TABLE example.pipe_schema.sink_table ...  |
 | pipe_status        | RUNNING                                             |
 | output_name        | workspace.pipe_schema.sink_table                    |
 | input_name         | kafka_table_stream:workspace.pipe_schema.stream1    |

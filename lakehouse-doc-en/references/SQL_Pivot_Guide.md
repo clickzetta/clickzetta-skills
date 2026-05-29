@@ -323,7 +323,7 @@ DROP TABLE IF EXISTS doc_pivot_wide;
 DROP TABLE IF EXISTS doc_pivot_tags;
 ```
 
-> **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
+> 💡 **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
 
 ***
 

@@ -37,11 +37,11 @@ jdbc:mysql://ap-southeast-1-aws-mysql.api.singdata.com:3306/public?useSSL=false
 
 Port: 3306 Optional
 
-# Usage Scenarios
+## Usage Scenarios
 
 * Unable to use Lakehouse driver scenarios, such as some report scenarios that do not support custom JDBC drivers or do not support Lakehouse native JDBC drivers. If the Lakehouse native driver can be used, use it as much as possible.
 
-# Usage Restrictions
+## Usage Restrictions
 
 * Currently unable to fully support MySQL functions and syntax, some MySQL-specific syntax and functions in some reports will cause errors when sent to Lakehouse (please contact Lakehouse support).
 * Data type restrictions
@@ -56,7 +56,7 @@ Port: 3306 Optional
   * Using the MySQL driver does not support Lakehouse local commands ([COPY LOCAL file](copy.md), [PUT](PUT.md), [REMOVE](remove-volume.md), [GET](GET.md), etc.), and does not support using the MySQL driver to call Lakehouse's Java SDK for bulk upload and real-time upload of data.
 * When MySQL lists the table structure, it needs to query the information schema. Currently, there is a 15-minute delay for newly created tables in the information schema in Lakehouse, so newly created tables cannot be seen immediately.
 
-# Connection Method
+## Connection Method
 
 ## 1. Set up the computing cluster
 
@@ -103,7 +103,7 @@ Port: 3306
 * Database Name: The schema name of Lakehouse
 * Port: 3306 optional
 
-# General BI Report Configuration Parameters
+## General BI Report Configuration Parameters
 
 **Connection Tool**
 
@@ -143,7 +143,7 @@ If the report does not support filling in parameters
 * The useSSL option can be selected in the report interface if SSL needs to be used
   If using the 5.x version driver, it does not need to be selected
 
-# Common Issues
+## Common Issues
 
 * Unable to specify computing resources
 
@@ -154,7 +154,7 @@ If the report does not support filling in parameters
     show users;
   ```
 
-# Troubleshooting
+## Troubleshooting
 
 Troubleshoot issues through lakehouse job history. After connecting via the MySQL protocol, the MySQL connection to Lakehouse usually sends some SQL, and the job history will record the sent SQL. At this point, we can view the sent SQL through the job history to see the error information. Quickly locate through filtering, with the following three filtering conditions:
 
@@ -165,7 +165,7 @@ Troubleshoot issues through lakehouse job history. After connecting via the MySQ
 
   ![](.topwrite/assets/image_1739867274817.png)
 
-# Case
+## Case
 
 * Using MySQL client connection
 

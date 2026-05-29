@@ -1,1 +1,1 @@
-^
+# Connect to Lakehouse

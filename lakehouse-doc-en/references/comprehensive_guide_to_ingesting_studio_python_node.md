@@ -23,13 +23,18 @@ Task Name: 05_Loading Files from the Web into the Lakehouse via Studio's Built-i
 ##### Develop Python Task Code
 
 Paste the [following code](https://github.com/yunqiqiliang/clickzetta_quickstart/blob/main/a_comprehensive_guide_to_ingesting_data_into_clickzetta/py_data_to_datalake_from_web_by_python_node.py) into the code editor of the newly created Python task:
+
 ```Python
 import os,io
 import subprocess
 from datetime import datetime, timedelta
 import oss2
 
-# Alibaba Cloud OSS configuration
+```
+
+Alibaba Cloud OSS configuration:
+
+```Python
 ACCESS_KEY_ID = '${ak}'
 ACCESS_KEY_SECRET = '${sk}'
 BUCKET_NAME = 'yourbucketname'
@@ -70,6 +75,7 @@ if file_obj:
         # Close the in-memory file object
         file_obj.close()
 ```
+
 ##### Configure Parameters for the Task
 
 There are two parameters:
@@ -98,12 +104,10 @@ Log in to Alibaba Cloud Object Storage to view the uploaded files.
 
 #### Next Steps
 
-* Schedule Python tasks to achieve periodic data lake ingestion
-* Analyze the files loaded into the data lake using SQL
-* Form a complete ELT workflow with other tasks
+* Schedule Python tasks to achieve periodic data lake ingestion.
+* Analyze the files loaded into the data lake using SQL.
+* Form a complete ELT workflow with other tasks.
 
 #### Resources
 
-[Studio Python Task Node](Python_Task.md)
-
-^
+[Studio Python Task Node](python-task.md)

@@ -50,7 +50,7 @@ CONNECTION hive_catalog_conn;
 * `hive_prod`: The name of the external Catalog in Lakehouse.
 * `hive_catalog_conn`: A pre-created Catalog Connection containing HMS address and authentication information.
 
-> **Tip**: Upon successful creation, Hive Databases are mapped as External Schemas, and Hive Tables are mapped as External Tables.
+> 💡 **Tip**: Upon successful creation, Hive Databases are mapped as External Schemas, and Hive Tables are mapped as External Tables.
 
 ***
 
@@ -91,7 +91,7 @@ SHOW CATALOGS;
 | quick_start | 2025-01-15 10:27:21 | MANAGED |
 | ... | ... | ... |
 
-> **Note**: `category = 'EXTERNAL'` indicates a federated catalog created via `CREATE EXTERNAL CATALOG`.
+> ⚠️ **Note**: `category = 'EXTERNAL'` indicates a federated catalog created via `CREATE EXTERNAL CATALOG`.
 
 ```sql
 -- View Schemas under an external Catalog
@@ -114,7 +114,7 @@ Use `DROP CATALOG` to remove an external catalog mapping.
 DROP CATALOG IF EXISTS hive_prod;
 ```
 
-> **Tip**: Dropping an external Catalog only removes the metadata mapping in Lakehouse; it does not affect the actual data in the external data source.
+> 💡 **Tip**: Dropping an external Catalog only removes the metadata mapping in Lakehouse; it does not affect the actual data in the external data source.
 
 ***
 

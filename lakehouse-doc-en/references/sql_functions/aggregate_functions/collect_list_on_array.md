@@ -1,4 +1,4 @@
-### Collect List on Array Function: COLLECT_LIST_ON_ARRAY
+# Collect List on Array Function: COLLECT_LIST_ON_ARRAY
 
 ```
 collect_list_on_array([DISTINCT] array [, limit])

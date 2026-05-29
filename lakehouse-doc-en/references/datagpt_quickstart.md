@@ -76,7 +76,7 @@ Keep other options as default. Click **Confirm** to create the analysis domain.
 
 ^
 
-> Note: In the file parsing interface, there is a mandatory verification requirement: all files displayed with gray dots must click the file name and confirm to display green before clicking the "Next" button to proceed to the next steps.
+> ⚠️ **Note**: In the file parsing interface, there is a mandatory verification requirement: all files displayed with gray dots must click the file name and confirm to display green before clicking the "Next" button to proceed to the next steps.
 >
 > ![](.topwrite/assets/20250218-201423.jpeg =703)
 

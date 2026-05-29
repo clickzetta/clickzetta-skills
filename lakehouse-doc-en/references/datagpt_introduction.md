@@ -8,6 +8,33 @@ Analytics Agent is a next-generation agentic analysis assistant built on cloud-n
 
 ^
 
+## When to Use Analytics Agent
+
+| Scenario | Suitable? |
+| ---------------------------------------------------- | ------------------------------------ |
+| Business users querying data and viewing trends via natural language | ✅ Core use case |
+| Quickly generating AI dashboards without writing SQL | ✅ |
+| Automatic anomaly detection and alerting | ✅ |
+| Precise SQL logic control, complex ETL | ❌ Use Studio SQL tasks |
+| Vector search / RAG Q&A | ❌ Use vector search + AI functions |
+
+## Quick Start
+
+**① Activate the service** (1 min)
+
+Find the Analytics Agent product card on the management center homepage and click "Free Activation". New users are recommended to check "Also activate a Lakehouse instance as the default data source" — the system will automatically configure sample data.
+
+**② Try with sample data** (5 min)
+
+Go to the product homepage, find the analysis domain marked "Sample", click "Start Analysis", and ask questions in natural language:
+- "What is the average second-hand housing price by district?"
+- "Which district has the highest listing volume?"
+- "Generate a housing price trend dashboard for me"
+
+**③ Connect your own data** (as needed)
+
+Add a data source (supports uploading Excel/CSV files or connecting Lakehouse data tables) → Create an analysis domain → Configure the semantic layer (business terms, metric definitions, table relationships, answer builders, knowledge documents, data annotations to help the Agent understand your business) → Start conversational analysis
+
 ## Conceptual Framework:
 
 **Core Concepts**:
@@ -86,5 +113,17 @@ If you have any suggestions for the product, please feel free to provide feedbac
 * **Email**: <service@singdata.com>
 
 * **Enterprise WeChat**: ![](.topwrite/assets/image_1736856313196.png =116)
+
+^
+
+## Related Documentation
+
+| Document | Description |
+| ---------------------------------------------------- | -------------------------------------------- |
+| [Quick Start](datagpt_quickstart.md) | Get started with Analytics Agent in 5 minutes |
+| [User Guide](datagpt_tutorial.md) | Data source configuration, semantic layer setup, dashboard creation |
+| [Best Practices](datagpt_bestpractice.md) | Methods to improve Q&A accuracy |
+| [Q&A Accuracy Improvement](answer-accuracy-improve.md) | Semantic layer optimization, metric definition standards |
+| [Lakehouse DataGPT Tour](LakehouseDataGPT-tour.md) | Feature demo videos and screenshots |
 
 ^

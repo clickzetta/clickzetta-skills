@@ -1,4 +1,4 @@
-# Developing ClickZetta Lakehouse Applications with Streamlit
+# Developing Singdata Lakehouse Applications with Streamlit
 
 ## Introduction to Streamlit
 
@@ -11,7 +11,7 @@ Streamlit is a powerful Python framework designed for data scientists and engine
 
 ## Overview of the Development Process
 
-The development process of a Streamlit application is very simple. This document will demonstrate, through an example, how to combine Streamlit and the clickzetta-sqlalchemy library to create a simple application that queries the ClickZetta Lakehouse and displays the results.
+The development process of a Streamlit application is very simple. This document will demonstrate, through an example, how to combine Streamlit and the clickzetta-sqlalchemy library to create a simple application that queries the Singdata Lakehouse and displays the results.
 
 ### Environment Preparation
 
@@ -55,7 +55,7 @@ Streamlit will automatically open the local browser and visit <http://localhost:
 
 ### Example SQL Query
 
-The following is an example SQL query to retrieve purchase event data from the last 24 hours from ClickZetta Lakehouse:
+The following is an example SQL query to retrieve purchase event data from the last 24 hours from Singdata Lakehouse:
 ```sql
 SELECT
   brand,
@@ -99,6 +99,6 @@ if st.button('Generate Chart') and sql:
 ## Reference Resources
 
 * [Streamlit Official Documentation](https://docs.streamlit.io/library/get-started)
-* [ClickZetta Lakehouse Official Documentation](https://docs.clickzetta.com/lakehouse/)
+* [Singdata Lakehouse Official Documentation](https://docs.singdata.com/lakehouse/)
 
 ^

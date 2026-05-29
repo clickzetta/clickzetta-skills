@@ -33,10 +33,18 @@ This document provides detailed instructions on how to deploy and use Esri geosp
 Download the following two JAR packages from Esri's official repositories:
 
 ```
-# ESRI Geometry API
+```
+
+ESRI Geometry API:
+
+```
 wget https://github.com/Esri/geometry-api-java/releases/download/v2.2.0/esri-geometry-api-2.2.0.jar
 
-# Spatial Framework for Hadoop
+```
+
+Spatial Framework for Hadoop:
+
+```
 wget https://github.com/Esri/spatial-framework-for-hadoop/releases/download/v2.2.0/spatial-sdk-hive-2.2.0.jar
 ```
 

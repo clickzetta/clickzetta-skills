@@ -45,7 +45,7 @@ The system will return output similar to the following:
 +--------------------------------------------------------+
 |                          sql                           |
 +--------------------------------------------------------+
-| CREATE MATERIALIZED VIEW qingyun.`public`.mv(
+| CREATE MATERIALIZED VIEW example.`public`.mv(
   `i` ,
   `j` )
 REFRESH ON DEMAND

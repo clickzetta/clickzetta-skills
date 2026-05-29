@@ -99,10 +99,18 @@ cz-cli -p prod runs refill <task_name> --from ... --to ... -y
 ### View Run Dependencies
 
 ```bash
-# Default: 1 level upstream, 1 level downstream
+```
+
+Default: 1 level upstream, 1 level downstream:
+
+```bash
 cz-cli -p prod runs deps <run_id>
 
-# Specify depth
+```
+
+Specify depth:
+
+```bash
 cz-cli -p prod runs deps <run_id> --parent-level 2 --child-level 2
 ```
 
@@ -124,16 +132,32 @@ cz-cli -p prod runs stats --task <task_name> --from "2026-05-01" --to "2026-05-0
 **Typical troubleshooting flow:**
 
 ```bash
-# 1. Find the failed run
+```
+
+1. Find the failed run:
+
+```bash
 cz-cli -p prod runs list --task daily_order_summary --from "2026-05-26"
 
-# 2. View run details (includes overview of all attempts)
+```
+
+2. View run details (includes overview of all attempts):
+
+```bash
 cz-cli -p prod runs detail <run_id>
 
-# 3. List all attempts for this run
+```
+
+3. List all attempts for this run:
+
+```bash
 cz-cli -p prod attempts list <run_id>
 
-# 4. View detailed logs for a specific attempt
+```
+
+4. View detailed logs for a specific attempt:
+
+```bash
 cz-cli -p prod attempts log <attempt_id>
 ```
 
@@ -175,23 +199,47 @@ cz-cli -p prod task save-config <task_name> \
 A workflow (Flow) is a composite task type that orchestrates multiple sub-tasks as a DAG:
 
 ```bash
-# View workflow DAG structure
+```
+
+View workflow DAG structure:
+
+```bash
 cz-cli -p prod task flow dag <flow_task_name>
 
-# Add a node
+```
+
+Add a node:
+
+```bash
 cz-cli -p prod task flow create-node <flow_task_name> --node-name etl_step1 --type SQL
 
-# Set dependency between nodes (step2 depends on step1)
+```
+
+Set dependency between nodes (step2 depends on step1):
+
+```bash
 cz-cli -p prod task flow bind <flow_task_name> --from etl_step1 --to etl_step2
 
-# Save node SQL content
+```
+
+Save node SQL content:
+
+```bash
 cz-cli -p prod task flow node-save <flow_task_name> --node-name etl_step1 \
   --content "INSERT INTO dwd.orders SELECT * FROM ods.raw_orders"
 
-# Deploy the workflow
+```
+
+Deploy the workflow:
+
+```bash
 cz-cli -p prod task flow submit <flow_task_name>
 
-# View workflow node run instances
+```
+
+View workflow node run instances:
+
+```bash
 cz-cli -p prod task flow instances <flow_task_name>
 ```
 

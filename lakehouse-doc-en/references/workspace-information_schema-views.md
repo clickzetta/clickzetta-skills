@@ -78,7 +78,7 @@ The VIEWS view shows all views and their detailed information under the current 
 | LAST\_MODIFY\_TIME | TIMESTAMP | View modification time          |
 | COMMENT            | STRING    | View comment information         |
 
-#### USERS View
+## USERS View
 
 Each user is displayed in a row, containing all users of the current WORKSPACE
 
@@ -93,7 +93,7 @@ Each user is displayed in a row, containing all users of the current WORKSPACE
 | COMMENT        | STRING    | Description of user information                |
 | PROPERTIES     | MAP       | PROPERTIES specified at creation, reserved field |
 
-#### ROLES View
+## ROLES View
 
 | COLUMN NAME    | DATA TYPE | DESCRIPTION            |
 | -------------- | --------- | ---------------------- |
@@ -104,7 +104,7 @@ Each user is displayed in a row, containing all users of the current WORKSPACE
 | COMMENT        | STRING    | Description of role information                 |
 | PROPERTIES     | MAP       | PROPERTIES specified at creation, reserved field  |
 
-#### JOB\_HISTORY View
+## JOB\_HISTORY View
 | COLUMN NAME      | DATA TYPE | DESCRIPTION                                     |
 | ---------------- | --------- | ----------------------------------------------- |
 | WORKSPACE\_NAME  | STRING    | Space where the JOB is run                                      |
@@ -136,7 +136,7 @@ Each user is displayed in a row, containing all users of the current WORKSPACE
 | INPUT\_TABLES    | STRING    | Input table names                                           |
 | OUTPUT\_TABLES   | STRING    | Output table name                                           |
 
-#### Materialized View Refresh History
+## Materialized View Refresh History
 
 | COLUMN\_NAME             | DATA\_TYPE   | DESCRIPTION                    |
 | ------------------------ | ------------ | ------------------------------ |
@@ -152,7 +152,7 @@ Each user is displayed in a row, containing all users of the current WORKSPACE
 | ERROR\_CODE              | STRING       |                                |
 | ERROR\_MESSAGE           | STRING       | Refresh failure information, if failed it will be here             |
 
-#### AUTOMV\_REFRESH\_HISTORY Refresh View
+## AUTOMV\_REFRESH\_HISTORY View
 | COLUMN\_NAME               | DATA\_TYPE   | DESCRIPTION                                                             |
 | -------------------------- | ------------ | ----------------------------------------------------------------------- |
 | WORKSPACE_NAME            | STRING       | Project workspace name SYS                                                               |
@@ -167,7 +167,7 @@ Each user is displayed in a row, containing all users of the current WORKSPACE
 | JOB_ID | SRING       | Job ID for building MV                                                           |
 | ERROR\_MESSAGE             | STRING       | Error message if the refresh fails                                                      |
 
-#### VOLUMES View
+## VOLUMES View
 
 
 | column_name       | data\_type          | description                                           |
@@ -185,7 +185,7 @@ Each user is displayed in a row, containing all users of the current WORKSPACE
 | CREATE\_TIME       | TIMESTAMP           | Creation time                                                  |
 | LAST\_MODIFY\_TIME | TIMESTAMP           | Modification time                                              |
 
-#### CONNECTIONS View
+## CONNECTIONS View
 
 
 | column\_name       | data type           | description                                                                   |

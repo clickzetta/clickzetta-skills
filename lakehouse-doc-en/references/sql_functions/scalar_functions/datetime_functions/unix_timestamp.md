@@ -28,9 +28,7 @@ SELECT UNIX_TIMESTAMP() as res;
 | 1737447675 |
 +------------+
 ```
-```markdown
 2. Get the UNIX timestamp for a specified time:
-```
 ```
 SELECT UNIX_TIMESTAMP('2022-02-23 10:00:00')as res;
 +------------+
@@ -39,9 +37,7 @@ SELECT UNIX_TIMESTAMP('2022-02-23 10:00:00')as res;
 | 1645581600 |
 +------------+
 ```
-```markdown
 3. Get the UNIX timestamp in a specified time format:
-```
 ```
 SELECT UNIX_TIMESTAMP('2022-02-23 10:00:00', 'yyyy-MM-dd HH:mm:ss')as res;
 +------------+

@@ -58,7 +58,7 @@ Entry for creating a new SQL worksheet:
 
 ^
 
-Create a new SQL worksheet named "00_Environment_Preparation".
+Create a new SQL worksheet named "00\_Environment\_Preparation".
 
 ^
 
@@ -91,7 +91,7 @@ USE VCLUSTER MY_FIRST_VC;
 USE SCHEMA happy_path;
 ```
 
-> **💡 Tip: Virtual Compute Cluster**
+> 💡 **Tip**: Virtual Compute Cluster
 > A Virtual Compute Cluster is a computing resource object provided by Lakehouse for data processing and analysis. It provides CPU, memory, local temporary storage, and other resources needed to execute SQL jobs. Clusters feature fast creation/destruction, scaling up/down, suspension/resumption, etc. They are billed based on resource specification size and usage duration, and do not incur charges when suspended or deleted. Lakehouse provides two types of clusters: General (suitable for ETL data processing) and Analytics (suitable for query analysis).
 
 ## Basic Operations
@@ -102,7 +102,7 @@ In this exercise, you will execute simple SQL queries, create tables, and perfor
 
 1. Log into Lakehouse Studio
 
-2. Create a new SQL worksheet named "01_My_First_SQL"
+2. Create a new SQL worksheet named "01\_My\_First\_SQL"
 
 3. Execute the following SQL commands:
 
@@ -159,7 +159,7 @@ In this exercise, you will execute simple SQL queries, create tables, and perfor
 
 Next, let's create a different type of compute cluster to understand how to choose the right computing resources for different scenarios. Estimated time: 3-6 minutes.
 
-1. Create a new SQL worksheet named "02_Create_Analytics_Cluster"
+1. Create a new SQL worksheet named "02\_Create\_Analytics\_Cluster"
 
 2. Check the current environment:
 
@@ -216,7 +216,7 @@ Next, let's create a different type of compute cluster to understand how to choo
    SHOW VCLUSTERS;
    ```
 
-> **💡 Tip: Cluster Type Selection**
+> 💡 **Tip**: Cluster Type Selection
 > General clusters (GENERAL) support vertical scaling to meet ETL pipeline-type task needs; Analytics clusters (ANALYTICS) support horizontal scaling with multiple replicas within the cluster to meet elastic capacity for concurrent queries. It is recommended to use General clusters for ETL data processing and Analytics clusters for query analysis or supporting data product applications.
 
 ## Core Architecture Experience
@@ -225,7 +225,7 @@ Next, let's create a different type of compute cluster to understand how to choo
 
 Compute-storage separation is a core architectural feature of Lakehouse, allowing you to flexibly adjust computing resources without affecting data storage. Estimated time: 5-8 minutes.
 
-1. Create a new SQL worksheet named "03_Compute_Storage_Separation"
+1. Create a new SQL worksheet named "03\_Compute\_Storage\_Separation"
 
 2. Prepare the environment:
 
@@ -299,14 +299,14 @@ Compute-storage separation is a core architectural feature of Lakehouse, allowin
    SELECT * FROM happy_path.demo_dataset ORDER BY id;
    ```
 
-> **💡 Tip: Compute-Storage Separation Architecture**
+> 💡 **Tip**: Compute-Storage Separation Architecture
 > Lakehouse adopts a Single Engine All Data architecture, separating compute and storage so the system can process query tasks faster. This architecture allows computing resources to be elastically adjusted based on demand, while data is stored in cloud object storage for "unlimited scaling". When the cluster is not in use, it automatically suspends to save resources, and automatically resumes when needed, effectively reducing Total Cost of Ownership (TCO).
 
 ### 4. Lakehouse Unified Architecture Experience
 
 The Lakehouse unified architecture allows you to directly query files in multiple formats with unified SQL, without complex ETL transformations. Estimated time: 7-10 minutes.
 
-1. Create a new SQL worksheet named "04_Unified_Lakehouse"
+1. Create a new SQL worksheet named "04\_Unified\_Lakehouse"
 
 2. Prepare the environment:
 
@@ -450,16 +450,16 @@ The Lakehouse unified architecture allows you to directly query files in multipl
    ORDER BY sales_amount DESC;
    ```
 
-> **Note**: When executing the above statements, please ensure the file paths and file names match the actual exported files. If the file names differ, adjust the file names in the FILES parameters based on the results of the `LIST USER VOLUME` command.
+> ⚠️ **Note**: When executing the above statements, please ensure the file paths and file names match the actual exported files. If the file names differ, adjust the file names in the FILES parameters based on the results of the `LIST USER VOLUME` command.
 
-> **💡 Tip: Lakehouse Unified Architecture**
+> 💡 **Tip**: Lakehouse Unified Architecture
 > As a unified lakehouse data platform, Lakehouse can seamlessly connect to cloud object storage and use an integrated data processing engine to efficiently handle semi-structured and unstructured data in the data lake. Through Volume objects, users can easily import unstructured data such as images and text into the data platform for analysis and processing. The lakehouse unified architecture integrates structured and unstructured data into a unified Catalog-Schema view, solving unified lakehouse metadata management and permission control issues.
 
 ### 5. Batch and Real-time Unified Experience
 
 Lakehouse supports simultaneously processing both batch and streaming data on the same platform. Estimated time: 5-7 minutes.
 
-1. Create a new SQL worksheet named "05_Batch_and_Real_time"
+1. Create a new SQL worksheet named "05\_Batch\_and\_Real\_time"
 
 2. Prepare the environment:
 
@@ -546,14 +546,14 @@ Lakehouse supports simultaneously processing both batch and streaming data on th
    GROUP BY data_source;
    ```
 
-> **💡 Tip: Batch and Real-time Unified Architecture**
+> 💡 **Tip**: Batch and Real-time Unified Architecture
 > Lakehouse supports simultaneously processing both batch and streaming data on the same platform. Through unified views, you can query both historical data and real-time data simultaneously. When new data is inserted, it is immediately visible in the unified view without waiting for a batch window or data sync. This architecture greatly simplifies application scenarios that need to analyze both historical trends and real-time data. You can also apply to enable the "Dynamic Table" feature, replacing the current view approach with incremental computation implementation.
 
 ### 6. Vector Search and Inverted Index Hybrid Search Experience
 
 Lakehouse supports efficient vector search and inverted index search, which can be used to implement hybrid queries combining semantic search and keyword search. Estimated time: 7-10 minutes.
 
-1. Create a new SQL worksheet named "06_Hybrid_Search"
+1. Create a new SQL worksheet named "06\_Hybrid\_Search"
 
 2. Prepare the environment:
 
@@ -632,6 +632,7 @@ Lakehouse supports efficient vector search and inverted index search, which can 
    ```
 
 6. Vector search alone:
+
 ```sql
 SELECT
     product_id,
@@ -700,18 +701,19 @@ LIMIT 5;
    ORDER BY distance
    LIMIT 5;
    ```
+
 ### 7. Batch Processing Experience
 
 Lakehouse supports offline batch processing and transformation. Estimated time: 7-10 minutes.
 
-1. Create a new SQL worksheet named "07_Batch_Processing_and_Transformation"
+1. Create a new SQL worksheet named "07\_Batch\_Processing\_and\_Transformation"
 2. Prepare the environment:
 
 ```sql
    -- Use the first cluster (General), more suitable for batch data processing and transformation
    USE VCLUSTER MY_FIRST_VC;
    USE SCHEMA happy_path;
-   ```
+```
 
 3. Create and populate a sales data table:
 
@@ -848,14 +850,14 @@ Lakehouse supports offline batch processing and transformation. Estimated time: 
    ORDER BY category_sales DESC;
    ```
 
-> **💡 Tip: Cluster Load Optimization**
+> 💡 **Tip**: Cluster Load Optimization
 > In data processing workflows, you can choose the appropriate cluster type for different operation types: General clusters are more suitable for batch data processing and transformation tasks, such as ETL operations, data cleaning, and aggregation computations; Analytics clusters are more suitable for interactive queries and analysis, especially dashboard and reporting scenarios that require fast response. By properly allocating computing loads, you can optimize resource usage and improve overall performance.
 
 ## Clean Up Resources
 
 After completing the experience, it is recommended to clean up the created resources to avoid unnecessary resource occupation. Estimated time: 3 minutes.
 
-1. Create a new SQL worksheet named "10_Clean_Up_Environment"
+1. Create a new SQL worksheet named "10\_Clean\_Up\_Environment"
 
 2. Prepare the environment:
 
@@ -931,12 +933,12 @@ After completing the experience, it is recommended to clean up the created resou
    DROP SCHEMA IF EXISTS happy_path;
    ```
 
-> **Notes**:
+> ⚠️ **Note**:
 >
-> - Before cleaning up, confirm that the demo experience has been fully completed
-> - If you plan to continue using certain resources, you can selectively skip the corresponding delete commands
-> - Before deleting a virtual cluster, you must first switch to another cluster, otherwise you cannot delete the currently used cluster
-> - If you have important data, please back it up before deleting
+> * Before cleaning up, confirm that the demo experience has been fully completed
+> * If you plan to continue using certain resources, you can selectively skip the corresponding delete commands
+> * Before deleting a virtual cluster, you must first switch to another cluster, otherwise you cannot delete the currently used cluster
+> * If you have important data, please back it up before deleting
 
 ## Summary and Recommended Paths
 

@@ -4,7 +4,7 @@ Objective: Use a large language model (LLM) service to fill in the national stan
 
 ![](.topwrite/assets/20250612-171447.jpeg =675)
 
-> Note: To complete this example, you need:
+> ⚠️ **Note**: To complete this example, you need:
 >
 > 1. Docker installed (mainly to ensure the development environment is consistent with the environment where Singdata runs functions)
 > 2. An Alibaba Cloud account with a Bailian platform API-KEY enabled. See [Alibaba Cloud Bailian](https://www.aliyun.com/product/bailian)
@@ -101,7 +101,11 @@ class llm_call(object):
             # Return error message
             return f"Error: {str(e)}"
 
-# Test code
+```
+
+Test code:
+
+```
 if __name__ == "__main__":
     # Create instance
     llm = llm_call()
@@ -188,7 +192,7 @@ Run the packaging command, ensuring the current directory is the program directo
 [root@docker cz_llm]# ls ../
 ```
 
-> Tip: If your environment does not have the zip command, try installing it with `yum install zip`. If you encounter issues during installation, refer to the appendix "**Errors When Installing Tools**."
+> 💡 **Tip**: If your environment does not have the zip command, try installing it with `yum install zip`. If you encounter issues during installation, refer to the appendix "**Errors When Installing Tools**."
 
 You will find a `cz_llm.zip` file under the `/root ` directory. Copy this file to the Lakehouse USER VOLUME:
 

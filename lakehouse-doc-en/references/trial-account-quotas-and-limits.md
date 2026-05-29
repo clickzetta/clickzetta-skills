@@ -76,9 +76,9 @@ If you occupy too many system resources through abnormal usage, Singdata Lakehou
 
 ***
 
-Contact Information
+## Contact Information
+
 ![](.topwrite/assets/20250708-181924.jpeg =611)
------------------------------------------------
 
 * **Email**: <<service@singdata.com>>
 

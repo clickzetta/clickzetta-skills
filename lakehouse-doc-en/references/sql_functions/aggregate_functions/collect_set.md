@@ -1,4 +1,4 @@
-### Collect Set Function: COLLECT_SET
+# Collect Set Function: COLLECT_SET
 
 ```
 collect_set([DISTINCT] expr [, limit]) [FILTER (WHERE condition)]

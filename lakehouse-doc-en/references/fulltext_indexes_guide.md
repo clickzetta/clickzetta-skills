@@ -141,7 +141,11 @@ WHERE content LIKE '%Artificial Intelligence%'
 ### External Search Engine Approach
 
 ```yaml
-# Requires maintaining an additional Elasticsearch cluster
+```
+
+Requires maintaining an additional Elasticsearch cluster:
+
+```yaml
 version: '3'
 services:
   elasticsearch:
@@ -153,7 +157,11 @@ services:
 ```
 
 ```python
-# Data sync script needed
+```
+
+Data sync script needed:
+
+```python
 from elasticsearch import Elasticsearch
 
 def sync_data_to_es():
@@ -475,7 +483,7 @@ map('analyzer', 'chinese')
 map('analyzer', 'chinese', 'mode', 'smart')
 ```
 
--- IMPORTANT: The tokenizer in the function must match the tokenizer used when creating the index; otherwise, the index cannot be leveraged for acceleration!
+> ⚠️ **Note**: The tokenizer in the function must match the tokenizer used when creating the index; otherwise, the index cannot be leveraged for acceleration!
 
 ***
 
@@ -509,7 +517,7 @@ BUILD INDEX content_idx ON documents
 WHERE partition_date >= '2024-01-01';
 ```
 
--- **Key reminders**:
+> ⚠️ **Note**:
 
 * `CREATE INDEX` only takes effect for new data
 * Existing data requires `BUILD INDEX` to leverage the index

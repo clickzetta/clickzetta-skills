@@ -34,7 +34,7 @@ CREATE TABLE table_name(
 
 ### Reference Documents
 
-* [Build Index](build-inverted-index.md)
+* [Build Index](build-index.md)
 * [Delete Index](DROP-INDEX.md)
 * [List All Indexes](SHOW-INDEX.md)
 * [View Index Details](DESC-INDEX.md)
@@ -59,7 +59,7 @@ PROPERTIES('analyzer'='english｜chinese|keyword｜unicode')
 ```
 **INVERTED**: Index type, inverted index
 
-**index\_name**: Table name, located under schema, index name under schema must be unique
+**index\_name**: Index name, located under the schema of the target table. Index names cannot be duplicated within the same schema. The index must be in the same schema as the target table.
 
 **col\_name**: Column name only supports single column
 
@@ -67,7 +67,9 @@ PROPERTIES('analyzer'='english｜chinese|keyword｜unicode')
 
 ### Description
 
-Executing CREATE INDEX is only effective for new data. To index existing data, please use the BUILD INDEX command.
+Executing CREATE INDEX is only effective for new data. Existing data requires the BUILD INDEX command to build the index.
+
+The index must be in the same schema as the target table; creating an index across schemas will result in an error.
 
 ### **Example**
 

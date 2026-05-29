@@ -34,7 +34,7 @@ The Maven repository coordinates are as follows:
 ```
 ## Usage
 
-### Writing Using SQL
+### Writing Using TABLE API
 ```Java
 // first. define your data source.
 ...
@@ -49,10 +49,11 @@ String createTableSql =
     ") WITH (\n" +
      // For access permissions, please refer to the access instructions
     "   'connector' = 'igs-dynamic-table', \n" +
-    "   'curl' = 'jdbc:clickzetta://instance-name.api.singdata.com/default?username=user&password=******&schema=public', \n" +
+    "   'curl' = 'jdbc:clickzetta://{instance-name}.{region}.api.singdata.com/default?username=user&password=******&schema=public', \n" +
     "   'schema-name' = 'public', \n" +
     "   'table-name' = 'mock_table', \n" +
-    "   'sink.parallelism' = '1'" +
+    "   'sink.parallelism' = '1', \n" +
+    "   'properties' = 'authentication:true'" +
     ")";
 tableEnv.executeSql(createTableSql);
 
@@ -66,11 +67,11 @@ env.execute("Igs Mock Test");
 | Parameter                          | Required | Default Value                                                                  | Description                                                                                                                                                                                                                                                                                       |
 | ---------------------------------- | -------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | connector                          | Yes      | -                                                                              | igs-dynamic-table: Supports append mode and Flink CDC scenarios, generally Lakehouse is a primary key table. igs-dynamic-table-append-only: Only supports append, Lakehouse is a regular table.                                                                                                                                           |
-| curl                               | Yes      | -                                                                              | Lakehouse Jdbc connection address, can be obtained from the workspace page.                                                                                                                                                                                                                       |
+| curl                               | Yes      | -                                                                              | Lakehouse JDBC connection address, can be obtained from the workspace page. Note: if the username contains characters such as =, @, or &, they need to be URL-encoded. You can use an [encoding tool](https://www.urlencoder.org/) for reference. For example, if the username or password is abc=123, the encoded form is abc%3D123. ![](.topwrite/assets/image_1726133161757.png)                                                                                                                                                                                                                                                                                                                       |
 | schema-name                      | Yes    | -                                                                             | Schema to be written                                                                                                                                                                                                                                                                                     |
 | table-name                       | Yes    | -                                                                             | Table to be written                                                                                                                                                                                                                                                                                      |
-| sink.parallelism                 | Yes    | -                                                                             | Degree of parallelism for writing                                                                                                                                                                                                                                                                                          |
-| properites                       | Yes    | -                                                                             | "authentication":"true"                                                                                                                                                                                                                                                                         |
+| sink.parallelism                 | Yes    | -                                                                             | Degree of parallelism for writing. If the target table has a primary key (PK) defined, the parallelism can only be 1. |
+| properites                       | Yes    | -                                                                             | `authentication:true`. If you are connecting to Lakehouse via an internal network, configure `authentication:true,isInternal:true,isDirect:false`. |
 | workspace                        | No    | -                                                                             | Workspace name                                                                                                                                                                                                                                                                                          |
 | flush.mode                       | No    | *AUTO\_FLUSH\_BACKGROUND*                                                     | Data flush mode, currently supports AUTO\_FLUSH\_SYNC: Wait for the last flush to complete before proceeding to the next write AUTO\_FLUSH\_BACKGROUND: Asynchronous flush allows multiple writes to proceed simultaneously without waiting for the previous write to complete                                                                                                                                                                                             |
 | showDebugLog                     | No    | False                                                                         | Whether to enable debug logs                                                                                                                                                                                                                                                                                     |
@@ -94,7 +95,8 @@ env.execute("Igs Mock Test");
 // second. define igs data sink.
 // For access related to permissions, please refer to the access instructions
 IgsWriterOptions writerOptions = IgsWriterOptions.builder()
-    .streamUrl("jdbc:clickzetta://instance-name.api.singdata.com/default?username=user&password=******&schema=public")
+    .streamUrl("jdbc:clickzetta://instance-name.region_id.api.singdata.com/default?username=user&password=******&schema=public")
+    .withAuthenticate(true)
     .withFlushMode(FlushMode.AUTO_FLUSH_BACKGROUND)
     .withMutationBufferMaxNum(3)
     .withMutationBufferLinesNum(10)
@@ -103,6 +105,7 @@ IgsWriterOptions writerOptions = IgsWriterOptions.builder()
 IgsSink<Row> sink = new IgsSink<>(
     writerOptions,
     IgsTableInfo.from("public", "mock_table"),
+// All fields must be specified, consistent with the target table
     new RowOperationMapper(
         new String[]{"col1", "col2", "col3"},
         WriteOperation.ChangeType.INSERT)

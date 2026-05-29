@@ -37,17 +37,17 @@
 # Reasonable Planning and Use of Virtual Cluster
 <Notes>
 
-This chapter will introduce the product features and planning methods for using ClickZetta Lakehouse's elastic computing resources.
+This chapter will introduce the product features and planning methods for using Singdata Lakehouse's elastic computing resources.
 
 ## Introduction to Virtual Cluster Features
 <Notes>
 ## Compute Cluster (Virtual Cluster, VC) <a name="compute-cluster"></a>
 
-The Compute Cluster (Virtual Cluster, VC) is a compute resource cluster service provided by ClickZetta Lakehouse. The compute cluster provides the necessary resources such as CPU, memory, and local temporary storage (SSD medium) to execute query analysis in the Lakehouse. These three resources are bundled into a compute scale unit called the Lakehouse Compute Unit. CRU serves as an abstract, standardized measurement unit for the size and performance of compute resources.
+The Compute Cluster (Virtual Cluster, VC) is a compute resource cluster service provided by Singdata Lakehouse. The compute cluster provides the necessary resources such as CPU, memory, and local temporary storage (SSD medium) to execute query analysis in the Lakehouse. These three resources are bundled into a compute scale unit called the Lakehouse Compute Unit. CRU serves as an abstract, standardized measurement unit for the size and performance of compute resources.
 
 ![](.topwrite/assets/image_1718616076626.png)
 
-ClickZetta Lakehouse measures the actual usage duration of different specifications of compute resources (measured in seconds), and the different specifications of CUR and their unit prices are as follows:
+Singdata Lakehouse measures the actual usage duration of different specifications of compute resources (measured in seconds), and the different specifications of CUR and their unit prices are as follows:
 
 | **Lakehouse Virtual Cluster Specification** | **CRU** | **MAX\_CONCURRENCY Default Value** |
 | ------------------------------------------- | ------- | ---------------------------------- |
@@ -61,7 +61,7 @@ ClickZetta Lakehouse measures the actual usage duration of different specificati
 | 4X-Large                                    | 128     | 8                                  |
 | 5X-Large                                    | 256     | 8                                  |
 
-ClickZetta Lakehouse supports elastic scaling of compute resources in two dimensions:
+Singdata Lakehouse supports elastic scaling of compute resources in two dimensions:
 
 * Vertical: Adjust the number of CRUs by modifying the size of the Virtual Cluster to increase or decrease the computing power and performance of the specified cluster.
 * Horizontal: Adjust the concurrency query capability by modifying the number of cluster replicas to expand or reduce the number of Cluster replicas.
@@ -112,7 +112,7 @@ ALTER VCluster <name> SET MAX_CONCURRENCY = {desired positive integer}
 ```
 ### Lakehouse Virtual Cluster Capacity Design Recommendations for Different Scenarios
 
-The main business characteristics of the current ClickZetta Lakehouse supported business scenarios are as follows:
+The main business characteristics of the current Singdata Lakehouse supported business scenarios are as follows:
 
 | **Scenario/Workload** | **Scenario Requirements**                     | **Resource Requirements** | **Data Scale and Query Latency Requirements**          | **Query Characteristics** | **Concurrency Characteristics**    |
 | --------------------- | --------------------------------------------- | ------------------------- | ------------------------------------------------------ | ------------------------- | ---------------------------------- |

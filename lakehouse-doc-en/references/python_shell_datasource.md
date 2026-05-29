@@ -1,38 +1,38 @@
-# Using Data Sources in Python/Shell Task
+# Using Data Sources in Python/Shell Tasks
 
 ## Overview
 
-Python/Shell tasks support the use of pre-configured [data sources](config-datasource.md). By leveraging the built-in `clickzetta-dbutils` package in the runtime environment, tasks can directly reuse the connection configurations from `Management -> Data Sources`, eliminating the need to repeatedly set up connections via code within the node. This approach enhances the security of sensitive information and streamlines development and management processes.
+Python/Shell tasks support the use of pre-configured [data sources](config-datasource.md). Through the built-in `clickzetta-dbutils` package in the runtime environment, you can reuse connection configurations from **Management → Data Sources** directly in your tasks — no need to hard-code connection details in your code. This improves the security of sensitive credentials and simplifies both development and management.
 
-Currently supported data sources include:
+Currently supported data source types:
 
-* Lakehouse Data Source
-* MySQL Data Source
-* PostgreSQL Data Source
+* Lakehouse data source
+* MySQL data source
+* PostgreSQL data source
 
-## Interface Operation Guide
+## UI Guide
 
-### Selecting Data Sources in Python/Shell Tasks
+### Selecting a Data Source in a Python/Shell Task
 
-In the configuration panel of Python/Shell tasks, you can select one or more data sources (ensure that the data sources have been created and tested for connectivity in `Management -> Data Sources`). This configuration will apply to both ad-hoc runs and scheduled runs of the current task:
+In the configuration panel of a Python/Shell task, you can select one or more data sources to use (make sure the data source has already been created and connection-tested under Management → Data Sources). This configuration applies to both direct runs and scheduled runs of the task:
 
-![](.topwrite/assets/image_1742286995247.png =580)
+![](.topwrite/assets/image_1742284598370.png =560)
 
-*Note: The default Lakehouse data source of the current workspace can be accessed directly in the code without needing to add it here*.
+*Note: The default Lakehouse data source for the current workspace is accessible in code without needing to be added here.*
 
-### Accessing Data Sources in Code
+### Accessing a Data Source in Code
 
-After adding the data source, you can begin writing Python/Shell task code. To connect to a data source, call the `get_active_engine("your_datasource_name")` function from the `clickzetta_dbutils` Python library. You only need to provide the data source name, without specifying connection details such as the data source URL or password. Additionally, the `Builder` pattern is supported, as detailed in the following API usage guide and code examples.
+After adding a data source, you can start writing your Python/Shell task code. Call the `get_active_engine("your_datasource_name")` function from the `clickzetta_dbutils` library — just provide the data source name, with no need to specify the URL, password, or other connection details. You can also use the `Builder` pattern; see the API guide and code examples below.
 
-## API Usage Guide
+## API Reference
 
 ### get\_active\_engine
 
-A convenient function for creating a database engine in Studio Python nodes (currently supports MySQL, PostgreSQL and Lakehouse data sources).
+A convenience function for creating a database engine in a Studio Python node. Currently supports MySQL, PostgreSQL, and Lakehouse data sources.
 
 #### Function Signature
 
-```python
+```py
 def get_active_engine(
     ds_name: Optional[str] = None,
     vcluster: Optional[str] = None,
@@ -46,43 +46,51 @@ def get_active_engine(
 ) -> Engine
 ```
 
-#### Parameter Description
+#### Parameters
 
-1. `ds_name` (str): The name of the data source, which must match the name in `Management -> Data Sources`.
-2. `vcluster` (str, optional): The virtual cluster name for ClickZetta data sources (required for ClickZetta).
-3. `workspace` (str, optional): The workspace name, defaulting to the current workspace.
-4. `schema` (str, optional): The name of the schema to connect to, defaulting to 'public'.
+1. `ds_name` (str): Data source name. Required. Must match the name of the data source in Management → Data Sources.
+2. `vcluster` (str, optional): Virtual cluster name for Singdata data sources. Required for Singdata data sources.
+3. `workspace` (str, optional): Workspace name. Defaults to the current workspace.
+4. `schema` (str, optional): Schema name to connect to. Defaults to `'public'`.
 5. `options` (dict, optional): Additional connection options.
 6. `query` (dict, optional): Additional query parameters for the SQLAlchemy URL.
 
 #### Return Value
 
-* An SQLAlchemy Engine instance.
+* A SQLAlchemy Engine instance.
 
-#### Example
+#### Examples
 
-* A PostgreSQL data source named "qiliang\_test\_pg" has been added in `Management -> Data Sources`.
-* The database "answer" with schema "public" is selected for "qiliang\_test\_pg" in the current Python node.
-* Accessing tables within `qiliang_test_pg -> answer -> public` using `get_active_engine`:
+* A Postgres data source named `"qiliang_test_pg"` has been added under Management → Data Sources.
+* In the current Python node, `"qiliang_test_pg"` has been added as a data source, with the selected database `"answer"` and schema `public`.
+* Access tables in `qiliang_test_pg → answer → public` directly via `get_active_engine`:
 
-```python
+```
 from sqlalchemy import text
 from clickzetta_dbutils import get_active_engine
 pg_engine = get_active_engine("qiliang_test_pg")
-# Connect and execute a query
+```
+
+Connect and run a query:
+
+```
 with pg_engine.connect() as pgconnection:
     result = pgconnection.execute(text("SELECT * FROM question limit 10;"))
     for row in result:
         print(row)
 ```
 
-* Accessing tables in other databases within `qiliang_test_pg` using `get_active_engine` (requires configuring access to other permitted databases in `Management -> Data Sources`, e.g., database "sample" with schema "public"):
+* Access a different database within `qiliang_test_pg` by passing parameters (requires that the data source in Management → Data Sources is configured to allow access to other authorized databases — for example, the PostgreSQL database `"sample"` with schema `"public"`):
 
-```python
+```py
 from sqlalchemy import text
 from clickzetta_dbutils import get_active_engine
-pg_engine = get_active_engine("qiliang_test_pg", schema="sample", options={"search_path": "public"})
-# Connect and execute a query
+pg_engine = get_active_engine("qiliang_test_pg",schema="sample",options={"search_path":"public"})
+```
+
+Connect and run a query:
+
+```py
 with pg_engine.connect() as pgconnection:
     result = pgconnection.execute(text("SELECT * FROM accounts limit 10;"))
     for row in result:
@@ -91,11 +99,11 @@ with pg_engine.connect() as pgconnection:
 
 ### get\_active\_lakehouse\_engine
 
-A convenient function for creating a Lakehouse data source database engine.
+A convenience function for creating a database engine for a Lakehouse data source.
 
 #### Function Signature
 
-```python
+```py
 def get_active_lakehouse_engine(
     vcluster: Optional[str] = None,
     workspace: Optional[str] = None,
@@ -107,51 +115,56 @@ def get_active_lakehouse_engine(
 ) -> Engine
 ```
 
-#### Parameter Description
+#### Parameters
 
-1. `vcluster` (str, optional): The virtual cluster name for ClickZetta data sources (required).
-2. `workspace` (str, optional): The workspace name, defaulting to the current workspace.
-3. `schema` (str, optional): The name of the schema to connect to, defaulting to 'public'.
+1. `vcluster` (str, optional): Virtual cluster name for the Singdata data source. Required.
+2. `workspace` (str, optional): Workspace name. Defaults to the current workspace.
+3. `schema` (str, optional): Schema name to connect to. Defaults to `'public'`.
 4. `options` (dict, optional): Additional connection options.
 5. `query` (dict, optional): Additional query parameters for the SQLAlchemy URL.
-6. `driver` (str, optional): The driver name for the connection.
+6. `driver` (str, optional): Driver name for the connection.
 
 #### Return Value
 
-* An SQLAlchemy Engine instance.
+* A SQLAlchemy Engine instance.
 
-#### Exception
+#### Exceptions
 
-* `DatabaseConnectionError`: Raised when the Lakehouse data source is not found in the configuration.
+* `DatabaseConnectionError`: Raised when no Lakehouse data source is found in the configuration.
 
 #### Example
 
-* The cluster name to be used is "default" in `Compute -> Clusters`.
-* The data to be accessed is in the schema "brazilianecommerce" within the workspace "ql\_ws", specifically the table "olist\_customers".
-* Accessing tables within `qiliang_test_pg -> answer -> public` using `get_active_lakehouse_engine`:
+* The cluster to use is named `"default"` (visible under Compute → Clusters).
+* The target data is in workspace `"ql_ws"`, schema `"brazilianecommerce"`, table `"olist_customers"` (visible under Development → Data).
+* Access the table directly via `get_active_lakehouse_engine`:
 
-```python
+```py
 from sqlalchemy import text
 import pandas as pd
+
 from clickzetta_dbutils import get_active_lakehouse_engine
 
-engine = get_active_lakehouse_engine(vcluster="default", schema="brazilianecommerce")
-# Connect and execute a query
+engine = get_active_lakehouse_engine(vcluster="default",schema="brazilianecommerce")
+```
+
+Connect and run a query:
+
+```py
 with engine.connect() as connection:
-    result = connection.execute(text("SELECT * FROM olist_customers limit 10;"))
-    df = pd.DataFrame(result.fetchall(), columns=result.keys())
-    print(df.head(10))
+        result = connection.execute(text("SELECT * FROM olist_customers limit 10;"))
+        df = pd.DataFrame(result.fetchall(), columns=result.keys())
+        print(df.head(10))
 ```
 
 ### DatabaseConnectionManager
 
-A database connection manager that supports chainable configuration of connection parameters. The actual SQLAlchemy connection is triggered only when `build(self, *args, **kwargs)` is called.
+A database connection manager that supports chained configuration of connection parameters. The actual SQLAlchemy connection is only established when `build(self, *args, **kwargs)` is called.
 
 #### use\_workspace
 
-Sets the workspace for the connection, required only for Lakehouse data sources.
+Sets the workspace for the connection. Only required for Lakehouse data sources.
 
-```python
+```Python
 def use_workspace(self, workspace: str) -> 'DatabaseConnectionManager'
 ```
 
@@ -159,17 +172,17 @@ def use_workspace(self, workspace: str) -> 'DatabaseConnectionManager'
 
 Sets the schema for the connection.
 
-```python
+```Python
 def use_schema(self, schema: str) -> 'DatabaseConnectionManager'
 ```
 
-*Note*: *For PostgreSQL*, \`\` *should be set to the database name due to SQLAlchemy design*.
+*Note: Due to SQLAlchemy's design, for PostgreSQL, `use_schema` should be set to the database name.*
 
 #### use\_vcluster
 
-Sets the virtual cluster for the connection, required only for Lakehouse data sources.
+Sets the virtual cluster for the connection. Only required for Lakehouse data sources.
 
-```python
+```Python
 def use_vcluster(self, vcluster: str) -> 'DatabaseConnectionManager'
 ```
 
@@ -177,40 +190,48 @@ def use_vcluster(self, vcluster: str) -> 'DatabaseConnectionManager'
 
 Sets additional connection options.
 
-```python
+```Python
 def use_options(self, options: dict) -> 'DatabaseConnectionManager'
 ```
 
-*Note*: *For PostgreSQL, schema should be set using* `undefined"})`.
+*Note: Due to SQLAlchemy's design, the PostgreSQL schema should be set to `undefined"})`*
 
 #### use\_query
 
-Sets additional query parameters for the connection.
+Sets query parameters for the connection.
 
-```python
+```Python
 def use_query(self, query: dict) -> 'DatabaseConnectionManager'
 ```
 
 #### build
 
-Creates an SQLAlchemy engine based on the data source name and optional configurations.
+Creates a SQLAlchemy engine based on the data source name and optional configuration.
 
-```python
+```Python
 def build(self, *args, **kwargs) -> Engine
 ```
 
 #### Usage Example
 
-```python
+```py
 from clickzetta_dbutils import DatabaseConnectionManager
 
-# Chainable call example
+```
+
+Chained call example:
+
+```py
 engine = DatabaseConnectionManager("mysql_source_name")\
     .use_schema("test_schema")\
     .use_options({"charset": "utf8"})\
     .build()
 
-# Lakehouse connection example
+```
+
+Lakehouse connection example:
+
+```py
 engine = DatabaseConnectionManager("LAKEHOUSE_source_name")\
     .use_vcluster("default")\
     .use_workspace("test-workspace")\
@@ -218,72 +239,98 @@ engine = DatabaseConnectionManager("LAKEHOUSE_source_name")\
     .build()
 ```
 
+> Note: `"LAKEHOUSE_source_name"` refers to the name of the Lakehouse data source in Data Source Management.
+
 ## Code Examples
 
-### Example of Using PostgreSQL Data Source in Python Node
+### Using a PostgreSQL Data Source in a Python Node
 
-Example of retrieving all PostgreSQL tables for `postgres_source_name`:
+This example retrieves all pg tables from the `postgres_source_name` data source:
 
-```python
+```py
 from sqlalchemy import text
 from clickzetta_dbutils import get_active_engine
 
-# Using the default schema
+```
+
+Using the default schema:
+
+```py
 engine = get_active_engine("postgres_source_name")
 with engine.connect() as conn:
     results = conn.execute(text("SELECT * FROM pg_tables WHERE schemaname = 'public';"))
     for row in results:
         print(row)
 
-# Specifying the database and schema via options
-engine = get_active_engine("postgres_source_name", 
-                          schema="pg_database", 
-                          options={"search_path": "pg_schema"})
 ```
 
-### Example of Using MySQL Data Source in Python Node
+Specifying a database and schema via options:
 
-```python
+```py
+engine = get_active_engine("postgres_source_name", 
+                          schema="pg_database", 
+                          options={"search_path":"pg_schema"})
+```
+
+### Using a MySQL Data Source in a Python Node
+
+```py
 from sqlalchemy import text
 from clickzetta_dbutils import DatabaseConnectionManager
 
-# View all available data source configurations
+```
+
+View all available data source configurations:
+
+```py
 print(DatabaseConnectionManager.load_connection_configs())
 
-# Create a connection and specify the schema
+```
+
+Create a connection with a specified schema:
+
+```py
 manager = DatabaseConnectionManager("mysql_source_name")
 manager.use_schema("test_schema")
 engine = manager.build()
 
 with engine.connect() as conn:
-    result = conn.execute(text("SELECT * FROM test_table LIMIT 1;"))
+    result = conn.execute(text("select * from test_table limit 1;"))
 ```
 
-### Example of Using Lakehouse Data Source in Python Node
+### Using a Lakehouse Data Source in a Python Node
 
-```python
+```py
 from sqlalchemy import text
 from clickzetta_dbutils import get_active_engine
 
-# Method 1: Using `get_active_engine`
+```
+
+Option 1: Using get_active_engine:
+
+```py
 engine = get_active_engine("LAKEHOUSE_source_name", 
                           vcluster="default", 
                           workspace="test-workspace", 
                           schema="public")
 
-# Method 2: Using `get_active_lakehouse_engine`
+```
+
+Option 2: Using get_active_lakehouse_engine:
+
+```py
 from clickzetta_dbutils import get_active_lakehouse_engine
 engine = get_active_lakehouse_engine(vcluster="default", 
                                    workspace="test-workspace")
 with engine.connect() as conn:
-    results = conn.execute(text("SELECT 1"))
+    results = conn.execute(text("select 1"))
     for row in results:
         print(row)
 ```
 
-### Example of Using Data Sources in Shell Node
+### Using a Data Source in a Shell Node
 
-In Shell nodes, data sources can be used by creating a Python script file:
+In a Shell node, you can use data sources by creating a Python script file:
 
 ```bash
 cat >> /tmp/db_utils_demo.py << EOF
@@ -300,12 +347,10 @@ EOF
 python /tmp/db_utils_demo.py
 ```
 
-## Precautions
+## Notes
 
-1. Data source configurations support both Adhoc execution and scheduled execution scenarios.
-2. Using a non-existent data source name will result in an error. Please ensure that before using it, the corresponding data source is selected in the Studio under `Development -> Python Task -> Data Source`. For Postgres and MySQL data sources, they must be created and tested for connectivity under `Management -> Data Source` to ensure successful connection.
-3. When using Lakehouse data sources, the `vcluster` parameter must be configured. Lakehouse data sources directly use the built-in Lakehouse data source seen in `Management -> Data Sources`.
-4. Connection information for data sources is securely handled to prevent plaintext password leaks.
+1. Data source configuration works in both ad-hoc execution and scheduled execution scenarios.
+2. Using a data source name that does not exist will cause an error. Make sure to select the corresponding data source under Development → Python Task → Data Sources before use. PostgreSQL and MySQL data sources must be created and connection-tested under Management → Data Sources.
+3. When using a Lakehouse data source, the `vcluster` parameter is required. The Lakehouse data source uses the built-in Lakehouse data source visible under Management → Data Sources.
+4. Data source connection details are handled securely to prevent plaintext password exposure.
 5. Multiple data sources of different types can be used within the same node.
-
-^

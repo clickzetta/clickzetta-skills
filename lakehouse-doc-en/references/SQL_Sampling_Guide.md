@@ -68,7 +68,7 @@ SELECT * FROM large_events LIMIT 5;
 | 2 | purchase | 2 | 78.90 | 2024-06-01 00:02:00 |
 | ... | ... | ... | ... | ... |
 
-> **Note**: Without `ORDER BY`, the return order of `LIMIT` is not guaranteed to be stable and may vary with the query execution plan.
+> ⚠️ **Note**: Without `ORDER BY`, the return order of `LIMIT` is not guaranteed to be stable and may vary with the query execution plan.
 
 ***
 
@@ -88,7 +88,7 @@ LIMIT 10;
 * Strict randomness is required
 * Model training data partitioning
 
-> **Tip**: For datasets over tens of millions of rows, `ORDER BY RAND()` triggers a full sort. Use `TABLESAMPLE` or hash bucketing instead.
+> 💡 **Tip**: For datasets over tens of millions of rows, `ORDER BY RAND()` triggers a full sort. Use `TABLESAMPLE` or hash bucketing instead.
 
 ***
 
@@ -105,7 +105,7 @@ SELECT * FROM large_events TABLESAMPLE(10);
 * The actual number of returned rows is approximately 10% of the total (with slight variation).
 * Sampling is based on underlying data blocks and is extremely fast with no full table scan required.
 
-> **Note**: The `TABLESAMPLE` syntax in Lakehouse may vary slightly by version. If `PERCENT` is not supported, try `TABLESAMPLE(10 ROWS)` or hash bucketing.
+> ⚠️ **Note**: The `TABLESAMPLE` syntax in Lakehouse may vary slightly by version. If `PERCENT` is not supported, try `TABLESAMPLE(10 ROWS)` or hash bucketing.
 
 ***
 
@@ -135,7 +135,7 @@ After completing sampling verification, it is recommended to clean up test table
 DROP TABLE IF EXISTS large_events;
 ```
 
-> **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
+> 💡 **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
 
 ***
 

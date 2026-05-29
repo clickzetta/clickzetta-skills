@@ -2,7 +2,7 @@
 
 This tutorial will guide you through building a complete Retrieval-Augmented Generation (RAG) application using LangChain and Singdata. We will build an intelligent document Q&A system.
 
-## 🎯 Project Goals
+## Project Goals
 
 Build an enterprise-grade RAG application with the following features:
 - Document upload and vectorized storage
@@ -11,14 +11,14 @@ Build an enterprise-grade RAG application with the following features:
 - Chat history management
 - Hybrid search capability (vector + full-text)
 
-## 📋 Technology Stack
+## Technology Stack
 
 - **Data Storage**: Singdata (vector storage, full-text index, chat history)
 - **Embedding Model**: DashScope text-embedding-v4
 - **Large Language Model**: Tongyi Qianwen qwen-plus
 - **Framework**: LangChain + Singdata integration
 
-## 🏗️ Architecture Design
+## Architecture Design
 
 ```
 User Query → Hybrid Retrieval → Context Enhancement → LLM Generation → Answer
@@ -26,7 +26,7 @@ User Query → Hybrid Retrieval → Context Enhancement → LLM Generation → A
 Chat History → Vector + Full-Text Search → Ranking → History Memory
 ```
 
-## 🚀 Step 1: Environment Setup
+## Step 1: Environment Setup
 
 ### Install Dependencies
 
@@ -42,7 +42,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Singdata configuration
+```
+
+Singdata configuration:
+
+```python
 CLICKZETTA_CONFIG = {
     "service": os.getenv("CLICKZETTA_SERVICE"),
     "instance": os.getenv("CLICKZETTA_INSTANCE"),
@@ -53,11 +57,15 @@ CLICKZETTA_CONFIG = {
     "vcluster": os.getenv("CLICKZETTA_VCLUSTER"),
 }
 
-# DashScope configuration
+```
+
+DashScope configuration:
+
+```python
 DASHSCOPE_API_KEY = os.getenv("DASHSCOPE_API_KEY")
 ```
 
-## 📝 Step 2: Core Component Initialization
+## Step 2: Core Component Initialization
 
 ```python
 from langchain_clickzetta import (
@@ -120,7 +128,7 @@ class RAGApplication:
         )
 ```
 
-## 📚 Step 3: Document Management
+## Step 3: Document Management
 
 ```python
 import hashlib
@@ -185,7 +193,11 @@ class DocumentManager:
         print(f"✅ Batch addition complete, {len(doc_ids)} documents total")
         return doc_ids
 
-# Usage example
+```
+
+Usage example:
+
+```python
 def load_sample_documents(doc_manager: DocumentManager):
     """Load sample documents"""
     sample_docs = [
@@ -210,7 +222,7 @@ def load_sample_documents(doc_manager: DocumentManager):
     return doc_manager.add_batch_documents(sample_docs)
 ```
 
-## 🤖 Step 4: Q&A System
+## Step 4: Q&A System
 
 ```python
 from langchain.chains import ConversationalRetrievalChain
@@ -291,7 +303,7 @@ class RAGChatBot:
         return conversation
 ```
 
-## 🔍 Step 5: Advanced Retrieval Features
+## Step 5: Advanced Retrieval Features
 
 ```python
 class AdvancedRetriever:
@@ -385,7 +397,7 @@ class AdvancedRetriever:
         }
 ```
 
-## 📊 Step 6: Complete Application Example
+## Step 6: Complete Application Example
 
 ```python
 def main():
@@ -452,7 +464,7 @@ if __name__ == "__main__":
     main()
 ```
 
-## 🚀 Step 7: Web Interface (Optional)
+## Step 7: Web Interface (Optional)
 
 ```python
 import streamlit as st
@@ -536,16 +548,28 @@ def create_streamlit_app():
                     "sources": response["source_documents"]
                 })
 
-# Run Streamlit app
-# streamlit run rag_app.py
 ```
 
-## 📈 Performance Optimization Tips
+Run the Streamlit app:
+
+```python
+```
+
+streamlit run rag_app.py:
+
+```python
+```
+
+## Performance Optimization Tips
 
 ### 1. Data Storage Optimization
 
 ```python
-# Use partitioned tables to improve query performance
+```
+
+Use partitioned tables to improve query performance:
+
+```python
 create_partitioned_table_sql = """
 CREATE TABLE rag_documents_partitioned (
     id String,
@@ -557,7 +581,11 @@ CREATE TABLE rag_documents_partitioned (
 PARTITION BY toYYYYMM(created_at)
 """
 
-# Create appropriate indexes
+```
+
+Create appropriate indexes:
+
+```python
 create_indexes_sql = [
     "CREATE INDEX idx_metadata ON rag_documents (metadata)",
     "CREATE INVERTED INDEX idx_content ON rag_documents (content) WITH ANALYZER='ik'",
@@ -568,7 +596,11 @@ create_indexes_sql = [
 ### 2. Retrieval Optimization
 
 ```python
-# Cache frequently queried results
+```
+
+Cache frequently queried results:
+
+```python
 from functools import lru_cache
 
 class CachedRetriever:
@@ -583,7 +615,11 @@ class CachedRetriever:
 ### 3. Batch Processing Optimization
 
 ```python
-# Batch add documents
+```
+
+Batch add documents:
+
+```python
 def batch_add_documents(document_store, documents, batch_size=100):
     for i in range(0, len(documents), batch_size):
         batch = documents[i:i + batch_size]
@@ -591,7 +627,7 @@ def batch_add_documents(document_store, documents, batch_size=100):
         print(f"Processed {min(i + batch_size, len(documents))}/{len(documents)} documents")
 ```
 
-## 🎯 Summary
+## Summary
 
 This tutorial demonstrates how to build a complete RAG application using LangChain and Singdata, including:
 

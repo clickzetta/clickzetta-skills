@@ -68,7 +68,7 @@ FROM orders_with_dupes;
 | O002 | 102 | 200 | 2024-06-01 11:05:00 |
 | O003 | 103 | 300 | 2024-06-01 12:00:00 |
 
-> **Note**: `DISTINCT` performs hash comparison on all columns. For very large data volumes, filter before applying `DISTINCT`.
+> ⚠️ **Note**: `DISTINCT` performs hash comparison on all columns. For very large data volumes, filter before applying `DISTINCT`.
 
 ***
 
@@ -175,7 +175,7 @@ DROP TABLE IF EXISTS orders_with_dupes;
 DROP TABLE IF EXISTS orders_deduped;
 ```
 
-> **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
+> 💡 **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
 
 ***
 

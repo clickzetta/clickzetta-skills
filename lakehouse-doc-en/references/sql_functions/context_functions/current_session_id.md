@@ -1,4 +1,4 @@
-### CURRENT_SESSION_ID Function
+# CURRENT_SESSION_ID Function
 
 ```
 current_session_id()

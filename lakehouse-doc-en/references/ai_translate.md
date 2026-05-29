@@ -127,6 +127,17 @@ SELECT AI_TRANSLATE(
 -- Returns: こんにちは世界
 ```
 
+### Chinese Idiom Translation Example
+
+```sql
+SELECT AI_TRANSLATE(
+    'endpoint:qwen3-max-preview',
+    '塞翁失马，焉知非福。',
+    'en'
+) AS translated;
+-- Returns: When the old man lost his horse, who could have known it wasn't a blessing in disguise?
+```
+
 ### Batch Translation of Table Data
 
 ```sql

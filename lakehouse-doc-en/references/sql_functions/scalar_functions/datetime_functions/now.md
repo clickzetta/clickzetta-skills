@@ -26,9 +26,7 @@ After executing the above SQL statement, the result will be similar to the follo
 ```sql
 INSERT INTO my_table (id, name, created_at) VALUES (1, 'John Doe', now());
 ```
-```markdown
 2. When updating data, use the current timestamp as the record's last update time:
-```
 ```sql
 UPDATE my_table SET name = 'Jane Doe', updated_at = now() WHERE id = 1;
 ```

@@ -55,7 +55,7 @@ CREATE TABLE STREAM users_cdc_stream ON TABLE users_cdc
 WITH PROPERTIES ('TABLE_STREAM_MODE' = 'STANDARD');
 ```
 
-> **Tip**: Once the Stream is created, any `INSERT`, `UPDATE`, or `DELETE` operations on the source table are recorded.
+> 💡 **Tip**: Once the Stream is created, any `INSERT`, `UPDATE`, or `DELETE` operations on the source table are recorded.
 
 ***
 
@@ -82,7 +82,7 @@ ORDER BY user_id;
 | 2 | Bob | inactive | UPDATE_AFTER |
 | 3 | Carol | active | INSERT |
 
-> **Note**: `__change_type` values include `INSERT`, `UPDATE_AFTER`, `UPDATE_BEFORE`, `DELETE`. The Stream also returns the `__commit_version` and `__commit_timestamp` metadata columns.
+> ⚠️ **Note**: `__change_type` values include `INSERT`, `UPDATE_AFTER`, `UPDATE_BEFORE`, `DELETE`. The Stream also returns the `__commit_version` and `__commit_timestamp` metadata columns.
 
 ***
 
@@ -114,7 +114,7 @@ SELECT COUNT(*) FROM users_cdc_stream;
 |----------|
 | 0 |
 
-> **Tip**: If you only execute a `SELECT` without a DML consumption, the offset will not advance, and the next query will return the same data.
+> 💡 **Tip**: If you only execute a `SELECT` without a DML consumption, the offset will not advance, and the next query will return the same data.
 
 ***
 
@@ -143,7 +143,7 @@ Use `DROP TABLE STREAM` to remove a Stream object that is no longer needed.
 DROP TABLE STREAM users_cdc_stream;
 ```
 
-> **Tip**: Dropping a Stream does not affect the source table data, but unconsumed change records will be lost.
+> 💡 **Tip**: Dropping a Stream does not affect the source table data, but unconsumed change records will be lost.
 
 ***
 
@@ -158,7 +158,7 @@ DROP TABLE IF EXISTS users_cdc_stream;
 DROP TABLE IF EXISTS users_sync;
 ```
 
-> **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
+> 💡 **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
 
 ***
 

@@ -64,6 +64,8 @@ USE VCLUSTER REPORTING_VC;
 ```
 ![](.topwrite/assets/image_1714992453071.png)
 
+> ⚠️ **Note**: The `vcluster_size` parameter for compute clusters supports both T-shirt sizes (XSMALL, SMALL, LARGE, etc.) and numeric values (1, 2, 4, 16, etc.) to provide a richer range of compute cluster specifications for different scenarios. For more information, see: [VCluster Size Specification Change Description](vcluster_size_description.md)
+
 2. View the original dataset in the public dataset
 
 2.1 View the field information of the original dataset.
@@ -93,9 +95,7 @@ use vcluster ETL_VC;
 create schema tutorial;
 use tutorial;
 ```
-```markdown
-## 2. Clean and transform the original dataset using CTAS and write to a new table
-```
+2. Clean and transform the original dataset using CTAS and write to a new table
 ```sql
 --2. Clean and transform the original dataset
 CREATE table tutorial.int_fhvhv_tripdata
@@ -154,7 +154,7 @@ SELECT
   END AS wav_match_flag
 FROM clickzetta_sample_data.nyc_taxi_tripdata.fhvhv_tripdata;
 ```
-## Validate Processed Data
+Validate the processed data
 ```sql
 SELECT * FROM tutorial.int_fhvhv_tripdata LIMIT 10;
 ```
@@ -272,7 +272,7 @@ SELECT * FROM tutorial.mart_trips_driver_pay_per_company
 WHERE substr(year_month,0,4)='2021'
 ORDER BY year_month ASC;
 ```
-## 3. Observe the Latency Results of the Query
+3. Observe the Latency Results of the Query
 ```sql
 -- Clear QUERY_TAG
 SET QUERY_TAG = '';

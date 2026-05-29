@@ -11,7 +11,7 @@ Please contact Lakehouse technical support
 
 | **Parameter**    | **Required** | **Description**                                                        |
 | -------------- | -------- | ------------------------------------------------------------- |
-| endpoint       | Y        | The endpoint address to connect to the lakehouse, eg: tmwmzxzs.dev-api.clickzetta.com |
+| endpoint       | Y        | The endpoint address to connect to the lakehouse, eg: tmwmzxzs.dev-api.singdata.com |
 | username       | Y        | Username                                                           |
 | password       | Y        | Password                                                            |
 | workspace      | Y        | Workspace in use                                                       |

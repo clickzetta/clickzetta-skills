@@ -19,9 +19,7 @@ Integer (int)
 SELECT YEAR('2022-03-31');
 -- Result: 2022
 ```
-```markdown
 2. Extract the year from a date in timestamp format:
-```
 ```sql
 SELECT YEAR(TIMESTAMP "2022-03-31 14:59:59");
 -- Result: 2022

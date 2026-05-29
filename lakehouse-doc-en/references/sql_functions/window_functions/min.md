@@ -1,4 +1,4 @@
-### MIN 
+# MIN 
 ```sql
 MIN(expr) OVER ([PARTITION BY clause] [ORDER BY clause] [FRAME clause])
 ```
@@ -125,6 +125,3 @@ SELECT name, dep_no, salary,
 +-----------+--------+--------+----------------+
 ```
 In this example, we will calculate the cumulative minimum salary for each department, which is the minimum salary from each employee up to the current employee.
-
-^
-^

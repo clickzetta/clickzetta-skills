@@ -174,4 +174,38 @@ public class UpdateDataDemo {
 }
 ```
 
-^
+
+### Example 4: Get Job ID via CZStatement
+
+Each call to `getJobId()` only returns the Job ID from the most recent execution.
+
+```java
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+
+public class UpdateDataDemo {
+    public static void main(String[] args) throws Exception {
+
+        Connection conn = DriverManager.getConnection("jdbcurl", "username", "password");
+        // Cast to CZStatement to retrieve the Job ID
+        CZStatement statement = (CZStatement) conn.createStatement();
+        String sql1 = "select 1+2";
+        statement.execute(sql1);
+        System.out.println("statement1 jobid====" + statement.getJobId());
+        String sql2 = "select 1+4";
+        statement.execute(sql2);
+        System.out.println("statement2 jobid====" + statement.getJobId());
+        String sql3 = "select 1+5";
+        String sql4 = "select 1+6";
+        statement.execute(sql3);
+        statement.execute(sql4);
+        // Only the most recent Job ID is retrievable — it is recommended to call statement.getJobId() immediately after each SQL execution
+        System.out.println("statement3 jobid====" + statement.getJobId());
+        statement.close();
+        conn.close();
+
+    }
+}
+```
+

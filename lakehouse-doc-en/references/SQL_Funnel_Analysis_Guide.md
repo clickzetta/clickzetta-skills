@@ -75,7 +75,7 @@ INSERT INTO doc_funnel_events VALUES
 (26, 107, 'browse',   CAST('2024-01-08 10:00:00' AS TIMESTAMP));
 ```
 
-> **Note**: `TIMESTAMP` literals do not support direct string values; use `CAST('...' AS TIMESTAMP)` for explicit conversion.
+> ⚠️ **Note**: `TIMESTAMP` literals do not support direct string values; use `CAST('...' AS TIMESTAMP)` for explicit conversion.
 
 ***
 
@@ -450,7 +450,7 @@ After completing funnel analysis verification, it is recommended to clean up tes
 DROP TABLE IF EXISTS doc_funnel_events;
 ```
 
-> **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
+> 💡 **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
 
 ***
 

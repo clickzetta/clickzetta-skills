@@ -1,6 +1,6 @@
 # Configuring Singdata Lakehouse Volume as a File Storage Service in Dify
 
-## 📋 Overview
+## Overview
 
 Singdata Lakehouse Volume storage provides [Dify](https://dify.ai/) with an enterprise-grade file storage backend, supporting three Volume types:
 
@@ -8,7 +8,7 @@ Singdata Lakehouse Volume storage provides [Dify](https://dify.ai/) with an ente
 * **User Volume** - Knowledge base file storage (recommended)
 * **External Volume** - Enterprise data lake integration
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Environment Requirements
 
@@ -20,10 +20,18 @@ Singdata Lakehouse Volume storage provides [Dify](https://dify.ai/) with an ente
 Configure in the Dify `.env` file:
 
 ```bash
-# Use Singdata Volume as storage backend
-STORAGE_TYPE=singdata-volume
+```
 
-# Singdata connection configuration
+Use Singdata Volume as storage backend:
+
+```bash
+STORAGE_TYPE=clickzetta-volume
+
+```
+
+Singdata connection configuration:
+
+```bash
 CLICKZETTA_VOLUME_USERNAME=your_username
 CLICKZETTA_VOLUME_PASSWORD=your_password
 CLICKZETTA_VOLUME_INSTANCE=your_instance
@@ -32,14 +40,18 @@ CLICKZETTA_VOLUME_WORKSPACE=your_workspace
 CLICKZETTA_VOLUME_VCLUSTER=default_ap
 CLICKZETTA_VOLUME_SCHEMA=dify
 
-# Volume type configuration
+```
+
+Volume type configuration:
+
+```bash
 CLICKZETTA_VOLUME_TYPE=table  # table|user|external
 CLICKZETTA_VOLUME_TABLE_PREFIX=dataset_
 CLICKZETTA_VOLUME_DIFY_PREFIX=dify_km    # directory prefix, isolated from other applications
 CLICKZETTA_VOLUME_NAME=  # only required for External Volume
 ```
 
-## 📂 Volume Type Detailed Configuration
+## Volume Type Detailed Configuration
 
 ### Volume Type Selection
 
@@ -60,16 +72,44 @@ Singdata Lakehouse Volume supports three types, each suitable for different scen
 ### 1. Table Volume Configuration
 
 ```bash
-# Table Volume configuration
+```
+
+Table Volume configuration:
+
+```bash
 CLICKZETTA_VOLUME_TYPE=table
 CLICKZETTA_VOLUME_TABLE_PREFIX=dataset_
 
-# Knowledge base file organization structure
-# dataset_{dataset_id}/
-# ├── raw/           # original uploaded documents
-# ├── processed/     # processed files  
-# ├── metadata/      # metadata files
-# └── exports/       # exported files
+```
+
+Knowledge base file organization structure:
+
+```bash
+```
+
+dataset_{dataset_id}/:
+
+```bash
+```
+
+├── raw/           # original uploaded documents:
+
+```bash
+```
+
+├── processed/     # processed files:
+
+```bash
+```
+
+├── metadata/      # metadata files:
+
+```bash
+```
+
+└── exports/       # exported files:
+
+```bash
 ```
 
 **Features**:
@@ -88,17 +128,49 @@ CLICKZETTA_VOLUME_TABLE_PREFIX=dataset_
 ### 2. User Volume Configuration (Recommended for Knowledge Base)
 
 ```bash
-# User Volume configuration
+```
+
+User Volume configuration:
+
+```bash
 CLICKZETTA_VOLUME_TYPE=user
 CLICKZETTA_VOLUME_DIFY_PREFIX=dify_km    # directory prefix, defaults to dify_km
 
-# User file organization structure (prefix added automatically)
-# dify_km/
-# ├── upload_files/  # user uploaded files
-# ├── tools/         # tool files
-# ├── website_files/ # website files
-# ├── temp/          # temporary files
-# └── cache/         # cache files
+```
+
+User file organization structure (prefix added automatically):
+
+```bash
+```
+
+dify_km/:
+
+```bash
+```
+
+├── upload_files/  # user uploaded files:
+
+```bash
+```
+
+├── tools/         # tool files:
+
+```bash
+```
+
+├── website_files/ # website files:
+
+```bash
+```
+
+├── temp/          # temporary files:
+
+```bash
+```
+
+└── cache/         # cache files:
+
+```bash
 ```
 
 **Features**:
@@ -119,13 +191,29 @@ CLICKZETTA_VOLUME_DIFY_PREFIX=dify_km    # directory prefix, defaults to dify_km
 ### 3. External Volume Configuration
 
 ```bash
-# External Volume configuration
+```
+
+External Volume configuration:
+
+```bash
 CLICKZETTA_VOLUME_TYPE=external
 CLICKZETTA_VOLUME_NAME=your_external_volume_name
 
-# Requires pre-created Storage Connection and External Volume
-# CREATE STORAGE CONNECTION s3_conn TYPE S3 ...
-# CREATE EXTERNAL VOLUME enterprise_data LOCATION 's3://bucket/' ...
+```
+
+Requires pre-created Storage Connection and External Volume:
+
+```bash
+```
+
+CREATE STORAGE CONNECTION s3_conn TYPE S3 ...:
+
+```bash
+```
+
+CREATE EXTERNAL VOLUME enterprise_data LOCATION 's3://bucket/' ...:
+
+```bash
 ```
 
 **Features**:
@@ -172,14 +260,14 @@ GRANT CREATE ON EXTERNAL VOLUME enterprise_data TO dify_admin;
 3. Verify access permissions through the underlying storage connection
 4. Perform final permission confirmation based on the operation type (read/write)
 
-## 🚨 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
 #### 1. Connection Failed
 
 ```bash
-Error: user:username login to singdata failed
+Error: user:username login to clickzetta failed
 ```
 
 **Solution**:

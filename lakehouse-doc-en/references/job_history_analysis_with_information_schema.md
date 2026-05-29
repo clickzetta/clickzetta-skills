@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide helps you use the `sys.information_schema.job_history` table to analyze Singdata system usage, understand resource consumption patterns, identify performance bottlenecks, and discover optimization opportunities. All analysis is based on SQL queries, requiring no additional tools.
+This guide helps you use the `sys.information_schema.job_history` table to analyze Singdata Lakehouse system usage, understand resource consumption patterns, identify performance bottlenecks, and discover optimization opportunities. All analysis is based on SQL queries, requiring no additional tools.
 
 ## Data Source Introduction
 
@@ -41,6 +41,85 @@ This guide helps you use the `sys.information_schema.job_history` table to analy
 * **Periodic Analysis**: Last 30 days of data
 * **Long-term Trends**: Last 90 days of data
 
+## Common Quick Analysis SQL
+
+The following SQL queries are suitable for daily monitoring, troubleshooting, and dashboard initialization. Use `sys.information_schema.job_history` for cross-workspace analysis; switch to `information_schema.job_history` when viewing only the current workspace.
+
+### Cluster Load Analysis
+
+```sql
+SELECT
+    virtual_cluster,
+    COUNT(*) AS job_count,
+    AVG(execution_time) AS avg_seconds,
+    ROUND(SUM(CASE WHEN status = 'SUCCEED' THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) AS success_rate
+FROM sys.information_schema.job_history
+WHERE start_time >= CURRENT_DATE() - INTERVAL 7 DAY
+GROUP BY virtual_cluster
+ORDER BY job_count DESC;
+```
+
+### Top 20 Slow Queries
+
+```sql
+SELECT job_id, virtual_cluster, execution_time, status, start_time
+FROM sys.information_schema.job_history
+WHERE start_time >= CURRENT_DATE() - INTERVAL 7 DAY
+ORDER BY execution_time DESC
+LIMIT 20;
+```
+
+### Failed Job Statistics
+
+```sql
+SELECT
+    virtual_cluster,
+    COUNT(*) AS failed_count,
+    DATE(start_time) AS date
+FROM sys.information_schema.job_history
+WHERE status = 'FAILED'
+  AND start_time >= CURRENT_DATE() - INTERVAL 7 DAY
+GROUP BY virtual_cluster, DATE(start_time)
+ORDER BY date DESC, failed_count DESC;
+```
+
+### Cache Hit Rate Analysis
+
+```sql
+SELECT
+    virtual_cluster,
+    SUM(CAST(input_bytes AS BIGINT)) AS total_input_bytes,
+    SUM(CAST(cache_hit AS BIGINT)) AS total_cache_hit,
+    ROUND(SUM(CAST(cache_hit AS BIGINT)) * 100.0 /
+          NULLIF(SUM(CAST(input_bytes AS BIGINT)), 0), 2) AS cache_hit_rate
+FROM sys.information_schema.job_history
+WHERE start_time >= CURRENT_DATE() - INTERVAL 7 DAY
+  AND input_bytes IS NOT NULL
+GROUP BY virtual_cluster;
+```
+
+### Peak Period Identification
+
+```sql
+SELECT
+    HOUR(start_time) AS hour_of_day,
+    COUNT(*) AS job_count,
+    AVG(execution_time) AS avg_execution_time
+FROM sys.information_schema.job_history
+WHERE start_time >= CURRENT_DATE() - INTERVAL 7 DAY
+GROUP BY HOUR(start_time)
+ORDER BY hour_of_day;
+```
+
+### Filter Job History by query_tag
+
+```sql
+SELECT job_id, execution_time, status
+FROM sys.information_schema.job_history
+WHERE start_time >= CURRENT_DATE() - INTERVAL 7 DAY
+  AND query_tag = 'etl_daily';
+```
+
 ## 1. Workspace and Virtual Cluster Activity Analysis
 
 ### Analysis Purpose
@@ -58,9 +137,9 @@ SELECT
     COUNT(*) as job_count,                    -- Job count
     SUM(execution_time) as total_execution_time,  -- Total execution time
     AVG(execution_time) as avg_execution_time,    -- Average execution time
-    SUM(CASE WHEN status = 'SUCCESS' THEN 1 ELSE 0 END) as success_jobs,  -- Successful jobs
+    SUM(CASE WHEN status = 'SUCCEED' THEN 1 ELSE 0 END) as success_jobs,  -- Successful jobs
     SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END) as failed_jobs,    -- Failed jobs
-    ROUND(SUM(CASE WHEN status = 'SUCCESS' THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) as success_rate -- Success rate
+    ROUND(SUM(CASE WHEN status = 'SUCCEED' THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) as success_rate -- Success rate
 FROM sys.information_schema.job_history 
 WHERE start_time >= CURRENT_DATE() - INTERVAL 30 DAY
 GROUP BY workspace_name
@@ -432,11 +511,11 @@ LIMIT 50;
 
 | Job ID            | Workspace Name      | Virtual Cluster      | Job Type | Execution Time (s) | Start Time           | Status  | Job Preview                                                                                      |
 | ----------------- | ------------------- | -------------------- | -------- | ------------------ | -------------------- | ------- | ------------------------------------------------------------------------------------------------ |
-| 202505\*\*\*96423 | met\*\*\*\_n\_bill  | MET\*\*\*\_ETL\_GP   | SELECT   | 3,825.29           | 2025-05-22 03:15:23  | SUCCESS | SELECT SUM(CAST(record\_count AS BIGINT)) as total\_records, SUM(CAST(data\_size AS BIGINT))... |
-| 202505\*\*\*84521 | met\*\*\*\_n\_bill  | MET\*\*\*\_ETL\_GP   | SELECT   | 2,456.78           | 2025-05-21 15:42:11  | SUCCESS | WITH billing\_data AS (SELECT workspace\_id, SUM(compute\_time) FROM billing\_summary...         |
-| 202505\*\*\*73941 | met\*\*\*\_n\_bill  | DEFAULT              | INSERT   | 1,923.45           | 2025-05-20 09:33:47  | SUCCESS | INSERT INTO meter SELECT event\_id, workspace\_id, timestamp, event\_type...                     |
+| 202505\*\*\*96423 | met\*\*\*\_n\_bill  | MET\*\*\*\_ETL\_GP   | SELECT   | 3,825.29           | 2025-05-22 03:15:23  | SUCCEED | SELECT SUM(CAST(record\_count AS BIGINT)) as total\_records, SUM(CAST(data\_size AS BIGINT))... |
+| 202505\*\*\*84521 | met\*\*\*\_n\_bill  | MET\*\*\*\_ETL\_GP   | SELECT   | 2,456.78           | 2025-05-21 15:42:11  | SUCCEED | WITH billing\_data AS (SELECT workspace\_id, SUM(compute\_time) FROM billing\_summary...         |
+| 202505\*\*\*73941 | met\*\*\*\_n\_bill  | DEFAULT              | INSERT   | 1,923.45           | 2025-05-20 09:33:47  | SUCCEED | INSERT INTO meter SELECT event\_id, workspace\_id, timestamp, event\_type...                     |
 | 202505\*\*\*62847 | sto\*\*\*\_metering | DEFAULT              | SELECT   | 1,567.23           | 2025-05-19 14:28:36  | FAILED  | SELECT storage\_type, bucket\_name, SUM(storage\_size) FROM sto\*\*\*\_usage WHERE date...       |
-| 202505\*\*\*51238 | met\*\*\*\_n\_bill  | BI\_ANALYSE          | SELECT   | 1,234.56           | 2025-05-18 11:17:29  | SUCCESS | SELECT DATE\_TRUNC('hour', start\_time) as hour, COUNT(\*) as job\_count FROM job\_his...        |
+| 202505\*\*\*51238 | met\*\*\*\_n\_bill  | BI\_ANALYSE          | SELECT   | 1,234.56           | 2025-05-18 11:17:29  | SUCCEED | SELECT DATE\_TRUNC('hour', start\_time) as hour, COUNT(\*) as job\_count FROM job\_his...        |
 
 ### 4.2 Failed Job Analysis
 
@@ -528,7 +607,7 @@ UNION ALL
 SELECT 
     'Overall Overview',
     'Success Rate (%)',
-    CAST(ROUND(SUM(CASE WHEN status = 'SUCCESS' THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) AS STRING)
+    CAST(ROUND(SUM(CASE WHEN status = 'SUCCEED' THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) AS STRING)
 FROM sys.information_schema.job_history 
 WHERE DATE(start_time) = CURRENT_DATE() - INTERVAL 1 DAY
 
@@ -593,5 +672,3 @@ It is recommended to save frequently used queries as views for easy reuse.
 * **Low Cache Hit Rate**: Adjust the auto-suspend time for analytics compute clusters; avoid shutting down during peak query periods to prevent cache loss
 * **High-Frequency Access Tables**: Consider partitioning and index optimization
 * **Resource Imbalance**: Redistribute compute cluster resource specifications within workspaces; for frequently used compute clusters, consider appropriate scaling if you want to reduce job execution time
-
-^

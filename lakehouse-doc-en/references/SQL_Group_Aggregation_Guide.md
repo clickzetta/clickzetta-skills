@@ -79,7 +79,7 @@ ORDER BY total_sales DESC;
 | West | 2 | 7500 | 3750 |
 | South | 2 | 11000 | 5500 |
 
-> **Note**: Columns in `SELECT` that are not wrapped in aggregate functions must be included in `GROUP BY`.
+> ⚠️ **Note**: Columns in `SELECT` that are not wrapped in aggregate functions must be included in `GROUP BY`.
 
 ***
 
@@ -146,7 +146,7 @@ ORDER BY region;
 | South | 0 | 8000 | 3000 | 11000 |
 | West | 4500 | 0 | 3000 | 7500 |
 
-> **Tip**: Conditional aggregation is more efficient than multiple `SELECT` + `UNION` queries and is recommended for row-to-column transposition scenarios.
+> 💡 **Tip**: Conditional aggregation is more efficient than multiple `SELECT` + `UNION` queries and is recommended for row-to-column transposition scenarios.
 
 ***
 
@@ -197,7 +197,7 @@ GROUP BY region;
 | South | 2 | 2 |
 | West | 2 | 2 |
 
-> **Tip**: `APPROX_COUNT_DISTINCT` is based on the HyperLogLog algorithm, with typical error within 1%-2%, suitable for fast estimation on large data volumes.
+> 💡 **Tip**: `APPROX_COUNT_DISTINCT` is based on the HyperLogLog algorithm, with typical error within 1%-2%, suitable for fast estimation on large data volumes.
 
 ***
 
@@ -210,7 +210,7 @@ After completing aggregation verification, it is recommended to clean up test ta
 DROP TABLE IF EXISTS sales;
 ```
 
-> **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
+> 💡 **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
 
 ***
 

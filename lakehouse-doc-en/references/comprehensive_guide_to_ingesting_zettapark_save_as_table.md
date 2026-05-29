@@ -11,19 +11,28 @@ The SAVE\_AS\_TABLE method automatically creates tables, simplifying the process
 #### Implementation Steps
 
 Open VS Code on your computer, create a file named [py\_zettapark\_save\_as\_table.py](https://github.com/yunqiqiliang/clickzetta_quickstart/blob/main/a_comprehensive_guide_to_ingesting_data_into_clickzetta/py_zettapark_save_as_table.py), and copy the following code into the py\_zettapark\_save\_as\_table.py file.
+
 ```Python
 import json
 import gzip
 from clickzetta.zettapark.session import Session
 from datetime import datetime
 
-# Read parameters from the configuration file
+```
+
+Read parameters from the configuration file:
+
+```Python
 with open('config-ingest.json', 'r') as config_file:
     config = json.load(config_file)
 
 print("Connecting to Singdata Lakehouse.....\n")
 
-# Create session
+```
+
+Create session:
+
+```Python
 session = Session.builder.configs(config).create()
 
 print("Connection successful!...\n")
@@ -31,7 +40,7 @@ print("Connection successful!...\n")
 target_table_name = "lift_tuckets_import_by_py_save_as_table"
 
 def save_as_table_to_clickzetta(session, schema, data):
-    print('Saving data to Clickzetta Lakehouse')
+    print('Saving data to Singdata Lakehouse')
 
     # Convert data to dataframe
     df = session.create_dataframe(data, schema=schema)
@@ -58,14 +67,19 @@ if __name__ == "__main__":
     session.close()
     print("Ingest complete")
 ```
+
 In VS Code, open a new "Terminal" and run the following command to activate the Python environment created in the "Environment Setup" step. If you are already in the cz-ingest-examples environment, please skip this step.
+
 ```
 conda activate cz-ingest-examples
 ```
+
 Then run the following command in the same terminal:
+
 ```
 python py_zettapark_save_as_table.py
 ```
+
 #### Next Steps Recommendations
 
 #### Resources

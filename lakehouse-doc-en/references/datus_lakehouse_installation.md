@@ -19,8 +19,9 @@ This guide will help you set up and use Datus Agent from scratch to connect to S
 
 ## Step 1: Create Project Directory
 
+Create project directory:
+
 ```bash
-# Create project directory
 mkdir my-lakehouse-datus
 cd my-lakehouse-datus
 ```
@@ -41,7 +42,11 @@ conda activate lakehouse-env
 ```bash
 python3.12 -m venv lakehouse-env
 source lakehouse-env/bin/activate  # Linux/macOS
-# or
+```
+
+Or:
+
+```bash
 lakehouse-env\Scripts\activate  # Windows
 ```
 
@@ -54,10 +59,15 @@ source lakehouse-env/bin/activate  # Linux/macOS
 
 ## Step 3: Install Datus Agent Package
 
+Install Datus Agent:
+
 ```bash
-# Install Datus Agent
 pip install datus-agent
-# Datus plugin for Singdata Lakehouse
+```
+
+Datus plugin for Singdata Lakehouse:
+
+```bash
 pip install datus-clickzetta
 ```
 
@@ -71,15 +81,17 @@ pip install git+https://github.com/Datus-ai/Datus-agent.git
 
 Create a `.env` file to store sensitive information:
 
+Create environment variable configuration file:
+
 ```bash
-# Create environment variable configuration file
 touch .env
 ```
 
 Add the following configuration to the `.env` file (modify according to your actual situation):
 
+Singdata Lakehouse connection configuration:
+
 ```env
-# Singdata Lakehouse Connection Configuration
 CLICKZETTA_SERVICE=cn-shanghai-alicloud.api.singdata.com
 CLICKZETTA_USERNAME=your_username
 CLICKZETTA_PASSWORD=your_password
@@ -88,17 +100,34 @@ CLICKZETTA_WORKSPACE=quick_start
 CLICKZETTA_SCHEMA=mcp_demo
 CLICKZETTA_VCLUSTER=default_ap
 
-# AI Model Configuration (choose one)
-# Alibaba Cloud Tongyi Qianwen (Recommended)
+```
+
+AI model configuration (choose one):
+
+Alibaba Cloud Tongyi Qianwen (Recommended):
+
+```env
 DASHSCOPE_API_KEY=your_dashscope_api_key
 
-# Or DeepSeek
+```
+
+Or DeepSeek:
+
+```env
 DEEPSEEK_API_KEY=your_deepseek_api_key
 
-# Or OpenAI
+```
+
+Or OpenAI:
+
+```env
 OPENAI_API_KEY=your_openai_api_key
 
-# Or Claude
+```
+
+Or Claude:
+
+```env
 ANTHROPIC_API_KEY=your_claude_api_key
 ```
 
@@ -188,7 +217,11 @@ agent:
     plan: reflection
     chat_default_node: lakehouse_assistant
 
-# Schema linking rate (affects query performance)
+```
+
+Schema linking rate (affects query performance):
+
+```yaml
 schema_linking_rate: medium
 ```
 
@@ -196,17 +229,16 @@ schema_linking_rate: medium
 
 Before starting the full system, test the database connection:
 
-```bash
-python -c "
-from datus.tools.db_tools.db_manager import DBManager
-from datus.configuration.agent_config import DbConfig
-import os
-from dotenv import load_dotenv
+Load environment variables:
 
-# Load environment variables
+```bash
 load_dotenv()
 
-# Create database configuration
+```
+
+Create database configuration:
+
+```bash
 db_config = DbConfig(
     type='clickzetta',
     service=os.getenv('CLICKZETTA_SERVICE'),
@@ -218,17 +250,21 @@ db_config = DbConfig(
     vcluster=os.getenv('CLICKZETTA_VCLUSTER')
 )
 
-# Test connection
+```
+
+Test connection:
+
+```bash
 namespaces = {'lakehouse': {'lakehouse': db_config}}
 db_manager = DBManager(namespaces)
 
 try:
     connector = db_manager.get_conn('lakehouse', 'lakehouse')
     result = connector.test_connection()
-    print('Singdata Lakehouse connection test successful!')
+    print('✅ Singdata Lakehouse connection test successful!')
     print(f'Connection result: {result}')
 except Exception as e:
-    print(f'Connection test failed: {e}')
+    print(f'❌ Connection test failed: {e}')
 "
 ```
 
@@ -236,18 +272,24 @@ except Exception as e:
 
 ### Method 1: Command Line Mode
 
+Start interactive CLI:
+
 ```bash
-# Start interactive CLI
 datus-cli --namespace lakehouse --config conf/agent.yml
 ```
 
 ### Method 2: Web Mode (Recommended, supports subagent selection)
 
+Start Web interface, supports selecting different subagents:
+
 ```bash
-# Start Web interface, supports selecting different subagents
 datus-cli --namespace lakehouse --config conf/agent.yml --web --host 0.0.0.0
 
-# Or local access only
+```
+
+Or local access only:
+
+```bash
 datus-cli --namespace lakehouse --config conf/agent.yml --web --host 127.0.0.1
 ```
 

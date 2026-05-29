@@ -1,4 +1,4 @@
-### CURRENT_INSTANCE_ID 
+# CURRENT_INSTANCE_ID 
 
 #### Description
 The `CURRENT_INSTANCE_ID()` function is used to obtain the unique identifier (ID) of the instance associated with the current session. This function is particularly important in distributed database systems as it helps users identify and track the instance where the current operation is taking place.

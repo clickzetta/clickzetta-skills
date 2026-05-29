@@ -1,62 +1,65 @@
-# Basic SQL Data Transformation
+# SQL Data Transformation Basics
 
-SQL data transformation is the process of converting data from one format or structure to another. The goal is to clean, integrate, and shape the data so that it can be effectively stored, analyzed, and utilized.
+SQL data transformation is the process of converting data from one format or structure to another. The goal is to clean, integrate, and shape data so it can be effectively stored, analyzed, and utilized.
 
 ## Basic Concepts
 
-1. **Extract**: Extracting data from various data sources (such as databases, file systems). Common operations include data querying and data exporting.
-2. **Transform**: Performing various operations on the extracted data to meet the requirements of target storage or analysis. Common transformation operations include data cleaning, type conversion, data aggregation, etc.
+1. **Extract**: Pulling data from various data sources such as databases and file systems. Common operations include data querying and data export.
+2. **Transform**: Performing various operations on the extracted data to meet the requirements of the target storage or analysis system. Common transformation operations include data cleansing, type conversion, and data aggregation.
 3. **Load**: Loading the transformed data into the target storage system, such as a data warehouse or data lake.
 
 ## Common Data Transformation Operations
 
-1. **Data Cleaning**: Removing or correcting noise, duplicates, and errors in the data. For example:
-   * Deleting null values: `DELETE FROM table_name WHERE column_name IS NULL;`
-   * Correcting erroneous data: `UPDATE table_name SET column_name = 'Correct Value' WHERE column_name = 'Incorrect Value';`
+1. **Data cleansing**: Removing or correcting noise, duplicates, and errors in the data. For example:
+   * Delete null values: `DELETE FROM table_name WHERE column_name IS NULL;`
+   * Correct erroneous data: `UPDATE table_name SET column_name = 'Correct Value' WHERE column_name = 'Incorrect Value';`
 
-2. **Type Conversion**: Converting data from one data type to another. For example:
-   * Converting a string to a date: `CAST(column_name AS DATE);`
-   * Converting an integer to a string: `CAST(column_name AS VARCHAR);`
+2. **Type conversion**: Converting data from one data type to another. For example:
+   * Convert a string to a date: `CAST(column_name AS DATE);`
+   * Convert an integer to a string: `CAST(column_name AS STRING);`
 
-3. **Data Aggregation**: Summarizing and calculating statistics on the data, such as sum, average, count, etc. For example:
-   * Calculating the sum: `SELECT SUM(column_name) FROM table_name;`
-   * Calculating the average: `SELECT AVG(column_name) FROM table_name;`
+3. **Data aggregation**: Summarizing and computing statistics on data, such as sum, average, and count. For example:
+   * Calculate the sum: `SELECT SUM(column_name) FROM table_name;`
+   * Calculate the average: `SELECT AVG(column_name) FROM table_name;`
 
-4. **Data Merging**: Combining data from different tables or data sources. For example:
-   * Merging data using a join operation: `SELECT a.*, b.* FROM table_a a JOIN table_b b ON a.id = b.id;`
-   * Merging data using a union operation: `SELECT column_name FROM table_a UNION SELECT column_name FROM table_b;`
+4. **Data merging**: Combining data from different tables or data sources. For example:
+   * Merge data using a join: `SELECT a.*, b.* FROM table_a a JOIN table_b b ON a.id = b.id;`
+   * Merge data using a union: `SELECT column_name FROM table_a UNION SELECT column_name FROM table_b;`
 
-5. **Data Filtering**: Selecting data that meets certain conditions. For example:
-   * Retrieving data that meets specific conditions: `SELECT * FROM table_name WHERE column_name = 'value';`
+5. **Data filtering**: Selecting data that meets certain conditions. For example:
+   * Retrieve data matching a specific condition: `SELECT * FROM table_name WHERE column_name = 'value';`
 
 ## Data Model
 
 TPC-H data represents the data warehouse of an automotive parts supplier, recording orders, items that make up the orders (lineitem), suppliers, customers, parts sold (part), regions, countries, and parts suppliers (partsupp).
 
-Singdata Lakehouse has built-in shared TPC-H data, which each user can directly use by adding the data context, for example:
-```sql
+Singdata Lakehouse has built-in shared TPC-H data that every user can query directly by adding the data context, for example:
+
+```SQL
 SELECT * FROM 
 clickzetta_sample_data.tpch_100g.customer
 LIMIT 10;
 ```
+
 ## Use Cases
 
-1. **Data Warehouse Construction**: When building a data warehouse, it is necessary to extract, transform, and load data from different data sources into the data warehouse to ensure data consistency and high quality.
-2. **Business Intelligence and Data Analysis**: For business intelligence (BI) and data analysis, raw data needs to be transformed so that analysis tools can efficiently parse and display the data.
-3. **Data Migration**: During data migration, data needs to be transformed to ensure consistency in data structure and quality from the old system to the new system.
-4. **Compliance and Data Governance**: Ensuring data meets industry standards and regulatory requirements often requires data cleansing and transformation.
-5. **Real-time Data Processing**: In real-time data processing and stream data processing, data needs to be transformed for real-time analysis and decision support.
+1. **Data warehouse construction**: When building a data warehouse, you need to extract, transform, and load data from different sources into the warehouse to ensure consistency and high quality.
+2. **Business intelligence and data analysis**: For BI and data analysis, raw data needs to be transformed so that analysis tools can efficiently parse and display it.
+3. **Data migration**: During data migration, data needs to be transformed to ensure structural and quality consistency between the old and new systems.
+4. **Compliance and data governance**: Ensuring data meets industry standards and regulatory requirements often requires data cleansing and transformation.
+5. **Real-time data processing**: In real-time and stream data processing, data needs to be transformed to support real-time analysis and decision-making.
 
-SQL data transformation is a core aspect of data processing that can help enterprises improve data quality and utilization efficiency, thereby supporting better decision-making and business operations.
+SQL data transformation is a core aspect of data processing that helps organizations improve data quality and utilization efficiency, supporting better decision-making and business operations.
 
 ## Basic Data Transformation with Singdata Lakehouse SQL
 
 ### Retrieving Data
 
-Use SELECT...FROM, LIMIT, WHERE, & ORDER BY to read the required data from the table.
+Use SELECT...FROM, LIMIT, WHERE, and ORDER BY to read the required data from a table.
 
-The most common use of queries is to read data from a table. We can use the `SELECT ... FROM` statement as shown below.
-```sql
+The most common use of queries is to read data from a table. You can use the `SELECT ... FROM` statement as shown below.
+
+```SQL
 SELECT
   *
 FROM
@@ -67,7 +70,7 @@ LIMIT
 
 ^
 
-```sql
+```SQL
 -- Use * to specify all columns
 SELECT
   *
@@ -76,9 +79,11 @@ FROM
 LIMIT
   5;
 ```
-However, running the `SELECT ... FROM` statement may encounter issues when the dataset is large.
-```sql
--- Only use column names to read the data of these columns
+
+However, running `SELECT ... FROM` without a limit can be problematic when the dataset is large.
+
+```SQL
+-- Only use column names to read data for those specific columns
 SELECT
   o_orderkey,
   o_totalprice
@@ -87,10 +92,12 @@ FROM
 LIMIT
   5;
 ```
-If we want to retrieve rows that meet specific conditions, we can use the `WHERE` clause. We can specify one or more filter conditions in the `WHERE` clause.
 
-The `WHERE` clause can combine multiple filter conditions using `AND` and `OR` conditions, as shown below.
-```sql
+To retrieve rows that meet specific conditions, use the `WHERE` clause. You can specify one or more filter conditions in the `WHERE` clause.
+
+The `WHERE` clause can combine multiple filter conditions using `AND` and `OR`, as shown below.
+
+```SQL
 -- All customer rows with c_nationkey = 20
 SELECT
   *
@@ -104,7 +111,7 @@ LIMIT
 
 ^
 
-```sql
+```SQL
 -- All customer rows where c_nationkey = 20 and c_acctbal > 1000
 SELECT
   *
@@ -116,7 +123,8 @@ WHERE
 LIMIT
   10;
 ```
-```sql
+
+```SQL
 -- All customer rows where c_nationkey = 20 or c_acctbal > 1000
 SELECT
   *
@@ -128,7 +136,8 @@ WHERE
 LIMIT
   10;
 ```
-```sql
+
+```SQL
 -- All customer rows where (c_nationkey = 20 and c_acctbal > 1000) or c_nationkey = 11
 SELECT
   *
@@ -143,7 +152,8 @@ WHERE
 LIMIT
   10;
 ```
-We can combine multiple filter conditions, as shown above. We have already seen the equal (`=`) and greater than (`>`) conditional operators. There are a total of 6 **conditional operators**, which are:
+
+You can combine multiple filter conditions as shown above. The equal (`=`) and greater than (`>`) conditional operators have already been demonstrated. There are 6 **conditional operators** in total:
 
 1. < Less than
 2. \> Greater than
@@ -152,8 +162,9 @@ We can combine multiple filter conditions, as shown above. We have already seen 
 5. \= Equal to
 6. <> and != both mean not equal to (some databases only support one of them)
 
-Additionally, for string types, we can use the `like` condition for **pattern matching**. In the `like` condition, `_` represents any single character, and `%` represents zero or more characters, for example.
-```sql
+For string types, you can use the `LIKE` condition for **pattern matching**. In a `LIKE` condition, `_` represents any single character and `%` represents zero or more characters, for example:
+
+```SQL
 -- All customer rows where c_name contains 381
 SELECT
   *
@@ -165,8 +176,8 @@ WHERE
 
 ^
 
-```sql
--- All customer rows where c_name contains any character, 9, and 1
+```SQL
+-- All customer rows where c_name contains any character followed by 9 and 1
 SELECT
   *
 FROM
@@ -174,10 +185,12 @@ FROM
 WHERE
   c_name LIKE '%_91%';
 ```
-We can also use `IN` and `NOT IN` to filter multiple values.
+
+You can also use `IN` and `NOT IN` to filter multiple values.
 
 ^
-```sql
+
+```SQL
 -- All customer rows with c_nationkey = 10 or c_nationkey = 20
 SELECT
   *
@@ -186,10 +199,12 @@ FROM
 WHERE
   c_nationkey IN (10, 20);
 ```
-You can use `count(*)` to get the number of rows in the table, as shown below.
+
+Use `count(*)` to get the number of rows in a table, as shown below.
 
 ^
-```sql
+
+```SQL
 SELECT
   COUNT(*)
 FROM
@@ -198,13 +213,15 @@ FROM
 
 ^
 
-```sql
+```SQL
 SELECT  COUNT(*)FROM  clickzetta_sample_data.tpch_100g.lineitem;
 ```
-If we want to sort rows by the values of a specific column, we can use `ORDER BY`, for example.
+
+To sort rows by the values of a specific column, use `ORDER BY`, for example:
 
 ^
-```sql
+
+```SQL
 -- Display the first ten customer records with the smallest custkey
 -- Rows are sorted in ascending order by default
 SELECT
@@ -216,15 +233,17 @@ ORDER BY
 LIMIT
   10;
 ```
+
 ### Join
 
 Use JOINs to combine data from multiple tables (there are different types of JOINs).
 
-We can use joins to combine data from multiple tables. When writing join queries, the format is as follows.
+You can use joins to combine data from multiple tables. The format for writing a join query is as follows.
 
 ^
-```sql
--- Based on non-real table
+
+```SQL
+-- Based on non-real tables
 SELECT
     a.*
 FROM
@@ -232,26 +251,30 @@ FROM
     JOIN table_b b -- Right table b
     ON a.id = b.id
 ```
-First, the specified table (table\_a) is the left table, and the second specified table is the right table. When multiple tables are joined, we treat the joined dataset of the first two tables as the left table and the third table as the right table (the database will optimize the join to improve performance).
+
+The first table specified (table\_a) is the left table, and the second is the right table. When joining multiple tables, the joined dataset of the first two tables is treated as the left table and the third table as the right table (the database optimizes the join order for performance).
 
 ^
-```sql
--- Based on non-real table
+
+```SQL
+-- Based on non-real tables
 SELECT
     a.*
 FROM
     table_a a -- Left table a
     JOIN table_b b -- Right table b
     ON a.id = b.id
-    JOIN table_c c -- The left table is the join data of table_a and table_b, the right table is table_c
+    JOIN table_c c -- Left table is the joined data of table_a and table_b; right table is table_c
     ON a.c_id = c.id
 ```
-There are mainly five types of connections, which are:
 
-#### 1. Inner Join (default): Only get the rows that exist in both tables
+There are five main join types:
+
+#### 1. Inner Join (default): Only returns rows that exist in both tables
 
 ^
-```sql
+
+```SQL
 SELECT
   o.o_orderkey,
   l.l_orderkey
@@ -265,7 +288,7 @@ LIMIT
 
 ^
 
-```sql
+```SQL
 SELECT
   COUNT(o.o_orderkey) AS order_rows_count,
   COUNT(l.l_orderkey) AS lineitem_rows_count
@@ -274,14 +297,16 @@ FROM
   JOIN clickzetta_sample_data.tpch_100g.lineitem l ON o.o_orderkey = l.l_orderkey
   AND o.o_orderdate BETWEEN l.l_shipdate - INTERVAL '5' DAY AND l.l_shipdate  + INTERVAL '5' DAY;
 ```
-**Note**: The connection defaults to an inner join.
 
-The output will include records where at least one matching row is found in the orders and line items (same o\_orderkey and order date within 5 days before or after the ship date).
+**Note**: The join defaults to an inner join.
 
-We can also see that there are 24,792,743 matching rows in the orders and line items tables.
+The output includes records where at least one matching row is found in both orders and line items (same o\_orderkey and order date within 5 days before or after the ship date).
 
-#### 2. Left Outer Join (also known as Left Join): Get all rows from the left table and matching rows from the right table
-```sql
+You can also see that there are 24,792,743 matching rows across the orders and line items tables.
+
+#### 2. Left Outer Join (also known as Left Join): Returns all rows from the left table and matching rows from the right table
+
+```SQL
 SELECT
   o.o_orderkey,
   l.l_orderkey
@@ -295,7 +320,7 @@ LIMIT
 
 ^
 
-```sql
+```SQL
 SELECT
   COUNT(o.o_orderkey) AS order_rows_count,
   COUNT(l.l_orderkey) AS lineitem_rows_count
@@ -304,12 +329,14 @@ FROM
   LEFT JOIN clickzetta_sample_data.tpch_100g.lineitem l ON o.o_orderkey = l.l_orderkey
   AND o.o_orderdate BETWEEN l.l_shipdate - INTERVAL '5' DAY AND l.l_shipdate  + INTERVAL '5' DAY;
 ```
-The output will include all rows from the orders table and records from the line items table that have at least one matching row (same o_orderkey and the order date is within 5 days before or after the ship date).
 
-We can also see that the orders table has 151,947,677 rows, and the line items table has 24,792,743 rows. The number of rows in the orders table is 1,500,000, but due to the join condition, 151,947,677 rows are generated because some orders match multiple line items.
+The output includes all rows from the orders table and records from the line items table that have at least one matching row (same o\_orderkey and order date within 5 days before or after the ship date).
 
-#### 3. Right Outer Join (also known as Right Join): Get matching rows from the left table and all rows from the right table
-```sql
+You can also see that the orders table has 151,947,677 rows and the line items table has 24,792,743 rows. The orders table has 1,500,000 rows, but the join condition produces 151,947,677 rows because some orders match multiple line items.
+
+#### 3. Right Outer Join (also known as Right Join): Returns matching rows from the left table and all rows from the right table
+
+```SQL
 SELECT
   o.o_orderkey,
   l.l_orderkey
@@ -323,7 +350,7 @@ LIMIT
 
 ^
 
-```sql
+```SQL
 SELECT
   COUNT(o.o_orderkey) AS order_rows_count,
   COUNT(l.l_orderkey) AS lineitem_rows_count
@@ -332,12 +359,14 @@ FROM
   RIGHT JOIN clickzetta_sample_data.tpch_100g.lineitem l ON o.o_orderkey = l.l_orderkey
   AND o.o_orderdate BETWEEN l.l_shipdate - INTERVAL '5' DAY AND l.l_shipdate  + INTERVAL '5' DAY;
 ```
-The output will include records from the orders table where at least one matching row is found (same o\_orderkey and the order date is within 5 days before or after the ship date) and all rows from the lineitem table.
 
-We can also see that the orders table has 24,792,743 rows, and the lineitem table has 600,037,902 rows.
+The output includes records from the orders table where at least one matching row is found (same o\_orderkey and order date within 5 days before or after the ship date) and all rows from the line items table.
 
-#### 4. Full Outer Join: Get all rows from the left and right tables
-```sql
+You can also see that the orders table has 24,792,743 rows and the line items table has 600,037,902 rows.
+
+#### 4. Full Outer Join: Returns all rows from both the left and right tables
+
+```SQL
 SELECT
   o.o_orderkey,
   l.l_orderkey
@@ -351,7 +380,7 @@ LIMIT
 
 ^
 
-```sql
+```SQL
 SELECT
   COUNT(o.o_orderkey) AS order_rows_count,
   COUNT(l.l_orderkey) AS lineitem_rows_count
@@ -360,12 +389,14 @@ FROM
   FULL OUTER JOIN clickzetta_sample_data.tpch_100g.lineitem l ON o.o_orderkey = l.l_orderkey
   AND o.o_orderdate BETWEEN l.l_shipdate - INTERVAL '5' DAY AND l.l_shipdate  + INTERVAL '5' DAY;
 ```
-The output will include records from the orders table where at least one matching row is found (same o\_orderkey and order date within 5 days before or after the ship date) and all rows from the lineitem table.
 
-We can also see that the orders table has 151,947,677 rows, and the lineitem table has 600,037,902 rows.
+The output includes records from the orders table where at least one matching row is found (same o\_orderkey and order date within 5 days before or after the ship date) and all rows from the line items table.
 
-#### 5. Cross Join: Get the Cartesian Product of All Rows
-```sql
+You can also see that the orders table has 151,947,677 rows and the line items table has 600,037,902 rows.
+
+#### 5. Cross Join: Returns the Cartesian product of all rows
+
+```SQL
 SELECT
   n.n_name AS nation_c_name,
   r.r_name AS region_c_name
@@ -373,16 +404,18 @@ FROM
   clickzetta_sample_data.tpch_100g.nation n
   CROSS JOIN clickzetta_sample_data.tpch_100g.region r;
 ```
-The output will include the join of each row of the country table with each row of the region table. There are 25 countries and 5 regions, so the result of the cross join has 125 rows.
+
+The output includes every row from the nation table joined with every row from the region table. There are 25 nations and 5 regions, so the cross join produces 125 rows.
 
 ^
 
-Sometimes we need to join a table with itself, which is called a self-join.
+Sometimes you need to join a table with itself, which is called a self-join.
 
 **Example**:
 
-1. For each customer order, get the orders placed earlier in the same week (Sunday - Saturday, not the previous seven days). Only show customer orders that have at least one such order.
-```sql
+1. For each customer order, get the orders placed earlier in the same week (Sunday through Saturday, not the previous seven days). Only show customer orders that have at least one such earlier order.
+
+```SQL
 SELECT
   o1.o_custkey
 FROM
@@ -393,12 +426,14 @@ FROM
 WHERE
   o1.o_orderkey != o2.o_orderkey;
 ```
-Most analytical queries require calculating metrics that involve multiple rows of data. `GROUP BY` allows us to perform aggregate calculations on sets of rows grouped by specified column values.
+
+Most analytical queries require computing metrics that involve multiple rows. `GROUP BY` lets you perform aggregate calculations on sets of rows grouped by specified column values.
 
 **Example**:
 
-1. Create a report that shows the number of orders for each order priority segment.
-```sql
+1. Create a report showing the number of orders for each order priority segment.
+
+```SQL
 SELECT
   o_orderpriority,
   COUNT(*) AS num_orders
@@ -407,20 +442,22 @@ FROM
 GROUP BY
   o_orderpriority;
 ```
-In the above query, we group by `orderpriority`, and the `count(*)` calculation will be applied to rows with a specific `orderpriority` value. The output will contain one row for each unique `orderpriority` value and the `count(*)` calculation.
+
+In the above query, rows are grouped by `orderpriority` and `count(*)` is applied to each group. The output contains one row per unique `orderpriority` value along with the `count(*)` result.
 
 ^
 
-Allowed calculations are usually SUM/MIN/MAX/AVG/COUNT. However, some databases have more complex aggregate functions; please refer to your database documentation.
+Allowed aggregate functions are typically SUM/MIN/MAX/AVG/COUNT. Some databases offer more complex aggregate functions; refer to your database documentation for details.
 
 ### Subqueries
 
-Use subqueries to use query results within a query.
+Use subqueries to use the result of one query inside another query.
 
-When we want to use the result of one query as a table in another query, we use subqueries. **Example**:
+When you want to use the result of one query as a table in another query, use a subquery. **Example**:
 
-1. Create a report showing the country, the number of items supplied by suppliers from that country, and the number of items purchased by customers from that country.
-```sql
+1. Create a report showing each country, the number of items supplied by suppliers from that country, and the number of items purchased by customers from that country.
+
+```SQL
 SELECT
   n.n_name AS nation_c_name,
   s.quantity AS supplied_items_quantity,
@@ -451,14 +488,16 @@ FROM
       n.n_nationkey
   ) c ON n.n_nationkey = c.n_nationkey;
 ```
-In the above query, we can see that there are two subqueries, one for calculating the number of items supplied by a country, and the other for calculating the number of items purchased by customers in that country.
+
+In the above query, there are two subqueries: one calculates the number of items supplied by each country's suppliers, and the other calculates the number of items purchased by each country's customers.
 
 ### CASE WHEN&#x20;
 
-Use the CASE statement to replicate IF.ELSE logic.
+Use the CASE statement to replicate IF/ELSE logic.
 
-We can perform conditional logic in the `SELECT ... FROM` part of the query, as shown below.
-```sql
+You can apply conditional logic in the `SELECT ... FROM` part of a query, as shown below.
+
+```SQL
 SELECT
     o_orderkey,
     o_totalprice,
@@ -471,58 +510,63 @@ SELECT
 FROM
     clickzetta_sample_data.tpch_100g.orders;
 ```
-We can see how to display different values based on the `totalprice` column. We can also use multiple conditions as our criteria (e.g., totalprice > 100000 AND orderpriority = '2-HIGH').
+
+You can see how different values are displayed based on the `totalprice` column. You can also use multiple conditions as criteria (for example, totalprice > 100000 AND orderpriority = '2-HIGH').
 
 ### Standard Functions
 
 Use standard built-in database functions for common string, time, and numeric data operations.
 
-When processing data, we often need to change the values in columns; here are some standard functions to be aware of:
+When processing data, you often need to modify column values. Here are some standard functions to know:
 
-1. **String Functions**
+1. **String functions**
 
-   1. **LENGTH** is used to calculate the length of a string. For example, `SELECT LENGTH('hi');` will output 2.
-   2. **CONCAT** combines multiple string columns into one. For example, `SELECT CONCAT(o_orderstatus, '-', o_orderpriority) FROM clickzetta_sample_data.tpch_100g.orders LIMIT 5;` will concatenate the o\_orderstatus and o\_orderpriority columns, separated by a hyphen.
-   3. **SPLIT** is used to split a value into an array based on a given delimiter. For example, `SELECT STRING_SPLIT(o_orderpriority, '-') FROM clickzetta_sample_data.tpch_100g.orders LIMIT 5;` will output a column where the array is formed by splitting the o\_orderpriority value at the `-`.
-   4. **SUBSTRING** is used to get a substring from a value, given the start and end character indices. For example, `SELECT o_orderpriority, SUBSTRING(o_orderpriority, 1, 5) FROM clickzetta_sample_data.tpch_100g.orders LIMIT 5;` will get the first five (1 - 5) characters of the o\_orderpriority column.
-   5. **TRIM** is used to remove spaces from both sides of a value. For example, `SELECT TRIM(' hi ');` will output `hi` without surrounding spaces. LTRIM and RTRIM are similar but only remove spaces from the beginning and end of the string, respectively.
+   1. **LENGTH** calculates the length of a string. For example, `SELECT LENGTH('hi');` outputs 2.
+   2. **CONCAT** combines multiple string columns into one. For example, `SELECT CONCAT(o_orderstatus, '-', o_orderpriority) FROM clickzetta_sample_data.tpch_100g.orders LIMIT 5;` concatenates the o\_orderstatus and o\_orderpriority columns with a hyphen separator.
+   3. **SPLIT** splits a value into an array based on a given delimiter. For example, `SELECT SPLIT(o_orderpriority, '-') FROM clickzetta_sample_data.tpch_100g.orders LIMIT 5;` outputs an array formed by splitting o\_orderpriority at `-`.
+   4. **SUBSTRING** extracts a substring from a value given start and end character indices. For example, `SELECT o_orderpriority, SUBSTRING(o_orderpriority, 1, 5) FROM clickzetta_sample_data.tpch_100g.orders LIMIT 5;` returns the first five characters (positions 1–5) of o\_orderpriority.
+   5. **TRIM** removes spaces from both sides of a value. For example, `SELECT TRIM(' hi ');` outputs `hi` without surrounding spaces. LTRIM and RTRIM are similar but only remove spaces from the beginning or end of the string, respectively.
 
-2. **Date and Time Functions**
+2. **Date and time functions**
 
-   1. **Adding and Subtracting Dates**: Used to add and subtract time periods; the format largely depends on the database. In Lakehouse, `datediff` takes 3 parameters, the output unit (day, month, year), date/time values a and b, so that the output is a - b. `+ INTERVAL n UNIT(DAY/MONTH/YEAR)` will add the value of the specified unit to the timestamp value.
-```sql
-  -- Date and Time Functions
-  SELECT
-      datediff(day, DATE '2022-10-01', DATE '2023-11-05') AS diff_in_days,
-      datediff(month, DATE '2022-10-01', DATE '2023-11-05') AS diff_in_months,
-      datediff(year, DATE '2022-10-01', DATE '2023-11-05') AS diff_in_years,
-      DATE '2022-10-01' + INTERVAL 400 DAY AS new_date;
-```
-It will display the difference of the specified time period between two dates. We can also add/subtract any time period from the date/time column. For example, `SELECT DATE '2022-11-05' + INTERVAL '10' DAY;` will display the output `2022-11-15` (try date subtraction).
+   1. **Adding and subtracting dates**: Used to add and subtract time periods; the exact format depends on the database. In Lakehouse, `datediff` takes 3 parameters — the output unit (day, month, year) and date/time values a and b — and returns a - b. `+ INTERVAL n UNIT(DAY/MONTH/YEAR)` adds the specified unit value to a timestamp.
 
-^
+      ```SQL
+        -- Date and time functions
+        SELECT
+            datediff(day, DATE '2022-10-01', DATE '2023-11-05') AS diff_in_days,
+            datediff(month, DATE '2022-10-01', DATE '2023-11-05') AS diff_in_months,
+            datediff(year, DATE '2022-10-01', DATE '2023-11-05') AS diff_in_years,
+            DATE '2022-10-01' + INTERVAL 400 DAY AS new_date;
+      ```
 
-3. **String <=> Date/Time Conversion** <a name="string-date-time-conversion"></a>
+   This displays the difference between two dates in the specified time unit. You can also add or subtract any time period from a date/time column. For example, `SELECT DATE '2022-11-05' + INTERVAL '10' DAY;` outputs `2022-11-15` (try date subtraction as well).
 
-When we want to change the data type of a string to date/time, we can use the `DATE 'YYYY-MM-DD'` or `TIMESTAMP 'YYYY-MM-DD HH:mm:SS'` functions. But if the data is in a non-standard date/time format, such as `MM/DD/YYYY`, we need to specify the input structure; we use `date\_format` to achieve this, for example:
-```sql
+   ^
+
+3. **String <=> Date/Time conversion**
+
+When you want to change the data type of a string to date/time, use the `DATE 'YYYY-MM-DD'` or `TIMESTAMP 'YYYY-MM-DD HH:mm:SS'` functions. If the data is in a non-standard date/time format such as `MM/DD/YYYY`, you need to specify the input structure using `date_format`, for example:
+
+```SQL
 SELECT date_format('2023-05-11', 'M-d-y');
 ```
-We can use `date_format` to convert a timestamp/date into a string of the desired format. For example:
-```sql
+
+You can also use `date_format` to convert a timestamp/date into a string of the desired format. For example:
+
+```SQL
 SELECT date_format(o_orderdate, 'yyyy-MM-01') AS first_month_date FROM clickzetta_sample_data.tpch_100g.orders LIMIT 5;
 ```
-Please refer to [this page](sql_functions/scalar_functions/datetime_functions/date_format.md) to learn how to set the correct date and time format.
 
-4. **Time Frame Functions (YEAR/MONTH/DAY)**: When we want to extract a specific time period from a date/time column, we can use these functions. For example, `SELECT year(DATE '2023-11-05');` will return 2023. Similarly, we also have month, day, hour, min, etc.
+See [this page](sql_functions/scalar_functions/datetime_functions/date_format.md) for how to set the correct date and time format.
 
-Please refer to [this page](time-function.md) to learn more about time functions.
+4. **Time frame functions (YEAR/MONTH/DAY)**: When you want to extract a specific time component from a date/time column, use these functions. For example, `SELECT year(DATE '2023-11-05');` returns 2023. Similarly, there are functions for month, day, hour, minute, and more.
 
-5. **Numbers**
+See [this page](time-function.md) for more time functions.
 
-   1. **ROUND** is used to specify the number of digits allowed after the decimal point. For example, `SELECT ROUND(100.102345, 2);`
-   2. **ABS** is used to get the absolute value of a given number. For example, `SELECT ABS(-100), ABS(100);`
-   3. **Mathematical Operations** such as +,-,\*,/.
-   4. **Ceil/Floor** is used to get the next higher and the nearest lower integer of a given decimal. For example, `SELECT CEIL(100.1), FLOOR(100.1);`
+5. **Numeric functions**
 
-^
+   1. **ROUND** specifies the number of decimal places. For example, `SELECT ROUND(100.102345, 2);`
+   2. **ABS** returns the absolute value of a number. For example, `SELECT ABS(-100), ABS(100);`
+   3. **Mathematical operators** such as +, -, \*, /.
+   4. **CEIL/FLOOR** returns the next higher or nearest lower integer for a given decimal. For example, `SELECT CEIL(100.1), FLOOR(100.1);`

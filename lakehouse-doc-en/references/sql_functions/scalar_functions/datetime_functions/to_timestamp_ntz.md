@@ -35,9 +35,7 @@ SELECT to_timestamp_ntz('2022-02-01 10:23:32.121') ntz;
 | 2022-02-01 10:23:32.121 |
 +-------------------------+
 ```
-```markdown
 3. Convert different types of date-time strings to timestamps:
-```
 ```SQL
 SELECT to_timestamp_ntz('01-02 10:23:32', 'dd-MM HH:mm:ss') ntz;
 +---------------------+

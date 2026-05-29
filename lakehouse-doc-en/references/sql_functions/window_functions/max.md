@@ -122,6 +122,7 @@ SELECT name, salary, MAX(salary) OVER (ORDER BY salary DESC) AS max_salary_after
 In this example, we will sort employees in descending order by salary and get the maximum salary value after each employee.
 
 **Example 4: Using Window Functions**
+
 ```sql
 SELECT name, dep_no, salary,
  MAX(salary) OVER (PARTITION BY dep_no ORDER BY salary DESC ROWS BETWEEN 1 PRECEDING AND CURRENT ROW) AS top_two_salary
@@ -156,6 +157,3 @@ SELECT name, dep_no, salary,
 | null      | 4      | null   | 23000          |
 +-----------+--------+--------+----------------+
 ```
-
-^
-^

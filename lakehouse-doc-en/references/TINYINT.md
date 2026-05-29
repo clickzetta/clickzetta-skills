@@ -1,54 +1,77 @@
 # TINYINT
 
-`TINYINT` is an 8-bit signed integer data type used to store integer values ranging from -128 to 127. It can efficiently save storage space as it only uses one byte to represent the value.
+`TINYINT` is an 8-bit signed integer data type that occupies 1 byte of storage space, suitable for storing smaller integer values.
 
 ## Syntax
-```
-TINYINT
-```
-## Example
 
-1. Create a table with a `TINYINT` type column:
-   ```sql
-   CREATE TABLE example_table (
-       id TINYINT
-   );
-   ```
-```markdown
-2. Insert data into a column of type `TINYINT`:
+```Plain
+TINYINT
+BYTE
 ```
-   ```sql
-   INSERT INTO example_table (id) VALUES (-100);
-   INSERT INTO example_table (id) VALUES (100);
+
+`BYTE` is an alias for `TINYINT`, used for compatibility with migration scripts from other databases. Aliases are immediately converted to the canonical type during parsing. See [Type Aliases](data-type.md#type-aliases) for details.
+
+## Value Range
+
+| Boundary | Value |
+|----------|-------|
+| Minimum | -128 |
+| Maximum | 127 |
+
+Literal suffix: `Y` (e.g., `11Y`, `-100Y`)
+
+## Examples
+
+1. Use the TINYINT literal suffix:
+
+   ```SQL
+   SELECT 11Y;
    ```
-3. Query data from a `TINYINT` type column:
-   ```sql
-   SELECT id FROM example_table;
+
+   Returns: `11`
+
+2. Cast integers to TINYINT (boundary values):
+
+   ```SQL
+   SELECT CAST(127 AS TINYINT), CAST(-128 AS TINYINT);
    ```
-4. Using `TINYINT` type columns for conditional queries:
-   ```sql
-   SELECT id FROM example_table WHERE id > -50;
+
+   Returns: `127`, `-128`
+
+3. Cast a string to TINYINT:
+
+   ```SQL
+   SELECT CAST('100' AS TINYINT);
    ```
-```markdown
-5. Create a table with a `TINYINT` type column (specify the maximum display width):
-```
-   ```sql
-   CREATE TABLE example_table2 (
-       age TINYINT
-   );
+
+   Returns: `100`
+
+4. Overflow behavior (out-of-range values return NULL):
+
+   ```SQL
+   SELECT CAST(128 AS TINYINT);
    ```
-```markdown
-6. Insert data into a `TINYINT` type column (specify maximum display width):
-```
-   ```sql
-   INSERT INTO example_table2 (age) VALUES (25y);
+
+   Returns: `NULL`
+
+   ```SQL
+   SELECT CAST(-129 AS TINYINT);
    ```
-7.  `TINYINT` constant format:
-   ```sql
-    SELECT 11y
+
+   Returns: `NULL`
+
+5. NULL value handling:
+
+   ```SQL
+   SELECT CAST(NULL AS TINYINT);
    ```
+
+   Returns: `NULL`
+
 ## Notes
 
-- The `TINYINT` type is only suitable for storing smaller integer values. For larger values, it is recommended to use the `INT` or `BIGINT` type.
-- When using the `TINYINT` type to store negative numbers, the range is -128 to -1. Attempting to insert a negative number outside this range will result in an overflow error.
-- When using the `TINYINT` type to store positive numbers, the range is 1 to 127. Attempting to insert a positive number outside this range will result in an overflow error.
+- The value range is -128 to 127. A CAST conversion that exceeds this range returns NULL without raising an error.
+- The literal suffix is `Y` (case-insensitive), e.g., `25Y`, `-100Y`.
+- For larger integers, use `SMALLINT`, `INT`, or `BIGINT`.
+- When TINYINT participates in arithmetic operations, the result type may be automatically promoted to INT to avoid intermediate overflow.
+- CAST conversions of invalid strings (e.g., `'abc'`) return NULL.

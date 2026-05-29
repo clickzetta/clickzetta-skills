@@ -2,15 +2,31 @@
 
 ## Overview
 
-In this quick start guide, we will explore how to use customer transaction data stored in a PostgreSQL database, import the data into Singdata Lakehouse tables through real-time multi-table synchronization, process the data in real-time using dynamic tables, and further perform visual data exploration and conversational data analysis using Singdata Lakehouse's built-in DataGPT. This will achieve real-time end-to-end data ingestion, data processing, and data analysis to gain insights into customer transactions.
+In this quick start guide, we will explore how to use customer transaction data stored in a PostgreSQL database, import the data into Singdata Lakehouse tables through real-time multi-table synchronization, process the data in real-time using dynamic tables, and further perform visual data exploration and conversational data analysis using Singdata Lakehouse's built-in Data Analytics Agent (DataGPT). This will achieve real-time end-to-end data ingestion, data processing, and data analysis to gain insights into customer transactions.
 
 From an ELT perspective, Singdata Lakehouse's real-time multi-table synchronization achieves data extraction (Data Extraction) and loading (Load) based on CDC, and during this process, schema evolution is realized, meaning the synchronization content will include changes in the structure or schema of the source database. Dynamic Table implements data transformation (Data Transform) in a brand-new way.
+
+### What is CDC and Why Use It
+
+CDC (Change Data Capture) is centered on the idea of synchronizing only "data that has changed," rather than copying an entire table in full each time. It works similarly to a database binlog — every insert, update, and delete on each row is recorded, and downstream systems only need to consume these change events to stay in sync with the source database.
+
+Full synchronization is fine when data volumes are small, but as data scales grow, the time window for each full copy gets longer and resource consumption multiplies. CDC transmits only incremental changes, reducing latency to the second level while significantly lowering pressure on the source database and network.
+
+The data flow architecture for this tutorial is as follows:
+
+**PostgreSQL** (source database) → **Singdata Multi-table Real-time Sync** (CDC extraction + loading) → **Lakehouse Tables** (raw data landing) → **Dynamic Table** (automatic incremental transformation) → **Data Analytics Agent (DataGPT)** (conversational analysis)
 
 ^
 
 :-: ![](.topwrite/assets/image_1735115515214.png)
 
 ^
+
+After completing this tutorial, you will have:
+
+* A real-time CDC sync pipeline from PostgreSQL to Lakehouse
+* An automatic incremental data processing workflow based on Dynamic Table
+* A real-time dataset that can be queried directly through conversational interaction with Data Analytics Agent (DataGPT)
 
 Environment Preparation:
 
@@ -191,17 +207,14 @@ CREATE TABLE postgres.raw_cdc.transactions (
    3. ```Shell
       docker ps
       ```
-
-4. To copy the CSV file to the container, run the following command in the terminal, replacing the file path with the actual file path, and replacing `container_id` with the actual container ID from the previous command:
-   5\. \`\`\`Shell
-   docker cp /Users/your\_username/Downloads/customers.csv container\_id:/tmp/customers.csv
-   docker cp /Users/your\_username/Downloads/merchants.csv container\_id:/tmp/merchants.csv
-   docker cp /Users/your\_username/Downloads/products.csv container\_id:/tmp/products.csv
-   docker cp /Users/your\_username/Downloads/transactions.csv container\_id:/tmp/transactions.csv
-   ```
-   ```
-
-5. Return to the PostgreSQL console and run the following SQL command to load the file from the container into the PostgreSQL table:
+   4. To copy the CSV file to the container, run the following command in the terminal, replacing the file path with the actual file path, and replacing `container_id` with the actual container ID from the previous command:
+   5. ```Shell
+      docker cp /Users/your_username/Downloads/customers.csv container_id:/tmp/customers.csv
+      docker cp /Users/your_username/Downloads/merchants.csv container_id:/tmp/merchants.csv
+      docker cp /Users/your_username/Downloads/products.csv container_id:/tmp/products.csv
+      docker cp /Users/your_username/Downloads/transactions.csv container_id:/tmp/transactions.csv
+      ```
+   6. Return to the PostgreSQL console and run the following SQL command to load the file from the container into the PostgreSQL table:
 
 ```SQL
 COPY postgres.raw_cdc.customers FROM '/tmp/customers.csv' DELIMITER ',' CSV HEADER;
@@ -210,11 +223,9 @@ COPY postgres.raw_cdc.products FROM '/tmp/products.csv' DELIMITER ',' CSV HEADER
 COPY postgres.raw_cdc.transactions FROM '/tmp/transactions.csv' DELIMITER ',' CSV HEADER;
 ```
 
-```markdown
 4. Postgres Data Loading Method 2, Loading via Python Script
 
 Copy the following code into a Python file or Notebook and then run it. You can also directly download [this Python file](https://github.com/yunqiqiliang/czguide-intro-to-cdc-using-clickzetta-rtsync-dynamic-tables/blob/main/scripts/load-data-into-pg-by-python.py).
-```
 
 ```Python
 import psycopg2
@@ -252,17 +263,15 @@ cur.close()
 conn.close()
 ```
 
-### 5. Next, ensure to run the `CREATE PUBLICATION` command to enable logical replication of the tables in the schema `raw_cdc`. This will allow the real-time synchronization task below to capture changes made to the tables in the PostgreSQL database:
+5. Next, ensure to run the `CREATE PUBLICATION` command to enable logical replication of the tables in the schema `raw_cdc`. This will allow the real-time synchronization task below to capture changes made to the tables in the PostgreSQL database:
 
 ```SQL
 CREATE PUBLICATION agent_postgres_publication FOR ALL TABLES;
 ```
 
-```markdown
 Publication is part of PostgreSQL logical replication, which allows users to define a set of table changes (inserts, updates, deletes) that will be transmitted to one or more subscribers. Logical replication is a way to implement CDC, capturing and propagating data changes in database tables. In other words, after executing this statement, PostgreSQL will capture data changes in all tables in the database, and these changes can be received and processed by subscribers. This achieves the data change recording in CDC.
 
 6. Finally, check if the table has been loaded correctly by running the following SQL command:
-```
 
 ```SQL
 SELECT * FROM postgres.raw_cdc.customers;
@@ -397,7 +406,11 @@ from datetime import datetime
 from pytz import timezone
 import uuid # Import uuid module
 
-# Database connection information
+```
+
+Database connection information:
+
+```Python
 conn = psycopg2.connect(
     dbname="postgres",
     user="postgres",
@@ -406,14 +419,19 @@ conn = psycopg2.connect(
     port="5432"
 )
 cur = conn.cursor()
-# Set search_path 
+```
+
+Set search_path:
+
+```Python
 cur.execute("SET search_path TO raw_cdc;")
 ```
 
 * Set parameters for incremental data generation
 
+Set parameters:
+
 ```Python
-# Set parameters
 loop_interval = 0  # Loop interval (seconds)
 loop_count = 1000  # Number of loops
 batch_size = 100  # Number of records inserted each time
@@ -489,15 +507,17 @@ def insert_transactions(loop_interval,loop_count,batch_size):
 
 * Call function to insert transaction data
 
+Call the function to insert transaction data:
+
 ```Python
-# Call the function to insert transaction data
-insert_transactions(loop_interval, loop_count, batch_size)
+insert_transactions(loop_interval,loop_count,batch_size)
 ```
 
-* Closing cursors and connections
+* Close cursors and connections
+
+Close cursor and connection:
 
 ```Python
-# Close the cursor and connection
 cur.close()
 conn.close()
 ```
@@ -621,14 +641,14 @@ After successful submission, you can go to the Operations Center to view the tas
 
 ##
 
-## Conduct Q\&A Data Analysis through Singdata DataGPT
+## Conduct Q\&A Data Analysis through Singdata Data Analytics Agent (DataGPT)
 
 Overview
-You will use Singdata Lakehouse DataGPT to synchronize tables from Postgres to Singdata Lakehouse in real-time and analyze them through Q\&A.
+You will use Singdata Lakehouse Data Analytics Agent (DataGPT) to synchronize tables from Postgres to Singdata Lakehouse in real-time and analyze them through Q\&A.
 
-### Access Singdata DataGPT
+### Access Singdata Data Analytics Agent (DataGPT)
 
-Navigate to the account homepage -> DataGPT to enter Singdata DataGPT.
+Navigate to the account homepage -> Data Analytics Agent (DataGPT) to enter Singdata Data Analytics Agent (DataGPT).
 
 :-: ![](.topwrite/assets/image_1735116025067.png =600)
 
@@ -639,7 +659,7 @@ Build data analysis based on multiple data tables, metrics, answer builders, kno
 :-: ![](.topwrite/assets/image_1735116034928.png =600)
 
 * Analysis Domain Name: CDC Transaction Data Analysis.
-* After successfully creating, select "Add Data," then choose "Add Table" -> "Import Table" to add the dynamic table created in the previous section to DataGPT.
+* After successfully creating, select "Add Data," then choose "Add Table" -> "Import Table" to add the dynamic table created in the previous section to Data Analytics Agent (DataGPT).
 
 :-: ![](.topwrite/assets/image_1735116042469.png =600)
 
@@ -647,7 +667,7 @@ Build data analysis based on multiple data tables, metrics, answer builders, kno
 
 :-: ![](.topwrite/assets/image_1735116049605.png =600)
 
-* Click the icon next to "Description," and the system will use a large model to add appropriate descriptions for each field, facilitating alignment with Chinese semantics.
+* Click the icon next to "Description," and the system will use a large model to add appropriate descriptions for each field, facilitating semantic alignment.
 
 :-: ![](.topwrite/assets/image_1735116058010.png =600)
 
@@ -673,7 +693,7 @@ Enter the question "Number of transactions for Mastercard, distributed by mercha
 
 ^
 
-It understands that Mastercard needs to match the transaction card (transaction\_card = Mastercard), thanks to DataGPT's automatic indexing of the transaction\_card field values.
+It understands that Mastercard needs to match the transaction card (transaction\_card = Mastercard), thanks to Data Analytics Agent (DataGPT)'s automatic indexing of the transaction\_card field values.
 
 The number of transactions is an automatically created metric, achieving metric caliber alignment.
 
@@ -683,7 +703,7 @@ Enter the question: What is the total number of transactions for 'Disinfectant W
 
 :-: ![](.topwrite/assets/image_1735279174589.png =631)
 
-In the Lakehouse table, the product 'Disinfectant Wipes' is stored in English as 'Disinfectant Wipes.' When the user asks about 'disinfectant wipes,' DataGPT will automatically translate it to achieve precise matching, without requiring the user to input 'Disinfectant Wipes,' fully leveraging the advantages of the large model, making data analysis simpler.
+In the Lakehouse table, the product 'Disinfectant Wipes' is stored in English as 'Disinfectant Wipes.' When the user asks about 'disinfectant wipes,' Data Analytics Agent (DataGPT) will automatically translate it to achieve precise matching, without requiring the user to input 'Disinfectant Wipes,' fully leveraging the advantages of the large model, making data analysis simpler.
 
 ## Cleanup
 
@@ -699,7 +719,7 @@ After completing this quick start, you now have a deep understanding of:
 
 * How to use Singdata Lakehouse multi-table real-time synchronization to sync PostgreSQL data to Singdata Lakehouse tables, corresponding to the data extraction (E) and loading (L) in the ELT process.
 * Using dynamic tables to process data, corresponding to the data transformation (T) in the ELT process.
-* Visualizing and analyzing data conversationally through Singdata Lakehouse's built-in DataGPT.
+* Visualizing and analyzing data conversationally through Singdata Lakehouse's built-in Data Analytics Agent (DataGPT).
 
 ### Resources
 
@@ -707,7 +727,7 @@ After completing this quick start, you now have a deep understanding of:
 
 [Singdata Lakehouse Dynamic Table](https://www.yunqi.tech/documents/dynamictable)
 
-Singdata Lakehouse Q\&A Data Analysis DataGPT
+Singdata Lakehouse Q\&A Data Analysis Data Analytics Agent (DataGPT)
 
 [Singdata Lakehouse Studio: Web Development and Management Tools](https://www.yunqi.tech/documents/Studio)
 

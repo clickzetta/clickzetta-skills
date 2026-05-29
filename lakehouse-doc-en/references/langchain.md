@@ -9,22 +9,29 @@ LangChain is an open-source framework designed to help developers build applicat
 
 # Basic Development Process
 
-This section will demonstrate how to use LangChain and clickzetta-sqlalchemy together to implement a simple application that queries a Lakehouse and displays the results.
+This section will demonstrate, through an example, how to use LangChain and clickzetta-sqlalchemy together to implement a simple application that queries a Lakehouse and displays the results.
 
 ## Environment Preparation
 
 To interface LangChain with different data sources, you need to install `clickzetta-sqlalchemy` in your Python environment. The installation method is as follows:
+
 ```shell
 pip install langchain clickzetta-sqlalchemy
 ```
+
 ## Example Code
 
 First, create a file named `demo.py` and edit the code as follows:
+
 ```python
 from langchain_community.utilities import SQLDatabase
 import streamlit as st
 
-# Get Lakehouse authentication information from Streamlit secret manager
+```
+
+Get Lakehouse authentication information from the Streamlit secret manager:
+
+```python
 username = st.secrets.lakehouse.username
 password = st.secrets.lakehouse.password
 account = st.secrets.lakehouse.account
@@ -33,29 +40,54 @@ workspace = st.secrets.lakehouse.workspace
 schema = st.secrets.lakehouse.schema
 virtualcluster = st.secrets.lakehouse.virtualcluster
 
-# Create connection string
+```
+
+Create the connection string:
+
+```python
 CONNECTION_STRING = (
     f"clickzetta://{username}:{password}"
     f"@{account}.{endpoint}/{workspace}?schema={schema}&virtualcluster={virtualcluster}"
 )
 
-# Create SQLDatabase instance from connection string
+```
+
+Create a SQLDatabase instance from the connection string:
+
+```python
 db = SQLDatabase.from_uri(CONNECTION_STRING, schema=schema)
 ```
+
 Next, execute the query and return the query results:
+
 ```python
-# Execute query
+```
+
+Execute the query:
+
+```python
 result = db.run("SELECT * FROM Artist LIMIT 12;", fetch="cursor")
-# Print result type
+```
+
+Print the result type:
+
+```python
 print(type(result))
-# Display query results
+```
+
+Display the query results:
+
+```python
 pprint(list(result.mappings()))
 ```
-To bind query parameters, please use the optional `parameters` parameter.
+
+To bind query parameters, use the optional `parameters` parameter.
+
 ```
 result = db.run("SELECT * FROM Artist WHERE Name LIKE :search;",parameters={"search": "p%"},fetch="cursor",)
 pprint(list(result.mappings()))
 ```
+
 ## Reference
 
 [langchain Official Documentation](https://python.langchain.com/docs/get_started/introduction)

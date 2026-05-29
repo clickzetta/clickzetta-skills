@@ -2,30 +2,33 @@
 
 ## Basic Concepts
 
-SQL Nested Data Types allow complex data structures, such as **STRUCT** and **ARRAY**, to be included in the columns of a table. These data structures make it more concise and clear to represent one-to-one, many-to-one, and hierarchical relationships.
+SQL Nested Data Types allow complex data structures, such as **STRUCT** and **ARRAY**, to be stored in table columns. These structures make it more concise and clear to represent one-to-one, many-to-one, and hierarchical relationships.
 
 * **STRUCT**: Represents a single field containing multiple related columns, which can represent the attributes of an object.
 * **ARRAY**: Represents an array containing multiple structured fields, suitable for many-to-one relationships.
 
 ## Advantages
 
-1. **Simplified Data Schema**: Using STRUCT and ARRAY types can simplify the schema of data tables, making it more convenient to store and retrieve related column data.
+1. **Simplified Data Schema**: Using STRUCT and ARRAY types simplifies the schema of data tables, making it more convenient to store and retrieve related column data.
 2. **Improved Query Performance**: Nested data types can reduce table join operations because related data is already nested within a single field.
 3. **Enhanced Readability**: Nested structures make the data schema more intuitive, making it easier for developers to understand and use.
 4. **Flexible Data Processing**: Nested data types support flexible operations and sorting of complex objects, as well as efficient splitting and reorganization of data during processing.
 
 ## Use Cases
 
-* **One-to-One and Hierarchical Relationships**: Suitable for scenarios where multiple related fields need to be combined, such as combining user information and address information.
-```sql
+* **One-to-One and Hierarchical Relationships**: Suitable for scenarios where multiple related fields need to be combined, such as combining user information with address information.
+
+```SQL
 SELECT 
     c_custkey, 
     STRUCT(c_name, c_address, c_phone) AS customer_info 
 FROM 
     clickzetta_sample_data.tpch_100g.customer;
 ```
-* **Many-to-One Relationship**: Suitable for scenarios where multiple related objects need to be stored in a single field, such as the combination of orders and order items.
-```sql
+
+* **Many-to-One Relationships**: Suitable for scenarios where multiple related objects need to be stored in a single field, such as combining orders with their line items.
+
+```SQL
 SELECT 
     o.o_orderkey, 
     ARRAY_AGG(STRUCT(o.o_clerk, o.o_totalprice, o.o_orderpriority)) AS items 
@@ -34,9 +37,11 @@ FROM
 GROUP BY 
     o.o_orderkey;
 ```
-* **Data Transformation and Cleaning**: Nested data types can be used to split data into smaller parts for transformation and cleaning, and then recombine them.
-```sql
--- Define orders_array using CTE
+
+* **Data Transformation and Cleaning**: Nested data types can be used to split data into smaller parts for transformation and cleaning, then recombine them.
+
+```SQL
+-- Define orders_array using a CTE
 WITH orders_array AS ( 
     -- Aggregate all order IDs for each customer into an array
     SELECT 
@@ -47,7 +52,7 @@ WITH orders_array AS (
     GROUP BY 
         o_custkey
 ),
--- Define modified_items using CTE
+-- Define modified_items using a CTE
 modified_items AS (
     -- Use the TRANSFORM function to add 1 to each order ID, generating a new array
     SELECT 
@@ -56,41 +61,45 @@ modified_items AS (
     FROM 
         orders_array
 )
--- Main query section
+-- Main query
 SELECT 
     c.c_custkey, 
     mi.modified_order_keys
 FROM 
     clickzetta_sample_data.tpch_100g.customer c 
--- Left join modified_items based on customer ID (c_custkey)
+-- Left join modified_items on customer ID (c_custkey)
 LEFT JOIN 
     modified_items mi
 ON 
     c.c_custkey = mi.o_custkey;
 ```
+
 :-: ![](.topwrite/assets/image_1736846123693.png =798)
 
-Using nested data types (such as STRUCT and ARRAY) for data transformation can simplify data models, improve query performance, and enhance the flexibility and readability of data processing, providing an effective solution for managing complex data structures.
+Using nested data types (such as STRUCT and ARRAY) for data transformation simplifies data schemas, improves query performance, and enhances the flexibility and readability of data processing — providing an effective solution for managing complex data structures.
 
 ^
 
 ## Data Model
 
-TPC-H data represents the data warehouse of an automotive parts supplier, recording orders, items that make up the orders (lineitem), suppliers, customers, parts sold (part), regions, countries, and parts suppliers (partsupp).
+The TPC-H dataset represents a data warehouse for an auto parts supplier, containing records for orders, line items, suppliers, customers, parts, regions, nations, and part suppliers (partsupp).
 
-Singdata Lakehouse has built-in shared TPC-H data, which each user can directly use by adding the data context, for example:
-```sql
+Singdata Lakehouse includes built-in shared TPC-H data that any user can query directly by specifying the data context, for example:
+
+```SQL
 SELECT * FROM 
 clickzetta_sample_data.tpch_100g.customer
 LIMIT 10;
 ```
+
 ## Data Transformation Using Nested Data Types in Singdata Lakehouse
 
-### Efficient Use of Nested Data Types
+### Using Nested Data Types Effectively
 
-#### Using STRUCT to Handle One-to-One and Hierarchical Relationships
-```sql
--- Without using nested data types
+#### Using STRUCT for One-to-One and Hierarchical Relationships
+
+```SQL
+-- Without nested data types
 SELECT l.*,
 c.*,
 s.*
@@ -109,7 +118,7 @@ LIMIT 5;
 
 ^
 
-```sql
+```SQL
 -- Using nested data types
 SELECT 
     l.*, 
@@ -145,8 +154,8 @@ LIMIT 5;
 
 ![](.topwrite/assets/image_1736846565682.png)
 
-```sql
--- Hierarchical Data
+```SQL
+-- Hierarchical data
 SELECT 
     l.*, 
     struct(
@@ -197,7 +206,7 @@ LIMIT 5;
 
 :-: ![](.topwrite/assets/image_1736847057307.png =807)
 
-```sql
+```SQL
 -- Use ARRAY[STRUCT] to handle one-to-many relationships
 WITH line_items AS (
     SELECT 
@@ -236,13 +245,16 @@ LEFT JOIN
     line_items l ON o.o_orderkey = l.orderkey
 LIMIT 5;
 ```
+
 :-: ![](.topwrite/assets/image_1736847356858.png =701)
 
 #### Using Nested Data Types in Data Processing
-```sql
+
+```SQL
 DROP TABLE IF EXISTS wide_orders;
 ```
-```sql
+
+```SQL
 CREATE TABLE IF NOT EXISTS wide_orders AS 
 WITH line_items AS (
     SELECT 
@@ -299,8 +311,10 @@ LEFT JOIN
 LEFT JOIN
     clickzetta_sample_data.tpch_100g.nation n ON c.c_nationkey = n.n_nationkey;
 ```
-STRUCT makes data architecture and data access simpler
-```sql
+
+STRUCT makes the data schema and data access simpler.
+
+```SQL
 SELECT    o_orderkey,
           customer.name,
           customer.address,
@@ -308,11 +322,13 @@ SELECT    o_orderkey,
 FROM      wide_orders
 LIMIT     2;
 ```
+
 :-: ![](.topwrite/assets/image_1736848578892.png =728)
 
-### Expand ARRAY into rows and recombine into ARRAY
-```sql
--- Convert rows to ARRAY
+### Expanding an ARRAY into Rows and Recombining into an ARRAY
+
+```SQL
+-- Rows to ARRAY
 WITH lineitems AS (
     SELECT 
         o.o_orderkey,
@@ -348,7 +364,7 @@ LIMIT
 
 ^
 
-```sql
+```SQL
 -- ARRAY to rows
 WITH
   lineitems AS (
@@ -371,7 +387,7 @@ LIMIT
 
 :-: ![](.topwrite/assets/image_1736849377865.png =795)
 
-```sql
+```SQL
 -- Get lineitem metrics
 WITH
   lineitems AS (
@@ -394,10 +410,12 @@ ORDER BY
 LIMIT
   10;
 ```
+
 :-: ![](.topwrite/assets/image_1736849575082.png =769)
 
-### Ensure Performance Meets Expectations
-```sql
+### Verifying Query Performance
+
+```SQL
 EXPLAIN
 WITH
   lineitems AS (
@@ -420,11 +438,13 @@ ORDER BY
 LIMIT
   10;
 ```
+
 ^
 
-## Data
+## References
 
-When using nested structures, please pay attention to the query execution performance. You can use EXPLODE to check if the execution plan meets expectations.
+When using nested structures, pay attention to query execution performance. You can use EXPLODE to inspect the execution plan and verify it meets expectations.
+
 [EXPLODE](sql_functions/table_functions/explode.md)
 
 UNNEST

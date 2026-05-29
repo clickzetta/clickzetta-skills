@@ -24,9 +24,7 @@ SELECT TO_UNIX_TIMESTAMP('2022-02-01 10:23:32') as res;
 | 1643682212 |
 +------------+
 ```
-```markdown
 2. Convert a custom formatted string to a Unix timestamp:
-```
 ```sql
 SELECT TO_UNIX_TIMESTAMP('2022/02/01 10:23:32.121', 'yyyy/MM/dd HH:mm:ss.SSS') as res;
 +------------+

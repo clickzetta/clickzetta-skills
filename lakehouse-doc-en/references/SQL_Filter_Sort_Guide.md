@@ -71,7 +71,7 @@ FROM employees;
 | David | Marketing |
 | Eve | HR |
 
-> **Note**: Avoid using `SELECT *`. Explicitly specifying column names enables column pruning optimization and reduces I/O.
+> ⚠️ **Note**: Avoid using `SELECT *`. Explicitly specifying column names enables column pruning optimization and reduces I/O.
 
 ***
 
@@ -170,7 +170,7 @@ LIMIT 3;
 | Bob | Engineering | 9500 |
 | Carol | Marketing | 8500 |
 
-> **Tip**: In the Lakehouse Studio Web UI, query results are limited to 10000 rows by default. Using `LIMIT` can speed up the return of small batches of data.
+> 💡 **Tip**: In the Lakehouse Studio Web UI, query results are limited to 10000 rows by default. Using `LIMIT` can speed up the return of small batches of data.
 
 ***
 
@@ -205,7 +205,7 @@ After completing query verification, it is recommended to clean up test tables:
 DROP TABLE IF EXISTS employees;
 ```
 
-> **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
+> 💡 **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
 
 ***
 

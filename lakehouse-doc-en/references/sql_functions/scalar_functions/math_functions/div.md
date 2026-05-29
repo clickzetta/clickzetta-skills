@@ -1,25 +1,33 @@
-###  DIV
+# DIV
 
-####  Description
-The DIV operator is used to calculate the result of integer division between two numbers
+## Overview
 
-#### Syntax
+Performs integer division on two integers, returning the integer part of the quotient (truncating the decimal). Equivalent to `FLOOR(dividend / divisor)`, but only accepts integer inputs.
+
+## Syntax
+
+```Plain
+<dividend> DIV <divisor>
 ```
-divisor div dividend
-```
-#### Parameter Description
-- `divisor`: Dividend, must be an integer.
-- `dividend`: Divisor, must be an integer.
 
-#### Return Type
-The return result is of type `bigint`.
+## Parameters
 
-#### Usage Example
+- `<dividend>`: INT or BIGINT type, the dividend.
+- `<divisor>`: INT or BIGINT type, the divisor. Returns NULL when `<divisor>` is 0.
 
-1. Integer division:
+## Usage Examples
+
 ```sql
-SELECT 10 div 3; -- The result is 3
-SELECT -10 div 3; -- The result is -3
+SELECT 10 DIV 3;
+-- 3
+
+SELECT -10 DIV 3;
+-- -3
+
+SELECT 10 DIV 0;
+-- NULL
 ```
-#### Notes
-- When the divisor is zero, it will cause the division operation to fail, resulting in NULL.
+
+## Related Documentation
+
+- [MOD](sql_functions/scalar_functions/math_functions/mod.md) — Modulo operation

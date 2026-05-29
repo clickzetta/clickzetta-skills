@@ -234,7 +234,7 @@ Singdata Lakehouse supports multiple file formats, each with its optimal usage s
 
 ### Compression Format Configuration
 
-> **Note**: Based on validation testing, the current version may have limitations on the COMPRESSION parameter for CSV format. The following shows the recommended syntax:
+> ⚠️ **Note**: Based on validation testing, the current version may have limitations on the COMPRESSION parameter for CSV format. The following shows the recommended syntax:
 
 ```sql
 -- Parquet export (recommended, built-in compression)
@@ -288,7 +288,7 @@ FILES ('special_format.csv');
 
 ### Error Handling Strategy
 
-> **Note**: Based on validation testing, the current version's ON_ERROR parameter syntax may have limitations. The following shows suggested alternative approaches:
+> ⚠️ **Note**: Based on validation testing, the current version's ON_ERROR parameter syntax may have limitations. The following shows suggested alternative approaches:
 
 ```sql
 -- Import error handling

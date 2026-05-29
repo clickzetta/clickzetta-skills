@@ -35,11 +35,15 @@ Singdata Lakehouse provides multiple ways to load CSV data, including web-based 
 
 The code is as follows:
 
+\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*#:
+
+author: qiliang:
+
+create time: 2024-09-14 10:10:26:
+
+\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*#:
+
 ```Python
-# ********************************************************************#
-# author: qiliang
-# create time: 2024-09-14 10:10:26
-# ********************************************************************#
 from clickzetta.zettapark.session import Session
 hints = dict()
 hints['sdk.job.timeout'] = 3
@@ -47,7 +51,7 @@ hints['query_tag'] = 'test_conn_hints_zettapark'
 connection_parameters = {
   "username": "qiliang",
   "password": "",
-  "service": "<region_id>.api.clickzetta.com",
+  "service": "<region_id>.api.singdata.com",
   "instance": "",
   "workspace": "ql_ws",
   "schema": "wayfair_wans",
@@ -60,9 +64,17 @@ import os
 import pandas as pd
 import warnings
 
-# Ignore FutureWarning
+```
+
+Ignore FutureWarning:
+
+```Python
 warnings.filterwarnings("ignore", category=FutureWarning)
-# File URL array
+```
+
+File URL array:
+
+```Python
 urls = [
     'https://raw.githubusercontent.com/wayfair/WANDS/main/dataset/label.csv',
     'https://raw.githubusercontent.com/wayfair/WANDS/main/dataset/product.csv',
@@ -91,7 +103,7 @@ for url in urls:
  # Drop tables starting with 'zettapark_temp_table_'
 try:
     tables = session.sql("SHOW TABLES LIKE 'zettapark_temp_table_%'").collect()
-
+    
     for table in tables:
         table_name = table['table_name']
         session.sql(f"DROP TABLE IF EXISTS {table_name}").collect()
@@ -99,8 +111,12 @@ try:
 except Exception as e:
     print(f"Error dropping temp tables: {e}")
 
-# Close the session
-session.close()
+```
+
+Close the session:
+
+```Python
+session.close()   
 ```
 
 Then check the result in the Singdata Lakehouse console:
@@ -216,13 +232,25 @@ conn.request("POST", "/v1/pipelines/pipe-e46ae76b70773f85543c93/run", search_wit
 res = conn.getresponse()
 data = res.read()
 
-# Decode the response data
+```
+
+Decode the response data:
+
+```SQL
 decoded_data = data.decode("utf-8")
 
-# Parse the JSON data
+```
+
+Parse the JSON data:
+
+```SQL
 parsed_data = json.loads(decoded_data)
 
-# Pretty-print the JSON data
+```
+
+Pretty-print the JSON data:
+
+```SQL
 pretty_json = json.dumps(parsed_data, ensure_ascii=False, indent=4)
 print(pretty_json)
 ```

@@ -1,1 +1,1 @@
-^
+# PrivateLink Configuration

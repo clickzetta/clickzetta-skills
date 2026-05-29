@@ -128,7 +128,7 @@ Pipes run automatically based on `BATCH_INTERVAL_IN_SECONDS` by default, but can
 ALTER PIPE pipe_kafka_logs EXECUTE;
 ```
 
-> **Tip**: Manual triggering is suitable for debugging or backfill scenarios and does not affect the automatic scheduling cycle.
+> 💡 **Tip**: Manual triggering is suitable for debugging or backfill scenarios and does not affect the automatic scheduling cycle.
 
 ***
 
@@ -141,7 +141,7 @@ Use `DROP PIPE` to delete pipelines that are no longer needed.
 DROP PIPE pipe_kafka_logs;
 ```
 
-> **Tip**: Dropping a Pipe does not delete data that has already been imported into the target table.
+> 💡 **Tip**: Dropping a Pipe does not delete data that has already been imported into the target table.
 
 ***
 
@@ -157,7 +157,7 @@ DROP PIPE IF EXISTS pipe_kafka_logs;
 DROP PIPE IF EXISTS pipe_oss_data;
 ```
 
-> **Tip**: The Lakehouse supports `UNDROP TABLE`, so accidentally dropped tables can be restored within the retention period.
+> 💡 **Tip**: The Lakehouse supports `UNDROP TABLE`, so accidentally dropped tables can be restored within the retention period.
 
 ***
 

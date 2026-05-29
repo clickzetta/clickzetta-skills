@@ -168,23 +168,39 @@ Singdata Lakehouse supports hybrid retrieval based on inverted index and vector 
 Singdata Lakehouse automatically creates HNSW indexes for vector fields. You can optimize through the following methods:
 
 ```python
-# Adjust index parameters in configuration
+```
+
+Adjust index parameters in configuration:
+
+```python
 CLICKZETTA_VECTOR_DISTANCE_FUNCTION = "cosine_distance"  # suitable for text embeddings
-# or
+```
+
+Or:
+
+```python
 CLICKZETTA_VECTOR_DISTANCE_FUNCTION = "l2_distance"      # suitable for image embeddings
 ```
 
 ### 2. Batch Processing Optimization
 
 ```python
-# Adjust batch processing size
+```
+
+Adjust batch processing size:
+
+```python
 CLICKZETTA_BATCH_SIZE = 200  # increasing batch size improves throughput
 ```
 
 ### 3. Full-Text Search Optimization
 
 ```python
-# Enable inverted index to support full-text search
+```
+
+Enable inverted index to support full-text search:
+
+```python
 CLICKZETTA_ENABLE_INVERTED_INDEX = true
 CLICKZETTA_ANALYZER_TYPE = "chinese"  # Chinese word segmentation
 CLICKZETTA_ANALYZER_MODE = "smart"    # smart segmentation mode
@@ -206,14 +222,26 @@ Monitor the following key metrics:
 Pay attention to the following log information:
 
 ```bash
-# Connection log
+```
+
+Connection log:
+
+```bash
 INFO - Singdata connection established successfully
 
-# Vector operation log
+```
+
+Vector operation log:
+
+```bash
 INFO - Vector insert completed: 1000 vectors in 2.3s
 INFO - Vector search completed: 5 results in 120ms
 
-# Error log
+```
+
+Error log:
+
+```bash
 ERROR - Singdata connection failed: ...
 WARNING - Vector search timeout: ...
 ```

@@ -44,7 +44,7 @@ By the end of this guide, you should be familiar with various methods of loading
 
 ### What You Need
 
-* [Singdata Lakehouse](https://www.yunqi.tech/) account
+* [Singdata Lakehouse](https://www.singdata.com/) account
 * [Github repository for this guide](https://github.com/yunqiqiliang/clickzetta_quickstart/tree/main/a_comprehensive_guide_to_ingesting_data_into_clickzetta)
 
 ### Mac Requirements

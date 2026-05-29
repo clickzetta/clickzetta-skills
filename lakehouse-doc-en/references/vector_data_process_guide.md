@@ -376,7 +376,7 @@ SELECT DISTINCT feature_vector FROM vectors;
 | M                    | Positive integer                                                      | 16                 | Maximum number of connections for HNSW algorithm |
 | ef\_construction     | Positive integer                                                      | 200                | Candidate set size during index construction |
 
-> **IMPORTANT**: Parameter names must use the full form, e.g. `cosine_distance` instead of `cosine`
+> ⚠️ **Note**: Parameter names must use the full form, e.g. `cosine_distance` instead of `cosine`
 
 ### Index Creation and Management
 

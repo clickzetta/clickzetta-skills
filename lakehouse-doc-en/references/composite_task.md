@@ -1,169 +1,192 @@
 # Composite Task
 
-A composite task is a special task type that enables **unified scheduling configuration, parameter management, and operational control** by encapsulating multiple periodic tasks (such as offline synchronization and SQL tasks) as an independent unit, while establishing dependencies with other regular nodes. This task type is suitable for business scenarios that require batch task flow management and unified scheduling cycle control (such as incremental computation and cross-task coordination). When comparing composite tasks with [task groups](https://claude.ai/chat/task_group.md), the following core differences exist:
+A composite task is a special task type that supports encapsulating multiple periodic tasks (such as offline synchronization and SQL tasks) as an independent unit to achieve **unified scheduling configuration, parameter management, and operational control**, while establishing dependencies with other regular nodes. This task type is suited for business scenarios that require batch task flow management and unified scheduling cycle control — for example, incremental computation and cross-task coordination.
 
-* Task groups are a logical management concept that allows multiple tasks to be placed within a group for unified display and orchestration. Composite tasks are task type entities that exist at the same level as regular SQL tasks. Composite tasks can be added as elements within task groups.
-* From an external perspective, a composite task appears as a single entity, but internally it contains one or more subtask nodes (these subtasks can be various periodic scheduling tasks such as SQL tasks, offline synchronization tasks, etc.).
-* Composite tasks support unified scheduling time configuration, with all internal subtask nodes scheduled at the same frequency based on this scheduling time. This is particularly suitable for data processing pipelines where all task nodes have identical data freshness and consistency requirements. Task groups do not support scheduling time property configuration.
+Comparing composite tasks with [task groups](task_group.md), the key differences are:
+
+* A task group is a logical management concept that places multiple tasks in a group for unified display and orchestration. A composite task is a concrete task type entity, on equal footing with a regular SQL task. You can add a composite task as an element within a task group.
+* From the outside, a composite task appears as a single unit, but internally it contains one or more subtask nodes (which can be SQL tasks, offline synchronization tasks, or other periodic scheduling task types).
+* A composite task supports a unified scheduling time, and all internal subtask nodes run at the same frequency based on that schedule. This is especially useful for data processing pipelines where all task nodes have the same data freshness requirements. Task groups do not support scheduling time configuration.
 
 ## Quick Start: Creating a Composite Task
 
-The creation process for composite tasks is very similar to that of regular periodic SQL tasks.
+Creating a composite task is very similar to creating a regular periodic SQL task.
 
 ### Creation Entry Points
 
-Composite tasks can be created through the following paths:
+You can create a composite task through any of the following paths:
 
-* Task Development: Task Tab → New Task → Select "Composite Task"
+* Task Development: Task tab → New Task → Select "Composite Task"
 
-  ![](.topwrite/assets/image_1759992445081.png =337)
+  ![](.topwrite/assets/image_1752130018729.png =420)
 
-* Task Group Details Page: Within Task Group → Add New Task → Select "Composite Task"
+* Task Group Details page: Inside a task group → Add New Task → Select "Composite Task"
+  
+  ![](.topwrite/assets/image_1752130033606.png =680)
 
-  ![](.topwrite/assets/image_1759992517831.png =680)
+* Workspace: Top navigation bar → New Task → Select "Composite Task"
+  
+  ![](.topwrite/assets/image_1752130048252.png =680)
 
-* Workspace: Top Navigation Bar → New Task → Select "Composite Task"
+### Basic Information
 
-  ![](.topwrite/assets/image_1759992544546.png =680)
-
-### Basic Information Configuration
-
-In the composite task creation dialog, similar to other regular SQL tasks, fill in the required information:
+In the composite task creation dialog, fill in the required fields — same as for other regular SQL tasks:
 
 * Task Name: Required.
+* Folder: The folder to place the task in. Required.
+* Task Group: Optionally assign the task to a task group by selecting a specific task group name.
 
-* Folder: The folder where the task will be placed; must be under a folder. Required.
+  ![](.topwrite/assets/image_1752130064673.png =680)
 
-* Task Group: Whether to place it in a task group; if needed, select the specific task group name. Placement in a task group is not mandatory.
-
-## Core Feature Operations Guide
+## Core Feature Guide
 
 ### Subtask Management (Canvas Mode)
 
-Composite tasks currently use a **canvas** (DAG diagram) to display subtask nodes and support the following operations:
-
-![](.topwrite/assets/image_1759992832265.png =680)
+Composite tasks use a **canvas** (DAG diagram) to display subtask nodes and support the following operations:
+![](.topwrite/assets/image_1752130101512.png =680)
 
 #### Adding Subtasks
 
-* **Entry Point**: Canvas Toolbar → "New Subtask" → Select Task Type (only periodic tasks are supported: offline synchronization, SQL, etc.; **real-time tasks are not supported**). Subtasks can be added to the composite task by clicking on the task type or dragging and dropping.
-  ![](.topwrite/assets/image_1759992919223.png =500)
+* **Entry point**: Canvas toolbar → "New Subtask" → Select a task type (only periodic tasks are supported: offline synchronization, SQL, etc.; **real-time tasks are not supported**). You can add a subtask by clicking the task type or dragging it onto the canvas.
 
-* **Default State**: Newly added subtasks have no dependencies by default and require manual dependency configuration (through canvas connections or subtask detail configuration).
+  ![](.topwrite/assets/image_1752130110716.png =360)
+
+* **Default state**: Newly added subtasks have no dependencies by default. You need to configure dependencies manually — either by drawing connections on the canvas or through the subtask detail configuration.
 
 #### Editing Subtasks
 
-* **Method**: When adding a subtask node, the system defaults to entering the subtask's detail page for convenient code writing and scheduling configuration.
+* **How to edit**:
+  * When you add a subtask node, the system automatically opens the subtask detail page so you can write code and configure scheduling settings.
+  * Double-click a subtask → Opens the regular node editing page (reuses existing editing functionality).
 
-  * Double-click on a subtask → Enter the regular node editing page (reuses existing editing functionality)
-
-* **Restrictions**: To ensure proper execution after composite task submission, subtasks do not support independent saving of incomplete work. All required attributes (such as code, cluster, scheduling properties) must be filled in before saving. When exiting subtask editing, ensure this information is complete and properly saved.
+* **Restrictions**: To ensure the composite task runs correctly after submission, subtasks cannot be saved in an incomplete state. All required fields (code, cluster, scheduling properties) must be filled in before saving. Make sure this information is complete and saved before exiting the subtask editor.
 
 #### Dependency Orchestration
 
-* **Configuration Within Subtasks**: Click on "Scheduling" in the subtask → Set upstream subtask dependencies in "Scheduling Dependencies".
-* **Canvas Connections**: On the composite task's DAG canvas, select the source node → Drag a connection to the target node → Establish "upstream→downstream" dependency. Dependency relationships can also be removed by operating on the connection lines.
+* **Configure in the subtask**: Click "Scheduling" on the subtask → Set upstream subtask dependencies under "Scheduling Dependencies".
+* **Draw connections on the canvas**: On the composite task's DAG canvas, select a source node → Drag a connection to the target node → This establishes an "upstream → downstream" dependency. You can also remove dependencies by operating on the connection lines.
 
 #### Canvas Tools
 
-* **Auto Layout**: Toolbar → "Auto Layout" → Optimize DAG display according to dependency relationships
-* **Zoom/Refresh**: Toolbar → "+/-" to adjust canvas size, or "Refresh" to reset view
+* **Auto layout**: Toolbar → "Auto Layout" → Optimizes the DAG display based on dependency relationships.
+* **Zoom/Refresh**: Toolbar → "+" / "-" to adjust canvas size, or "Refresh" to reset the view.
 
-### Scheduling Configuration (Global and Local Combined)
+### Scheduling Configuration (Global and Local)
 
-The scheduling strategy for composite tasks is managed through the coordination of **global configuration** (composite task level) and **local configuration** (subtask level). The overall approach is that subtasks inherit the composite task's global configuration by default, but also support individual local configuration. When local configuration exists, it takes precedence. Key configuration items are as follows:
+The scheduling strategy for a composite task is managed through a combination of **global configuration** (at the composite task level) and **local configuration** (at the subtask level). Subtasks inherit the composite task's global configuration by default, but can also be configured individually. When a local configuration exists, it takes precedence. Key configuration items:
 
-| Configuration Item | Global Configuration (Composite Task)                                   | Local Configuration (Subtask)                                                                       |
-| ------------------ | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| Scheduling Time    | Required, supports Cron expressions (subtasks cannot set independently) | None (subtasks follow the composite task's global scheduling time for synchronous execution)        |
-| Instance Rerun     | Global setting (rerun count, interval), subtasks inherit by default     | Optional override of global settings (only supported for specific task types such as SQL)           |
-| Task Priority      | Global setting (default value)                                          | Optional individual setting (overrides global, only supported for SQL nodes)                        |
-| Self-dependency    | Global setting (controls composite task cycle dependency)               | None (subtask self-dependency is indirectly achieved through composite task global self-dependency) |
+| Configuration Item | Global Configuration (Composite Task)                                    | Local Configuration (Subtask)                                                                        |
+| ------------------ | ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| Scheduling Time    | Required; supports Cron expressions. Subtasks cannot set this independently. | None. Subtasks follow the composite task's global scheduling time and run at the same frequency.  |
+| Instance Rerun     | Global setting (rerun count, interval). Subtasks inherit by default.     | Optional override of global settings (only supported for specific task types such as SQL).           |
+| Task Priority      | Global setting (default value).                                          | Optional individual setting (overrides global; only supported for SQL nodes).                        |
+| Self-dependency    | Global setting (controls composite task cycle dependency).               | None. Subtask self-dependency is indirectly achieved through the composite task's global self-dependency. |
 
-**Example**: If the composite task global setting is "3 reruns with 5-minute intervals," a subtask can individually configure "5 reruns," resulting in the actual configuration of "5 reruns with 5-minute intervals" for that subtask.
+**Example**: If the composite task global setting is "3 reruns with a 5-minute interval," and a subtask is individually configured with "5 reruns," that subtask will use "5 reruns with a 5-minute interval."
+
+![](.topwrite/assets/image_1752130126629.png =680)
+
+![](.topwrite/assets/image_1752130133390.png =680)
 
 ### Parameter Management (Composite Task → Subtask Propagation)
 
 #### Defining Parameters
 
-* **Entry Point**: Composite Task Details Page → Click "Parameters" → Add parameters in the dialog (e.g., `composite_task_param`):
+* **Entry point**: Composite task detail page → Click "Parameters" → Add parameters in the dialog (e.g., `composite_task_param`):
 
-  ![](.topwrite/assets/image_1759993247775.png =480)
+  ![](.topwrite/assets/image_1752130143435.png =680)
 
-  ![](.topwrite/assets/image_1759993224632.png =680)
+  ![](.topwrite/assets/image_1752130151838.png =680)
 
-* **Scope**: Valid only within the current composite task; parameters are isolated between different composite tasks.
+* **Scope**: Parameters are only valid within the current composite task. Parameters are isolated between different composite tasks.
 
 #### Referencing Parameters
 
-In the subtask's parameter configuration, if the parameter name matches a parameter name defined in the composite task, the system automatically recognizes it and prompts for source selection. To use the globally defined composite task parameter, select "Composite Task" as the value source; otherwise, select "Task".
+In a subtask's parameter configuration, if the parameter name matches a parameter defined in the composite task, the system automatically recognizes it and prompts you to select the value source. To use the globally defined composite task parameter, select "Composite Task" as the value source; otherwise, select "Task".
 
-![](.topwrite/assets/image_1759993327944.png =680)
+![](.topwrite/assets/image_1752130161305.png =680)
 
-In subtask code, parameters can be referenced using `${parameter_name}`. **Example** (SQL subtask):
+In subtask code, you can reference parameters using `${parameter_name}`. **Example** (SQL subtask):
 
 ```
-SELECT * FROM user_log WHERE dt = '${composite_task_param}'
+SELECT * FROM user_log WHERE dt = '${composite_task_param}'  
 ```
 
 ## Advanced Operations: Saving and Submitting
 
-### Saving Composite Tasks
+### Saving a Composite Task
 
-* Composite tasks currently do not support global unified saving of subtask nodes. Please operate on individual subtasks to ensure code, scheduling configuration, and other information are saved before submitting the composite task.
+* Composite tasks do not currently support saving all subtask nodes at once. Save each subtask individually to ensure its code, scheduling configuration, and other settings are saved. Then submit the composite task.
 
-### Submitting Composite Tasks
+### Submitting a Composite Task
 
-* **Purpose**: Enables submission of the composite task and all internal subtasks to the production environment for periodic scheduled execution, generating a corresponding "submission version".
+* **Purpose**: Submits the composite task and all its internal subtasks to the production environment for periodic scheduled execution, generating a corresponding "submission version."
 
-* **Entry Point**: Composite Task Details Page → "Submit"
+* **Entry point**: Composite task detail page → "Submit."
+
+  ![](.topwrite/assets/image_1752130174992.png =680)
 
 ## Operations and Monitoring
 
 ### Composite Task Operations
 
-Composite tasks are displayed in the operations center alongside other periodic tasks and support similar operations such as pause, backfill, and offline.
-![](.topwrite/assets/image_1759994080395.png =680)
+Composite tasks appear in the Operations Center alongside other periodic tasks and support similar operations such as pause, data backfill, and offline.
 
-| Operation     | Description                                                                                                                                                                      |
-| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Pause/Resume  | After pausing, the composite task and subtasks stop scheduling; after resuming, execution continues according to current configuration                                           |
-| Data Backfill | Select time range → Composite task generates backfill instances as a whole according to scheduling rules (including all subtask instances)                                       |
-| Offline       | After going offline, the task no longer schedules; check for downstream dependencies (cannot go offline if downstream exists; use offline with downstream functionality instead) |
+![](.topwrite/assets/image_1752130184652.png =680)
+
+| Operation      | Description                                                                                                                                                                                    |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pause/Resume   | After pausing, the composite task and its subtasks stop scheduling. After resuming, execution continues according to the current configuration.                                                |
+| Data Backfill  | Select a time range → The composite task generates backfill instances as a whole according to scheduling rules (including all subtask instances).                                               |
+| Offline        | After going offline, the task no longer schedules. Check for downstream dependencies — if any exist, you cannot go offline directly and must use the "Offline (including downstream)" feature. |
 
 ### Composite Task Instance Operations
 
-In the Instance Operations tab, composite task instances can be viewed alongside other periodic task instances, with support for operations such as rerun and mark as failed, as shown below:
-![](.topwrite/assets/image_1759994024456.png =680)
+In the Instance Operations tab, composite task instances are listed alongside other periodic task instances and support operations such as rerun and mark as success/failure, as shown below:
+
+![](.topwrite/assets/image_1752130199325.png =680)
 
 #### Status Monitoring
 
-* **Overall Status**: Composite task instance status is comprehensively determined by subtask statuses, with the following states: Not Started (all subtasks not started), Running (any subtask running), Succeeded (all subtasks succeeded), Failed (at least one subtask failed)
-* **Drill-down View**: Click on Instance ID → Enter subtask instance DAG page to view runtime details for each subtask (including logs and status)
+* **Overall status**: The composite task instance status is determined by the combined status of its subtasks:
+  * Not Started: all subtasks have not started
+  * Running: at least one subtask is running
+  * Succeeded: all subtasks succeeded
+  * Failed: at least one subtask failed
+* **Drill-down view**: Click the instance ID → Opens the subtask instance DAG page to view runtime details for each subtask (including logs and status).
 
 #### Instance Operations
 
-| Operation                | Supported States                      | Behavior Description                                                                                                                              |
-| ------------------------ | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Rerun                    | Any terminal state (failed/succeeded) | Reruns entire composite task; subtasks generate new instances according to their respective rerun rules (partial subtask selection not supported) |
-| Mark Success/Mark Failed | Not Started/Terminal State            | Forces composite task and all subtask instance statuses to change to succeeded/failed                                                             |
-| Terminate                | Running                               | Terminates all running/not started subtask instances, setting status to failed                                                                    |
+| Operation              | Supported States                      | Behavior                                                                                                                                          |
+| ---------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Rerun                  | Any terminal state (failed/succeeded) | Reruns the entire composite task. Subtasks generate new instances according to their respective rerun rules. Partial subtask selection is not supported. |
+| Mark Success/Failure   | Not Started / Terminal state          | Forces the composite task and all subtask instance statuses to change to succeeded or failed.                                                     |
+| Terminate              | Running                               | Terminates all running or not-started subtask instances and sets their status to failed.                                                          |
 
-### Composite Task Monitoring and Alerting
+### Monitoring and Alerts
 
-In monitoring and alerting, composite tasks are categorized under periodic scheduling tasks. Existing monitoring items such as "Task Instance Execution Failure" and "Periodic Task Instance Completion Time" apply to them as well. Similar to regular SQL periodic tasks, monitoring rules can be configured to monitor their execution status and duration.
-![](.topwrite/assets/image_1759994186179.png =680)
+In monitoring and alerts, composite tasks are categorized under periodic scheduling tasks. Existing monitoring items such as "Task Instance Execution Failure" and "Periodic Task Instance Completion Time" apply to composite tasks as well. You can configure monitoring rules for composite tasks the same way you would for regular SQL periodic tasks.
 
-### Composite Task Triggered Quality Rule Validation
+![](.topwrite/assets/image_1752131374833.png =680)
 
-When configuring data quality rules, composite tasks can be selected as the scheduling trigger object in the rule execution trigger method, as shown below. Specific subtasks can be selected for triggering; if "Subtask" is left blank, the trigger occurs after the entire composite task execution completes.
-![](.topwrite/assets/image_1759994260695.png =680)
+### Triggering Data Quality Rule Checks
 
-## Important Considerations
+When configuring data quality rules, you can select a composite task as the scheduling trigger in the rule execution trigger settings, as shown below. You can select a specific subtask to trigger the check; if "Subtask" is left blank, the check is triggered after the entire composite task completes.
 
-1. **Type Restrictions**: Subtasks within composite tasks only support periodic tasks (offline synchronization, SQL, etc.); real-time tasks (multi-table real-time synchronization, Continuous Jobs, etc.) cannot be added.
-2. **Parameter Scope**: Composite task parameters are only visible internally and cannot be used by other composite tasks. For cross-composite task parameter sharing, use task group parameters or similar mechanisms.
-3. **Version Management**: Composite tasks only support "submission versions" (no saved versions) and do not currently support version rollback.
-4. **Task Dependencies**: Within task groups, composite tasks exist as complete entities; internal subtasks cannot be added individually to the task group. Dependency relationships exist between the composite task as a whole and other tasks. Internal subtasks of a composite task cannot depend on other tasks, nor can they be depended upon by other tasks.
+![](.topwrite/assets/image_1752131279717.png =680)
 
-^
+## Notes
+
+1. **Type restrictions**: Subtasks within a composite task only support periodic tasks (offline synchronization, SQL, etc.). Real-time tasks (multi-table real-time synchronization, Continuous Jobs, etc.) cannot be added.
+2. **Parameter scope**: Composite task parameters are only visible within the composite task and cannot be used by other composite tasks. To share parameters across composite tasks, use task group parameters or similar mechanisms.
+3. **Version management**: Composite tasks only support "submission versions" (no saved versions) and do not currently support version rollback.
+4. **Task dependencies**: Within a task group, a composite task exists as a whole unit. Internal subtasks cannot be added individually to the task group, and dependencies are between the composite task as a whole and other tasks. Internal subtasks of a composite task cannot depend on other tasks in the task group, nor can they be depended upon by other tasks in the task group.
+
+---
+
+## Related Documentation
+
+- [Task Parameters](task_param.md) — Concepts and configuration for composite task parameters
+- [Task Parameter Syntax Reference](task_param_reference.md) — Full syntax for time expressions and built-in parameters
+- [Task Group](task_group.md) — Using task group parameters to share parameters across composite tasks
+- [Task Development and Scheduling](task-develop.md) — Development and scheduling configuration for SQL subtasks

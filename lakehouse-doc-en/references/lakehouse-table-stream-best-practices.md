@@ -69,16 +69,23 @@ CREATE TABLE source_table (
 );
 ```
 
-### 2.2 Enabling Change Tracking (Required Step)
+### 2.2 Creating a Table Stream
 
-**Important**: You must enable change tracking on the source table before creating a Table Stream:
+A Table Stream can be created directly on any regular table without additional configuration:
 
 ```sql
--- Enable change tracking
-ALTER TABLE source_table SET PROPERTIES ('change_tracking' = 'true');
-```
+-- Create source table example
+CREATE TABLE source_table (
+    id INT,
+    name STRING,
+    value DOUBLE,
+    updated_at TIMESTAMP
+);
 
-This step is **mandatory**. If not performed, the Table Stream may be created successfully but will not capture changes correctly.
+-- Create Table Stream directly
+CREATE TABLE STREAM source_stream ON TABLE source_table
+WITH PROPERTIES ('TABLE_STREAM_MODE' = 'STANDARD');
+```
 
 ### 2.3 Preparing the Target Table
 
@@ -148,6 +155,34 @@ WITH PROPERTIES ('TABLE_STREAM_MODE' = 'STANDARD');
 
 **Note**: Use the correct syntax `COMMENT 'comment content'`, not `COMMENT = 'comment content'`.
 
+### 3.5 Multiple Consumer Pattern
+
+**A single Stream can only be fully consumed by one consumer.** Once task A consumes the Stream via a DML operation, the offset advances, and when task B queries the same Stream, that batch of change data is already gone.
+
+If multiple downstream tasks (or different downstream systems) all need to consume changes from the same table, **create a separate Stream for each consumer**:
+
+```sql
+-- Enable change tracking on the source table
+ALTER TABLE orders SET PROPERTIES ('change_tracking' = 'true');
+
+-- Create a Stream for the data warehouse sync task
+CREATE TABLE STREAM orders_stream_for_dw
+    ON TABLE orders
+    WITH PROPERTIES ('TABLE_STREAM_MODE' = 'STANDARD');
+
+-- Create a Stream for the real-time notification task (only cares about new orders)
+CREATE TABLE STREAM orders_stream_for_notify
+    ON TABLE orders
+    WITH PROPERTIES ('TABLE_STREAM_MODE' = 'APPEND_ONLY');
+
+-- Create a Stream for the audit task
+CREATE TABLE STREAM orders_stream_for_audit
+    ON TABLE orders
+    WITH PROPERTIES ('TABLE_STREAM_MODE' = 'STANDARD');
+```
+
+Each Stream maintains its own offset independently, so A consuming does not affect B or C. A Stream only stores the offset and does not replicate table data, so the additional storage cost of creating multiple Streams is minimal.
+
 ## 4. Using Different Modes
 
 ### 4.1 STANDARD Mode
@@ -193,16 +228,56 @@ Characteristics:
 
 ## 5. Consuming and Processing Data
 
-### 5.1 Querying Stream Data
+### 5.1 Offset Advancement Rules
+
+Understanding when the offset advances is fundamental to using Table Stream correctly.
+
+**Core rule: the offset only advances after a DML transaction that includes the Stream is successfully committed.**
+
+| Operation | Offset Advances? |
+|-----------|-----------------|
+| `SELECT * FROM stream` | **No** |
+| `INSERT INTO t SELECT ... FROM stream` (successfully committed) | **Yes** |
+| `INSERT INTO t SELECT ... FROM stream WHERE ...` (successfully committed) | **Yes** (even if WHERE filters out some data) |
+| Transaction containing Stream is rolled back | **No** |
+| Transaction containing Stream fails | **No** |
+
+**WHERE conditions do not affect offset advancement**: even if a WHERE clause filters out most of the data, as long as the DML transaction is successfully committed, all data in the Stream is consumed and the offset advances to the current position.
 
 ```sql
--- Query change data in the Stream
+-- Example: only process changes where value > 100
+-- But all changes in the Stream (including value <= 100) are consumed
+INSERT INTO high_value_target
+SELECT id, name, value FROM my_stream
+WHERE value > 100;
+
+-- Querying the Stream again, the value <= 100 changes are also gone
+SELECT COUNT(*) FROM my_stream;  -- returns 0 (or only newly produced changes)
+```
+
+If you want to process only part of the data without losing the rest, first consume everything into a staging table, then filter from there:
+
+```sql
+-- First consume everything into a staging table
+INSERT INTO staging_table
+SELECT * FROM my_stream;
+
+-- Then process conditionally from the staging table
+INSERT INTO high_value_target
+SELECT id, name, value FROM staging_table
+WHERE value > 100;
+```
+
+### 5.2 Querying Stream Data
+
+```sql
+-- Query change data in the Stream (does not advance offset)
 SELECT * FROM my_stream;
 ```
 
-**Important**: Using only SELECT queries will not advance the Stream's offset.
+**Important**: Using only SELECT queries will not advance the Stream's offset. You can view the same batch of change data repeatedly.
 
-### 5.2 Consuming and Advancing Offset
+### 5.3 Consuming and Advancing Offset
 
 To advance the Stream's offset (consume data), you must use DML operations:
 
@@ -213,9 +288,9 @@ SELECT id, name, value, updated_at
 FROM my_stream;
 ```
 
-### 5.3 Consumption Modes
+### 5.4 Consumption Modes
 
-#### 5.3.1 Full Consumption
+#### 5.4.1 Full Consumption
 
 ```sql
 -- Consume all change data in the Stream
@@ -224,19 +299,20 @@ SELECT id, name, value, updated_at
 FROM my_stream;
 ```
 
-#### 5.3.2 Conditional Consumption
+#### 5.4.2 Conditional Consumption (note risk of data loss)
 
 ```sql
 -- Consume only change data that meets specific conditions
+-- Warning: the offset for ALL Stream data advances, changes where value <= 100 are discarded
 INSERT INTO target_table
 SELECT id, name, value, updated_at 
 FROM my_stream
 WHERE value > 100;
 ```
 
-**Note**: Even when using a WHERE condition, the offset for all Stream data will still advance.
+**Note**: Even when using a WHERE condition, the offset for all Stream data will still advance. If you need to retain filtered-out data, first consume everything into a staging table.
 
-### 5.4 Verifying Consumption Status
+### 5.5 Verifying Consumption Status
 
 Verify whether data has been consumed by querying the Stream again:
 
@@ -257,15 +333,38 @@ The results returned by Table Stream include the following metadata fields:
 * `__commit_version`: Commit version
 * `__commit_timestamp`: Commit timestamp
 
-### 6.2 Determining Change Types
+### 6.2 Change Type Reference
 
-**Note**: Based on our testing, the actual behavior of the `__change_type` field may differ from the documentation description. All records are marked as "INSERT", even for update or delete operations.
+In **STANDARD mode**, the `__change_type` field takes the following four values:
 
-Therefore, we recommend determining change types through the following methods:
+| `__change_type` | Meaning | Notes |
+|----------------|---------|-------|
+| `INSERT` | New row | Source table executed an INSERT |
+| `UPDATE_BEFORE` | Old value before update | Paired with `UPDATE_AFTER`; `__commit_version` is the old version number |
+| `UPDATE_AFTER` | New value after update | Paired with `UPDATE_BEFORE`; `__commit_version` is the new version number |
+| `DELETE` | Deleted row | Source table executed a DELETE; field values of the deleted row are preserved |
 
-1. **INSERT Operation**: New records appear in the Stream
-2. **UPDATE Operation**: The `__commit_version` field value increases for records with the same ID
-3. **DELETE Operation**: Records no longer appear in the results of STANDARD mode
+An UPDATE operation produces two rows: `UPDATE_BEFORE` (old value) and `UPDATE_AFTER` (new value). Both rows share the same `id` but have different `__commit_version` values. **This behavior is unrelated to the `SHOW_INITIAL_ROWS` parameter** — it is consistent under both settings.
+
+`SHOW_INITIAL_ROWS` controls whether **data already in the table when the Stream was created is visible**, and does not affect the values of `__change_type`:
+- `FALSE` (default): Data already in the table when the Stream was created is not visible; only changes that occur after the Stream is created are captured.
+- `TRUE`: Data already in the table when the Stream was created is exposed as `INSERT` records. After the initial snapshot is consumed, subsequent changes produce `UPDATE_BEFORE`/`UPDATE_AFTER`/`DELETE` normally.
+
+**Standard pattern for using a Stream in a MERGE statement**:
+
+```sql
+MERGE INTO target t
+USING source_stream s ON t.id = s.id
+WHEN MATCHED AND s.__change_type = 'UPDATE_AFTER'
+    THEN UPDATE SET t.name = s.name, t.value = s.value
+WHEN MATCHED AND s.__change_type = 'DELETE'
+    THEN DELETE
+WHEN NOT MATCHED AND s.__change_type = 'INSERT'
+    THEN INSERT (id, name, value) VALUES (s.id, s.name, s.value);
+-- UPDATE_BEFORE rows do not need to be handled; MERGE will automatically ignore unmatched conditions
+```
+
+In **APPEND_ONLY mode**, `__change_type` is always `INSERT`. UPDATE and DELETE operations produce no records.
 
 ### 6.3 Using Metadata for Incremental Processing
 
@@ -281,9 +380,9 @@ WHERE __commit_timestamp > TIMESTAMP '2025-05-01 00:00:00';
 
 ### 6.4 Metadata Field Best Practices
 
-* Do not rely on the `__change_type` field to distinguish operation types
-* Use `__commit_version` and `__commit_timestamp` to track changes
-* Focus on the final state of data rather than the change process
+* **`__change_type` is unrelated to `SHOW_INITIAL_ROWS`**: Regardless of the default or `TRUE` setting, in STANDARD mode UPDATE always produces `UPDATE_BEFORE`/`UPDATE_AFTER` and DELETE always produces `DELETE`
+* **Always use the complete pattern in MERGE**: distinguish `UPDATE_AFTER`/`DELETE`/`INSERT` by `__change_type`; `UPDATE_BEFORE` rows can be ignored
+* Use `__commit_version` and `__commit_timestamp` to track the order of changes
 * Save the maximum version number consumed for disaster recovery
 
 ## 7. Real-World Application Scenarios
@@ -408,19 +507,21 @@ SELECT * FROM source_stream WHERE MOD(id, 4) = 1;
 
 **Solution**:
 
-1. Confirm change tracking is enabled: `ALTER TABLE table_name SET PROPERTIES ('change_tracking' = 'true')`
+1. Confirm DML operations were executed after Stream creation
 2. Verify you have sufficient permissions
-3. Confirm DML operations were executed after Stream creation
+3. Confirm that streaming write data has been committed (real-time writes may require waiting approximately 1 minute)
 
-### 9.2 Cannot Distinguish Change Types
+### 9.2 UPDATE_BEFORE/UPDATE_AFTER/DELETE Not Appearing in Stream
 
-**Issue**: All changes are marked as INSERT, making it impossible to distinguish updates and deletes.
+**Issue**: Querying a STANDARD mode Stream shows only INSERT records, with no UPDATE or DELETE records.
+
+**Root cause**: The UPDATE/DELETE operations occurred **before** the Stream was created. A Stream can only capture changes that happen after it is created. The values of `__change_type` (INSERT/UPDATE_BEFORE/UPDATE_AFTER/DELETE) are unrelated to the `SHOW_INITIAL_ROWS` parameter.
 
 **Solution**:
 
-1. Use `__commit_version` changes to detect updates
-2. Record previous state and compare with current state
-3. For STANDARD mode, determine deletions by whether records exist
+1. Confirm that UPDATE/DELETE operations were executed **after** the Stream was created.
+2. If you need to capture historical changes, use `TIMESTAMP AS OF` to set the Stream's starting offset to a point in time before the operations occurred.
+3. Use `DESC TABLE STREAM` to check `current_offset_time` and confirm whether the Stream's current offset is earlier than the time of the changes you expect to capture.
 
 ### 9.3 Duplicate Data Consumption
 
@@ -461,21 +562,27 @@ WHEN NOT MATCHED THEN
 
 ### 10.1 Design Principles
 
-1. **Always Enable Change Tracking**: Enable change tracking on the table before creating a Stream
-2. **Choose the Right Mode**: Select STANDARD or APPEND\_ONLY mode based on requirements
-3. **Consume Regularly**: Do not let Streams accumulate too much data
-4. **Focus on Final State**: Focus on the final state of data rather than the change process
-5. **Do Not Rely on Change Type**: Do not rely on the `__change_type` field to distinguish operation types
+1. **Create directly**: Table Stream can be created directly on any regular table without additional configuration
+2. **Choose the right mode**: Select STANDARD or APPEND\_ONLY mode based on requirements
+3. **Create a separate Stream for each consumer**: Different downstream tasks cannot share the same Stream — the first consumer to consume it will make the data invisible to subsequent consumers
+4. **Only DML advances the offset**: SELECT does not consume data; WHERE conditions do not prevent the offset from advancing, and filtered-out data is discarded
+5. **Consume regularly**: Do not let Streams accumulate too much data; the consumption frequency should be well within the source table's `DATA_RETENTION_DAYS` (default 1 day)
+6. **Understand the effect of `SHOW_INITIAL_ROWS`**: This parameter controls whether **data already in the table when the Stream was created is visible**; it does not affect the values of `__change_type`. Regardless of the setting, in STANDARD mode UPDATE always produces `UPDATE_BEFORE`/`UPDATE_AFTER` and DELETE always produces `DELETE`
 
 ### 10.2 Usage Checklist
 
-* [ ] Enable change\_tracking on the source table
-* [ ] Select the appropriate Stream mode
-* [ ] Consider whether SHOW\_INITIAL\_ROWS is needed
-* [ ] Use DML operations to consume data
-* [ ] Implement idempotent consumption mechanism
-* [ ] Monitor Stream size and performance
-* [ ] Record consumed version and timestamp
+* [ ] Confirm the source table exists and has the correct structure
+* [ ] Select the appropriate Stream mode (STANDARD / APPEND\_ONLY)
+* [ ] Create a separate Stream for each downstream consumer
+* [ ] Choose `SHOW_INITIAL_ROWS` based on requirements:
+  * `'FALSE'` (default): Data already in the table when the Stream was created is not visible; only changes after Stream creation are captured
+  * `'TRUE'`: Data already in the table when the Stream was created is exposed as `INSERT` records in the first consumption
+  * Under both settings, the `__change_type` behavior in STANDARD mode is identical (UPDATE produces `UPDATE_BEFORE`/`UPDATE_AFTER`, DELETE produces `DELETE`)
+* [ ] Use DML operations to consume data (do not use SELECT only)
+* [ ] Confirm whether data filtered by WHERE conditions can be discarded (if not, first consume everything into a staging table)
+* [ ] Implement idempotent consumption mechanism (MERGE instead of INSERT)
+* [ ] Consumption frequency < source table DATA\_RETENTION\_DAYS (default 1 day) to avoid Stream expiry
+* [ ] Monitor Stream backlog and consumption latency
 * [ ] Implement error handling and retry logic
 
 ### 10.3 Keys to Successful Implementation

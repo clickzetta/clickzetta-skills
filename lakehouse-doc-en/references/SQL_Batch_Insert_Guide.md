@@ -66,7 +66,7 @@ SELECT * FROM products ORDER BY product_id;
 | 2 | MacBook Pro | Laptop | 15000 | 50 |
 | 3 | AirPods | Audio | 1200 | 200 |
 
-> **Note**: The `VALUES` method is suitable for small data volumes under 100 rows. For large batch data import, `COPY INTO` or `INSERT INTO ... SELECT` is recommended.
+> ⚠️ **Note**: The `VALUES` method is suitable for small data volumes under 100 rows. For large batch data import, `COPY INTO` or `INSERT INTO ... SELECT` is recommended.
 
 ***
 
@@ -111,7 +111,7 @@ INSERT OVERWRITE TABLE products
 SELECT * FROM products WHERE stock > 0;
 ```
 
-> **Note**:
+> ⚠️ **Note**:
 > * For **non-partitioned tables**, `INSERT OVERWRITE` clears all table data before writing new data.
 > * For **partitioned tables**, `INSERT OVERWRITE` only overwrites matching partitions; other partitions are unaffected.
 
@@ -151,7 +151,7 @@ DROP TABLE IF EXISTS products;
 DROP TABLE IF EXISTS phone_products;
 ```
 
-> **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
+> 💡 **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
 
 ***
 

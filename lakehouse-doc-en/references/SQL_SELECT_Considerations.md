@@ -179,14 +179,30 @@ GROUP BY c.customer_id, c.customer_name;
 **[Preview Release] Singdata Lakehouse supports MySQL protocol connections**!
 
 ```bash
-# ✅ You can use familiar MySQL connection methods
-# MySQL 8.x connection method
+```
+
+You can use familiar MySQL connection methods:
+
+```bash
+```
+
+MySQL 8.x connection method:
+
+```bash
 jdbc:mysql://cn-shanghai-alicloud-mysql.api.singdata.com:3306/public?useSSL=true
 
-# MySQL 5.x connection method  
+```
+
+MySQL 5.x connection method:
+
+```bash
 jdbc:mysql://cn-shanghai-alicloud-mysql.api.singdata.com:3306/public?useSSL=false
 
-# Command-line connection
+```
+
+Command-line connection:
+
+```bash
 mysql -h cn-shanghai-alicloud-mysql.api.singdata.com -P 3306 -u username -p database_name
 ```
 
@@ -1095,8 +1111,7 @@ WHERE category = 'Electronics';  -- Bloom filter accelerates this query
 
 #### Limitations
 
-* **Only effective for new data**: Only effective for newly written data after creation; existing data needs to be rewritten
-* **BUILD INDEX not supported**: Bloom filter indexes do not support building indexes on existing data
+* **Only effective for new data automatically**: After creation, only automatically effective for newly written data; existing data requires executing `BUILD INDEX`
 * **Data type limitations**: Does not support complex types such as interval, struct, map, array
 
 ### 2. Inverted Index (INVERTED INDEX)
@@ -1261,7 +1276,7 @@ CREATE VECTOR INDEX IF NOT EXISTS idx_name ON TABLE table_name(column);
 
 #### Building Indexes (BUILD INDEX)
 
-Build indexes on existing data, only supported for INVERTED and VECTOR indexes:
+Build indexes on existing data, supported for INVERTED and VECTOR indexes:
 
 ```sql
 -- Full table build
@@ -1666,18 +1681,16 @@ SELECT id, explode(array_column) as item FROM table;
 
 ### Q: Which indexes support BUILD INDEX?
 
-A: Only INVERTED indexes and VECTOR indexes support the BUILD INDEX command:
+A: BLOOMFILTER, INVERTED, and VECTOR indexes all support the BUILD INDEX command:
 
 ```sql
 -- Support BUILD INDEX
 BUILD INDEX inverted_idx ON table_name;   -- Inverted index
 BUILD INDEX vector_idx ON table_name;     -- Vector index
-
--- Do not support BUILD INDEX
--- BUILD INDEX bloom_idx ON table_name;   -- Bloom filter index not supported
+BUILD INDEX bloom_idx ON table_name;      -- Bloom filter index
 ```
 
-Bloom filter indexes are only effective for newly written data. To make them effective for existing data, the data needs to be rewritten.
+Bloom filter indexes are only automatically effective for newly written data. To make them effective for existing data, execute `BUILD INDEX`.
 
 ### Q: The Web UI shows only 10000 rows, but I have more data. How can I view everything?
 
@@ -1695,8 +1708,8 @@ LIMIT 1000;
 -- Or use programming interface to process full data
 -- Python example:
 """
-import singdata
-conn = singdata.connect(...)
+import clickzetta
+conn = clickzetta.connect(...)
 cursor = conn.cursor()
 cursor.execute("SELECT * FROM large_table")
 for row in cursor.fetchall():  -- Can process more than 10000 rows
@@ -1807,7 +1820,7 @@ Singdata Lakehouse will continue to evolve, and we look forward to your success 
 * [Bloom Filter Index Documentation](https://singdata.com/documents/CREATE-BLOOMFILTER-INDEX)
 * [Inverted Index Documentation](https://singdata.com/documents/create-inverted-index)
 * [Vector Index Documentation](https://singdata.com/documents/create-vector-index)
-* [Index Build Documentation](https://singdata.com/documents/build-inverted-index)
+* [Index Build Documentation](https://singdata.com/documents/build-index)
 * [Performance Optimization Guide](https://singdata.com/documents/analytics_cluster_best_practices)
 * [JDBC Usage Documentation](https://singdata.com/documents/java_reference/jdbc)
 * [Python SDK Documentation](https://singdata.com/documents/python_reference/connector)

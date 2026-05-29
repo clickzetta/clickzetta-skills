@@ -3,11 +3,17 @@
 The `DECIMAL` type is used to represent numeric values with a specified maximum precision and fixed number of decimal places. This data type is particularly useful in financial, accounting, or other scenarios requiring precise numeric calculations, as it avoids the rounding errors inherent in floating-point arithmetic.
 
 ## Syntax
-```
+
+```Plain
 DECIMAL(precision, scale)
+NUMERIC(precision, scale)
 ```
+
+`NUMERIC` is an alias for `DECIMAL`, provided for compatibility with migration scripts from other databases. Without parameters, `NUMERIC` defaults to `DECIMAL(10, 0)`. Aliases are immediately converted to the canonical type during parsing; see [Type Aliases](data-type.md#type-aliases).
+
 * `precision`: The total number of digits, including both sides of the decimal point. Valid range: 1 to 38.
 * `scale`: The number of digits after the decimal point. Valid range: 0 to `precision`, and must not exceed `precision`.
+* Integer digits = `precision - scale`. For example, `DECIMAL(10, 2)` can store at most 8 integer digits + 2 decimal digits; `DECIMAL(5, 5)` is a pure decimal where the integer part can only be 0.
 
 ## Literals
 
@@ -21,12 +27,66 @@ SELECT 1234BD;  -- DECIMAL value 1234
 Decimal literals without the suffix (e.g., `3.14`) are also parsed as DECIMAL by default.
 
 ## Examples
+
+```SQL
+SELECT CAST(1234.56 AS DECIMAL(10, 2));   -- Result: 1234.56
+SELECT CAST(123.456 AS DECIMAL(5, 3));    -- Result: null (integer part requires 3 digits, but DECIMAL(5,3) only has 2 integer digits)
+SELECT CAST(1.23 AS DECIMAL(4, 2));       -- Result: 1.23
+SELECT CAST(1234 AS DECIMAL(6, 2));       -- Result: 1234.00
+SELECT CAST(0.1234 AS DECIMAL(5, 4));     -- Result: 0.1234
+SELECT CAST(123.456 AS DECIMAL(10, 2));   -- Result: 123.46 (decimal places rounded, not truncated)
+SELECT CAST(999.999 AS DECIMAL(5, 2));    -- Result: null (integer part 999 needs 3 digits, DECIMAL(5,2) only has 3 integer digits, but after rounding becomes 1000.00 which needs 4 digits, overflow)
 ```
-SELECT CAST(1234.56 AS DECIMAL(10, 2));  -- Result: 1234.56
-SELECT CAST(123.456 AS DECIMAL(5, 3));   -- Result: null
-SELECT CAST(1.23 AS DECIMAL(4, 2));      -- Result: 1.23
-SELECT CAST(1234 AS DECIMAL(6, 2));      -- Result: 1234.00
-SELECT CAST(0.1234 AS DECIMAL(5, 4));    -- Result: 0.1234
+
+> ⚠️ **Note**: DECIMAL overflow returns NULL in lenient mode without throwing an error. In financial calculations, use `COALESCE(result, 0)` or `IFNULL` to handle potential overflow NULLs; otherwise SUM/AVG and other aggregations will silently ignore these rows, causing results to be understated.
+
+## Out-of-Range Behavior
+
+The theoretical range of `DECIMAL(10, 2)` is `[-99,999,999.99, 99,999,999.99]` (8 integer digits + 2 decimal digits).
+
+| Scenario | Example | Result |
+|------|------|------|
+| Normal write | `CAST(99999999.99 AS DECIMAL(10,2))` | `99999999.99` |
+| Integer overflow | `CAST(100000000.00 AS DECIMAL(10,2))` | `NULL` |
+| Overflow after decimal rounding | `CAST(99999999.999 AS DECIMAL(10,2))` | `NULL` (rounding causes carry overflow) |
+| Negative overflow | `CAST(-100000000.00 AS DECIMAL(10,2))` | `NULL` |
+| Decimal digits exceed scale | `CAST(123.456 AS DECIMAL(10,2))` | `123.46` (rounded, no overflow) |
+
+**Automatic type promotion during arithmetic**
+
+Arithmetic operations in memory automatically expand the result type without losing data:
+
+```SQL
+-- amount column type is DECIMAL(10, 2), value is 99999999.99
+SELECT CAST(99999999.99 AS DECIMAL(10,2)) + 0.01;
+-- Result: 100000000.00 (system automatically promotes result type to DECIMAL(13,2), no data loss)
+```
+
+But explicitly casting back to the original type will re-trigger overflow:
+
+```SQL
+SELECT CAST(CAST(99999999.99 AS DECIMAL(10,2)) + 0.01 AS DECIMAL(10,2));
+-- Result: NULL (100000000.00 exceeds DECIMAL(10,2) range)
+```
+
+> ⚠️ **Note**: Do not cast back to a lower-precision type in intermediate steps of multi-step calculations. Let the system automatically infer the type of intermediate results, and only handle precision when writing or displaying the final result.
+
+**Recommendations for large-amount scenarios**
+
+For large-denomination currencies or high-concurrency accumulation scenarios, integer digits can easily run out:
+
+- It is recommended to use `DECIMAL(20, 4)` or `DECIMAL(30, 6)` for monetary fields, reserving sufficient integer digits
+- Validate for overflow before ETL writes to avoid silent data loss:
+
+```SQL
+-- Detect write overflow: original value is non-NULL but converted value is NULL, indicating overflow
+SELECT
+  CASE
+    WHEN amount_str IS NOT NULL AND CAST(amount_str AS DECIMAL(10,2)) IS NULL
+    THEN NULL  -- log to error table or throw exception
+    ELSE CAST(amount_str AS DECIMAL(10,2))
+  END AS amount
+FROM source_table;
 ```
 
 ## Arithmetic Operation Result Types

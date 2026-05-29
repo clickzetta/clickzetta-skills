@@ -42,7 +42,7 @@ This guide implements Type 1 and Type 2; Type 3 is outside the scope of this art
 
 ### What You Need
 
-* [Singdata Lakehouse](https://www.yunqi.tech/) account
+* [Singdata Lakehouse](https://www.singdata.com/) account
 * [GitHub repository for this guide](https://github.com/yunqiqiliang/clickzetta_quickstart/tree/main/Slowly_Changing_Dimensions_In_Lakehouse_Using_Streams_and_Tasks)
 * AK information for accessing Alibaba Cloud OSS
 

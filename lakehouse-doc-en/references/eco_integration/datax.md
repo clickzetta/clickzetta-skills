@@ -1,20 +1,36 @@
 # DataX ClickZettaWriter Plugin
 
+> 💡 **If your goal with DataX is to batch-sync data into Singdata Lakehouse**, Singdata Studio provides a visual offline sync solution that requires no JSON configuration files:
+>
+> | Scenario | Recommended Solution | Description |
+> |------|---------|------|
+> | Batch sync from relational databases (MySQL / PG / Oracle, etc.) | [Studio Offline Sync Task](../batch_sync.md) | Wizard-based configuration, supports scheduled dispatch, supports 40+ data sources |
+> | Full database migration, syncing multiple tables at once | [Multi-table Offline Sync](../multitable_batch_sync.md) | Sync an entire database in one task, with automatic table creation and field mapping |
+> | Real-time CDC sync | [Studio Real-time Sync Task](../realtime_sync.md) | If you need real-time rather than batch, DataX does not support CDC — use a real-time sync task instead |
+>
+> If you already have DataX jobs or need DataX-specific transformation capabilities, continue reading the integration guide below.
+
+---
+
 ## DataX Introduction
 
-DataX is an open-source data synchronization tool by Alibaba, supporting multiple data sources including relational databases, HDFS, Hive, MaxCompute, HBase, FTP, and local files. This document will introduce how to use the DataX ClickZettaWriter plugin to synchronize DataX data to ClickZetta LakeHouse.
+DataX is an open-source data synchronization tool by Alibaba, supporting multiple data sources including relational databases, HDFS, Hive, MaxCompute, HBase, FTP, and local files. This document will introduce how to use the DataX ClickZettaWriter plugin to synchronize DataX data to Singdata Lakehouse.
+
+## Usage Restrictions
+
+- vector and json types are not supported
 
 ## Preparations
 
 1. Please ensure that DataX is installed. For specific installation methods, please refer to the [DataX User Guide](https://github.com/alibaba/DataX/blob/master/userGuid.md).
 2. Download the DataX ClickZettaWriter plugin from the following address: [DataX ClickzettaWriter Plugin](https://autolake-dev-beijing.oss-cn-beijing.aliyuncs.com/clickzetta-tool/dataxwriter/datax.tar.gz). Unzip the plugin into the `plugin/writer` directory under the DataX installation directory.
-3. Before using the DataX ClickZettaWriter plugin, please ensure that the corresponding table has been created in ClickZetta LakeHouse.
+3. Before using the DataX ClickZettaWriter plugin, please ensure that the corresponding table has been created in Singdata Lakehouse.
 
 ## Using the DataX ClickZettaWriter Plugin
 
 ### 1. Create Configuration File
 
-The following example demonstrates how to use the DataX ClickZettaWriter plugin to synchronize MySQL data to ClickZetta LakeHouse.
+The following example demonstrates how to use the DataX ClickZettaWriter plugin to synchronize MySQL data to Singdata Lakehouse.
 ```json
 {
   "job": {
@@ -88,9 +104,9 @@ python bin/datax.py job.json
 ```
 ## Usage Example
 
-### Example 1: Sync MySQL Data to ClickZetta LakeHouse
+### Example 1: Sync MySQL Data to Singdata Lakehouse
 
-The following configuration file example synchronizes the `test_table` data in MySQL to the `example_table` in ClickZetta LakeHouse.
+The following configuration file example synchronizes the `test_table` data in MySQL to the `example_table` in Singdata Lakehouse.
 ```json
 {
     "job": {

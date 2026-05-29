@@ -69,7 +69,7 @@ WHERE event_id = 1;
 |----------|---------|--------------|
 | 1 | 101 | {"page":"home","duration":30,"tags":["tech","news"]} |
 
-> **Tip**: If the table schema allows, define the `payload` column directly as `JSON` type to avoid calling `PARSE_JSON` on every query.
+> 💡 **Tip**: If the table schema allows, define the `payload` column directly as `JSON` type to avoid calling `PARSE_JSON` on every query.
 
 ***
 
@@ -161,7 +161,7 @@ WHERE event_type = 'page_view';
 | 1 | 101 | tech |
 | 1 | 101 | news |
 
-> **Note**: `json_array_elements` applies only to JSON arrays. If the field is not an array, the function returns empty or throws an error.
+> ⚠️ **Note**: `json_array_elements` applies only to JSON arrays. If the field is not an array, the function returns empty or throws an error.
 
 ***
 
@@ -199,7 +199,7 @@ After completing JSON parsing verification, it is recommended to clean up test t
 DROP TABLE IF EXISTS user_events;
 ```
 
-> **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
+> 💡 **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
 
 ***
 

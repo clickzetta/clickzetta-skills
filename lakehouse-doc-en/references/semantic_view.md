@@ -1,4 +1,4 @@
-# Semantic View
+# Semantic View (Semantic View)
 
 ## Overview
 
@@ -54,7 +54,7 @@ The definition syntax for each clause is as follows:
 ```sql
 <table_alias> AS <schema_name>.<physical_table_name>
     PRIMARY KEY ( <column_name> [ , ... ] )
-    [ FOREIGN KEY ( <column_name> ) REFERENCES <other_logical_table_alias> ]
+    [ FOREIGN KEY ( <column_name> ) REFERENCES <other_logical_table_alias> [ ( <referenced_column_name> ) ] ]
     [ WITH SYNONYMS ( '<synonym>' [ , ... ] ) ]
     [ COMMENT = '<description>' ]
 ```
@@ -91,7 +91,7 @@ The definition syntax for each clause is as follows:
 | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | `<table_alias> AS <schema_name>.<physical_table_name>`     | Assigns a logical alias to a physical table. This alias is used in subsequent foreign key references, dimension, and metric definitions. |
 | `PRIMARY KEY ( <column_name> [ , ... ] )`                  | Specifies one or more columns as the primary key of the logical table. Primary keys help determine the relationship type (one-to-many or one-to-one) between tables. |
-| `FOREIGN KEY ( <column_name> ) REFERENCES <other_logical_table_alias>` | Defines a foreign key relationship between the current logical table and another logical table. The reference target must use the logical table alias (not the physical table name). The semantic view engine automatically handles table joins based on foreign key relationships at query time. |
+| `FOREIGN KEY ( <column_name> ) REFERENCES <other_logical_table_alias> [ ( <referenced_column_name> ) ]` | Defines a foreign key relationship between the current logical table and another logical table. The reference target must use the logical table alias (not the physical table name). When the foreign key column name differs from the primary key column name of the referenced table, you must explicitly specify the referenced column name, e.g., `FOREIGN KEY (dept) REFERENCES depts (dept_name)`. **The data types of the foreign key column and the referenced column must be identical**, otherwise an error will occur at creation time. The semantic view engine automatically handles table joins based on this foreign key relationship at query time. |
 | `WITH SYNONYMS ( '<synonym>' )`                            | Defines synonyms for the logical table to enhance discoverability.                                                                      |
 | `COMMENT = '<description>'`                                | Adds a descriptive comment to the logical table.                                                                                         |
 
@@ -108,8 +108,8 @@ The definition syntax for each clause is as follows:
 
 ### Usage Notes
 
-* A semantic view must define at least one dimension or one metric, i.e., it must include either the `DIMENSIONS` clause or the `METRICS` clause.
-* In the `TABLES` clause, a logical table referenced by a foreign key must be defined before the table that references it. For example, if the `orders` table's foreign key references the `customers` table, the `customers` definition must appear before `orders`, or at least be declared within the same `TABLES` clause.
+* The `TABLES` clause is required and cannot be omitted. The `DIMENSIONS` and `METRICS` clauses are both optional, but at least one should be defined in practice to be meaningful.
+* In the `TABLES` clause, a logical table referenced by a foreign key must be defined before the table that references it. For example, if the `orders` table's foreign key references the `customers` table, the `customers` definition must appear before `orders`.
 * If the target semantic view already exists, `CREATE SEMANTIC VIEW` will raise an error. It is recommended to use `DROP SEMANTIC VIEW IF EXISTS` first to ensure script idempotency (repeatable execution).
 * Dimensions and metrics support two naming styles: **qualified names** (`<logical_table_alias>.<name>`, e.g., `orders.order_date`) and **short names** (using the name directly, e.g., `order_date`). When a dimension or metric name is unique within the semantic view, short names can be used; if naming conflicts exist, qualified names must be used.
 * Dimensions support expressions as definitions, known as **computed dimensions**. For example, `YEAR(o_orderdate)` can extract the year from an order date and serve as a standalone dimension.
@@ -218,7 +218,7 @@ In this example, the `FILTERS` clause defines a filter named `is_ny` for filteri
 
 The `customer_name` dimension has `is_unique = true`, indicating that customer names are unique in the dataset. The `order_date` dimension has `is_time = true`, indicating that this field is a temporal attribute, and uses `enum_values` to constrain the allowed values for this dimension to three specific dates.
 
-> **Note**: Named filters defined in the `FILTERS` clause (such as `is_ny`) are semantic annotations for the AI/metadata layer and cannot be passed directly as parameters to the `semantic_view()` function. To apply filtering conditions in queries, define the corresponding column as a `DIMENSION` and use an outer `WHERE` clause for filtering.
+> ⚠️ **Note**: Named filters defined in the `FILTERS` clause (such as `is_ny`) are semantic annotations for the AI/metadata layer and cannot be passed directly as parameters to the `semantic_view()` function. To apply filtering conditions in queries, define the corresponding column as a `DIMENSION` and use an outer `WHERE` clause for filtering.
 
 ***
 
@@ -243,6 +243,9 @@ In queries, you can reference dimensions and metrics using either qualified name
 
 * Query results are automatically grouped by the specified dimensions, and metric values are computed based on the aggregate functions in the metric definitions. The semantic view engine automatically handles the required table joins based on the foreign key relationships defined in the `TABLES` clause -- users do not need to manually write JOIN logic.
 * Dimensions appear in the results in the same order as they are specified in the query.
+* The `semantic_view()` function must specify at least one `DIMENSIONS` or `METRICS` parameter, otherwise an error will occur.
+* You can pass only `DIMENSIONS` without `METRICS` to return a deduplicated list of dimension values; or pass only `METRICS` without `DIMENSIONS` to return a globally aggregated result (one row).
+* Query results support `WHERE`, `ORDER BY`, and `LIMIT` clauses, and also support `SELECT col1, col2 FROM semantic_view(...)` to select specific columns.
 
 ### Examples
 
@@ -349,65 +352,244 @@ Advantages of semantic view queries:
 
 ***
 
-## Managing Semantic Views
+## Complete Example: Employee Department Analysis
+
+The following example uses the `employees` and `departments` tables in the `doc_test` schema to demonstrate the complete workflow from creating to querying a semantic view.
+
+### Prepare Data
+
+```sql
+-- employees(id, name, dept, salary, hire_date, is_active)
+-- departments(dept_id, dept_name, manager)
+-- The dept column (string) matches departments.dept_name (string) type, usable as a foreign key join
+```
+
+### Create the Semantic View
+
+```sql
+DROP SEMANTIC VIEW IF EXISTS doc_test.emp_dept_analysis;
+CREATE SEMANTIC VIEW doc_test.emp_dept_analysis
+TABLES (
+    depts AS doc_test.departments
+        PRIMARY KEY (dept_name),
+    emps AS doc_test.employees
+        PRIMARY KEY (id)
+        FOREIGN KEY (dept) REFERENCES depts (dept_name)
+)
+DIMENSIONS (
+    emps.employee_name AS emps.name
+        WITH SYNONYMS = ('employee name', 'staff name')
+        is_unique = true
+        COMMENT = 'Employee name',
+    emps.department AS emps.dept
+        COMMENT = 'Department',
+    emps.hire_year AS YEAR(emps.hire_date)
+        is_time = true
+        COMMENT = 'Year of hire',
+    depts.manager_name AS depts.manager
+        COMMENT = 'Department manager'
+)
+METRICS (
+    emps.total_employees AS COUNT(emps.id)
+        COMMENT = 'Total number of employees',
+    emps.avg_salary AS AVG(emps.salary)
+        COMMENT = 'Average salary',
+    emps.max_salary AS MAX(emps.salary)
+        COMMENT = 'Maximum salary'
+)
+COMMENT = 'Employee department analysis semantic view';
+```
+
+### Query Examples
+
+**Count employees and average salary by department:**
+
+```sql
+SELECT * FROM semantic_view(
+    doc_test.emp_dept_analysis,
+    DIMENSIONS emps.department,
+    METRICS emps.total_employees,
+    METRICS emps.avg_salary
+);
+```
+
+```
++-------------+-----------------+----------------+
+| department  | total_employees |   avg_salary   |
++-------------+-----------------+----------------+
+| Engineering |        2        | 11500.000000   |
+| Marketing   |        2        |  8750.000000   |
+| HR          |        1        |  7500.000000   |
++-------------+-----------------+----------------+
+```
+
+**Cross-table dimension: group by department manager name** (auto JOIN, no manual SQL needed):
+
+```sql
+SELECT * FROM semantic_view(
+    doc_test.emp_dept_analysis,
+    DIMENSIONS depts.manager_name,
+    METRICS emps.total_employees,
+    METRICS emps.avg_salary
+);
+```
+
+```
++--------------+-----------------+--------------+
+| manager_name | total_employees |  avg_salary  |
++--------------+-----------------+--------------+
+| Frank        |        2        | 11500.000000 |
+| Henry        |        1        |  7500.000000 |
+| Grace        |        2        |  8750.000000 |
++--------------+-----------------+--------------+
+```
+
+**With WHERE filter:**
+
+```sql
+SELECT * FROM semantic_view(
+    doc_test.emp_dept_analysis,
+    DIMENSIONS emps.department,
+    METRICS emps.avg_salary
+) WHERE department = 'Engineering';
+```
+
+```
++-------------+--------------+
+| department  |  avg_salary  |
++-------------+--------------+
+| Engineering | 11500.000000 |
++-------------+--------------+
+```
+
+**METRICS only — returns global aggregation:**
+
+```sql
+SELECT * FROM semantic_view(
+    doc_test.emp_dept_analysis,
+    METRICS emps.total_employees,
+    METRICS emps.avg_salary
+);
+```
+
+```
++-----------------+--------------+
+| total_employees |  avg_salary  |
++-----------------+--------------+
+|        5        | 9600.000000  |
++-----------------+--------------+
+```
+
+**Computed dimension (YEAR expression):**
+
+```sql
+SELECT * FROM semantic_view(
+    doc_test.emp_dept_analysis,
+    DIMENSIONS emps.hire_year,
+    METRICS emps.total_employees
+) ORDER BY hire_year;
+```
+
+```
++-----------+-----------------+
+| hire_year | total_employees |
++-----------+-----------------+
+|   2019    |        1        |
+|   2020    |        1        |
+|   2021    |        1        |
+|   2022    |        1        |
+|   2023    |        1        |
++-----------+-----------------+
+```
+
+***
 
 ### DROP SEMANTIC VIEW
 
 Deletes a specified semantic view. The `IF EXISTS` clause prevents errors when the view does not exist.
 
-**Syntax**:
+**Syntax:**
 
 ```sql
-DROP SEMANTIC VIEW IF EXISTS <view_name>;
+DROP SEMANTIC VIEW [ IF EXISTS ] <view_name>;
 ```
 
-**Example**:
+**Example:**
 
 ```sql
 DROP SEMANTIC VIEW IF EXISTS tpch_rev_analysis;
 ```
 
-### SHOW SEMANTIC VIEWS
+### ALTER SEMANTIC VIEW
 
-Lists all available semantic views in the current schema.
+Currently only rename operations are supported. **Dynamically adding/removing dimensions, metrics, or modifying comments via SQL is not supported** — to modify the view structure, you must `DROP` and recreate it.
 
-**Syntax**:
+**Syntax:**
 
 ```sql
-SHOW SEMANTIC VIEWS;
--- Or specify a schema
-SHOW SEMANTIC VIEWS IN <schema_name>;
+ALTER SEMANTIC VIEW <view_name> RENAME TO <new_name>;
 ```
 
-This command returns the schema name and view name of each semantic view, making it easy to see all semantic views created in the current environment.
+**Example:**
+
+```sql
+ALTER SEMANTIC VIEW emp_dept_analysis RENAME TO emp_dept_v2;
+```
+
+### SHOW SEMANTIC VIEWS
+
+Lists all available semantic views in the current schema, returning `schema_name` and `table_name` columns. It is recommended to always add `IN <schema_name>` to avoid ambiguity.
+
+**Syntax:**
+
+```sql
+SHOW SEMANTIC VIEWS [ IN <schema_name> ];
+```
+
+**Example:**
+
+```sql
+SHOW SEMANTIC VIEWS IN doc_test;
+```
+
+```
++-------------+-------------------+
+| schema_name |    table_name     |
++-------------+-------------------+
+| doc_test    | emp_dept_analysis |
++-------------+-------------------+
+```
 
 ### DESC EXTENDED
 
-Views detailed definition information of a specified semantic view, including logical table structures, dimension metadata, metric definitions, foreign key relationships, and index information.
+View the detailed definition of a specified semantic view, including logical table structure, dimension metadata, metric definitions, and foreign key relationships.
 
-**Syntax**:
+> ⚠️ **Note**: `DESC <view_name>` (without `EXTENDED`) returns empty results — semantic views have no regular column definitions. You must use `DESC EXTENDED` to view the structure.
+
+**Syntax:**
 
 ```sql
 DESC EXTENDED <view_name>;
 ```
 
-**Example**:
+**Example:**
 
 ```sql
-DESC EXTENDED tpch_rev_analysis;
+DESC EXTENDED doc_test.emp_dept_analysis;
 ```
 
-The returned content includes: logical table information (physical table mappings, primary keys, and foreign keys), dimension metadata (`isUnique`, `enumValues`, and other properties), metric definitions (aggregate expressions), and index information (e.g., `BLOOM_FILTER`).
+The output covers: basic view information (workspace, schema, creation time, comment), logical table information (physical table mapping, primary and foreign keys), dimension metadata (`isUnique`, `isTime`, `enumValues`, etc.), and metric definitions (aggregation expressions).
 
-### Related Commands Quick Reference
+### Quick Command Reference
 
-| Command                         | Description                       |
-| ------------------------------- | --------------------------------- |
-| `CREATE SEMANTIC VIEW`          | Create a semantic view            |
-| `DROP SEMANTIC VIEW IF EXISTS`  | Delete a semantic view            |
-| `SHOW SEMANTIC VIEWS`           | List all semantic views           |
-| `DESC EXTENDED`                 | View semantic view details        |
-| `semantic_view()`               | Query a semantic view             |
+| Command | Description |
+| ----------------------------------------------- | ---------------- |
+| `CREATE SEMANTIC VIEW` | Create a semantic view |
+| `DROP SEMANTIC VIEW IF EXISTS` | Delete a semantic view |
+| `ALTER SEMANTIC VIEW ... RENAME TO` | Rename a semantic view |
+| `SHOW SEMANTIC VIEWS [ IN schema ]` | List all semantic views |
+| `DESC EXTENDED` | View complete semantic view structure (must include EXTENDED) |
+| `semantic_view()` | Query a semantic view |
 
 ***
 
@@ -433,7 +615,7 @@ CREATE SEMANTIC VIEW tpch_rev_analysis
 
 ## MCP Tools -- Semantic View Specialized Capabilities
 
-The Singdata Lakehouse MCP Server provides a set of tools specifically designed for semantic views, supporting the full lifecycle management of semantic views through natural language or structured invocations. The following tools are exposed via the MCP protocol and can be integrated into AI agents, data assistants, and other automation scenarios. Please refer to [Link](LakehouseMCPServer_intro.md).
+The Singdata Lakehouse MCP Server provides a set of tools specifically designed for semantic views, supporting the full lifecycle management of semantic views through natural language or structured invocations. The following tools are exposed via the MCP protocol and can be integrated into AI agents, data assistants, and other automation scenarios. Please refer to [Link](LakehouseMCPServer-intro.md).
 
 ***
 

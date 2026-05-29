@@ -83,7 +83,7 @@ session.use_schema(Schema_Name)
 
 XSMALL VCLUSTER ready
 
-> Note: The vcluster\_size parameter for compute clusters supports both T-shirt sizes (XSMALL, SMALL, Large, etc.) and numeric values (1, 2, 4, 16, etc.) to provide a richer range of compute cluster specifications for different scenarios. For more information, see: [VCluster Size Specification Change Description](vcluster_size_description.md)
+> ⚠️ **Note**: The vcluster\_size parameter for compute clusters supports both T-shirt sizes (XSMALL, SMALL, Large, etc.) and numeric values (1, 2, 4, 16, etc.) to provide a richer range of compute cluster specifications for different scenarios. For more information, see: [VCluster Size Specification Change Description](vcluster_size_description.md)
 
 `config.json` file sample ([parameter description](https://doc.clickzetta.com/JDBC-Driver)):
 

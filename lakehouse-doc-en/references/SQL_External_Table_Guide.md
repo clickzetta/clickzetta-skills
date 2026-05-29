@@ -52,7 +52,7 @@ LOCATION 'volume:my_ext_vol/sales_delta/';
 * `USING DELTA`: Specifies the external data format as Delta Lake.
 * `LOCATION`: Points to the Volume path where the Delta files are stored.
 
-> **Tip**: After creating the external table, Lakehouse automatically reads the schema from the Delta log, so you don't need to manually define columns.
+> 💡 **Tip**: After creating the external table, Lakehouse automatically reads the schema from the Delta log, so you don't need to manually define columns.
 
 ***
 
@@ -88,7 +88,7 @@ PROPERTIES (
 );
 ```
 
-> **Note**: Kafka external tables only support `SELECT` queries, not `INSERT`/`UPDATE`.
+> ⚠️ **Note**: Kafka external tables only support `SELECT` queries, not `INSERT`/`UPDATE`.
 
 ***
 
@@ -121,7 +121,7 @@ Use `DROP EXTERNAL TABLE` to remove external table metadata.
 DROP EXTERNAL TABLE delta_sales;
 ```
 
-> **Tip**: Dropping an external table only removes the metadata reference in Lakehouse; it does not delete the actual data files in external storage.
+> 💡 **Tip**: Dropping an external table only removes the metadata reference in Lakehouse; it does not delete the actual data files in external storage.
 
 ***
 

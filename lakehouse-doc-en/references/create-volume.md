@@ -2,7 +2,7 @@
 
 Creates a Named Volume using Lakehouse internal storage. Named Volumes must be explicitly created by users and are suitable for scenarios such as cross-team resource sharing.
 
-> **Note**: Although Named Volumes use internal storage, they fall under the External Volume category and differ from automatically created User Volumes and Table Volumes.
+> ⚠️ **Note**: Although Named Volumes use internal storage, they fall under the External Volume category and differ from automatically created User Volumes and Table Volumes.
 
 ## Syntax
 

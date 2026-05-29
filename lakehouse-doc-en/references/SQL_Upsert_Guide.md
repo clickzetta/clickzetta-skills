@@ -87,7 +87,7 @@ SELECT * FROM inventory ORDER BY product_id;
 | 2 | MacBook Pro | 50 | 2024-06-01 |
 | 3 | New Product | 200 | 2024-06-02 |
 
-> **Note**: The `WHEN MATCHED` clause must be written before `WHEN NOT MATCHED`.
+> ⚠️ **Note**: The `WHEN MATCHED` clause must be written before `WHEN NOT MATCHED`.
 
 ***
 
@@ -179,7 +179,7 @@ DROP TABLE IF EXISTS inventory;
 DROP TABLE IF EXISTS daily_stock;
 ```
 
-> **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
+> 💡 **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
 
 ***
 

@@ -1,79 +1,107 @@
-##  Description
+# REVOKE FROM USER
 
-This command is used to revoke permissions from a specified user or role. You can revoke various types of permissions from users or roles as needed, including but not limited to permissions on workspaces, roles, schemas, and workspace objects.
+## Description
 
-## Syntax 
-```SQL
+Revoke permissions that have been granted to a specified user or role. Supports revoking both object privileges and role grants.
+
+## Syntax
+
+### Revoke Object Permissions from a User
+
+```Plain
 REVOKE [GRANT OPTION FOR]
+    workspacePrivileges ON WORKSPACE workspace_name
+    | workspaceObjectPrivileges ON { ROLE | SCHEMA | VCLUSTER | FUNCTION } workspace_object_name
+    | schemaPrivileges ON SCHEMA schema_name
+    | schemaObjectPrivileges ON { TABLE | VIEW | MATERIALIZED VIEW } schema_object_name
+FROM USER user_name;
+```
 
-workspacePriveleges ON WORKSPACE workspace_name
-| workspaceObjectPriveleges ON { ROLE | SCHEMA | VCLUSTER | FUNCTION } workspace_object_name
-| schemaPrivileges ON SCHEMA schema_name
-| schemaObjectPriveleges ON { TABLE | VIEW | MATERIALIZED VIEW } schema_object_name
-FROM USER user_name
+### Revoke a Role from a User
 
--- Parameter Explanation
-workspacePriveleges ::=
+```Plain
+REVOKE ROLE role_name FROM USER user_name;
+```
+
+### Privilege Type Definitions
+
+```Plain
+-- Workspace level: create objects
+workspacePrivileges ::=
     CREATE { SCHEMA | VCLUSTER }
 
--- Authorization for objects under the workspace
-workspaceObjectPriveleges ::=
-    -- SCHEMA
+-- Workspace object privileges
+workspaceObjectPrivileges ::=
+    -- SCHEMA, FUNCTION
     ALTER | DROP | READ METADATA | ALL [PRIVILEGES]
     -- VCLUSTER
     ALTER | DROP | USE | READ METADATA | ALL [PRIVILEGES]
-    --job
+    -- JOB
     ALTER | CANCEL | READ METADATA | ALL [PRIVILEGES]
 
--- Authorization to create objects under schema
+-- Schema level: create objects
 schemaPrivileges ::=
     CREATE { TABLE | VIEW | MATERIALIZED VIEW } | ALL
 
--- Authorization for objects under schema
-schemaObjectPriveleges ::=
-    -- table
+-- Schema object privileges
+schemaObjectPrivileges ::=
+    -- TABLE
     ALTER | DROP | SELECT | INSERT | READ METADATA | ALL
-    -- view
-    ALTER | DROP | SELECT | ALL
-    -- MATERIALIZED VIEW
+    -- VIEW / MATERIALIZED VIEW
     ALTER | DROP | SELECT | ALL
 ```
+
 ## Parameter Description
 
-1. `workspacePriveleges`: Permissions to create objects within the workspace, such as creating schemas and virtual clusters (VCLUSTER).
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `GRANT OPTION FOR` | No | Revokes only the re-grant ability (`WITH GRANT OPTION`) while preserving the underlying permission itself |
+| `workspace_name` | Yes (when revoking workspace privileges) | Workspace name |
+| `workspace_object_name` | Yes (when revoking workspace object privileges) | Name of the object under the workspace |
+| `schema_name` | Yes (when revoking schema privileges) | Schema name |
+| `schema_object_name` | Yes (when revoking schema object privileges) | Full object name in the format `schema_name.object_name` |
+| `user_name` | Yes | The name of the user whose permissions are being revoked |
+| `role_name` | Yes (when revoking a role) | The name of the role to revoke |
 
-2. `workspaceObjectPriveleges`: Permissions to modify and view metadata of objects within the workspace.
+## Usage Examples
 
-3. `schemaPrivileges`: Permissions to create objects within a schema, such as creating tables, views, and materialized views.
+1. Revoke the role `test_readonly_role` from user `tester`:
 
-4. `schemaObjectPriveleges`: Permissions to modify, delete, and query objects within a schema.
+   ```SQL
+   REVOKE ROLE test_readonly_role FROM USER tester;
+   ```
 
-##  Example
+2. Revoke user `tester`'s permission to query table `semantic_model_test.dim_customer`:
 
-1. Revoke the permission for user `uat_demo` to create virtual clusters in the `lakehouse_public` workspace:
    ```SQL
-   REVOKE CREATE VCLUSTER ON WORKSPACE lakehouse_public FROM USER uat_demo;
+   REVOKE SELECT ON TABLE semantic_model_test.dim_customer FROM USER tester;
    ```
-```markdown
-2. Revoke the permissions of user `uat_demo` to modify the virtual cluster named `default`:
-```
+
+3. Revoke user `tester`'s permission to create tables under schema `semantic_model_test`:
+
    ```SQL
-   REVOKE ALTER VCLUSTER ON VCLUSTER default FROM USER uat_demo;
+   REVOKE CREATE TABLE ON SCHEMA semantic_model_test FROM USER tester;
    ```
-3. Revoke the permissions for user `uat_demo` to create tables and views in `public` mode:
+
+4. Revoke user `tester`'s permission to create a VCluster in the workspace:
+
    ```SQL
-   REVOKE CREATE VIEW, CREATE TABLE ON SCHEMA public FROM USER uat_demo;
+   REVOKE CREATE VCLUSTER ON WORKSPACE quick_start FROM USER tester;
    ```
-4. Reclaim the permissions for the user `uat_demo` to query the table named `my_table`:
+
+5. Revoke role `test_developer_role`'s permission to create views under schema `semantic_model_test`:
+
    ```SQL
-   REVOKE SELECT ON TABLE public.my_table FROM USER uat_demo;
+   REVOKE CREATE VIEW ON SCHEMA semantic_model_test FROM ROLE test_developer_role;
    ```
-5. Reclaim the permission of the role `reporting_role` to create views in `sales` mode:
-   ```SQL
-   REVOKE CREATE VIEW ON SCHEMA sales FROM ROLE reporting_role;
-   ```
-6. Reclaim all permissions of the user `data_engineer` in the `lakehouse_public` workspace:
-   ```SQL
-   REVOKE ALL PRIVILEGES ON WORKSPACE lakehouse_public FROM USER data_engineer;
-   ```
-Please choose the appropriate permission type and object to operate according to your actual needs. When executing this command, ensure that you have sufficient permissions to revoke the permissions of other users or roles.
+
+A successful command returns an empty result set. No error message means the revocation succeeded.
+
+## Notes
+
+- Executing this command requires the `workspace_admin` or `security_admin` role.
+- Revoking a permission that the user does not hold will **not raise an error**; the command silently succeeds and returns an empty result set.
+- Revoking a role (`REVOKE ROLE`) only removes the association between the user and that role; it does not affect the role itself or other users who hold the role.
+- Using `GRANT OPTION FOR` revokes only the user's ability to re-grant the permission, without affecting their own access to the resource.
+- Permissions obtained indirectly through a role cannot be revoked directly with `REVOKE`; you must first revoke the role (`REVOKE ROLE`).
+- Use `SHOW GRANTS TO USER user_name` to verify the revocation result.

@@ -71,7 +71,11 @@ CREATE INVERTED INDEX text_idx ON hybrid_docs(content) WITH ANALYZER='ik';
 
 **Chinese Word Segmentation Optimization**
 ```python
-# Support for multiple Chinese analyzers
+```
+
+Support for multiple Chinese analyzers:
+
+```python
 hybrid_store = ClickZettaHybridStore(
     text_analyzer="ik",      # IK tokenizer
     # text_analyzer="standard", # Standard tokenizer
@@ -91,7 +95,11 @@ hybrid_store = ClickZettaHybridStore(
 ```python
 from langchain_clickzetta import ClickZettaSQLChain
 
-# Natural language to SQL
+```
+
+Natural language to SQL:
+
+```python
 sql_chain = ClickZettaSQLChain.from_engine(engine=engine, llm=llm)
 result = sql_chain.invoke({"query": "Analyze user age distribution"})
 ```
@@ -106,21 +114,33 @@ result = sql_chain.invoke({"query": "Analyze user age distribution"})
 
 **Vector Semantic Search**
 ```python
-# Semantic similarity-based search
+```
+
+Semantic similarity-based search:
+
+```python
 vector_store = ClickZettaVectorStore(engine=engine, embedding=embeddings)
 results = vector_store.similarity_search("Development trends in artificial intelligence", k=5)
 ```
 
 **Full-Text Keyword Search**
 ```python
-# Keyword-based full-text search
+```
+
+Keyword-based full-text search:
+
+```python
 fulltext_retriever = ClickZettaFullTextRetriever(engine=engine)
 results = fulltext_retriever.get_relevant_documents("machine learning AND deep learning")
 ```
 
 **Hybrid Search**
 ```python
-# Unified vector + full-text search
+```
+
+Unified vector + full-text search:
+
+```python
 hybrid_retriever = ClickZettaUnifiedRetriever(
     hybrid_store=hybrid_store,
     search_type="hybrid",
@@ -163,7 +183,11 @@ WHEN NOT MATCHED THEN INSERT VALUES (source.id, source.content, source.metadata)
 
 **Batch Operations**
 ```python
-# Efficient batch document processing
+```
+
+Efficient batch document processing:
+
+```python
 vector_store.add_documents(documents_batch)  # Batch add
 store.mset(key_value_pairs)                  # Batch set
 store.mdelete(keys_to_delete)                # Batch delete
@@ -203,7 +227,11 @@ store.mdelete(keys_to_delete)                # Batch delete
 
 **Technical Solution**
 ```python
-# RAG architecture implementation
+```
+
+RAG architecture implementation:
+
+```python
 hybrid_store = ClickZettaHybridStore(...)     # Document storage
 retriever = ClickZettaUnifiedRetriever(...)   # Hybrid retrieval
 chat_history = ClickZettaChatMessageHistory(...)  # Conversation memory
@@ -242,7 +270,11 @@ chat_history = ClickZettaChatMessageHistory(...)  # Conversation memory
 
 **Technical Implementation**
 ```python
-# Natural language to SQL
+```
+
+Natural language to SQL:
+
+```python
 sql_chain = ClickZettaSQLChain.from_engine(engine, llm)
 result = sql_chain.invoke({"query": "Analyze sales trends for the last 30 days"})
 ```
@@ -264,22 +296,22 @@ result = sql_chain.invoke({"query": "Analyze sales trends for the last 30 days"}
                                  │
 ┌─────────────────────────────────▼─────────────────────────────────┐
 │               LangChain Singdata Integration Layer                 │
-│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ │
-│  │ Vector Store│ │FullText Ret │ │ Hybrid Store│ │ Chat History│ │
-│  └─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘ │
-│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ │
-│  │ KV Store    │ │ Doc Store   │ │ File Store  │ │ SQL Chain   │ │
-│  └─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘ │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐  │
+│  │ Vector Store│ │FullText Ret │ │ Hybrid Store│ │ Chat History│  │
+│  └─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘  │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐  │
+│  │ KV Store    │ │ Doc Store   │ │ File Store  │ │ SQL Chain   │  │
+│  └─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘  │
 └─────────────────────────────────────────────────────────────────┘
                                  │
 ┌─────────────────────────────────▼─────────────────────────────────┐
-│                 Singdata Lakehouse Platform                        │
-│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ │
-│  │Vector Index │ │Inverted Idx │ │ SQL Engine  │ │Volume Store │ │
-│  └─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘ │
-│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ │
-│  │Compute Eng  │ │Storage Eng  │ │Metadata Mgmt│ │Monitoring   │ │
-│  └─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘ │
+│                     Singdata Lakehouse Platform                    │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐  │
+│  │Vector Index │ │Inverted Idx │ │ SQL Engine  │ │Volume Store │  │
+│  └─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘  │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐  │
+│  │Compute Eng  │ │Storage Eng  │ │Metadata Mgmt│ │Monitoring   │  │
+│  └─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘  │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -321,7 +353,11 @@ Chat History   Embedding Vectors  Inverted Index  Algorithm Fusion  Template Ren
 ### Development Environment
 
 ```bash
-# Single-machine deployment
+```
+
+Single-machine deployment:
+
+```bash
 pip install langchain-clickzetta
 python app.py
 ```
@@ -329,7 +365,11 @@ python app.py
 ### Test Environment
 
 ```yaml
-# Docker Compose deployment
+```
+
+Docker Compose deployment:
+
+```yaml
 version: '3.8'
 services:
   clickzetta:
@@ -343,7 +383,11 @@ services:
 ### Production Environment
 
 ```yaml
-# Kubernetes deployment
+```
+
+Kubernetes deployment:
+
+```yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -387,15 +431,27 @@ engine = ClickZettaEngine(
 ### 3. Core Feature Experience
 
 ```python
-# Vector search
+```
+
+Vector search:
+
+```python
 from langchain_clickzetta import ClickZettaVectorStore
 vector_store = ClickZettaVectorStore(engine=engine, embedding=embeddings)
 
-# Hybrid search
+```
+
+Hybrid search:
+
+```python
 from langchain_clickzetta import ClickZettaHybridStore
 hybrid_store = ClickZettaHybridStore(engine=engine, embedding=embeddings)
 
-# SQL query
+```
+
+SQL query:
+
+```python
 from langchain_clickzetta import ClickZettaSQLChain
 sql_chain = ClickZettaSQLChain.from_engine(engine=engine, llm=llm)
 ```

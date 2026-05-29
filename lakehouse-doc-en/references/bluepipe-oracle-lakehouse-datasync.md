@@ -89,7 +89,7 @@ If you have not yet completed the installation and deployment of Bluepipe, pleas
 
 | Item Name           | Description                                                                                                          |
 | ------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Connection String   | The connection method for the data source, format: {instance}.{domain}/{workspace}, e.g., abcdef.cn-shanghai-alicloud.api.clickzetta.com/quick_start |
+| Connection String   | The connection method for the data source, format: {instance}.{domain}/{workspace}, e.g., abcdef.cn-shanghai-alicloud.api.singdata.com/quick_start |
 | Virtual Cluster     | Set the running virtual cluster, default value is default                                                            |
 | Username            | The username for connecting to the database, e.g., username                                                           |
 | Password            | The password corresponding to the database username, e.g., userpassword                                               |
@@ -100,7 +100,7 @@ If you have not yet completed the installation and deployment of Bluepipe, pleas
 
 ### Create Tables in Oracle Database
 
-```
+```sql
 CREATE TABLE metabase.people_with_pk (
     id INTEGER PRIMARY KEY,
     age INTEGER,
@@ -160,7 +160,7 @@ Please note:
 
 Run the following Python code to insert data into the Oracle source table `employees` in real time:
 
-```
+```python
 import oracledb
 import random
 import time,datetime

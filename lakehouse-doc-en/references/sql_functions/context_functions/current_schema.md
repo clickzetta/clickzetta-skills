@@ -1,4 +1,4 @@
-### CURRENT_SCHEMA 
+# CURRENT_SCHEMA 
 
 ####  Description
 The `CURRENT_SCHEMA` function is used to obtain the name of the schema currently being used by the session. This function does not require any parameters and returns a string representing the name of the current session's schema.

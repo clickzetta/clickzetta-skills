@@ -19,7 +19,7 @@ Choose your onboarding path by role. Most scenarios can be completed in 30 minut
 **Step 2 — Ingest your data**
 
 | Data source | Recommended approach |
-|---------|---------|
+|-------------|----------------------|
 | MySQL / PG / Oracle, real-time CDC | [Studio Real-time Sync Tasks](realtime_sync.md) |
 | Full-database migration, multi-table sync | [Multi-table Real-time Sync](multitable_realtime_sync_sop.md) |
 | Object storage files (OSS / S3 / COS) | [Pipe Continuous Ingestion](pipe-introduction.md) · [COPY INTO](quickstart-with-copy-command.md) |
@@ -48,7 +48,7 @@ Choose your onboarding path by role. Most scenarios can be completed in 30 minut
 **Step 2 — Connect your tools**
 
 | Tool type | Connection method |
-|---------|---------|
+|-----------|-------------------|
 | BI tools (FineBI / PowerBI / Tableau, etc.) | [JDBC Driver](JDBC-Driver.md) |
 | Database clients (DataGrip / DBeaver / Navicat, etc.) | [MySQL Protocol](use-mysql-client.md) |
 | Python scripts | [SQLAlchemy](sqlalchemy.md) |
@@ -74,9 +74,9 @@ Choose your onboarding path by role. Most scenarios can be completed in 30 minut
 **Step 2 — Choose your scenario**
 
 | Scenario | Entry point |
-|------|------|
+|----------|-------------|
 | Semantic search / RAG knowledge base | [AI Data Readiness](server-data-for-ai.md) · [Vector Search](vector_search_ai.md) |
-| Call LLMs in SQL | [AI Functions (AI_COMPLETE / AI_EMBEDDING)](AI_function_in_SQL.md) |
+| Call LLMs in SQL | [AI Functions (AI\_COMPLETE / AI\_EMBEDDING)](AI_function_in_SQL.md) |
 | Manage and switch between multiple LLM models | [AI Gateway](AIGateway.md) |
 | Natural language conversational data analysis | [Data Analytics Agent](datagpt_introduction.md) |
 | Python data processing + AI inference | [Zettapark Quick Start](zettapark-quick-start.md) |
@@ -108,7 +108,7 @@ Choose your onboarding path by role. Most scenarios can be completed in 30 minut
 <td style="width:50%; vertical-align:top; padding:0 16px 0 0; overflow-wrap:break-word;">
 
 | Scenario | Recommended approach |
-|------|------------|
+|----------|----------------------|
 | SQL execution and result retrieval | [cz-cli sql](setup_cz_cli.md) · [Python connector](python_reference/connector.md) |
 | Task scheduling and triggering | [cz-cli task / runs refill](setup_cz_cli.md) |
 | Studio task development and data source management | [cz-cli task create/save](setup_cz_cli.md) · [Studio Task Development](task-develop.md) · [Studio Data Integration](data-integration.md) |
@@ -117,7 +117,7 @@ Choose your onboarding path by role. Most scenarios can be completed in 30 minut
 <td style="width:50%; vertical-align:top; padding:0 0 0 16px; overflow-wrap:break-word;">
 
 | Scenario | Recommended approach |
-|------|------------|
+|----------|----------------------|
 | Python data read/write | [Zettapark](zettapark-quick-start.md) · [clickzetta-connector](python_reference/connector.md) |
 | Business semantic layer queries | [Semantic View](semantic-view-overview.md) |
 | Collaborate with a specialized data sub-agent | [cz-cli agent run](setup_cz_cli.md) |
@@ -139,7 +139,7 @@ Choose your onboarding path by role. Most scenarios can be completed in 30 minut
 <td style="width:50%; vertical-align:top; padding:0 16px 0 0; overflow-wrap:break-word;">
 
 | What I want to do | Entry point |
-|-----------|------|
+|-------------------|-------------|
 | Experience core product features quickly | [Lakehouse Quick Start Experience](lakehouse-quick-experience_guide.md) |
 | Understand the Studio interface layout | [Lakehouse Studio Tour](LakehouseStudio-tour.md) |
 | Upload a local CSV file | [Upload Local Data](quick_start_upload_data.md) |
@@ -153,7 +153,7 @@ Choose your onboarding path by role. Most scenarios can be completed in 30 minut
 <td style="width:50%; vertical-align:top; padding:0 0 0 16px; overflow-wrap:break-word;">
 
 | What I want to do | Entry point |
-|-----------|------|
+|-------------------|-------------|
 | Configure data quality rules | [Configure Data Quality Rules](quick_start_data_quality.md) |
 | Configure monitoring and alerting | [Configure Monitoring and Alerting Rules](quick_start_monitoring_and_alerting.md) |
 | Experience engine performance (TPC-H) | [Experience Performance with TPC-H Sample Data](get-started-with-sample-data.md) |

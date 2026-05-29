@@ -13,7 +13,7 @@ CREATE BLOOMFILTER INDEX [IF NOT EXISTS] index_name ON TABLE
 ```
 **bloomfilter**: Index type, using the Bloom filter algorithm.
 
-**index\_name**: The name of the index to be created, which must be under the specified schema and cannot be duplicated within the same schema.
+**index\_name**: The name of the index to be created, located under the schema of the target table. Index names cannot be duplicated within the same schema. The index must be in the same schema as the target table.
 
 **schema**: Optional parameter, used to specify the schema name of the table.
 
@@ -27,16 +27,17 @@ CREATE BLOOMFILTER INDEX [IF NOT EXISTS] index_name ON TABLE
 
 ## Reference Documentation
 
-* [Build Index](build-inverted-index.md)
+* [Build Index](build-index.md)
 * [Delete Index](DROP-INDEX.md)
 * [List All Indexes](SHOW-INDEX.md)
 * [View Index Details](DESC-INDEX.md)
 
 ## Usage Notes
 
-1. After adding the BLOOMFILTER INDEX, it will only take effect for newly written data. Old data will not be affected. If old data needs to be effective, the data must be rewritten.
+1. After adding the BLOOMFILTER INDEX, it will only take effect for newly written data. Existing data requires `BUILD INDEX` to backfill the index.
 2. A table can have multiple Bloom filter indexes.
 3. Type restrictions: interval, struct, map, array, and other types are not supported. If unsupported types are used, the system will report an error.
+4. The index must be in the same schema as the target table; creating an index across schemas will result in an error.
 
 ## Instructions
 
@@ -89,8 +90,9 @@ CREATE BLOOMFILTER INDEX [IF NOT EXISTS] index_name ON TABLE
    CREATE BLOOMFILTER INDEX customer_id_index
    ON TABLE public.t (customer_id)
    COMMENT 'xx';
-   -- After the BLOOMFILTER INDEX is added, it will only take effect for newly written data. Old data will not be affected. If old data needs to be affected, the data must be rewritten.
-   INSERT OVERWRTE t SELECT * FROM t;
+   -- After the BLOOMFILTER INDEX is added, it will only take effect for newly written data.
+   -- Existing data requires BUILD INDEX to backfill the index.
+   BUILD INDEX customer_id_index ON public.t;
    DESC INDEX customer_id_index;
    +--------------------+-------------------------+
    |     info_name      |       info_value        |

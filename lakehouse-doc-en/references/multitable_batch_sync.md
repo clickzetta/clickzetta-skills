@@ -1,25 +1,24 @@
-# Multi-Table Batch Sync Task
+# Multi-Table Offline Sync Task
 
 ## Overview
 
-Multi-Table Batch Sync Task is a bulk data synchronization capability provided by Yunqi Lakehouse Studio, supporting scheduled synchronization of an entire database or multiple tables from source to Lakehouse. Unlike Multi-Table Real-time Sync Tasks, Multi-Table Batch Sync adopts periodic full synchronization, making it suitable for scenarios where data latency requirements are relatively relaxed and data updates follow periodic patterns.
+The multi-table offline sync task is a bulk data synchronization capability provided by Singdata Lakehouse Studio. It supports syncing an entire source database or multiple tables into the Lakehouse on a scheduled basis. Unlike multi-table real-time sync, multi-table offline sync uses periodic full synchronization, making it well-suited for scenarios where data freshness requirements are relatively relaxed and data updates follow a regular cycle.
 
 ## Use Cases
 
-Multi-Table Batch Sync Tasks are suitable for the following scenarios:
+Multi-table offline sync tasks are suitable for the following scenarios:
 
-* **Full Database Migration**: Batch synchronization of all tables from source database to Lakehouse, reducing table-by-table configuration effort
-* **Periodic Data Updates**: Source data updates in fixed cycles (e.g., daily, hourly) without requiring real-time synchronization
-* **Sharded Database and Table Consolidation**: Consolidating data from multiple sharded databases and tables into unified target tables
-* **Periodic Data Reconciliation**: Ensuring target data consistency with source through periodic full synchronization
-* **Resource Optimization**: Reducing resource consumption through batch sync when data latency requirements are not stringent
+* **Full-database migration**: Batch-sync all tables from a source database to the Lakehouse, reducing the effort of configuring tables one by one.
+* **Periodic data updates**: Source data is updated in fixed cycles (e.g., daily or hourly) and does not need to stay in real-time sync.
+* **Sharded database consolidation**: Merge data from multiple sharded databases and tables into a unified target table.
+* **Periodic data reconciliation**: Use periodic full synchronization to keep target data consistent with the source.
+* **Resource optimization**: Reduce resource consumption through offline sync when real-time freshness is not required.
 
 ## Features
 
 ### Supported Data Sources
 
 **Source**
-
 * MySQL
 * PostgreSQL
 * SQL Server
@@ -29,411 +28,438 @@ Multi-Table Batch Sync Tasks are suitable for the following scenarios:
 * PolarDB PostgreSQL
 
 **Target**
-
 * Lakehouse
 
-### Synchronization Modes
+### Sync Modes
 
-1. **Full Database Mirroring**: Synchronizes all tables from the source database to the target.
-2. **Multi-Table Mirroring**: Selects multiple source tables for synchronization to the target, maintaining independent table structures.
-3. **Multi-Table Merge**: Consolidates multiple source tables (e.g., sharded databases and tables) into one or more target tables.
+1. **Full-database mirroring**: Syncs all tables from the entire source database to the target.
+2. **Multi-table mirroring**: Selects multiple source tables to sync to the target, keeping each table structure independent.
+3. **Multi-table merge**: Consolidates multiple source tables (e.g., sharded databases and tables) into one or more target tables.
 
 ### Core Capabilities
 
-* **Automatic Table Creation**: Automatically creates tables on target when they don't exist, supporting both primary key and non-primary key tables. Supports flexible use of parameters to customize target table naming.
-* **Schema Evolution**: Supports automatic synchronization of source schema changes to target (optional).
-* **Flexible Write Modes**: Supports multiple write modes including overwrite, upsert, and more.
-* **Concurrency Control**: Supports configuration of grouping strategies and concurrency levels to optimize sync performance and flexibly control pressure on source.
-* **Scheduling Management**: Flexible scheduling configuration based on Cron expressions, can be orchestrated with other task nodes.
+* **Automatic table creation**: Automatically creates tables on the target when they do not exist. Supports both primary-key and non-primary-key tables, and allows flexible use of parameters to customize target table naming.
+* **Schema evolution**: Optionally syncs source schema changes to the target automatically.
+* **Flexible write modes**: Supports multiple write modes including overwrite and upsert.
+* **Concurrency control**: Supports configuring grouping strategies and concurrency levels to optimize sync performance and control pressure on the source.
+* **Scheduling management**: Flexible scheduling based on cron expressions, and can be orchestrated with other task nodes.
 
-## Operation Steps
+## Steps
 
-### Step 1: Create Task
+### Step 1: Create a Task
 
-1. In the Lakehouse Studio Development module, click the "New" button
-2. Select "Multi-Table Batch Sync" from task types (located under "Data Synchronization" category)
-3. Enter task name and select folder
+![](/.topwrite/assets/image_1763375029154.png =680)
+
+1. In the Lakehouse Studio development module, click the **New** button.
+2. Under task types, select **Multi-table Offline Sync** (located in the "Data Sync" group).
+3. Enter a task name and select a folder.
 
 ### Step 2: Configure Source Data
 
 #### Select Data Source Type
 
-In the "Data Source Type" section, select source and target data source types:
+![](/.topwrite/assets/image_1763375044630.png =680)
 
-* Source: Select the database type to be synchronized (e.g., PostgreSQL, MySQL, etc.)
-* Target: Select Lakehouse
+In the **Data Source Type** section, select the source and target data source types:
+
+* Source: select the database type to sync from (e.g., PostgreSQL, MySQL).
+* Target: select Lakehouse.
 
 #### Select Source Data Source
 
-1. Select a configured data source connection from the "Source Data Source" dropdown
-2. The system will automatically load the database list under that data source
+1. Choose a configured data source connection from the **Source Data Source** dropdown.
+2. The system will automatically load the list of databases under that data source.
 
 #### Configure Sync Objects
 
-Select sync objects based on your requirements:
+Select sync objects based on your needs:
 
-**Full Database Mirroring Mode**
+**Full-database mirroring mode**
 
-* Select an entire database for synchronization
-* The system will automatically synchronize all tables under that database
+* Select an entire database to sync.
+* The system will automatically sync all tables in that database.
 
-**Multi-Table Mirroring Mode**
+**Multi-table mirroring mode**
 
-* Expand database and schema structures
-* Check the tables to be synchronized
-* Supports batch selection at three levels: database, schema, and table
+* Expand the database and schema structure.
+* Check the tables you want to sync.
+* Supports batch selection at three levels: database, schema, and table.
 
-**Multi-Table Merge Mode**
+**Multi-table merge mode**
 
-* Additionally configure virtual tables to express merge relationships from multiple source tables to target tables
-* Supports batch rule configuration at database, schema, and table levels to define source table scope and merge into the same target table
+* Configure virtual tables to define how multiple source tables map to target tables.
+* Supports batch rule configuration at the database, schema, and table levels to define the source table scope and merge them into the same target table.
 
-**Sync Object Filtering**
+**Sync object filtering**
 
-* Use search box for quick table location
-* Supports filtering by selected/schema/table
-* Upper right corner displays statistics of selected objects (e.g., "Selected: 3 Databases 45 Tables")
+* Use the search box to quickly locate tables.
+* Supports filtering by selected / schema / table.
+* The upper-right corner shows a count of selected objects (e.g., "Selected: 3 databases, 45 tables").
+
+  ![](/.topwrite/assets/image_1763375059693.png =680)
 
 ### Step 3: Configure Target Settings
 
 #### Select Target Data Source
 
-Select target Lakehouse data source in the "Data Source Type" section
+Select the target Lakehouse data source in the **Data Source Type** section.
 
 #### Configure Target Data Source
 
-1. Select target workspace
-2. Configure target namespace (Schema)
+1. Select the target workspace.
+2. Configure the target namespace (schema).
 
 #### Namespace Rules
 
 The system provides three naming rules:
 
-* **Mirror Source**: Maintains consistency with source schema name
-* **Specify Selection**: Manually select an existing target schema
-* **Custom**: Use rule expressions to customize target schema name
+* **Mirror source**: Keep the same name as the source schema.
+* **Specify**: Manually select an existing target schema.
+* **Custom**: Use a rule expression to define the target schema name.
 
-**Rule Expression Instructions**
+**Rule expression reference**
 
-* Supports using variables:
+* Supported variables:
 
-  * `{SOURCE_DATABASE}` represents source database name
+  * `{SOURCE_DATABASE}` — the source database name.
 
-* Supports using custom task parameters:
+* Supported custom task parameters:
 
-  * Such as `${bizdate}`, etc. For task parameter usage, see: [Task Parameters](task_param.md)
+  * For example, `${bizdate}`. See [Task Parameters](task_param.md) for details.
 
 * Example: `{SOURCE_DATABASE}_${bizdate}`
 
 #### Target Table Naming Rules
 
-Configure target table naming rules:
+Configure the naming rule for target tables:
 
-* **Mirror Source**: Maintains consistency with source table name
-* **Custom**: Use rule expressions to customize target table name
+* **Mirror source**: Keep the same name as the source table.
+* **Custom**: Use a rule expression to define the target table name.
 
-**Rule Expression Instructions**
+**Rule expression reference**
 
-* Supports using variables:
+* Supported variables:
 
-  * `{SOURCE_DATABASE}` represents source database name, `{SOURCE_SCHEMA}` represents source schema name, `{SOURCE_TABLE}` represents source table name
+  * `{SOURCE_DATABASE}` — source database name; `{SOURCE_SCHEMA}` — source schema name; `{SOURCE_TABLE}` — source table name.
 
-* Supports using custom task parameters:
+* Supported custom task parameters:
 
-  * Such as `${bizdate}`, etc. For task parameter usage, see: [Task Parameters](task_param.md)
+  * For example, `${bizdate}`. See [Task Parameters](task_param.md) for details.
 
 * Example: `{SOURCE_DATABASE}_{SOURCE_TABLE}_${bizdate}`
 
 #### Partition Configuration (Optional)
 
-If creating partitioned tables, configure:
+If you need to create partitioned tables, configure:
 
-* Whether to create as partitioned table
-* Partition field selection
-* Partition value expression
+* Whether to create the table as a partitioned table.
+* Partition field selection.
+* Partition value expression.
 
-### Step 4: Configure Mapping Relationships
+### Step 4: Configure Mappings
+
+![](/.topwrite/assets/image_1763375076182.png =680)
 
 #### View Sync Objects
 
-The system displays all configured sync objects and their mapping relationships:
+The system displays all configured sync objects and their mappings:
 
-* Left side shows source table list
-* Middle shows field-level mapping details
-* Right side shows complete target table path
+* The left side shows the source table list.
+* The middle shows field-level mapping details.
+* The right side shows the full path of the target table.
 
 #### Field Mapping
 
-* System automatically identifies primary keys (marked as PK)
-* Displays field type mapping relationships
-* Supports viewing detailed field mappings for each table
+* The system automatically identifies primary keys (marked as PK).
+* Displays field type mapping relationships.
+* Supports viewing detailed field mappings for each table.
 
-Statistics display:
+Statistics show:
 
-* Number of successfully mapped objects
-* Number of failed mappings (if any)
+* Number of successfully mapped objects.
+* Number of failed mappings (if any).
 
 ### Step 5: Configure Sync Rules
 
 #### Source Data Rules
 
-**Source Data Field Deletion**
+**Source field deleted**
 
-* Continue sync, write Null values for deleted fields
+* Continue syncing; write null values for deleted fields.
 
-**Source Data Field Addition**
+**Source field added**
 
-* Auto-adapt, add new fields in target table
+* Auto-adapt; add the new field to the target table.
 
-**Source Data Table Deletion**
+**Source table deleted**
 
-* Auto-adapt, continue sync, ignore deleted tables
+* Auto-adapt; continue syncing and ignore the deleted table.
 
 #### Grouping Strategy
 
-Controls grouping and concurrent execution of sync tasks:
+Controls how sync tasks are grouped and executed concurrently:
 
-**Smart Grouping**
+**Smart grouping**
 
-* System automatically groups based on table size and other characteristics
+* The system automatically groups tables based on characteristics such as table size.
 
-**Static Grouping**
+**Static grouping**
 
-* Groups based on fixed number of tables
-* Configurable number of tables per group
+* Groups tables by a fixed count.
+* You can configure the number of tables per group.
+
+  ![](/.topwrite/assets/image_1763375092075.png =680)
 
 #### Concurrency Control
 
-**Number of Tables per Group**
+**Tables per group**
 
-* Manually specified in static grouping mode
-* Controls the number of tables in a single group
-* Default: 4
+* Manually specified in static grouping mode.
+* Controls how many tables are in a single group.
+* Default: 4.
 
-**Maximum Source Connections per Group**
+**Max source connections per group**
 
-* Limits maximum concurrent connections to source per group
-* Default: 4
+* Limits the maximum concurrent connections to the source per group.
+* Default: 4.
 
-**Number of Concurrent Groups**
+**Concurrent groups**
 
-* Number of groups that can execute simultaneously
-* Default: 2
+* Number of groups that can execute simultaneously.
+* Default: 2.
 
-> **Performance Tuning Recommendation**: Excessive concurrency may impose pressure on source database. Configure appropriately based on source database performance.
+> ⚠️ **Note**: High concurrency can put pressure on the source database. Configure these values based on the source database's capacity.
 
 #### Data Write Mode
 
 Configure write strategies for different table types:
 
-**Non-Primary Key Table Write Mode**
+**Non-primary-key table write mode**
 
-* **Overwrite**: Clears target table and writes new data with each sync
+* **Overwrite**: Clears the target table and writes new data on each sync run.
 
-**Primary Key Table Write Mode**
+**Primary-key table write mode**
 
-* **Overwrite**: Clears target table and writes new data with each sync
-* **Upsert**: Performs insert or update operations based on primary key
+* **Overwrite**: Clears the target table and writes new data on each sync run.
+* **Upsert**: Inserts or updates rows based on the primary key.
 
-### Step 6: Task Debugging (Optional)
+### Step 6: Debug the Task (Optional)
 
-After completing task configuration and saving, you will enter the task overview page. The "Run" button in the upper right corner provides functionality to debug and verify if data sources and task configuration are correct. After triggering the run, you can view run details in "Run History" at the lower right corner of the page.
+After completing and saving the task configuration, you will be taken to the task overview page, as shown below:
 
-> Please note: To control validation sync duration, the system automatically adds a limit of extracting only 1,000 rows per source table by default during runtime (can be manually adjusted, maximum 10,000 rows). For full synchronization of all data, please refer to subsequent steps to configure scheduled execution.
+![](/.topwrite/assets/image_1763375133438.png =680)
 
-### Step 7: Configure Scheduling Properties
+The **Run** button in the upper-right corner lets you do a debug run to verify that the data source and task configuration are correct. After triggering a run, you can view the run details in **Run History** at the lower-right corner of the page.
 
-Click the "Schedule" button to configure periodic scheduling rules for the task:
+> ⚠️ **Note**: To keep validation runs short, the system automatically limits extraction to 1,000 rows per source table by default (adjustable up to 10,000 rows). To sync all data, configure a scheduled run as described in the next steps.
 
-1. **Scheduling Frequency**: Select scheduling frequency as needed, such as daily or hourly scheduling
+### Step 7: Configure Scheduling
 
-2. **Scheduling Cycle**:
+![](/.topwrite/assets/image_1763375144107.png =680)
 
-   1. Supports multiple cycles including hourly, daily, weekly, monthly
-   2. Can use visual configuration (system automatically converts to Cron expression)
+Click the **Schedule** button to configure the periodic scheduling rules for the task:
 
-3. **Effective Date and Expiration Date**: Set start and end dates for task scheduling
+1. **Scheduling frequency**: Choose how often the task runs, such as daily or hourly.
 
-4. **Dependency Configuration**: Set upstream and downstream dependencies for the task (optional)
+2. **Scheduling cycle**:
+   1. Supports hourly, daily, weekly, monthly, and other cycles.
+   2. You can use the visual configuration (the system automatically converts it to a cron expression).
 
-5. **Other Configuration**: Instance information and other configurations, same as periodic scheduling configuration for regular tasks
+3. **Effective date and expiration date**: Set the start and end dates for task scheduling.
 
-### Step 8: Submit Task
+4. **Dependency configuration**: Set upstream and downstream dependencies for the task (optional).
 
-1. Click "Submit" button after completing configuration
-2. System performs configuration validation
-3. After successful submission, task enters scheduling system and executes automatically according to set cycle
+5. **Other configuration**: Instance settings and other options, same as the periodic scheduling configuration for regular tasks.
+
+### Step 8: Submit the Task
+
+![](/.topwrite/assets/image_1763375154481.png =680)
+
+1. Click the **Submit** button after completing the configuration.
+2. The system validates the configuration.
+3. After a successful submission, the task enters the scheduling system and runs automatically on the configured cycle.
 
 ## Task Operations
 
-In "Task Operations", Multi-Table Batch Sync Tasks are categorized under "Scheduled Tasks". Click task name to drill down into detailed task information.
+In **Task Operations**, multi-table offline sync tasks appear under the **Scheduled Tasks** category. Click a task name to drill down into its details.
+
+![](/.topwrite/assets/image_1763375175483.png =680)
 
 ### Task Details
 
-In the task details page, you can view:
+On the task details page, you can view:
 
-**Task Details Tab**
+**Task Details tab**
 
-* Displays DAG diagram of task upstream and downstream dependencies
-* Task configuration information
-* Scheduling configuration
-* Owner information
+* DAG diagram showing upstream and downstream dependencies.
+* Task configuration information.
+* Scheduling configuration.
+* Owner information.
 
-**Task Instances Tab**
+**Task Instances tab**
 
-* Displays complete instance list of the task, including manually triggered temporary runs and scheduled periodic instances
-* Click on specific instance for details
+* Full list of task instances, including manually triggered runs and scheduled periodic instances.
+* Click a specific instance to view its details.
 
-**Node Code Tab**
+  ![](/.topwrite/assets/image_1763375189472.png =680)
 
-* Code representation of task configuration information
+**Node Code tab**
 
-**Sync Objects Tab**
+* Code representation of the task configuration.
 
-* View all source and target tables configured in the task
-* View field mapping relationships
-* Reflects current configuration status in real-time
+**Sync Objects tab**
 
-**Operation Log Tab**
+* View all source and target tables configured in the task.
+* View field mapping relationships.
+* Reflects the current configuration state in real time.
 
-* Displays audit information for operations such as pause/start, publish/update, etc.
+**Operation Log tab**
 
-### Task Operations
+* Audit information for operations such as pause/resume and publish/update.
+
+### Task Actions
 
 **Edit**:
 
-* Quick jump to task development interface to modify task configuration
+* Jump directly to the task development interface to modify the configuration.
 
-**Pause/Resume**: Pause or resume scheduled execution
+**Pause / Resume**: Pause or resume scheduled execution.
 
-**Offline**:
+**Unpublish**:
 
-* Stops task and removes from scheduling system, task reverts to unsubmitted scheduling state
-* Offline (including downstream): Use this function to offline current task and its downstream together. If task has downstream, individual offline is not allowed
+* Stops the task and removes it from the scheduling system; the task reverts to an unsubmitted state.
+* **Unpublish (including downstream)**: Use this to unpublish the current task and all its downstream tasks together. If a task has downstream dependencies, it cannot be unpublished individually.
 
 **Backfill**:
 
-* Performs data backfill for historical cycles
+* Backfill data for historical scheduling cycles.
 
 ### Instance Management
 
 #### Instance List
 
-Each task execution generates an instance. Under "Task Operations" -> "Instance Operations" tab, you can view task instances of Multi-Table Batch Sync Tasks.
+Each task execution generates an instance. Under **Task Operations** → **Instance Operations**, you can view instances for multi-table offline sync tasks.
+
+![](/.topwrite/assets/image_1763375203084.png =680)
 
 #### Instance Details
 
-Click instance ID to view detailed instance information.
+Click an instance ID to view its details:
 
-**Instance Details Tab**
+![](/.topwrite/assets/image_1763375213755.png =680)
 
-* Upstream and downstream DAG task lineage relationships for this instance
-* Instance status, start time, end time
-* Runtime statistics
+**Instance Details tab**
 
-**Sync Objects Tab**
+* Upstream and downstream DAG lineage for this instance.
+* Instance status, start time, and end time.
+* Runtime duration statistics.
 
-* View all tables synchronized in this execution
-* Display read rows, written rows, sync rate for each table
-* Show execution status for each table
+**Sync Objects tab**
 
-**Script Content Tab**
+![](/.topwrite/assets/image_1763375221058.png =680)
 
-* Code representation of task configuration information for this instance
+* View all tables synced in this run.
+* Shows rows read, rows written, and sync rate for each table.
+* Displays the execution status of each table.
 
-**Execution Log Tab**
+**Script Content tab**
 
-* View detailed execution logs
-* Includes logs for initialization, table synchronization, completion, and other stages
+* Code representation of the task configuration for this instance.
 
-**Operation Log Tab**
+**Execution Log tab**
 
-* Displays audit logs for operations such as rerun, set success/set failure, etc.
+* View detailed execution logs.
+* Includes log information for initialization, table sync, completion, and other stages.
 
-#### Instance Operations
+**Operation Log tab**
+
+* Audit log for instance operations such as rerun and set success / set failure.
+
+#### Instance Actions
 
 **Rerun**
 
-* Re-execute this instance
+* Re-execute this instance.
+* Supports selecting the rerun scope:
+  * All objects: re-sync all tables.
+  * Failed objects only: rerun only the tables that failed.
 
-* Supports selecting rerun scope:
+**Set Success / Set Failure**
 
-  * All Objects: Re-synchronize all tables
-  * Failed Objects Only: Rerun only failed synchronizations
-
-**Set Success/Set Failure**
-
-* Manually set final status of instance
+* Manually set the final status of the instance.
 
 **Cancel Run**
 
-* Forcibly terminate running instance
+* Force-terminate a running instance.
 
-**Single Table Operations** (in Sync Objects Tab)
+**Single-table actions** (in the Sync Objects tab)
 
-* View Sync Details: View synchronization details for a single table
-* Re-sync: Re-synchronize only this table
-* Force Stop: Terminate synchronization of this table
+![](/.topwrite/assets/image_1763375229763.png =680)
+
+* View sync details: view the sync details for a single table.
+* Re-sync: re-sync only this table.
+* Force stop: terminate the sync for this table.
 
 ### Monitoring and Alerting
 
 #### Configure Alert Rules
 
-Multi-Table Batch Sync as a whole can have the same monitoring alerts configured as other scheduled tasks. Additionally, alerts can be configured for individual tables within sync tasks:
+Multi-table offline sync tasks support the same monitoring alerts as other scheduled tasks. You can also configure additional alerts for individual tables within a sync task:
 
-**Alert Item: Task Instance Failure**
+**Alert: Task instance failure**
 
-* Alert Type: Event alert
-* Trigger Condition: Entire task instance execution fails
-* Supports configuring alert filter conditions
+* Alert type: event alert.
+* Trigger condition: the entire task instance fails.
+* Supports configuring alert filter conditions.
 
-**Alert Item: Multi-Table Batch Sync Single Table Sync Failure**
+**Alert: Multi-table offline sync — single-table sync failure**
 
-* Alert Type: Event alert
-* Trigger Condition: Any target table synchronization failure in the task
-* Alert Granularity: Based on target table unit, each failed table independently triggers alert
-* Supports configuring alert recipients and notification methods
+* Alert type: event alert.
+* Trigger condition: any target table in the task fails to sync.
+* Alert granularity: per target table — each failed table triggers an independent alert.
+* Supports configuring alert recipients and notification methods.
 
 ## Important Notes
 
 ### Permission Requirements
 
-* **Source Permissions**: The account configured in the data source needs to have permissions to read source database metadata and table data (SELECT privilege)
-* **Target Permissions**: The task owner needs to have permissions to create tables and insert data in target Lakehouse (CREATE, INSERT privileges)
+* **Source permissions**: The account configured in the data source must have permission to read source database metadata and table data (SELECT privilege).
+* **Target permissions**: The task owner must have permission to create tables and insert data in the target Lakehouse (CREATE and INSERT privileges).
 
 ### Performance Considerations
 
-1. **Source Pressure**: Configure concurrency appropriately to avoid excessive pressure on source database.
-2. **Initialization Time**: First execution requires initialization of all sync objects, which may take considerable time.
-3. **Table Quantity Limit**: It's recommended to control the number of tables synchronized in a single task within a reasonable range; too many tables may affect task execution efficiency.
+1. **Source pressure**: Configure concurrency appropriately to avoid putting excessive load on the source database.
+2. **Initialization time**: The first run requires initializing all sync objects, which may take a significant amount of time.
+3. **Table count**: Keep the number of tables in a single task within a reasonable range — too many tables can reduce task execution efficiency.
 
 ### Data Consistency
 
-1. **Overwrite Mode**: With overwrite mode, each execution completely refreshes target table data.
-2. **Upsert Mode**: With upsert mode, incremental updates are performed based on primary key.
-3. **Source Data Changes**: Batch sync adopts periodic full synchronization; data changes between two sync intervals will be reflected in the next synchronization.
+1. **Overwrite mode**: Each run completely refreshes the target table data.
+2. **Upsert mode**: Incremental updates are applied based on the primary key.
+3. **Source data changes**: Offline sync uses periodic full synchronization. Any data changes between two sync runs will be reflected in the next run.
 
 ### Schema Evolution Limitations
 
-When enabling Schema Evolution functionality, note:
+When Schema Evolution is enabled, note the following:
 
-* Does not support modifying primary key fields (Lakehouse primary key table limitation)
-* Field type modifications only support same-type extensions (e.g., int8→int16→int32→int64)
-* Cross-type conversions (e.g., int→double) are not supported
-* Recommended to use this feature when source schema is relatively stable
+* Modifying primary key fields is not supported (Lakehouse primary-key table limitation).
+* Field type changes are only supported for same-type widening (e.g., int8 → int16 → int32 → int64).
+* Cross-type conversions (e.g., int → double) are not supported.
+* This feature is recommended only when the source schema is relatively stable.
 
 ### Best Practices
 
-1. **Task Granularity**: Reasonably divide task granularity based on business relevance and synchronization requirements
-2. **Scheduling Time**: Choose time windows with lower source database pressure for execution
-3. **Testing and Validation**: Use "Run" function for small-batch data testing before formal scheduling
-4. **Monitoring Configuration**: Configure alert rules promptly to ensure quick awareness of synchronization anomalies
-5. **Regular Checks**: Regularly review "Table Auto-change Records" to understand schema changes
+1. **Task granularity**: Divide tasks based on business relevance and sync requirements.
+2. **Scheduling time**: Choose time windows when the source database is under lower load.
+3. **Test before scheduling**: Use the **Run** function to test with a small batch of data before enabling full scheduled runs.
+4. **Configure alerts**: Set up alert rules promptly so you are notified quickly when sync issues occur.
+5. **Regular review**: Periodically check the "Table Auto-change Records" to stay informed about schema changes.
 
 ## Related Documentation
 
 * [Task Development](ide.md)
 * [Data Source Connection Configuration](config-datasource.md)
+* [Scheduling Management](task_scheduling.md)
 * [Task and Instance Operations](task-instance-maintenance.md)
 
-For other questions, please contact technical support or consult the complete product documentation.
+For other questions, contact technical support or refer to the full product documentation.

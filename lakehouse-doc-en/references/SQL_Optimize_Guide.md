@@ -68,7 +68,7 @@ If the table is partitioned by date, you can compact only specific partitions to
 OPTIMIZE logs_optimize WHERE log_date = '2024-06-01';
 ```
 
-> **Note**: `OPTIMIZE WHERE` only applies to tables with defined partitions. For non-partitioned tables, use the full-table `OPTIMIZE`.
+> ⚠️ **Note**: `OPTIMIZE WHERE` only applies to tables with defined partitions. For non-partitioned tables, use the full-table `OPTIMIZE`.
 
 ***
 
@@ -86,7 +86,7 @@ DESC HISTORY logs_optimize;
 * `total_rows`: Total row count (unchanged)
 * `total_bytes`: Storage size (typically reduced due to compression)
 
-> **Tip**: Query performance improvements can be verified by comparing the `TableScan` operator cost before and after compaction using `EXPLAIN`.
+> 💡 **Tip**: Query performance improvements can be verified by comparing the `TableScan` operator cost before and after compaction using `EXPLAIN`.
 
 ***
 
@@ -103,7 +103,7 @@ SET cz.sql.compaction.after.commit = true;
 * After each `INSERT` or `DELETE` commit, the system automatically triggers background small file compaction.
 * Suitable for streaming data ingestion scenarios (such as Kafka Pipe, CDC synchronization).
 
-> **Note**: Auto-compaction slightly increases write latency; evaluate whether to enable it based on business tolerance.
+> ⚠️ **Note**: Auto-compaction slightly increases write latency; evaluate whether to enable it based on business tolerance.
 
 ***
 
@@ -116,7 +116,7 @@ After completing optimization verification, it is recommended to clean up the te
 DROP TABLE IF EXISTS logs_optimize;
 ```
 
-> **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
+> 💡 **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
 
 ***
 

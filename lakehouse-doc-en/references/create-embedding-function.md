@@ -4,7 +4,7 @@ Objective: Use the Alibaba Cloud Bailian platform's Embedding function to vector
 
 ![](.topwrite/assets/image_search.png)
 
-> Note: To complete this example, you need:
+> ⚠️ **Note**: To complete this example, you need:
 >
 > 1. Docker installed (mainly to ensure the development environment is consistent with the environment where functions run on the cloud)
 > 2. An Alibaba Cloud account with a Bailian platform API-KEY enabled. See [Alibaba Cloud Bailian](https://www.aliyun.com/product/bailian)
@@ -95,7 +95,11 @@ class get_embeddings(object):
             return str(embedding_vector)
         else:
             return "Not Valid"
-# Add command-line entry point
+```
+
+Add command-line entry point:
+
+```
 if __name__ == "__main__":
     import argparse
 
@@ -181,7 +185,7 @@ Before running the packaging command, ensure the current directory is the progra
 [root@docker embeddings]# ls ../
 ```
 
-> Tip: If your environment does not have the zip command, try installing it with `yum install zip`. If you encounter issues during installation, refer to the appendix "**Errors When Installing Tools**."
+> 💡 **Tip**: If your environment does not have the zip command, try installing it with `yum install zip`. If you encounter issues during installation, refer to the appendix "**Errors When Installing Tools**."
 
 You will find a `embeddings.zip` file under the `/root ` directory. Copy this file to the Lakehouse USER VOLUME:
 
@@ -219,7 +223,11 @@ For multimodal: multimodal <input_string> <api_key> <model_name>';
 ```
 
 ```
-# Verify
+```
+
+Verify:
+
+```
 select public.fc_embeddings('multimodal', 'http://viapi-test.oss-cn-shanghai.aliyuncs.com/viapi-3.0domepic/imagerecog/RecognizeFood/RecognizeFood5.jpg', '${api_key}', 'multimodal-embedding-v1');
 ```
 

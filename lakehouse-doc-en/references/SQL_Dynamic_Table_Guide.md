@@ -82,7 +82,7 @@ GROUP BY p.category;
 * `REFRESH INTERVAL 10 MINUTE`: Automatically refresh every 10 minutes.
 * `VCLUSTER default`: Specifies the compute cluster used for the refresh.
 
-> **Note**: After creation, it is recommended to immediately execute `REFRESH` once to reset the refresh time baseline.
+> ⚠️ **Note**: After creation, it is recommended to immediately execute `REFRESH` once to reset the refresh time baseline.
 
 ***
 
@@ -106,7 +106,7 @@ SELECT * FROM dt_category_sales ORDER BY category;
 | Laptop | 1 | 1 |
 | Phone | 2 | 3 |
 
-> **Tip**: After inserting new data into the source table, execute `REFRESH` to see the incremental computation results.
+> 💡 **Tip**: After inserting new data into the source table, execute `REFRESH` to see the incremental computation results.
 
 ***
 
@@ -166,7 +166,7 @@ SELECT * FROM dt_category_sales ORDER BY category;
 | Laptop | 1 | 1 |
 | Phone | 2 | 3 |
 
-> **Note**: The Audio category changed from 0 to 1, demonstrating that incremental computation correctly captured the new data.
+> ⚠️ **Note**: The Audio category changed from 0 to 1, demonstrating that incremental computation correctly captured the new data.
 
 ***
 
@@ -179,7 +179,7 @@ Use `DROP DYNAMIC TABLE` to drop a dynamic table. Note that you must use `DROP D
 DROP DYNAMIC TABLE dt_category_sales;
 ```
 
-> **Tip**: Dropped dynamic tables can be recovered via `UNDROP TABLE` within the Time Travel retention period.
+> 💡 **Tip**: Dropped dynamic tables can be recovered via `UNDROP TABLE` within the Time Travel retention period.
 
 ***
 
@@ -193,7 +193,7 @@ DROP TABLE IF EXISTS orders_dt;
 DROP TABLE IF EXISTS products_dt;
 ```
 
-> **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
+> 💡 **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
 
 ***
 

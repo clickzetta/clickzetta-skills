@@ -75,7 +75,7 @@ CREATE VOLUME my_named_volume
     RECURSIVE = true;
 ```
 
-> **Note**: Named Volume is a type of External Volume. External Volume can mount external storage (OSS/COS/S3) or use internal storage. Named Volume emphasizes explicit user creation with a custom name, distinct from automatically generated User/Table Volumes.
+> ⚠️ **Note**: Named Volume is a type of External Volume. External Volume can mount external storage (OSS/COS/S3) or use internal storage. Named Volume emphasizes explicit user creation with a custom name, distinct from automatically generated User/Table Volumes.
 
 ### Type Comparison
 

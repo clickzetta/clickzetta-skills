@@ -2,7 +2,9 @@
 
 ## Overview
 
-OPTIMIZE is the core operation command in Singdata Lakehouse for table data optimization and compaction. By consolidating small files, cleaning up delete markers, and reorganizing data layout, it can significantly improve query performance and storage efficiency. Although Lakehouse automatically performs file compaction periodically in the background by default, in scenarios with frequent updates or where fine-grained control over compaction frequency is needed, users can manually invoke this command to meet specific business requirements. This command supports both asynchronous and synchronous execution modes, providing flexible optimization solutions for different scenarios.
+OPTIMIZE is similar to a VACUUM operation in traditional databases — it merges multiple small files into larger files to accelerate subsequent queries without changing the actual data content in the table.
+
+OPTIMIZE is the core operation command in Singdata Lakehouse for table data optimization and compaction. By consolidating small files, cleaning up delete markers, and reorganizing data layout, it can significantly improve query performance and storage efficiency. Although Lakehouse automatically performs file compaction periodically in the background by default, in scenarios with frequent updates or where fine-grained control over compaction frequency is needed, you can manually invoke this command to meet specific business requirements. This command supports both asynchronous and synchronous execution modes, providing flexible optimization solutions for different scenarios.
 
 ## Syntax
 
@@ -18,7 +20,7 @@ OPTIMIZE table_name
 
 2. WHERE predicate (Optional)
 
-* Partition filter condition, must include a **complete partition column match condition**.
+* Partition filter condition; must include a **complete partition column match condition**.
 * Supported formats: `partition_column = 'value'` or compound partition `dt='2023-01-01' AND region='us'`.
 
 3. OPTIONS (Optional)
@@ -43,7 +45,7 @@ Asynchronous execution is the default behavior of OPTIMIZE. The operation runs i
 
 #### Characteristics
 
-* **Non-blocking**: Returns a Job ID immediately, and the operation executes in the background.
+* **Non-blocking**: Returns a Job ID immediately; the operation executes in the background.
 
 #### Syntax
 
@@ -61,7 +63,7 @@ Synchronous execution blocks the current connection until the optimization opera
 
 #### Characteristics
 
-* **Blocking**: Only returns after the operation completes, during which the connection is occupied.
+* **Blocking**: Only returns after the operation completes; the connection is occupied during this time.
 * **Real-time Feedback**: Immediately obtains detailed execution statistics and success status.
 * **Applicable Scenarios**: Development and testing, small table optimization, verifying optimization effects.
 * **Deterministic**: Ensures the operation is fully completed.
@@ -72,8 +74,52 @@ Synchronous execution blocks the current connection until the optimization opera
 OPTIMIZE table_name OPTIONS('cz.sql.optimize.table.async' = 'false');
 ```
 
+## Usage Examples
+
+### Example 1: Asynchronous Optimization of an Entire Table (Default)
+
+```SQL
+OPTIMIZE doc_test.orders;
+```
+
+Asynchronous mode returns immediately; the optimization task runs in the background. If the table files are already compact enough, the response is:
+
+```
+No compaction job generated
+```
+
+If a compaction job is triggered, a Job ID is returned. You can check progress via `SHOW JOBS`.
+
+### Example 2: Synchronous Optimization of a Specific Partition
+
+`doc_test.orders` is partitioned by `order_date`. You can run synchronous optimization on a single partition:
+
+```SQL
+OPTIMIZE doc_test.orders
+WHERE order_date = '2024-02-05'
+OPTIONS('cz.sql.optimize.table.async' = 'false');
+```
+
+Synchronous mode blocks until the operation completes. Example response:
+
+```
+No compaction job generated
+```
+
+> When files within a partition are already large enough, the system determines no compaction is needed and returns this message — this is normal behavior.
+
+### Example 3: Synchronous Optimization of an Entire Table
+
+```SQL
+OPTIMIZE doc_test.orders OPTIONS('cz.sql.optimize.table.async' = 'false');
+```
+
 ## Applicable Scenarios
 
 * Storage cleanup after extensive UPDATE/DELETE operations
 * Regular maintenance tasks to free temporary storage space
 * Optimizing the overall storage layout of tables
+
+## Related Guides
+
+- [Small File Compaction Optimization](SQL_Optimize_Guide.md): when to run OPTIMIZE, compaction strategy selection, and coordination with automatic optimization

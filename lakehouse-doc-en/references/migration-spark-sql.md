@@ -558,7 +558,7 @@ CREATE EXTERNAL FUNCTION my_schema.clean_phone
 SELECT my_schema.clean_phone(phone_number) FROM users;
 ```
 
-> ⚠️ External Function creation syntax differs from SQL Function — parameter types and return types are not declared in the DDL; types are handled internally by the function code. See [CREATE EXTERNAL FUNCTION](create_external_function.md).
+> ⚠️ External Function creation syntax differs from SQL Function — parameter types and return types are not declared in the DDL; types are handled internally by the function code. See [CREATE EXTERNAL FUNCTION](CREATE_EXTERNAL_FUNCTION.md).
 
 ### Session-Level UDF Registration
 

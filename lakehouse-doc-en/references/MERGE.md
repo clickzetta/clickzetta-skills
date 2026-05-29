@@ -1,10 +1,10 @@
-# Description
+# MERGE INTO
 
 The `MERGE INTO` statement is used to update records in the target table based on values from the source table or subquery. This feature can be used to synchronize data in the target table when the source table contains new rows (to be inserted), modified rows (to be updated), and deleted rows (to be deleted).
 
 MERGE INTO is a SQL statement that performs "update if exists, insert if not, delete if condition matches" operations -- essentially combining INSERT + UPDATE + DELETE into a single atomic transaction, commonly used for data synchronization and CDC consumption scenarios.
 
-# Syntax
+## Syntax
 
 ```SQL
 MERGE INTO target_table 
@@ -463,3 +463,9 @@ WHEN NOT MATCHED AND s.__change_type = 'INSERT'
 - `UPDATE_BEFORE`: Records the old values before an update. No separate handling is needed -- when there is no corresponding WHEN clause, MERGE automatically ignores the row.
 
 This is the standard approach for consuming STANDARD mode Table Streams. See the [Table Stream documentation](table_stream.md) for details.
+
+## Related Guides
+
+- [Upsert Guide](SQL_Upsert_Guide.md): Complete MERGE usage scenarios, including INSERT-only, UPDATE-only, and conditional UPSERT examples.
+- [Table Stream Change Data Capture](SQL_Table_Stream_Guide.md): Writing to a target table with MERGE when consuming incremental Stream data.
+- [SQL DML Guide](SQL_DML_Considerations.md): Notes and best practices for INSERT/UPDATE/DELETE/MERGE.

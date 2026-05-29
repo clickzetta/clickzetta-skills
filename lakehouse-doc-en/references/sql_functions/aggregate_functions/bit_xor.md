@@ -20,10 +20,6 @@ The BIT\_XOR function is used to calculate the bitwise XOR result of a set of in
 
 1. Calculate the bitwise XOR result of a set of integers:
 
-<Notes>
-</Notes>
-
-#### Permalink
 ```sql
 SELECT bit_xor(col) FROM VALUES (3), (5), (7) AS tab(col);
 +--------------+

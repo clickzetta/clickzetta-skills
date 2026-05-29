@@ -1,66 +1,111 @@
-# Data Transformation Using Window Functions (Windows)
+# Data Transformation with Window Functions
 
-Let's first understand the basic concepts and common use cases of using window functions for data transformation in the ETL/ELT (Extract, Transform, Load) process.
+Let's start by understanding the basic concepts and common use cases for data transformation using window functions in ETL/ELT (Extract, Transform, Load) workflows.
 
 ## Basic Concepts
 
-[Window functions](window-function-summary.md) are a type of function in SQL specifically used to perform complex multi-row operations within a specified data set (i.e., "window"). Window functions can retain row-level details while performing calculations within a specific data window.
+[Window functions](window-function-summary.md) are a class of SQL functions designed to perform complex multi-row operations over a specified set of data (the "window"). Window functions preserve row-level detail while performing calculations within a defined data window.
 
-[Basic syntax](windowframe.md):
-```sql
-Window function() OVER (PARTITION BY column_name ORDER BY column_name)
+[Basic syntax](window-frame.md):
+
+```SQL
+window_function() OVER (PARTITION BY column_name ORDER BY column_name)
 ```
-* **OVER** keyword defines the scope of the window.
 
-* **PARTITION BY** defines how to partition the data, applying the window function within each partition. If no partition is specified, the entire table is considered as one partition.
+* **OVER** defines the scope of the window.
 
-* **Function** applied to the current row. The function result adds an extra column in the output.
+* **PARTITION BY** defines how to divide the data into partitions. The window function is applied within each partition. If no partition is specified, the entire table is treated as a single partition.
 
-* **ORDER BY** defines the sorting within the window.
+* **Function** is the function applied to the current row. The result is added as an extra column in the output.
+
+* **ORDER BY** defines the sort order within the window.
 
 ## Common Window Functions
 
-1. [RANK()](sql_functions/window_functions/rank.md): Ranking function, assigns a rank to each row within each partition.
-2. [DENSE\_RANK()](sql_functions/window_functions/dense_rank.md): Similar to RANK(), but does not skip ranks.
-3. [ROW\_NUMBER()](sql_functions/window_functions/row_number.md): Assigns a unique number to each row within each partition.
-4. [SUM()](sql_functions/window_functions/sum.md): Cumulative sum.
-5. [AVG()](sql_functions/window_functions/avg.md): Calculates the average.
-6. [LAG()](sql_functions/window_functions/lag.md): Retrieves data from a previous row.
-7. [LEAD()](sql_functions/window_functions/lead.md): Retrieves data from a subsequent row.
+1. [RANK()](sql_functions/window_functions/rank.md): A ranking function that assigns a rank to each row within a partition.
+2. [DENSE\_RANK()](sql_functions/window_functions/dense_rank.md): Similar to RANK(), but does not skip rank values.
+3. [ROW\_NUMBER()](sql_functions/window_functions/row_number.md): Assigns a unique sequential number to each row within a partition.
+4. [SUM()](sql_functions/window_functions/sum.md): Computes a running sum.
+5. [AVG()](sql_functions/window_functions/avg.md): Computes an average.
+6. [LAG()](sql_functions/window_functions/lag.md): Accesses data from a preceding row.
+7. [LEAD()](sql_functions/window_functions/lead.md): Accesses data from a following row.
 
 ## Use Cases
 
-### 1. Data Deduplication and Tagging
+### 1. Deduplication and Flagging
 
-Window functions are often used for data deduplication and tagging duplicate rows. For example, we can use window functions to number each group and delete duplicate rows except the first one.
-```sql
+Window functions are commonly used for deduplication — identifying and flagging duplicate rows.
+
+**Prerequisite**: The table must have a **unique identifier** (such as an auto-increment ID, UUID, or business primary key) to precisely target rows for deletion.
+
+For example, you can use a window function to number rows within each group and delete all duplicates beyond the first.
+
+```SQL
+DELETE FROM table_name 
+WHERE id IN (
+    SELECT id FROM (
+        SELECT 
+            id,  -- unique identifier
+            ROW_NUMBER() OVER (
+                PARTITION BY column_field      -- field used to detect duplicates
+                ORDER BY identifier_field      -- determines which row to keep
+            ) AS rn
+        FROM table_name
+    ) WHERE rn > 1
+);
+```
+
+Or use MERGE INTO for more complex matching logic:
+
+```SQL
+MERGE INTO table_name t
+USING (
+    SELECT id FROM (
+        SELECT id, ROW_NUMBER() OVER (PARTITION BY column_field ORDER BY identifier_field) AS rn
+        FROM table_name
+    ) WHERE rn > 1
+) s
+ON t.id = s.id
+WHEN MATCHED THEN DELETE;
+```
+
+> ⚠️ **Note**: Window functions cannot be used directly in a DELETE WHERE clause. The following will produce an error:
+
+```SQL
+-- ❌ Incorrect usage
 DELETE FROM table_name
 WHERE ROW_NUMBER() OVER (PARTITION BY column_field ORDER BY identifier_field) > 1;
 ```
-### 2. Data Partitioning and Aggregation
 
-Window functions can be used to perform aggregation operations within partitions, such as cumulative sums and moving averages.
-```sql
+### 2. Partitioned Aggregation
+
+Window functions can perform aggregations within partitions, such as running totals and moving averages.
+
+```SQL
 SELECT 
     product_id, 
     order_date, 
     SUM(order_amount) OVER (PARTITION BY product_id ORDER BY order_date) cumulative_sales 
 FROM orders;
 ```
-### 3. Data Sorting and Ranking
 
-Through window functions, data can be sorted and ranked, and the results can be used for subsequent calculations.
-```sql
+### 3. Sorting and Ranking
+
+Window functions let you rank data and use those rankings in downstream calculations.
+
+```SQL
 SELECT 
     customer_id, 
     purchase_amount, 
     RANK() OVER (PARTITION BY region ORDER BY purchase_amount DESC) purchase_rank 
 FROM purchases;
 ```
-### 4. Data Completion and Lag/Lead Columns
 
-Using the `LAG()` and `LEAD()` functions, you can obtain previous/next row data to complete missing data.
-```sql
+### 4. Data Backfill with Lag/Lead Columns
+
+Use `LAG()` and `LEAD()` to access values from preceding or following rows, which is useful for filling in missing data.
+
+```SQL
 SELECT 
     customer_id,
     order_date,
@@ -68,37 +113,41 @@ SELECT
     LAG(order_amount) OVER (PARTITION BY customer_id ORDER BY order_date) previous_order_amount 
 FROM orders;
 ```
-Using window functions for ETL data transformation can effectively improve the flexibility and efficiency of data processing, making complex data analysis and transformation operations faster and simpler.
+
+Using window functions for ETL data transformation effectively improves the flexibility and efficiency of data processing, making complex analytical and transformation operations faster and more concise.
 
 ## Data Model
 
-TPC-H data represents the data warehouse of an auto parts supplier, which records orders, items that make up the orders (lineitem), suppliers, customers, parts sold (part), regions, countries, and parts suppliers (partsupp).
+The TPC-H dataset represents a data warehouse for an auto parts supplier, containing records for orders, line items, suppliers, customers, parts, regions, nations, and part suppliers (partsupp).
 
-Singdata Lakehouse has built-in shared TPC-H data, which each user can directly use by adding the data context, for example:
-```sql
+Singdata Lakehouse includes built-in shared TPC-H data that any user can query directly by specifying the data context, for example:
+
+```SQL
 SELECT * FROM 
 clickzetta_sample_data.tpch_100g.customer
 LIMIT 10;
 ```
-## Data Transformation Using Singdata Lakehouse SQL Window Functions
 
-### Window Functions Have Four Basic Parts
+## Data Transformation with Singdata Lakehouse SQL Window Functions
 
-1. **Partition**: Defines a set of rows based on the values of specified columns. If no partition is specified, the entire table is considered as one partition.
-2. **Order By**: This optional clause specifies how to sort the rows within a partition.
-3. **Function**: The function applied to the current row. The function result adds an extra column in the output.
-4. **Window Frame**: Within a partition, the window frame allows you to specify the rows to be considered in the function calculation.
-```sql
+### Window Functions Have Four Core Components
+
+1. **Partition**: Defines a group of rows based on the values of specified columns. If no partition is specified, the entire table is treated as a single partition.
+2. **ORDER BY**: This optional clause specifies how rows are sorted within the partition.
+3. **Function**: The function applied to the current row. The result is added as an extra column in the output.
+4. **Window Frame**: Within a partition, the window frame lets you specify which rows are included in the function's calculation.
+
+```SQL
 SELECT
   o_custkey,
   o_orderdate,
   o_totalprice,
-  SUM(o_totalprice) -- Function
+  SUM(o_totalprice) -- function 
   OVER (
     PARTITION BY
-      o_custkey -- Partition
+      o_custkey -- partition
     ORDER BY
-      o_orderdate -- Order By; ascending unless specified as DESC
+      o_orderdate -- Order By; ascending unless DESC is specified
   ) AS running_sum
 FROM
   clickzetta_sample_data.tpch_100g.orders
@@ -109,18 +158,20 @@ ORDER BY
 LIMIT
   10;
 ```
-The `SUM` function in the above query is an aggregate function. Notice how `running_sum` accumulates (i.e., aggregates) `o_totalprice` over all rows. The rows themselves are ordered in ascending order by their order date.
 
-**Reference**: Standard aggregate functions are `MIN, MAX, AVG, SUM, & COUNT`. Modern data systems offer a variety of powerful aggregate functions. Please refer to your database documentation to learn about the available aggregate functions. Please [read this article](agg_function.md) for a list of aggregate functions available in Lakehouse.
+The `SUM` function in the query above is an aggregate function. Notice how `running_sum` accumulates (aggregates) `o_totalprice` across all rows. The rows themselves are sorted in ascending order by order date.
 
-## Using Ranking Functions to Get Top/Bottom n Rows
+**Reference**: The standard aggregate functions are `MIN, MAX, AVG, SUM, & COUNT`. Modern data systems provide a variety of powerful aggregate functions. Consult your database documentation for available options. [Read this article](agg_function.md) for a list of aggregate functions available in Lakehouse.
 
-If you are dealing with a problem that requires getting the top/bottom n rows (defined by some value), then use **row** functions.
+## Using Ranking Functions to Get the Top/Bottom N Rows
 
-Let's look at an example of how to use row functions:
+If you need to retrieve the top or bottom N rows (defined by some value), use **row** functions.
 
-From the `orders` table, **get the top 3 customers with the highest spending each day**. The schema of the `orders` table is as follows:
-```sql
+Here is an example of how to use a row function:
+
+**Get the top 3 highest-spending customers per day** from the `orders` table. The schema of the `orders` table is shown below:
+
+```SQL
 SELECT
   *
 FROM
@@ -129,12 +180,12 @@ FROM
       o_orderdate,
       o_totalprice,
       o_custkey,
-      RANK() -- Ranking function
+      RANK() -- ranking function 
       OVER (
         PARTITION BY
-          o_orderdate -- Partition by order date
+          o_orderdate -- partition by order date
         ORDER BY
-          o_totalprice DESC -- Order rows within the partition by total price in descending order
+          o_totalprice DESC -- sort rows within partition by total price descending
       ) AS rnk
     FROM
       clickzetta_sample_data.tpch_100g.orders
@@ -146,13 +197,15 @@ ORDER BY
 LIMIT
   5;
 ```
+
 ## Standard Ranking Functions
 
-1. \`\`：Ranks rows within the window frame from 1 to n. Rows with the same value (as defined by the "ORDER BY" clause) receive the same rank, and the ranking numbers that would have been used if the values were different are skipped.
-2. \`\`：Ranks rows within the window frame from 1 to n. Rows with the same value (as defined by the "ORDER BY" clause) receive the same rank, and no ranking numbers are skipped.
-3. \`\`：Adds row numbers from 1 to n within the window frame, without creating any duplicate values.
-```sql
--- Let's look at an example that shows the difference between RANK, DENSE_RANK, and ROW_NUMBER
+1. `RANK()`: Ranks rows from 1 to n within the window frame. Rows with the same value (as defined by the ORDER BY clause) receive the same rank, and rank numbers that would otherwise exist are skipped.
+2. `DENSE_RANK()`: Ranks rows from 1 to n within the window frame. Rows with the same value receive the same rank, and no rank numbers are skipped.
+3. `ROW_NUMBER()`: Assigns row numbers from 1 to n within the window frame, with no duplicate values.
+
+```SQL
+-- An example showing the difference between RANK, DENSE_RANK, and ROW_NUMBER
 SELECT 
     order_date,
     order_id,
@@ -186,18 +239,20 @@ FROM (
 ) AS orders
 ORDER BY order_date, row_number;
 ```
+
 :-: ![](.topwrite/assets/image_1736841886300.png =818)
 
-Now we have seen how to **use window functions** and how to use **ranking and aggregation** functions.
+Now you have seen how to **use window functions** along with **ranking and aggregate** functions.
 
-## Why define a window frame with partitions?
+## Why Define a Window Frame When You Already Have a Partition?
 
-While our functions operate on rows within partitions, the window frame provides a more refined way to operate on a selected set of rows within a partition.
+While functions operate on rows within a partition, the window frame provides a more granular way to operate on a selected subset of rows within that partition.
 
-When we need to operate on a set of rows within a partition (e.g., sliding window), we can use the window frame to define these rows.
+When you need to operate on a subset of rows within a partition (for example, a sliding window), you can use the window frame to define those rows.
 
-Consider a scenario where you have sales data and you want to calculate the 3-day moving average sales for each store:
-```sql
+Consider a scenario where you have sales data and want to calculate a 3-day moving average of sales for each store:
+
+```SQL
 SELECT
     store_id,
     sale_date,
@@ -210,53 +265,57 @@ SELECT
 FROM
     sales;
 ```
+
 In this example:
 
-1. **PARTITION BY** store\_id ensures that the calculation is performed separately for each store.
+1. **PARTITION BY** store\_id ensures the calculation is performed separately for each store.
 2. **ORDER BY** sale\_date defines the order of rows within each partition.
-3. **ROWS BETWEEN 2 PRECEDING AND CURRENT ROW** specifies the window frame, considering the current row and the two preceding rows to calculate the moving average.
+3. **ROWS BETWEEN 2 PRECEDING AND CURRENT ROW** specifies the window frame, considering the current row and the two preceding rows to compute the moving average.
 
-If the window frame is not defined, the function may not provide the specific moving average calculation you need.
+Without a defined window frame, the function may not produce the specific moving average calculation you need.
 
-## Using ROWS to Define Window Frame
+## Defining a Window Frame with ROWS
 
 **ROWS**: Used to select a set of rows relative to the current row based on position.
 
-1. The row definition format is `ROWS BETWEEN start_point AND end_point`.
+1. Row definition format: `ROWS BETWEEN start_point AND end_point`.
 
-   2. start\_point and end\_point can be any of the following three (in the correct order):
+   2. start\_point and end\_point can be any of the following (in the correct order):
 
-      1. **n PRECEDING**: The n rows before the current row. UNBOUNDED PRECEDING means all rows before the current row.
-      2. **n FOLLOWING**: The n rows after the current row. UNBOUNDED FOLLOWING means all rows after the current row.
+      1. **n PRECEDING**: n rows before the current row. UNBOUNDED PRECEDING means all rows before the current row.
+      2. **n FOLLOWING**: n rows after the current row. UNBOUNDED FOLLOWING means all rows after the current row.
 
-Let's see how to use relative row numbers to define the window range.
+Here is how to use relative row numbers to define a window range.
 
 Consider this window function:
-```sql
-AVG(total_price) OVER ( -- Function: Running Average
-    PARTITION BY o_custkey -- Partition by customer
+
+```SQL
+AVG(total_price) OVER ( -- function: running average
+    PARTITION BY o_custkey -- partition by customer
     ORDER BY order_month 
-    ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING -- Window frame defined as 1 row before to 1 row after
+    ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING -- window frame: 1 row before to 1 row after
     )
 ```
-Write an SQL query to get the following output from the orders table:
 
-1. o\_custkey
-   2. order\_month: Format as YYYY-MM, use strftime(o\_orderdate, '%Y-%m') AS order\_month
-   3. total\_price: The sum of o\_totalprice for that month
-   4. three\_mo\_total\_price\_avg: The average total\_price for the past, current, and next month for that customer
-```sql
+Write a SQL query to retrieve the following output from the orders table:
+
+1. 1. o\_custkey
+   2. order\_month: formatted as YYYY-MM, using `date_format(o_orderdate, 'yyyy-MM') AS order_month`
+   3. total\_price: the sum of o\_totalprice for that month
+   4. three\_mo\_total\_price\_avg: the average total\_price across the previous, current, and next month for that customer
+
+```SQL
 SELECT
   order_month,
   o_custkey,
   total_price,
   ROUND(
-    AVG(total_price) OVER ( -- Function: Running Average
+    AVG(total_price) OVER ( -- function: running average
       PARTITION BY
-        o_custkey -- Partition by customer
+        o_custkey -- partition by customer
       ORDER BY
         order_month ROWS BETWEEN 1 PRECEDING
-        AND 1 FOLLOWING -- Window frame defined as 1 row before to 1 row after
+        AND 1 FOLLOWING -- window frame: 1 row before to 1 row after
     ),
     2
   ) AS three_mo_total_price_avg
@@ -275,34 +334,36 @@ FROM
 LIMIT
   5;
 ```
-## Using RANGE to Define Window Frames
 
-1. **RANGE**: Used to select a set of rows related to the current row based on the values of the columns specified in the `ORDER BY` clause.
+## Defining a Window Frame with RANGE
 
-   1. Range definition format `RANGE BETWEEN start_point AND end_point`.
+1. **RANGE**: Used to select a set of rows relative to the current row based on the value of the column specified in the `ORDER BY` clause.
+
+   1. Range definition format: `RANGE BETWEEN start_point AND end_point`.
 
    2. start\_point and end\_point can be any of the following:
 
       1. **CURRENT ROW**: The current row.
-      2. **n PRECEDING**: All rows within the specified range and n units before the current row value.
-      3. **n FOLLOWING**: All rows within the specified range and n units after the current row value.
+      2. **n PRECEDING**: All rows whose values fall within n units before the current row's value.
+      3. **n FOLLOWING**: All rows whose values fall within n units after the current row's value.
       4. **UNBOUNDED PRECEDING**: All rows before the current row in the partition.
       5. **UNBOUNDED FOLLOWING**: All rows after the current row in the partition.
 
-   3. `RANGE` is particularly useful when dealing with numerical or date/time ranges, allowing calculations such as running totals, moving averages, or cumulative distributions.
+   3. `RANGE` is particularly useful when working with numeric or date/time ranges, enabling calculations such as running totals, moving averages, or cumulative distributions.
 
 Let's see how `RANGE` works with `AVG(total price) OVER (PARTITION BY customer id ORDER BY date RANGE BETWEEN INTERVAL '1' DAY PRECEDING AND '1' DAY FOLLOWING)`.
 
-Now that we've seen how to create window frames using ROWS, let's explore how to do this using RANGE.
+Now that you have seen how to create a window frame with ROWS, let's explore how to do the same with RANGE.
 
-1. Write a query to get the following output from the orders table:
+1. Write a query to retrieve the following output from the orders table:
 
    1. order\_month,
    2. o\_custkey,
    3. total\_price,
    4. three\_mo\_total\_price\_avg
-   5. **consecutive\_three\_mo\_total\_price\_avg**: The average total\_price for consecutive 3 months for the customer. Note that this should only include months arranged in chronological order.
-```sql
+   5. **consecutive\_three\_mo\_total\_price\_avg**: The average total\_price over 3 consecutive months for that customer. Note that this should only include months that are consecutive in time.
+
+```SQL
 SELECT
   order_month,
   o_custkey,
@@ -330,7 +391,7 @@ SELECT
 FROM
   (
     SELECT
-      date_format (o_orderdate, 'yyyy-mm-01') AS order_month,
+      date_format (o_orderdate, 'yyyy-MM-01') AS order_month,
       o_custkey,
       SUM(o_totalprice) AS total_price
     FROM
@@ -345,24 +406,25 @@ ORDER BY
 LIMIT
   50;
 ```
+
 :-: ![](.topwrite/assets/image_1736843103972.png =811)
 
-## Review
+## Summary
 
-1. When using window functions:
+1. Use window functions when you need to:
 
-   * Calculate running metrics (similar to `GROUP BY`, but retains all rows)
-   * Rank rows based on specific columns
+   * Compute running metrics (similar to `GROUP BY`, but preserving all rows)
+   * Rank rows based on a specific column
    * Access values from other rows relative to the current row
 
-2. Windows have four key parts: Partition, Order By, Function, Window Frame
+2. A window has four key components: Partition, Order By, Function, Window Frame
 
-3. Define window frames using ROWS or RANGE
+3. Use ROWS or RANGE to define the window frame
 
-4. Window functions are costly; be mindful of performance
+4. Window functions are computationally expensive; be mindful of performance
 
-## Resources
+## References
 
 [Window Functions](window-function-summary.md)
 
-[List of Window Functions](WINDOWFUNCTION.md)
+[Window Function List](WINDOWFUNCTION.md)

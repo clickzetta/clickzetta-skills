@@ -1,5 +1,7 @@
 ## IS_IP_ADDRESS_IN_RANGE
-## DESCRIPTION
+
+## Description
+
 `IS_IP_ADDRESS_IN_RANGE` is used to determine whether an IP address is within a certain network range. This function accepts an IP address and a network range represented in CIDR notation, returning a boolean value indicating whether the IP address is within the specified network range.
 
 ## Syntax

@@ -56,7 +56,7 @@ Use `CREATE SHARE` to define a share object, which serves as the container for d
 CREATE SHARE sales_share;
 ```
 
-> **Tip**: A newly created share is empty; use `GRANT` to add tables or views.
+> 💡 **Tip**: A newly created share is empty; use `GRANT` to add tables or views.
 
 ***
 
@@ -84,7 +84,7 @@ Use `ALTER SHARE` to add a target Lakehouse instance to the share, enabling it t
 ALTER SHARE sales_share ADD INSTANCE 'consumer_instance_id';
 ```
 
-> **Note**: The consumer instance must be under the same Singdata platform account system, or have cross-account sharing policies configured.
+> ⚠️ **Note**: The consumer instance must be under the same Singdata platform account system, or have cross-account sharing policies configured.
 
 ***
 
@@ -119,7 +119,7 @@ REVOKE SELECT ON TABLE shared_sales FROM SHARE sales_share;
 DROP SHARE sales_share;
 ```
 
-> **Tip**: Dropping a share does not affect source table data; it only cuts off the access channel for consumer instances.
+> 💡 **Tip**: Dropping a share does not affect source table data; it only cuts off the access channel for consumer instances.
 
 ***
 
@@ -133,7 +133,7 @@ DROP TABLE IF EXISTS shared_sales;
 DROP SHARE IF EXISTS sales_share;
 ```
 
-> **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
+> 💡 **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
 
 ***
 

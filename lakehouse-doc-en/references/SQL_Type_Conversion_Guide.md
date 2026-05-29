@@ -72,7 +72,7 @@ WHERE str_val NOT IN ('abc');
 | 2 | 200 | 200 | 200 |
 | 4 | 300 | 300 | 300 |
 
-> **Note**: If conversion fails (e.g., `'abc'` to `INT`), `CAST` throws an error and aborts the query.
+> ⚠️ **Note**: If conversion fails (e.g., `'abc'` to `INT`), `CAST` throws an error and aborts the query.
 
 ***
 
@@ -143,7 +143,7 @@ WHERE date_val LIKE '____-__-__';
 | 1 | 2024-06-01 | 2024-06-01 |
 | 4 | 2024-06-04 | 2024-06-04 |
 
-> **Note**: `CAST` is strict about date string format (recommended: `yyyy-MM-dd`). Non-standard formats (e.g., `2024/06/02`) return `NULL`; use `TO_DATE` instead.
+> ⚠️ **Note**: `CAST` is strict about date string format (recommended: `yyyy-MM-dd`). Non-standard formats (e.g., `2024/06/02`) return `NULL`; use `TO_DATE` instead.
 
 ### Custom Format Conversion
 
@@ -181,7 +181,7 @@ WHERE id = 1;
 |----|-----------|------|
 | 1 | {"name":"Alice","age":30} | Alice |
 
-> **Tip**: In Lakehouse, `JSON` is a first-class citizen type. For semi-structured data storage, use `JSON` columns directly at table creation time for better performance than `STRING`.
+> 💡 **Tip**: In Lakehouse, `JSON` is a first-class citizen type. For semi-structured data storage, use `JSON` columns directly at table creation time for better performance than `STRING`.
 
 ***
 
@@ -220,7 +220,7 @@ After completing type conversion verification, it is recommended to clean up tes
 DROP TABLE IF EXISTS mixed_data;
 ```
 
-> **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
+> 💡 **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
 
 ***
 

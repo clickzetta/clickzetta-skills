@@ -82,7 +82,7 @@ ORDER BY customer_id;
 | 3 | Tablet | 3000 |
 | 4 | Watch | 2000 |
 
-> **Tip**: `UNION ALL` does not deduplicate and performs better than `UNION`. If data is known to be duplicate-free or deduplication is not needed, prefer `UNION ALL`.
+> 💡 **Tip**: `UNION ALL` does not deduplicate and performs better than `UNION`. If data is known to be duplicate-free or deduplication is not needed, prefer `UNION ALL`.
 
 ***
 
@@ -199,7 +199,7 @@ DROP TABLE IF EXISTS sales_2023;
 DROP TABLE IF EXISTS sales_2024;
 ```
 
-> **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
+> 💡 **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
 
 ***
 

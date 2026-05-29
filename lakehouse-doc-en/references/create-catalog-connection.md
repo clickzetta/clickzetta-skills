@@ -1,146 +1,144 @@
 # Create Catalog Connection
-Catalog Connection is a key component used to manage connection information with third-party Catalogs. Its core function is to provide access authentication for External Catalogs, ensuring that the Lakehouse platform can securely and seamlessly access and manage data resources in storage services.
-# Supported Catalogs
-- Hive Catalog: By connecting to the Hive Metastore, or metadata services compatible with Hive Metastore, Lakehouse can automatically retrieve Hive's database and table information and perform data queries.
-- Databricks Unity Catalog: Unity Catalog is Databricks' unified governance solution for data and AI assets. In Unity Catalog, all metadata is registered in the metastore. The hierarchy of database objects in any Unity Catalog metastore is divided into three levels, and when you reference tables, views, volumes, models, and functions, they are represented as a three-level namespace. By connecting to Databricks' Unity Catalog, Lakehouse can automatically retrieve Databricks' database and table information and perform data queries.
 
-# Create Hive Catalog Syntax
-```SQL
-CREATE CATALOG CONNECTION if not exists connection_name
-    type hms
-    hive_metastore_uris='metastore_uris'
-    storage_connection='storage_connection';
-```
-**Parameter Description**
+Catalog Connection stores the authentication information needed to access external metadata services (Hive Metastore, Databricks Unity Catalog, Iceberg REST Catalog, etc.) and is used by External Catalogs and External Schemas.
 
-* **connection\_name**: The name of the connection, which must be unique.
-* **type**: The type of connection, here it is `hms` (Hive Metastore Service).
-* **hive\_metastore_uris**: The service address of the Hive Metastore, in the format `host:port`. The port is usually 9083.
-* **storage_connection**: The name of the created storage connection, used to access object storage or HDFS services. For details, refer to [CREATE STORAGE CONNECTION](<create-storage-connection.md>).
+## Supported Types
 
-## Steps to Create Hive Catalog Connection
+| Type Value | Data Source | Authentication |
+|---|---|---|
+| `HMS` | Apache Hive | Storage key (+ optional Kerberos) |
+| `databricks` | Databricks Unity Catalog | OAuth M2M (CLIENT_ID / CLIENT_SECRET) |
+| `ICEBERG_REST` | Generic Iceberg REST Catalog (including Snowflake Open Catalog) | No auth or OAuth |
 
-1. **Create Storage Connection**: First, you need to create a storage connection to access the object storage service. The user specifies the location of the hive data storage, currently only object storage oss, cos, s3 are supported.
-2. **Create Catalog Connection**: Use the storage connection information and Hive Metastore address to create a Catalog Connection.
+> ⚠️ **Note**: Databricks storage (S3/OSS/COS) must be on the same cloud platform as the Lakehouse instance.
 
-### Create Storage Connection
-```SQL
-CREATE STORAGE CONNECTION if not exists catalog_storage_oss    type OSS    ACCESS_ID='LTAIxxxxxxxxxxxx'    ACCESS_KEY='T8Gexxxxxxmtxxxxxx'    ENDPOINT='oss-cn-hangzhou-internal.aliyuncs.com';
-```
-### Create Catalog Connection
-```SQL
-CREATE CATALOG CONNECTION if not exists catalog_api_connection    type hms    hive_metastore_uris='47.95.221.23:9083'    storage_connection='catalog_storage_oss';
-```
-### Case Studies
-Case Study 1: Hive ON OSS
-- Create a storage connection
-```SQL
-CREATE STORAGE CONNECTION if not exists catalog_storage_oss   
- type OSS    
- ACCESS_ID='LTAIxxxxxxxxxxxx'    
- ACCESS_KEY='T8Gexxxxxxmtxxxxxx'   
- ENDPOINT='oss-cn-hangzhou-internal.aliyuncs.com';
-```
-- Create Catalog Connection
-Please ensure that the network between the server where HMS is located and the Lakehouse is connected. For specific connection methods, please refer to [Creating Alibaba Cloud Endpoint Service](<creating_alicloud_privatelinkservice.md>)
-```SQL
-CREATE CATALOG CONNECTION if not exists catalog_api_connection    
-type hms    
-hive_metastore_uris='xxxx:9083'    
-storage_connection='catalog_storage_oss';
-```
-Case 2: Hive ON COS
-- Create Storage Connection
-```sql
-CREATE STORAGE CONNECTION catalog_storage_cos 
-  TYPE COS
-  ACCESS_KEY = '<access_key>'
-  SECRET_KEY = '<secret_key>'
-  REGION = 'ap-shanghai'
-  APP_ID = '1310000503';
-```
-**Parameters**:
-    * **TYPE**: The object storage type, for Tencent Cloud, fill in `COS` (case insensitive)
-    * **ACCESS\_KEY / SECRET\_KEY**: The access keys for Tencent Cloud, refer to: [Access Keys](https://cloud.tencent.com/document/product/598/40488)
-    * **REGION**: Refers to the region where Tencent Cloud Object Storage COS data center is located. When Singdata Lakehouse accesses Tencent Cloud COS within the same region, the COS service will automatically route to internal network access. For specific values, please refer to Tencent Cloud documentation: [Regions and Access Domains](https://cloud.tencent.com/document/product/436/6224).
+---
 
-- Create Catalog Connection
-Please ensure the network between the server where HMS is located and Lakehouse is connected. For specific connection methods, refer to [Creating Tencent Cloud PrivateLink Service](<creating_tencentcloud_privatelinkservice.md>)
+## HMS (Hive Metastore)
+
+### Syntax
+
+```Plain
+CREATE CATALOG CONNECTION [IF NOT EXISTS] <connection_name>
+    TYPE HMS
+    HIVE_METASTORE_URIS = '<thrift://host:port>'
+    STORAGE_CONNECTION = '<storage_connection_name>'
+    [AUTH_TYPE = 'kerberos'
+     KERBEROS_CLIENT_PRINCIPAL = '<principal>'
+     KERBEROS_SERVICE_PRINCIPAL = '<principal>'
+     KERBEROS_KRB5_CONFIG_PATH  = '<volume_path>'
+     KERBEROS_KEYTAB_PATH       = '<volume_path>'];
+```
+
+### Parameter Description
+
+- `HIVE_METASTORE_URIS`: The Hive Metastore service address, in the format `thrift://host:9083`. The port is typically 9083.
+- `STORAGE_CONNECTION`: The name of an existing storage connection, used to read Hive data files (OSS/COS/S3/HDFS).
+- `AUTH_TYPE`: Authentication type. Defaults to no authentication if omitted. Set to `'kerberos'` to enable Kerberos authentication.
+- Kerberos parameters are only required when `AUTH_TYPE = 'kerberos'`. The config file and keytab file must be uploaded to User Volume in advance using the `PUT` command.
+
+### Examples
+
+**Hive ON OSS (Alibaba Cloud)**
+
 ```SQL
-CREATE CATALOG CONNECTION if not exists catalog_api_connection    
-type hms    
-hive_metastore_uris='xxxx:9083'    
-storage_connection='catalog_storage_cos';
+-- Step 1: Create storage connection
+CREATE STORAGE CONNECTION IF NOT EXISTS oss_conn
+    TYPE OSS
+    ACCESS_ID = 'LTAIxxxxxxxxxxxx'
+    ACCESS_KEY = 'T8Gexxxxxxmtxxxxxx'
+    ENDPOINT = 'oss-cn-hangzhou-internal.aliyuncs.com';
+
+-- Step 2: Create Catalog Connection
+-- Ensure the server where HMS is located has network connectivity to Lakehouse. Refer to: Create Alibaba Cloud Endpoint Service
+CREATE CATALOG CONNECTION IF NOT EXISTS hive_oss_conn
+    TYPE HMS
+    HIVE_METASTORE_URIS = 'thrift://192.168.1.100:9083'
+    STORAGE_CONNECTION = 'oss_conn';
 ```
-Case Three: Hive ON S3
-- Create a storage connection
+
+**Hive ON COS (Tencent Cloud)**
+
+```SQL
+CREATE STORAGE CONNECTION IF NOT EXISTS cos_conn
+    TYPE COS
+    ACCESS_KEY = '<access_key>'
+    SECRET_KEY = '<secret_key>'
+    REGION = 'ap-shanghai'
+    APP_ID = '1310000503';
+
+CREATE CATALOG CONNECTION IF NOT EXISTS hive_cos_conn
+    TYPE HMS
+    HIVE_METASTORE_URIS = 'thrift://192.168.1.100:9083'
+    STORAGE_CONNECTION = 'cos_conn';
 ```
-CREATE STORAGE CONNECTION catalog_storage_s3
+
+**Hive ON S3 (AWS)**
+
+```SQL
+CREATE STORAGE CONNECTION IF NOT EXISTS s3_conn
     TYPE S3
     ACCESS_KEY = 'AKIAQNBSBP6EIJE33***'
-    SECRET_KEY = '7kfheDrmq***************************'
+    SECRET_KEY = '7kfheDrmq***'
     ENDPOINT = 's3.cn-north-1.amazonaws.com.cn'
     REGION = 'cn-north-1';
-```
-**Parameters**:
-* TYPE: The object storage type, AWS should be filled in as S3 (case insensitive)
-* ACCESS\_KEY / SECRET\_KEY: The access key for AWS, refer to: [Access Keys](https://docs.aws.amazon.com/zh_cn/IAM/latest/UserGuide/id_credentials_access-keys.html) for how to obtain it
-* ENDPOINT: The service address for S3, AWS China is divided into Beijing and Ningxia regions. The service address for S3 in the Beijing region is `s3.cn-north-1.amazonaws.com.cn`, and for the Ningxia region is `s3.cn-northwest-1.amazonaws.com.cn`. Refer to: [China Region Endpoints](https://docs.amazonaws.cn/aws/latest/userguide/endpoints-arns.html) to find the endpoints for the Beijing and Ningxia regions -> Amazon S3 corresponding endpoints
-* REGION: AWS China is divided into Beijing and Ningxia regions. The region values are: Beijing region `cn-north-1`, Ningxia region `cn-northwest-1`. Refer to: [China Region Endpoints](https://docs.amazonaws.cn/aws/latest/userguide/endpoints-arns.html)
 
-- Create Catalog Connection
-```SQL
-CREATE CATALOG CONNECTION if not exists catalog_api_connection    
-type hms    
-hive_metastore_uris='xxxx:9083'    
-storage_connection='catalog_storage_s3';
+CREATE CATALOG CONNECTION IF NOT EXISTS hive_s3_conn
+    TYPE HMS
+    HIVE_METASTORE_URIS = 'thrift://192.168.1.100:9083'
+    STORAGE_CONNECTION = 's3_conn';
 ```
-# Create Databricks Unity Catalog
+
+**Hive + Kerberos Authentication**
+
 ```SQL
-CREATE CATALOG CONNECTION if not exists connection_name
-    type databricks
-    host='metastore_uris'
-    client_id='storage_connection'
-    client_secret=''
-    access_region='';
+-- Upload authentication files to User Volume first
+PUT '/etc/krb5.conf' TO USER VOLUME FILE 'krb5.conf';
+PUT '/path/to/hive.keytab' TO USER VOLUME FILE 'hive.keytab';
+
+CREATE CATALOG CONNECTION IF NOT EXISTS hive_kerberos_conn
+    TYPE HMS
+    HIVE_METASTORE_URIS = 'thrift://your-hms-host:9083'
+    STORAGE_CONNECTION = 'oss_conn'
+    AUTH_TYPE = 'kerberos'
+    KERBEROS_CLIENT_PRINCIPAL = 'hive/localhost@YOUR-REALM.COM'
+    KERBEROS_SERVICE_PRINCIPAL = 'hive/localhost@YOUR-REALM.COM'
+    KERBEROS_KRB5_CONFIG_PATH = 'volume:user//~/krb5.conf'
+    KERBEROS_KEYTAB_PATH = 'volume:user//~/hive.keytab';
 ```
-# Create Databricks Unity Catalog Connection
 
 ---
 
-## **Overview**
-This document details how to create a Databricks Unity Catalog connection using SQL statements. Through this connection, users can integrate external systems with the Databricks Unity Catalog to achieve data management and sharing. This document covers syntax, parameter descriptions, and configuration requirements.
+## Databricks Unity Catalog
 
----
+### Syntax
 
-## **Syntax**
-```SQL
-CREATE CATALOG CONNECTION IF NOT EXISTS connection_name
+```Plain
+CREATE CATALOG CONNECTION [IF NOT EXISTS] <connection_name>
     TYPE databricks
-    HOST = 'host_value'
-    CLIENT_ID = 'client_id_value'
-    CLIENT_SECRET = 'client_secret_value'
-    ACCESS_REGION = 'access_region_value';
+    HOST = '<https://workspace-url>'
+    CLIENT_ID = '<oauth_client_id>'
+    CLIENT_SECRET = '<oauth_client_secret>'
+    ACCESS_REGION = '<region>';
 ```
-**Parameter Description**
-- **`connection_name`**: The name of the connection, used to identify the Databricks Unity Catalog connection. The name must be unique and follow naming conventions.
-- **`TYPE databricks`**: Specifies the connection type as Databricks Unity Catalog.
-- **`HOST`**: The URL address of the Databricks workspace. The usual format is `https://<workspace-url>`. Example: `https://dbc-12345678-9abc.cloud.databricks.com`
-- **`CLIENT_ID`**: The client ID used for OAuth 2.0 machine-to-machine (M2M) authentication. Refer to the [Databricks OAuth M2M Authentication Documentation](https://docs.databricks.com/en/dev-tools/auth/oauth-m2m.html) to create an OAuth 2.0 application and obtain the `CLIENT_ID`.
-- **`CLIENT_SECRET`**: The client secret used for OAuth 2.0 machine-to-machine (M2M) authentication. Refer to the [Databricks OAuth M2M Authentication Documentation](https://docs.databricks.com/en/dev-tools/auth/oauth-m2m.html) to create an OAuth 2.0 application and obtain the `CLIENT_SECRET`.
-- **`ACCESS_REGION`**: The region where the Databricks workspace is located, such as `us-west-2` or `east-us`.
 
-## **Example**
-**step1: Databricks Preparation**
-1. Create a service principal. Refer to the [Databricks Documentation](<https://docs.databricks.com/en/dev-tools/auth/oauth-m2m.html#language-Java>) to obtain the principal and its client id/client secret.
-2. Enable external data access in Metastore.
-![](.topwrite/assets/image_1739256232288.png)
-![](.topwrite/assets/image_1739256275537.png)
-3. Authorize the service principal.
-```SQL
-GRANT EXTERNAL USE SCHEMA ON SCHEMA quick_start.default TO `cf752cce-e2ca-4d03-8cdc-9f8f8aac43fc`; using the service principal's id
-```
-Below is a complete example showing how to create a Databricks Unity Catalog connection:
+### Parameter Description
+
+- `HOST`: The Databricks workspace URL, in the format `https://dbc-xxxxx.cloud.databricks.com`.
+- `CLIENT_ID / CLIENT_SECRET`: OAuth M2M authentication credentials. Obtain these by creating a Service Principal in the Databricks console. Refer to the [Databricks OAuth M2M documentation](https://docs.databricks.com/en/dev-tools/auth/oauth-m2m.html).
+- `ACCESS_REGION`: The region where the Databricks workspace is located, such as `us-west-2`.
+
+### Databricks Pre-configuration
+
+1. Create a Service Principal and obtain the `CLIENT_ID` and `CLIENT_SECRET`.
+2. Enable External Data Access on the Metastore.
+3. Grant permissions to the Service Principal:
+   ```SQL
+   GRANT EXTERNAL USE SCHEMA ON SCHEMA <catalog>.<schema> TO `<service_principal_id>`;
+   ```
+
+### Example
+
 ```SQL
 CREATE CATALOG CONNECTION IF NOT EXISTS my_databricks_conn
     TYPE databricks
@@ -149,37 +147,107 @@ CREATE CATALOG CONNECTION IF NOT EXISTS my_databricks_conn
     CLIENT_SECRET = 'abcdef1234567890abcdef1234567890'
     ACCESS_REGION = 'us-west-2';
 ```
-**step2 : Lakehouse**
-The following is a complete example showing how to create a Databricks Unity Catalog connection:
+
+Verify the connection:
+
 ```SQL
-CREATE CATALOG CONNECTION IF NOT EXISTS my_databricks_conn    
- TYPE databricks   
- HOST = 'https://dbc-12345678-9abc.cloud.databricks.com'    
- CLIENT_ID = '12345678-9abc-def0-1234-56789abcdef0' 
- CLIENT_SECRET = 'abcdef1234567890abcdef1234567890' 
- ACCESS_REGION = 'us-west-2';
-```
-**Frequently Asked Questions**
-
-Q1: How to verify if the connection is successful?
-* After creating the connection, you can verify the connection status by querying the Schema or table data under the Catalog.
-* Example:
-  ```SQL
-    CREATE EXTERNAL CATALOG external_db_cat
+CREATE EXTERNAL CATALOG my_databricks_catalog
     CONNECTION my_databricks_conn
-    OPTIONS ('catalog'='quick_start');
-    show schemas in external_db_cat;
-    select * from external_db_cat.default.student;
-  ```
-Q2: Possible reasons for connection failure?
+    OPTIONS ('catalog' = 'main');
 
-* `HOST` address is incorrect or inaccessible.
-* `CLIENT_ID` or `CLIENT_SECRET` is invalid or lacks sufficient permissions.
-* `ACCESS_REGION` does not match the Databricks workspace region.
+SHOW SCHEMAS IN my_databricks_catalog;
+```
 
- Q3: How to update connection configuration?
+---
 
-* Delete the existing connection and recreate it:
-  ```SQL
-  DROP CATALOG CONNECTION my_databricks_conn;
-  ```
+## Iceberg REST Catalog
+
+The Iceberg REST protocol is an open standard. Any service compatible with this protocol (self-hosted Iceberg REST services, Polaris, Dremio, Snowflake Open Catalog, etc.) uses the same `TYPE ICEBERG_REST`. The difference is whether OAuth authentication is required.
+
+### Syntax
+
+```Plain
+CREATE CATALOG CONNECTION [IF NOT EXISTS] <connection_name>
+    TYPE ICEBERG_REST
+    URI = '<catalog_endpoint>'
+    [ACCESS_REGION = '<region>']
+    [OAUTH_CLIENT_ID = '<client_id>'
+     OAUTH_CLIENT_SECRET = '<client_secret>'
+     OAUTH_SCOPE = '<scope>'
+     NAMESPACE = '<namespace>'
+     WAREHOUSE = '<warehouse>']
+    [WITH PROPERTIES ('<key>' = '<value>', ...)];
+```
+
+### Parameter Description
+
+- `URI`: The API endpoint of the Iceberg REST Catalog (required).
+- `ACCESS_REGION`: The cloud storage region where the underlying data files are located.
+- `OAUTH_CLIENT_ID / OAUTH_CLIENT_SECRET`: OAuth authentication credentials. Required for services that need OAuth, such as Snowflake Open Catalog.
+- `OAUTH_SCOPE`: OAuth authorization scope. For Snowflake Open Catalog, this is fixed as `'PRINCIPAL_ROLE:ALL'`.
+- `NAMESPACE`: The Iceberg namespace (database name). Required by some services.
+- `WAREHOUSE`: The catalog name. Required by some services (such as Snowflake Open Catalog).
+- `WITH PROPERTIES`: Additional underlying configuration, such as `'io-impl'` (specifies the file IO implementation).
+
+> ⚠️ **Note**: Do not add `=` after `TYPE`, and do not add commas between parameters. Writing `TYPE = ICEBERG_REST` will cause a syntax error.
+
+### Example: Generic Iceberg REST Catalog (No Authentication)
+
+```SQL
+CREATE CATALOG CONNECTION IF NOT EXISTS iceberg_conn
+    TYPE ICEBERG_REST
+    URI = 'https://your-iceberg-rest-catalog/api/catalog'
+    ACCESS_REGION = 'cn-hangzhou';
+
+-- Create External Catalog (no OPTIONS needed)
+CREATE EXTERNAL CATALOG iceberg_catalog
+    CONNECTION iceberg_conn;
+```
+
+### Example: Snowflake Open Catalog (OAuth)
+
+Snowflake Open Catalog is a managed service based on the Iceberg REST protocol and requires additional OAuth parameters.
+
+```SQL
+CREATE CATALOG CONNECTION IF NOT EXISTS snow_opencatalog_conn
+    TYPE ICEBERG_REST
+    URI = 'https://<account>.snowflakecomputing.com/polaris/api/catalog'
+    ACCESS_REGION = 'ap-southeast-1'
+    OAUTH_CLIENT_ID = '<client_id>'
+    OAUTH_CLIENT_SECRET = '<client_secret>'
+    OAUTH_SCOPE = 'PRINCIPAL_ROLE:ALL'
+    NAMESPACE = '<your_database>'
+    WAREHOUSE = '<your_catalog>'
+    WITH PROPERTIES (
+        'client.region' = 'ap-southeast-1',
+        'io-impl' = 'org.apache.iceberg.aws.s3.S3FileIO'
+    );
+
+-- Create External Catalog (no OPTIONS needed; the connection already contains namespace information)
+CREATE EXTERNAL CATALOG snow_catalog
+    CONNECTION snow_opencatalog_conn;
+```
+
+For detailed configuration steps, refer to: [Accessing Iceberg Tables in Snowflake Open Catalog](query-snowflake-open-catalog-iceberg-table.md)
+
+---
+
+## Manage Catalog Connection
+
+```SQL
+-- List all connections
+SHOW CONNECTIONS;
+
+-- View connection details
+DESC CONNECTION my_conn;
+
+-- Drop a connection (drop any dependent External Catalogs first)
+DROP CONNECTION my_conn;
+```
+
+## Related Documentation
+
+- [Create External Catalog](create-external-catalog.md) — Create an External Catalog based on a Catalog Connection
+- [Create External Schema](create-external-schema.md) — Mount an external database into the current workspace
+- [Create Storage Connection](create-storage-connection.md) — Storage Connection required by HMS
+- [Accessing Iceberg Tables in Snowflake Open Catalog](query-snowflake-open-catalog-iceberg-table.md)

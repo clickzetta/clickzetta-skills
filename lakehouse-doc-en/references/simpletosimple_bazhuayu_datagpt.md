@@ -120,9 +120,9 @@ Configure the database information:
 
 :-: ![](.topwrite/assets/image_1734329350652.png =700)
 
-[For the configuration of connecting to Singdata Lakehouse via MySQL, please refer to](https://www.yunqi.tech/documents/use-mysql-client):
+[For the configuration of connecting to Singdata Lakehouse via MySQL, please refer to](https://www.singdata.com/documents/use-mysql-client):
 
-<https://www.yunqi.tech/documents/use-mysql-client>
+<https://www.singdata.com/documents/use-mysql-client>
 
 ## Summary
 
@@ -143,7 +143,7 @@ All of this is made simple by the perfect integration of Octoparse and Singdata 
 ^
 
 Here is also the [download link for Octoparse](https://www.bazhuayu.com/) for your convenience: <https://www.bazhuayu.com/>
-and [Singdata Lakehouse and DataGPT activation address](https://accounts.clickzetta.com/register): <https://accounts.clickzetta.com/register> and [Quick Start](datagpt_quickstart.md)
+and [Singdata Lakehouse and DataGPT activation address](https://accounts.singdata.com/register): <https://accounts.singdata.com/register> and [Quick Start](datagpt_quickstart.md)
 
  
 

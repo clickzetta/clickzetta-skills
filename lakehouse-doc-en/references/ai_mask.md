@@ -94,6 +94,17 @@ When the `labels` array is empty (`ARRAY()`), the function raises an error: `lab
 
 ## Examples
 
+### Chinese PII Masking Example
+
+```sql
+SELECT AI_MASK(
+    'endpoint:qwen3-max-preview',
+    '用户王小明，手机号：13800138000，邮箱：wang@example.com',
+    ARRAY('姓名', '手机号', '邮箱')
+) AS masked;
+-- Returns: 用户[MASKED]，手机号：[MASKED]，邮箱：[MASKED]
+```
+
 ### English PII Masking
 
 ```sql

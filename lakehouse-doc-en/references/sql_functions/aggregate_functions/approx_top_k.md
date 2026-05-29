@@ -1,4 +1,4 @@
-### approx\_top\_k
+### APPROX_TOP_K
 ```sql
 approx_top_k(col, k, [maxItemsTracked])
 ```
@@ -14,7 +14,7 @@ This function is used to extract the top k most frequent items from the specifie
 
 #### Return Result
 
-The function returns a structured array, where each element is a struct containing three fields: `item` (value of the original input type), `count` (long integer, representing the approximate number of occurrences of the item), and `approximation` (boolean, indicating whether the result is an approximation, always true). The array is sorted in descending order by the `count` field.
+The function returns a structured array, where each element is a struct containing two fields: `value` (value of the original input type) and `count` (string type, representing the approximate number of occurrences of the item). The array is sorted in descending order by the `count` field.
 
 #### Usage Example
 

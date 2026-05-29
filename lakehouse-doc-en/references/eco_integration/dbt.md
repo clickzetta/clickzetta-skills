@@ -1,4 +1,28 @@
-# dbt ClickZetta adapter User Guide
+# dbt Singdata adapter User Guide
+
+> 💡 **If your goal with dbt is to do data transformation and modeling on Singdata Lakehouse**, Singdata Studio provides native development, orchestration, and operations capabilities — no need to maintain a separate dbt project:
+>
+> **Step 1: Develop transformation logic in Studio SQL tasks**
+>
+> [Studio SQL Tasks](../task-develop.md) are Singdata's native data modeling approach, supporting SQL development in the IDE with scheduled execution. Choose the appropriate object type based on your transformation scenario:
+>
+> | Scenario | Object Type | Description |
+> |------|---------|------|
+> | Transformation logic requiring automatic incremental refresh | [Dynamic Table](../dynamic-table.md) | Declaratively define transformation SQL; the system automatically computes incrementally without manual scheduling logic |
+> | High-frequency fixed aggregation query acceleration | [Materialized View](../MATERIALIZEDVIEW.md) | Pre-computed results stored physically; BI queries hit directly |
+> | Standard SQL ETL logic | Regular table + INSERT/MERGE | Standard SQL writes with flexible execution control |
+>
+> **Step 2: Orchestrate multiple SQL tasks into a workflow**
+>
+> Multiple SQL tasks can be combined into a [Workflow (DAG)](../composite_task.md), defining dependencies between tasks for unified scheduled triggering.
+>
+> **Step 3: Scheduling, monitoring, and operations**
+>
+> Studio has a built-in scheduling system supporting Cron-based triggers, task dependencies, failure alerts, run log viewing, and failure reruns. See [Using Studio In Depth](../studio_manual.md) for details.
+>
+> If you have an existing dbt project to migrate, or your team prefers the dbt development workflow, continue reading the integration guide below.
+
+---
 
 ## Introduction to dbt
 
@@ -40,7 +64,7 @@ Parameter Description:
 - For the official dbt profile parameters (such as jaffle\_shop, target, etc. in the example above), please refer to the [dbt official documentation](https://docs.getdbt.com/docs/core/connect-data-platform/connection-profiles).
 - Parameters recognized by the dbt-clickzetta plugin include:
   - type: Fixed as clickzetta
-  - service: ClickZetta Lakehouse service address
+  - service: Singdata Lakehouse service address
   - instance: Instance name
   - username: Username
   - password: Password
@@ -58,7 +82,7 @@ Run `dbt debug` to verify the configuration is correct.
 
 ### 1. Upload Data
 
-Run `dbt seed` to upload the CSV data from the project to ClickZetta Lakehouse.
+Run `dbt seed` to upload the CSV data from the project to Singdata Lakehouse.
 
 ### 2. Run Models
 

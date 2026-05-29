@@ -474,12 +474,20 @@ import tempfile
 from pathlib import Path
 from unstructured_ingest.processes.connectors.fsspec.clickzetta_volume import *
 
-# 1. Create connection configuration
+```
+
+1. Create connection configuration:
+
+```python
 config = ClickzettaVolumeConnectionConfig(
     access_config=ClickzettaVolumeAccessConfig()
 )
 
-# 2. Index operation - List files
+```
+
+2. Index operation - List files:
+
+```python
 indexer = ClickzettaVolumeIndexer(
     connection_config=config,
     index_config=ClickzettaVolumeIndexerConfig(
@@ -491,7 +499,11 @@ indexer = ClickzettaVolumeIndexer(
 )
 files = indexer.list_files()
 
-# 3. Download operation - Smart error handling
+```
+
+3. Download operation - Smart error handling:
+
+```python
 with tempfile.TemporaryDirectory() as temp_dir:
     downloader = ClickzettaVolumeDownloader(
         connection_config=config,
@@ -509,7 +521,11 @@ with tempfile.TemporaryDirectory() as temp_dir:
         else:
             print(f"Download failed: {result['error']}")
 
-# 4. Upload operation - Auto-build remote_url
+```
+
+4. Upload operation - Auto-build remote_url:
+
+```python
 test_file = Path("test.txt")
 test_file.write_text("Test content")
 
@@ -523,7 +539,11 @@ uploader = ClickzettaVolumeUploader(
 )
 uploader.upload_file(str(test_file), "uploaded_test.txt")
 
-# 5. Delete operation - Permanent deletion verification
+```
+
+5. Delete operation - Permanent deletion verification:
+
+```python
 deleter = ClickzettaVolumeDeleter(
     connection_config=config,
     deleter_config=ClickzettaVolumeDeleterConfig(
@@ -533,7 +553,11 @@ deleter = ClickzettaVolumeDeleter(
 success = deleter.delete_file("uploaded_test.txt")
 print(f"Deletion result: {success}")
 
-# 6. Verify deletion effect
+```
+
+6. Verify deletion effect:
+
+```python
 files_after = indexer.list_files()
 remaining = [f for f in files_after if f["name"] == "uploaded_test.txt"]
 print(f"Remaining files after deletion: {len(remaining)}")  # Should be 0
@@ -732,7 +756,11 @@ class UserError(Exception):
 ### Complete Environment Variable Configuration
 
 ```bash
-# Singdata Lakehouse connection configuration
+```
+
+Singdata Lakehouse connection configuration:
+
+```bash
 export CLICKZETTA_SERVICE="https://your-service.singdata.com"
 export CLICKZETTA_USERNAME="your_username"
 export CLICKZETTA_PASSWORD="your_password"
@@ -741,16 +769,28 @@ export CLICKZETTA_SCHEMA="your_schema"
 export CLICKZETTA_INSTANCE="your_instance"
 export CLICKZETTA_VCLUSTER="your_vcluster"
 
-# DashScope configuration
+```
+
+DashScope configuration:
+
+```bash
 export DASHSCOPE_API_KEY="your_dashscope_api_key"
 
-# Optional performance configuration
+```
+
+Optional performance configuration:
+
+```bash
 export CLICKZETTA_POOL_SIZE="10"
 export DASHSCOPE_RATE_LIMIT="100"
 export BATCH_SIZE="1000"
 export MAX_WORKERS="4"
 
-# Logging configuration
+```
+
+Logging configuration:
+
+```bash
 export UNSTRUCTURED_LOG_LEVEL="INFO"
 export ENABLE_METRICS="true"
 ```
@@ -809,7 +849,11 @@ class ETLConfig:
 ### Batch Size Recommendations
 
 ```python
-# Recommended batch sizes for different scenarios
+```
+
+Recommended batch sizes for different scenarios:
+
+```python
 PERFORMANCE_CONFIGS = {
     "small_dataset": {
         "sql_batch_size": 500,
@@ -837,7 +881,11 @@ PERFORMANCE_CONFIGS = {
 ### Connection Pool Configuration
 
 ```python
-# Singdata Lakehouse connection pool configuration
+```
+
+Singdata Lakehouse connection pool configuration:
+
+```python
 POOL_CONFIG = {
     "max_connections": 10,
     "min_connections": 2,

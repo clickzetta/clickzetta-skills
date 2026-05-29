@@ -1,67 +1,68 @@
-# Account Signup and Setup
+# Logging in to Singdata Lakehouse
 
-This guide will help you complete Singdata account registration, service instance activation, and instance initialization to smoothly begin your Singdata journey.
+You can log in to Singdata Lakehouse in many ways.
+
+If you’re getting started with Singdata Lakehouse, start by using [Singdata Lakehouse Studio](studio_overview.md) or [Singdata Lakehouse  CLI](connect-with-cli.md), the command line client that you can download. After you get comfortable using Singdata Lakehouse, you can explore connecting to Singdata Lakehouse with other methods.
+
+^
 
 ## Account Registration
 
-Before using Singdata services, you need to register a Singdata account.
+Before using Singdata services, you must create an account. Currently, a registration code (invitation code) is required. After obtaining the registration code by contacting our sales team, you can visit <https://accounts.singdata.com/register> to sign up.
 
-1. **Visit the Account Registration Page**: Go to [accounts.clickzetta.com](https://accounts.clickzetta.com/register) and click the "Sign Up" button. On the registration page, follow the prompts to fill in your information.
+1. **Visit the** [registration page](https://accounts.singdata.com/register). On the registration page, follow the prompts to enter your desired username and password. The username you enter here will be the first user created under your new account and will be granted administrator privileges.
+2. **Enter your** **Email address**: Please provide the email address that you used to obtain the invitation code, then click the “Get Code” button. A verification code will be sent to this email address. Enter the received verification code in the “Verification Code” field. This email address will serve both as the registered email for the account and for the first user created under this account.
+3. **Enter the invitation code**: Input the invitation code sent by the Singdata sales team. Each invitation code can only be used once and **must** match the bound phone number.
 
-:-: ![](.topwrite/assets/image_1736314854109.png =734)
+:-: ![](/.topwrite/assets/image_1761728631383.png)
 
-2. **Enter Phone Number**: On the Singdata registration page, enter a phone number that can receive SMS messages, then click the "Get Verification Code" button. The system will send a verification code via SMS to your phone. Enter the 4-digit verification code you receive into the "Verification Code" field and click "Next". ![](.topwrite/assets/image_1739260609977.png =762)
+After completing the steps above, click “Register Now” to finalize your account registration. You will see a success message with a link to your account login page. Please keep this address in a safe place for future use. The user created during registration will automatically become the administrator of the account. Click “Go to Login” on the success message and use the username and password you set during registration to sign in.
 
-3. **Create User**: In this step, you need to create the first user for your account. Fill in the "Username", "Password", and "Confirm Password" fields. The username must be 5-32 characters in length, supporting letters, numbers, and underscores, and must start with a letter. The password must be 8-32 characters in length and must contain uppercase letters, lowercase letters, numbers, and special characters.
-
-4. **Complete Registration**: After clicking the "Complete" button, you will see a registration success message along with your account login address. Please keep this address in a safe place for future login. The user created during registration will automatically become the administrator of this account. Click the "Go to Login" button in the prompt window and use the username and password set during registration to log in to your account.
+***
 
 ## Logging into Your Account
 
-After registering your account, you can log in using your account name, username, and password.
+Once you have successfully registered, you can log in with your account name, username, and password.
 
-1. **Using Your Account-Specific Login URL**: Log in using the URL `https://<your_account_name>.accounts.clickzetta.com`. In the login prompt, enter your correct username and password, then click the "Login" button. If you have forgotten your username or password, click the "Forgot Username?" or "Forgot Password?" button and verify using the phone number registered with your account.
+![](.topwrite/assets/image_1741178602186.png)
 
-:-: ![](.topwrite/assets/image_1736314906745.png =776)
+1. **Using Your Account-Specific Login URL**: Go to `https://<your_account_name>.accounts.singdata.com/login`. On the login page, enter your username and password, then click “Login.”
 
-2. **Using the Universal Login URL**: Visit [accounts.clickzetta.com](https://accounts.clickzetta.com/login) to log in. Enter your 8-digit account name (displayed upon completing registration), click "Login", and you will be directed to your account's login page. In the login prompt, enter your correct username and password, then click the "Login" button. If you have forgotten your account name, click "Retrieve Account" on the account login page and verify using the phone number registered with your account.
+   * If you have forgotten your username or password, click the “Forgot Username?” or “Forgot Password?” button and use the phone number associated with that user to recover it.
+   * If you have forgotten your account name, click “Forgot Account Name?” and verify using the phone number associated with the account.
 
-## Creating a Lakehouse Service Instance
+2. **Using the General Login Page**: Go to [https://accounts.singdata.com/login](https://accounts.clickzetta.com/login) to log in. Enter your 8-digit account name (shown when you completed registration), then click “Login” to be directed to the account’s login page. In the login prompt, enter the correct username and password, then click “Login.”
 
-After logging in to your Singdata account, you will enter the Management Center home page. You can activate a Lakehouse service instance in the Management Center. Please follow the steps below:
+   * If you have forgotten your account name, click “Forget Account” on the account login page and verify using the phone number you used at registration to retrieve it.
 
-* On the Management Center "Home" page, locate the Lakehouse product card and click the "Free Trial" button. ![](.topwrite/assets/20250211-191828.jpeg)
-* In the pop-up window, select the cloud service provider and activation region, then click the "Confirm" button to complete the creation of the Lakehouse service instance. Currently, Singdata Lakehouse supports activating Lakehouse service instances in three regions: Alibaba Cloud Shanghai, Tencent Cloud Shanghai, and AWS (China) Beijing.
+   ^
 
-:-: ![](.topwrite/assets/create_instance.png =616)
+## Your Singdata Lakehouse account identifier
 
-* Please note that each account is currently limited to creating only one Lakehouse service instance.
+All access to Singdata Lakehouse is through your account identifier. See [Manage Account](ManageAccounts.md) for details.
 
-## Instance Initialization
+^
 
-After creating the Lakehouse service instance, you can find and access it under "My Subscriptions" in the Management Center. The system will automatically perform initialization, including:
+## Logging in using Singdata Lakehouse CLI
 
-1. Creating the first workspace named "quick\_start".
-2. Creating the first virtual compute cluster (Virtual Cluster) within the "quick\_start" workspace, which is in a stopped state by default.
-3. Creating the system service users `sysservice_clickzetta` and `sysservice_auto_mv`.
-4. Assigning the user who created the Lakehouse service instance the service instance administrator role as well as the workspace admin (workspace\_admin) role for the "quick\_start" workspace. At this point, you will have full operational permissions for the Lakehouse service instance and the "quick_start" workspace. Subsequently, you can add more users and assign appropriate permissions through the user and permission management features.
+Singdata Lakehouse CLI is the command line client for connecting to Singdata Lakehouse to execute SQL queries and perform all DDL and DML operations, including loading data into and unloading data out of datalake files and database tables.
 
-You have now completed the preparation for using Singdata Lakehouse. You can refer to other quick start documents to learn how to quickly get started with Lakehouse. For more detailed operational guidance, please refer to the [User Guide](studio_manual.md) chapter.
+For more detailed instructions, see [Singdata Lakehouse  CLI](connect-with-cli.md)
 
-## Activating the DataGPT Service
+^
 
-The DataGPT service is now available in the Alibaba Cloud China East 2 (Shanghai) region. The system will automatically connect with Alibaba Cloud Lakehouse instances in the same region (China East 2 (Shanghai)). For Lakehouse instances not activated in Alibaba Cloud China East 2 (Shanghai), you can manually add them on the DataGPT data source page without any selection operations.
+## Connecting using other methods
 
-* On the Management Center "Home" page, locate the DataGPT product card and click the "Free Trial" button.
+In addition to the Singdata Lakehouse web interface and CLI, Singdata Lakehouse supports numerous other methods for connecting, including:
 
-&#x20;      ![](.topwrite/assets/20250211-192212.jpeg =731)
+* Using 3rd-party client services and applications that support JDBC.
+* Using 3rd-party client services and applications that support JDBC via MySQL JDBC driver.
+* Developing applications that connect through the Singdata Lakehouse connectors/drivers for Python SQL Alchemy, Zettapark, Spark, etc.
 
-* The pop-up window will default to **Cloud Service Provider**: Alibaba Cloud and **Region**: China East 2 (Shanghai). The system provides an option to "**Simultaneously activate an Alibaba Cloud - China East 2 (Shanghai) Lakehouse instance as the default data source**":
-  * **Checked (recommended for new users)**: An Alibaba Cloud - China East 2 (Shanghai) Lakehouse instance will be automatically activated as the default data source, requiring no manual configuration.
-  * **Unchecked**: The system will not automatically activate a Lakehouse instance in the China East 2 (Shanghai) region. You can manually add one on the data source management page after the service is activated. Please note that in this case, **DataGPT will not include preloaded sample data**.
+However, connecting to Singdata Lakehouse using these other methods requires additional installation, configuration, and development tasks. For more information, see [Applications and tools for connecting to Singdata Lakehouse](tutorial_connect_to_lakehouse.md).
 
-&#x20;      ![](.topwrite/assets/20250211-192304.jpeg =618)
+^
 
-* Click "Activate" and wait a moment to enter the usage interface.
+For more information about the tasks you can perform in Singdata Lakehouse  Studio, refer to [Singdata Lakehouse  Studio quick tour](LakehouseStudioTour.md).
 
-&#x20;      ![](.topwrite/assets/20250211-193618.jpeg =787)
+For more information about the detail manual guides of Singdata Lakehouse  Studio, refer to [Singdata Lakehouse  Studio manual guides](studio_manual.md).

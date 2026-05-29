@@ -32,9 +32,7 @@ Return results:
    ```json
    {"a" : "1", "b" : "2", "c" : "3"}
    ```
-```markdown
 3. Custom Key-Value Separators and Keys Without Values
-```
    ```sql
    SELECT STR_TO_MAP('name:Tom;age:28;gender:;hobby:coding', ';', ':');
    ```

@@ -21,7 +21,7 @@ Lakehouse Volumes are classified into the following four types by **creation met
 | **External Volume** | `CREATE EXTERNAL VOLUME` | External storage (OSS/COS/S3) | Mounts external object storage, treating object storage as a data lake |
 | **Named Volume** | `CREATE VOLUME` | Internal or external storage | A Volume explicitly created by the user for cross-team resource sharing |
 
-> **Note**: Named Volume is a type of External Volume, emphasizing explicit user creation with a custom name. External Volume can mount external storage (OSS/COS/S3) or use internal storage.
+> ⚠️ **Note**: Named Volume is a type of External Volume, emphasizing explicit user creation with a custom name. External Volume can mount external storage (OSS/COS/S3) or use internal storage.
 
 ### Type Comparison
 

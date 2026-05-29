@@ -1,8 +1,35 @@
+# AI Gateway User Guide
+
 ## Preface
 
 This guide is designed to provide enterprise users with comprehensive instructions for the Singdata AI Gateway product, covering core features, detailed operational workflows, best practices, and frequently asked questions. Singdata AI Gateway is an enterprise-grade AI gateway service launched by the Singdata platform, delivering core capabilities such as unified multi-model API management, intelligent routing and scheduling, BYOK (Bring Your Own Key) model integration, usage statistics and analysis, and permission management. It helps enterprises simplify the process of integrating large models from multiple vendors, reduce operational complexity, and ensure the stability, security, and observability of AI services.
 
 ## 1. Product Introduction
+
+### 1.0 What Is AI Gateway
+
+**AI Gateway (AI Gateway / LLM Gateway)** is a traffic governance middleware purpose-built for large model services. It acts as the unified access layer and control plane between AI applications and multiple AI model services.
+
+Think of it as the "intelligent front desk" for enterprise AI capabilities: all AI invocation requests pass through the gateway first, which uniformly decides who can use it, how much they can use, which model to use, how much it costs, and whether it is secure — then returns the processed result to the application.
+
+**The difference between AI Gateway and a traditional API gateway**: AI Gateway is not a simple upgrade of a traditional API gateway. It is a brand-new component designed for the characteristics of large model services (long connections, high bandwidth, high latency, streaming transmission, token-based billing):
+
+| Comparison dimension | AI Gateway | Traditional API Gateway |
+|---|---|---|
+| Core objective | Large model traffic governance and AI capability control | General API traffic forwarding and management |
+| Billing unit | Token-level precise metering | Request count / bandwidth |
+| Traffic characteristics | Long connections, streaming transmission, large payloads | Short connections, request-response pattern |
+| Core capabilities | Semantic caching, model routing, content safety | Load balancing, rate limiting, authentication |
+| Protocol support | AI-specific protocols such as OpenAI API, Anthropic API | General protocols such as HTTP, gRPC, WebSocket |
+
+**How it works**:
+
+1. **Access layer processing**: Receives HTTP/gRPC requests from applications, performs identity authentication and basic parameter validation
+2. **Request pre-processing**: Desensitizes sensitive information, checks prompt safety, validates quotas
+3. **Intelligent routing decision**: Selects the optimal model service based on routing rules and real-time status
+4. **Upstream forwarding**: Forwards the standardized request to the selected model service; the gateway manages API keys uniformly
+5. **Response processing**: Receives the model's streaming response, performs content safety review, and counts token usage
+6. **Result return**: Returns the processed response to the client while recording logs and monitoring data
 
 ### 1.1 Product Positioning
 
@@ -66,13 +93,13 @@ Singdata AI Gateway delivers four core values for enterprises:
 
 Singdata AI Gateway includes the following five core functional modules, corresponding to the left navigation menu:
 
-| Functional Module           | Core Capabilities                                                                                             | Business Value                                                    |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| **API Key Management**      | Key creation / editing / deletion / disabling, validity period configuration, Token quota settings, routing policy binding, batch operations, usage viewing | Achieve permission isolation and usage control across different businesses and teams |
-| **Model Marketplace**       | Model display and search, model detail viewing, one-click copy of invocation examples, model runtime status monitoring | Quickly understand platform-supported model capabilities, obtain integration code, and monitor model runtime status |
-| **BYOK**                    | Third-party provider management, own key configuration, model selection, connectivity testing, BYOK model management | Seamlessly integrate enterprise-owned third-party model services while retaining original accounts and billing systems |
-| **Usage Statistics**        | Multi-dimensional usage query, trend analysis, detail viewing, data export, cost analysis                     | Gain comprehensive insight into AI cost composition and achieve granular cost management and allocation |
-| **Permission Management**   | User authorization, role management, permission revocation                                                    | Ensure platform security and achieve permission isolation for different users |
+| Functional Module | Core Capabilities | Business Value |
+| --- | --- | --- |
+| **API Key Management** | Key creation / editing / deletion / disabling, validity period configuration, Token quota settings, routing policy binding, batch operations, usage viewing | Achieve permission isolation and usage control across different businesses and teams |
+| **Model Marketplace** | Model display and search, model detail viewing, one-click copy of invocation examples, model runtime status monitoring | Quickly understand platform-supported model capabilities, obtain integration code, and monitor model runtime status |
+| **BYOK** | Third-party provider management, own key configuration, model selection, connectivity testing, BYOK model management | Seamlessly integrate enterprise-owned third-party model services while retaining original accounts and billing systems |
+| **Usage Statistics** | Multi-dimensional usage query, trend analysis, detail viewing, data export, cost analysis | Gain comprehensive insight into AI cost composition and achieve granular cost management and allocation |
+| **Permission Management** | User authorization, role management, permission revocation | Ensure platform security and achieve permission isolation for different users |
 
 ### 1.5 Architecture
 
@@ -111,11 +138,11 @@ Singdata AI Gateway adopts a cloud-native distributed architecture consisting of
 
 ### 1.7 Comparison with Traditional Integration Approaches
 
-| Comparison Dimension | Traditional Multi-Model Integration Approach           | Singdata AI Gateway Integration Approach                      |
-| -------------------- | ------------------------------------------------------ | ------------------------------------------------------------ |
-| Development Effort   | Develop separate adapter code for each vendor, high workload | Develop once, invoke all models; 80% workload reduction       |
-| Operational Complexity | Parallel operation of multiple systems, high complexity | Unified platform management, simple operations                |
-| Cost Control         | Unable to achieve granular control, costs uncontrollable | Multi-dimensional usage statistics and quotas, precise cost control |
-| Model Switching      | Requires modifying business code, impacts business continuity | No code changes required, one-click switching                 |
-| Security Control     | Decentralized management, high security risk            | Unified security control, comprehensive data protection       |
-| Observability        | Lack of unified monitoring, difficult troubleshooting  | Full-link observability, rapid issue localization             |
+| Comparison Dimension | Traditional Multi-Model Integration Approach | Singdata AI Gateway Integration Approach |
+| --- | --- | --- |
+| Development Effort | Develop separate adapter code for each vendor, high workload | Develop once, invoke all models; 80% workload reduction |
+| Operational Complexity | Parallel operation of multiple systems, high complexity | Unified platform management, simple operations |
+| Cost Control | Unable to achieve granular control, costs uncontrollable | Multi-dimensional usage statistics and quotas, precise cost control |
+| Model Switching | Requires modifying business code, impacts business continuity | No code changes required, one-click switching |
+| Security Control | Decentralized management, high security risk | Unified security control, comprehensive data protection |
+| Observability | Lack of unified monitoring, difficult troubleshooting | Full-link observability, rapid issue localization |

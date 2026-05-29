@@ -1,15 +1,17 @@
 # Multi-Table Real-Time Sync Task
 
-Through the multi-table real-time sync task, you can synchronize the entire database to the Lakehouse, including full synchronization of historical data and real-time incremental synchronization of changed data. The multi-table real-time synchronization function can achieve end-to-end timeliness at the second level, providing you with better data freshness.
+Through the multi-table real-time sync task, you can sync an entire database to the Lakehouse — including a full sync of historical data and real-time incremental sync of change data. Multi-table real-time sync achieves second-level end-to-end data freshness.
 
-When using multi-table sync tasks, please note the following limitations and preparation work.
+This document provides a concise overview of the multi-table sync task's features and configuration. For a more detailed usage guide, see [Multi-Table Real-Time Sync Complete Guide](multitable_realtime_sync_sop.md).
+
+> ⚠️ **Note**: Before using multi-table sync tasks, review the version requirements and complete the necessary source database parameter and permission setup described below.
 
 ## Supported Data Source Types and Versions
 
-| **Type**   | **Incremental Reading Mode** | **Database Version** |
-| ---------- | ---------------------------- | -------------------- |
-| MySQL      | Binlog                       | 5.6 and above, 8.x   |
-| PostgreSQL | WALs Log                     | 14 and above         |
+| **Type**      | **Incremental Read Mode** | **Database Version** |
+| ------------- | ------------------------- | -------------------- |
+| MySQL         | Binlog                    | 5.6 and above, 8.x   |
+| PostgreSQL    | WAL logs                  | 14 and above         |
 
 ## Source Database Preparation
 
@@ -17,369 +19,383 @@ When using multi-table sync tasks, please note the following limitations and pre
 
 #### PostgreSQL
 
-Note: Modifying the following parameters requires restarting the PostgreSQL Server to take effect.
+Note: Modifying the following parameters requires restarting the PostgreSQL server to take effect.
 
-| Configuration              | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Default Value (Unit) |
-| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
-| wal\_level                 | Write-Ahead Logging (WAL) level, determines how much information is written to the WAL.&#xA;replica: writes enough data to support WAL archiving and replication, including running read-only queries on standby servers&#xA;minimal: removes all records except those needed for recovery from a crash or immediate shutdown&#xA;logical: adds information needed to support logical decoding. To support real-time synchronization, set wal\_level to logical | replica              |
-| max\_replication\_slots    | Number of slots allowed to be created on the server.                                                                                                                                                                                                                                                                                                                                                                                                            | 10                   |
-| max\_wal\_senders          | Maximum number of wal sender processes that can run simultaneously on the server, corresponding to the number of real-time synchronization tasks that can be performed simultaneously.                                                                                                                                                                                                                                                                          | 10                   |
-| max\_slot\_wal\_keep\_size | Size of wal kept per slot. -1 means unlimited.                                                                                                                                                                                                                                                                                                                                                                                                                  | -1 (MB)              |
-| wal\_sender\_timeout       | Replication connections exceeding this configuration time will be terminated.                                                                                                                                                                                                                                                                                                                                                                                   | 60000 (ms)           |
+| Configuration              | Description                                                                                                                                                                                                                                                                                                                                 | Default Value (Unit) |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
+| wal\_level                 | WAL level — determines how much information is written to the WAL. `replica`: writes enough data for WAL archiving and replication, including read-only queries on standby servers. `minimal`: records only what is needed to recover from a crash. `logical`: adds information needed for logical decoding. Real-time sync requires `logical`. | replica              |
+| max\_replication\_slots    | Maximum number of replication slots allowed on the server.                                                                                                                                                                                                                                                                                  | 10                   |
+| max\_wal\_senders          | Maximum number of WAL sender processes that can run simultaneously, which determines how many real-time sync tasks can run at the same time.                                                                                                                                                                                                 | 10                   |
+| max\_slot\_wal\_keep\_size | Size of WAL retained per slot. `-1` means unlimited.                                                                                                                                                                                                                                                                                       | -1 (MB)              |
+| wal\_sender\_timeout       | Replication connections idle longer than this value will be terminated.                                                                                                                                                                                                                                                                     | 60000 (ms)           |
 
 #### MySQL
 
-| Attribute                     | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Required Configuration                                                                               | Query Method                                    |
-| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
-| log\_bin                      | Whether to enable binlog                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | ON or on                                                                                             | SHOW GLOBAL VARIABLES LIKE 'log\_bin'           |
-| binlog\_format                | Binlog log format. There are three possible values:&#xA;statement mode: records the SQL statements. The advantage is that the binlog content is small, but the disadvantage is that it may sometimes lead to inaccurate synchronization results because the same SQL function may produce different results on the master and server, leading to incorrect synchronization results.&#xA;row: records the complete row data before and after the SQL execution. The advantage is that the data is accurate, but the disadvantage is that the binlog data volume is large.&#xA;mixed: MySQL decides whether to use statement mode or row mode to save records based on the executed SQL content. | ROW or row                                                                                           | SHOW GLOBAL VARIABLES LIKE 'binlog\_format'     |
-| binlog\_row\_image            | The way binlog records before and after images                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | FULL or full (records all fields of both images)                                                     | SHOW GLOBAL VARIABLES LIKE 'binlog\_row\_image' |
-| binlog\_expire\_logs\_seconds | binlog automatic cleanup time                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Configure according to business requirements, it is recommended to set it to 86400 (seconds) or more |                                                 |
+| Attribute                     | Description                                                                                                                                                                                                                                                                                                                                                                                                                   | Required Setting                                                          | Query Method                                    |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- | ----------------------------------------------- |
+| log\_bin                      | Whether binlog is enabled.                                                                                                                                                                                                                                                                                                                                                                                                    | ON                                                                        | SHOW GLOBAL VARIABLES LIKE 'log\_bin'           |
+| binlog\_format                | Binlog format. Three options: `statement` records SQL statements (compact but can cause inaccurate replication when non-deterministic functions are used); `row` records full before/after row images (accurate but higher volume); `mixed` lets MySQL choose automatically.                                                                                                                                                    | ROW                                                                       | SHOW GLOBAL VARIABLES LIKE 'binlog\_format'     |
+| binlog\_row\_image            | Controls whether full before/after row images are recorded in binlog.                                                                                                                                                                                                                                                                                                                                                         | FULL (record all fields in both images)                                   | SHOW GLOBAL VARIABLES LIKE 'binlog\_row\_image' |
+| binlog\_expire\_logs\_seconds | Binlog automatic cleanup interval.                                                                                                                                                                                                                                                                                                                                                                                            | Configure based on business needs; 86400 seconds (1 day) or more recommended. |                                                 |
 
 ### Database Permission Configuration
 
-When synchronizing change events from different types of data sources, appropriate permissions need to be configured on the respective data source servers to ensure normal data synchronization. Although directly assigning an administrator or superuser permission is sufficient to ensure the task runs normally, it is usually desirable to minimize the permissions that need to be assigned to the user synchronizing the data. The specific permission configurations required for each operation step are described as follows.
+When syncing change events from different data sources, appropriate permissions must be configured on each source database server to ensure data can be accessed normally. While granting administrator or superuser permissions is sufficient, it is generally preferable to grant only the minimum necessary permissions. The specific permissions required for each scenario are described below.
 
 #### PostgreSQL
 
-Please note that when executing the authorization SQL statements, **ensure that the executing account itself has the permissions to grant the required permissions. It is recommended to use an administrator account**. To ensure the smooth operation of the task, **it is recommended to execute the authorizations for all the scenarios listed below**.
+When executing grant SQL statements, **ensure the executing account itself has the ability to grant those permissions — using an administrator account is recommended**. To ensure the task runs smoothly, **execute the grants for all scenarios listed below**.
 
-**Scenario: Configure task (retrieve metadata: schema list, table list, table field list**)
+**Scenario: Task configuration (fetching metadata: schema list, table list, field list)**
 
 Required permissions:
 
 ```
-SELECT (information_schema and the table where details need to be obtained)
+SELECT (on information_schema and the tables you need to inspect)
 ```
 
-Authorization Method
+Grant statements:
 
 * Grant a role permission to read `information_schema`:
   ```
-  GRANT SELECT ON TABLE information_schema.tables TO role_name; 
+  GRANT SELECT ON TABLE information_schema.tables TO role_name;
   ```
+
 * Grant a role permission to read a specific table:
   ```
   GRANT SELECT ON TABLE your_schema.your_table TO role_name;
   ```
 
-**Scenario: Synchronize WAL Logs**
+**Scenario: Sync WAL logs**
 
-Required Permissions
+Required permissions:
 
 ```
 REPLICATION
 LOGIN
 ```
 
-Authorization Statement
+Grant statement:
 
 ```
 CREATE ROLE <name> REPLICATION LOGIN;
 ```
 
-**Scenario: Synchronize Historical Full Data (Optional**)
+**Scenario: Sync historical full data (optional)**
 
-Required Permissions
+Required permissions:
 
 ```
-SELECT (on the table that needs to be synchronized)
+SELECT (on the tables to be synced)
 ```
 
-Authorization Statement
+Grant statements:
 
-* Grant a role permission to read a table:
+* Grant a role permission to read a specific table:
   ```
-  GRANT SELECT ON TABLE table_name TO role_name; 
+  GRANT SELECT ON TABLE table_name TO role_name;
   ```
-* Grant a role permission to read all tables under a schema:
+
+* Grant a role permission to read all tables in a schema:
   ```
   GRANT SELECT ON ALL TABLES IN SCHEMA schema_name TO role_name;
   ```
 
-**Scenario: Change Data Capture, Create Publication**
+**Scenario: Change data sync — create publication**
 
-Required Permissions
-
-```
-CREATE (on the database where the publication needs to be created)
-```
-
-Authorization Statement
-
-* Grant CREATE permission
+Required permissions:
 
 ```
-GRANT CREATE ON DATABASE your\_database TO role\_name;
+CREATE (on the database where the publication will be created)
+SELECT (on the tables to be added to the publication)
 ```
+
+Grant statement:
+
+* Grant CREATE permission:
+  ```
+  GRANT CREATE ON DATABASE your_database TO role_name;
+  ```
 
 #### MySQL
 
-Please note that when executing the grant SQL statement, **ensure that the executing account itself has the GRANT OPTION privilege. It is recommended to use a super admin account such as root**. To ensure the smooth operation of the task, **it is recommended to execute the authorization for all the scenarios below**.
+When executing grant SQL statements, **ensure the executing account has the GRANT OPTION privilege — using a superuser account such as root is recommended**. To ensure the task runs smoothly, **execute the grants for all scenarios listed below**.
 
-^
+**Scenario: Task configuration (fetching metadata: database list, table list, field list)**
 
-**Usage Scenario: Configure Task (Retrieve Metadata: database list, table list, table field list**)
-
-Required Permissions
+Required permissions:
 
 ```
 SHOW DATABASES
-SHOW TABLES (or directly grant more general SELECT permissions)
+SHOW TABLES (or grant the more general SELECT permission instead)
 SELECT
 ```
 
-Authorization Statement
+Grant statements:
 
-* Grant the user permission to query the database list:
+* Grant permission to query the database list:
+  ```
+  GRANT SHOW DATABASES ON *.* TO 'username'@'host';
+  ```
 
-```
-GRANT SHOW DATABASES ON . TO 'username'@'host';
-```
+* Grant permission to query the table list and table details (SELECT includes SHOW TABLES):
+  ```
+  GRANT SELECT ON database_name.table_name TO 'username'@'host';
+  ```
 
-* Grant users the permission to query the table list and table details (SELECT includes the permission for SHOW TABLES):
+**Scenario: Sync change data from binlog**
 
-```
-GRANT SELECT ON database\_name.table\_name TO 'username'@'host';
-```
-
-**Usage Scenario: Synchronizing Change Data Based on Binlog Logs**
-
-Required Permissions
+Required permissions:
 
 ```
 RELOAD
 REPLICATION SLAVE
 REPLICATION CLIENT
-
 ```
 
-Authorization Statement
+Grant statement:
 
 ```
-GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT ON . TO 'username'@'host';
+GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO 'username'@'host';
 ```
 
-**Usage Scenario: Synchronize Historical Full Data**
+**Scenario: Sync historical full data**
 
-Required Permissions
+Required permissions:
 
 ```
 SELECT
 ```
 
-Authorization Statement
+Grant statement:
 
-* Grant the user permission to query the table:
-
-```
-GRANT SELECT ON database\_name.table\_name TO 'username'@'host';
-```
+* Grant permission to query a table:
+  ```
+  GRANT SELECT ON database_name.table_name TO 'username'@'host';
+  ```
 
 ## Task Creation
 
-### Operation Entry
+### Entry Point
 
-In the task development interface, click on the new operation and select the "Multi-table Real-time Synchronization" task type.
+In the task development interface, click **New** and select the **Multi-table Real-time Sync** task type.
 
-![](.topwrite/assets/image_1740138760377.png =500)
+![](.topwrite/assets/image_1742960426271.png =308)
 
-###
+### Main Steps
 
-### Configure Source Data Type
+Creating a multi-table real-time sync task involves four main steps:
 
-Select a source data type that needs to be synchronized. Currently supported source data types are as follows:
+1. Configure the data types — select the source and target data sources.
+2. Configure the sync task type — choose from full-database mirror, multi-table mirror, or multi-table merge.
+3. Configure the sync object scope, including source and target.
+4. Configure advanced sync rules, such as how to handle newly added tables and field changes.
 
-### Select Synchronization Type
+### Configure Data Types
 
-Two task types are supported, please choose as needed:
+First, select the source and target data source types. Currently supported source types are shown below:
 
-* Real-time Synchronization - Multi-table Mirroring: Used to mirror source data to the target end.
-* Real-time Synchronization - Multi-table Merging: Used to merge data from multiple databases and tables into a single target table.
+![](/.topwrite/assets/image_1762748306754.png =680)
 
-#### Multi-table Mirroring
+### Select Sync Mode
 
-**Source Configuration**
+Three sync modes are available — choose based on your scenario:
 
-* Select Data Source
+* **Full-database mirror**: Mirrors all tables from all databases on the source to the target. Configuration is at the database level; new tables added to the source are automatically picked up.
+* **Multi-table mirror**: Mirrors selected source tables to the target. Configuration is at the table level; supports automatic detection of added and removed fields.
+* **Multi-table merge**: Merges data from sharded databases and tables into a single target table.
 
-* For multi-table mirroring synchronization, please select a data source. If it is not displayed here, please create a new data source, see [Data Source Configuration](config-datasource.md).
+  ![](/.topwrite/assets/image_1762757109125.png =680)
 
-* Ensure that the account in the data source has sufficient permissions, see the permission description below.
+#### Multi-table Mirror
 
-* Configure Read Mode
+**Source configuration**
 
-* MySQL currently only supports BINLOG mode.
+* Select a data source.
 
-* PostgreSQL currently only supports WALs mode.
+  * For multi-table mirror sync, select one data source. If none is listed, create one first — see [Data Source Configuration](config-datasource.md).
+  * Make sure the account in the data source has sufficient permissions (see the permission section above).
 
-* Select Synchronization Objects
+* Configure read mode.
 
-* First select the database to be synchronized, then select the tables to be synchronized.
+  * MySQL currently only supports BINLOG mode.
+  * PostgreSQL currently only supports WAL mode.
 
-* The page provides a batch configuration function. Based on the configuration template, fill in the configuration file according to the format requirements, and after uploading, the page will select the objects to be synchronized according to the content given in the file. After selection, you can make fine adjustments as needed. Please note to delete the comment instructions in the template file.
+* Select sync objects.
 
-* Configure Slot
+  * First select the databases to sync, then select the tables.
+  * The page provides a batch configuration feature. Fill in the configuration template, upload the file, and the page will select the objects listed in the file. You can then make further adjustments. Remember to remove the comments from the template before uploading.
 
-* Only PostgreSQL needs to configure the slot, which refers to PostgreSQL's replication slot, see [Documentation](https://www.postgresql.org/docs/9.4/catalog-pg-replication-slots.html).
+* Configure a replication slot (PostgreSQL only).
 
-* Each database needs to configure a slot. Currently, decoderbufs and pgoutput plugin types are supported.
+  * A replication slot is a PostgreSQL construct — see the [PostgreSQL documentation](https://www.postgresql.org/docs/9.4/catalog-pg-replication-slots.html).
+  * Each database requires its own slot. The `decoderbufs` and `pgoutput` plugin types are supported.
+  * You can use an existing slot or create a new one on the page. Review the creation statement in the dialog and modify it as needed before clicking **OK**. The account in the data source must have permission to create slots.
+  * **Important**: do not share a slot between different tasks. If the slot is already in use by a running task, the new task will fail to start. If the slot is shared with a stopped task, the two tasks will share the same consumption position, which may result in incomplete incremental data for the new task.
 
-* You can choose an existing slot to use; or create a new one on the page. In the creation window, you can modify the creation statement in the lower area as needed. Click OK to create. The username configured in the data source must have the permission to create a slot, otherwise, the creation will fail, see the permission description below.
+**Target configuration**
 
-* Special attention, do not reuse the same slot for different tasks. When the task starts, if the slot is occupied by other running tasks, it will fail to start. If other tasks are in a stopped state, because the data in the slot will be shared for consumption, the point is shared. The incremental data consumed by the new task may not be fully synchronized to the target table.
+The target currently only supports writing to Lakehouse.
 
-**Target Configuration**
+* Target data source: defaults to the Lakehouse data source for the current workspace — no change needed.
+* Namespace rule: currently only a specific namespace can be selected. Support for mirroring the source name or custom naming will be added later. Select the appropriate namespace (workspace) as needed.
+* Target table naming rule: currently only mirrors the source table name. Support for prefix and custom naming will be added later.
+* Compute cluster: select an available cluster in the workspace. AP-type clusters are recommended.
 
-The target end currently only supports writing to Lakehouse.
+**Preview configuration**
 
-* Target Data Source
-* The default is the Lakehouse data source corresponding to the current workspace, no modification is needed.
-* Namespace Rules
-* Currently, only selecting a specific namespace is supported. In the future, it will be expanded to support mirroring naming or custom naming based on the source end.
-* Select a specific namespace (workspace) as needed.
-* Target Table Naming Rules
-* Currently, only mirroring the source name is supported. In the future, it will be expanded to support adding prefixes or custom naming rules.
-* Compute Cluster
-* Select an available cluster in the workspace, it is recommended to use an AP type cluster.
+After completing the source and target configuration, you can preview the table and field mapping. If adjustments are needed, go back to the previous step.
 
-**Preview Configuration**
+**Sync rules**
 
-* After completing the above source and target configurations, you can preview the mapping relationship of the synchronized tables and fields. If modifications are needed, please go back to the previous step to adjust.
+In the sync rules section, configure Schema Evolution rules to define how the task responds to source table and field changes, as well as which source change event types to process.
 
-**Synchronization Rules**
+  ![](/.topwrite/assets/image_1762757310752.png =680)
 
-* In the synchronization rules, you can configure rules such as Schema Evolution to define the handling behavior after changes in the source tables and fields.
+#### Full-database Mirror
 
-#### Multi-table Merging
+The configuration is largely the same as multi-table mirror. The key difference is that when selecting source objects, you can only select databases — individual tables cannot be selected.
 
-**Source Configuration**
+#### Multi-table Merge
 
-* Select Data Source
-* Same as above, similar to multi-table mirroring synchronization.
-* Configure Read Mode
-* Same as above, similar to multi-table mirroring synchronization.
-* Select Synchronization Objects
-  Multi-table merging synchronization will use a "virtual table" as an intermediate transition to receive data from specified objects. Two methods are supported for configuration:
-* Method 1: Based on rule configuration, filter through regular expressions, such as selecting all tables starting with abc, just fill in ^abc in the regular expression.
-* Method 2: Based on file batch configuration, fill in the configuration file according to the format requirements in the template, and after uploading, the page will select the objects to be synchronized according to the content given in the file. After selection, you can make fine adjustments as needed. Please note to delete the comment instructions in the template file.
+**Source configuration**
 
-**Target Configuration**
+* Select a data source — same as multi-table mirror.
+* Configure read mode — same as multi-table mirror.
+* Select sync objects.
+  Multi-table merge uses "virtual tables" as an intermediate abstraction. When configuring, specify which virtual table should receive data from which source objects. Two configuration methods are supported:
+  * Method 1: Rule-based — use regular expressions to filter tables. For example, to select all tables whose names start with `abc`, enter `^abc`.
+  * Method 2: File batch configuration — fill in the configuration template and upload it. The page will select the matching objects. You can then fine-tune the selection. Remember to remove template comments.
 
-* Same as above, similar to multi-table mirroring synchronization.
+**Target configuration**
 
-**Preview Configuration**
+Same as multi-table mirror.
 
-* Same as above, similar to multi-table mirroring synchronization.
+**Preview configuration**
 
-**Synchronization Rules**
+Same as multi-table mirror.
 
-* Same as above, similar to multi-table mirroring synchronization.
+**Sync rules**
+
+Same as multi-table mirror.
+
+### Advanced Task Parameters
+
+In the **Parameters** section of a multi-table real-time sync task, you can set advanced parameters to control resource consumption.
+
+> ⚠️ **Note**: These parameters should generally be left at their default values. Only modify them when necessary, and consult your technical support team first.
+
+![](.topwrite/assets/image_1756200956528.png =680)
+
+| Parameter Name                              | Description                                                       | Default Value |
+| ------------------------------------------- | ----------------------------------------------------------------- | ------------- |
+| step1.taskmanager.memory.process.size       | Total memory for the incremental sync task process                | 1600m         |
+| step1.taskmanager.memory.task.off-heap.size | Off-heap memory for the incremental sync task process             | 256m          |
+| step2.taskmanager.memory.process.size       | Total memory for the full sync task process                       | 2000m         |
+| lh.table.cz.common.output.file.max.size     | Maximum size of individual files written during full sync         | 33554432      |
+| lh.table.cz.common.output.enable.rotate     | Whether to split files during full sync writes                    | true          |
+| pod.limit.memory                            | Memory limit for the client that submits the sync task            | 1Gi           |
 
 ### Submit
 
-Click the submit button to submit the task to the production environment for execution. Please note that the task will not start by default after submission and needs to be started manually.
+Click **Submit** to publish the task to the production environment. **Note: the task does not start automatically after submission — you must start it manually.**
 
-## Task Operations and Maintenance
+## Task Operations
 
-### Start Task
+### Start the Task
 
-Enter the task details page to operate and start the task. Please choose one of the following startup methods as needed. After the task starts, during the initialization phase, depending on the number of tables, it may take a few minutes or longer, please be patient.
+Go to the task details page to start the task. Choose one of the following startup methods. After the task starts, the initialization phase may take several minutes depending on the number of tables — please be patient.
 
-**Startup Methods**
+**Startup options**
 
-* Stateless Start (only supported for the first task start): Fully synchronize all data, first perform a full synchronization, then start incremental synchronization.
-* Resume from Last Saved State (only supported for restarting stopped tasks): If the last synchronization was stopped, it will resume from the stopping point.
-* Custom Start Position: Synchronize from a given point, which can be used for data rollback. This applies uniformly to all tables configured in the task.
-* MySQL: Choose to start from a specified file or a specified time. The last file position can be obtained in the page monitoring area.
-* PostgreSQL: Specify the LSN value, which can be viewed in the instance monitoring section below.
+* **Stateless start** (only available on the first start): performs a full sync of all data first, then starts incremental sync.
+* **Resume from last saved state** (only available when restarting a stopped task): resumes incremental sync from where it stopped.
+* **Custom start position**: syncs from a specified checkpoint, useful for replaying data. Applies to all tables in the task.
+  * MySQL: specify a binlog file and position, or a timestamp. The last known file position is shown in the monitoring area on the page.
+  * PostgreSQL: specify an LSN value, which can be found in the instance monitoring section.
 
-**Full Synchronization**
+**Full sync**
 
-* This configuration controls whether to perform a full data synchronization before incremental synchronization. Please note that if you choose not to perform full synchronization, you can choose full synchronization again after stopping and restarting the task.
-* Maximum Concurrency: When initiating a task with full data synchronization enabled, this parameter controls the number of concurrent subtasks for bulk data migration. It establishes corresponding JDBC connections to the source database. A higher value theoretically increases synchronization throughput (until the source database's load capacity is saturated) but proportionally amplifies the pressure on the source system.
+* Controls whether to perform a full data sync before incremental sync. If you choose to skip full sync now, you can still choose it after stopping and restarting the task.
+* **Max concurrency**: when full sync is enabled, controls the number of concurrent sub-tasks. The task opens a corresponding number of JDBC connections to the source database. A higher value increases sync throughput (up to the source database's capacity) but also increases load on the source.
 
 ### Instance Monitoring
 
-#### Stage Monitoring
+#### Phase Monitoring
 
-After the task starts, it will go through three stages: initialization, full synchronization, and incremental synchronization. You can view the running status of these three stages in the instance monitoring area.
-![](.topwrite/assets/image_1740138808522.png =640)
+After the task starts, it goes through three phases: initialization, full sync, and incremental sync. You can view the status of each phase in the instance monitoring area.
+![](.topwrite/assets/image_1710215195619.png =640)
 
 #### Metrics Monitoring
 
-In the metrics monitoring area, you can view key monitoring metrics for full synchronization and incremental synchronization.
-![](.topwrite/assets/image_1740138818954.png =640)
+The metrics monitoring area shows key indicators for both full sync and incremental sync.
+![](.topwrite/assets/image_1710215099675.png =640)
 
-| **Metric Name**    | **Description**                                                                                                                                                                                                                                                                                                                            |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Data Read          | The number of records read from the data source by the data synchronization task during the statistical period.                                                                                                                                                                                                                            |
-| Data Written       | The number of records written to the target data source by the data synchronization task during the statistical period.                                                                                                                                                                                                                    |
-| Average Read Rate  | The average read rate of the data synchronization task during the statistical period. (Total records read during the period / period time)                                                                                                                                                                                                 |
-| Average Write Rate | The average write rate of the data synchronization task during the statistical period. (Total records written during the period / period time)                                                                                                                                                                                             |
-| Failover Count     | Number of Failover Occurrences for Data Synchronization Tasks During the Statistical Period。The failover count is not solely attributable to data conditions but also relates to the operational stability of the data synchronization service itself. By default, only information regarding the last 10 failover instances is displayed. |
+| **Metric**         | **Description**                                                                                                                                                                             |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Data read          | Number of records read from the source during the measurement period.                                                                                                                       |
+| Data written       | Number of records written to the target during the measurement period.                                                                                                                      |
+| Avg. read rate     | Average read rate during the measurement period (total records read / period duration).                                                                                                     |
+| Avg. write rate    | Average write rate during the measurement period (total records written / period duration).                                                                                                 |
+| Failover count     | Number of failovers during the measurement period. This reflects the stability of the sync service itself. Only the most recent 10 failover events are shown by default.                    |
 
-### Synchronization Objects
+### Sync Objects
 
-In the synchronization objects area, you can view the final state of single table synchronization and perform corresponding maintenance operations.
-![](.topwrite/assets/image_1740138835214.png =640)
+The sync objects area shows the final sync state for each individual table and provides per-table operations.
+![](.topwrite/assets/image_1710212959106.png =640)
 
-| **Metric**           | **Description**                                                                                                                                                                                |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Latest Read Position | The synchronization task reads data from the source object in real-time and writes it to the target table, using the write time of the latest record in the target table as the read position. |
-| Latest Update Time   | The last time data was written to the target table.                                                                                                                                            |
-| Data Latency         | The time interval from when the data is committed at the source end to when it is visible at the target end.                                                                                   |
+| **Metric**           | **Description**                                                                                                                         |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Latest read position | The task reads source data in real time and writes it to the target. The write time of the most recent record is used as the read position. |
+| Latest update time   | The last time a record was written to the target table.                                                                                 |
+| Data latency         | The time between a transaction committing on the source and the data becoming visible on the target.                                    |
 
-| **Operation**                   | **Behavior Definition**                                                                                                                                                                                                                                                  |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Full Sync Details               | Click to jump to the full synchronization task interface to view details.                                                                                                                                                                                                |
-| Prioritize                      | During the full synchronization stage, this operation can increase the synchronization priority of the table, making it execute first.                                                                                                                                   |
-| Cancel Execution                | For tables that are being synchronized, this operation cancels the current table synchronization.                                                                                                                                                                        |
-| Force Stop                      | For tables that are being synchronized, this operation forcibly stops the synchronization subtask process of the table. Since multiple tables may be in the same subtask, this operation may affect the synchronization of other tables, so please operate with caution. |
-| Resynchronize                   | Resynchronize the table for both full and incremental synchronization.                                                                                                                                                                                                   |
-| View Exceptions                 | Click to view the exception information of the table's incremental synchronization task, such as Schema Evolution exceptions.                                                                                                                                            |
-| Data Supplement Synchronization | For this table, you can perform a full synchronization after giving a filter condition, such as filtering out part of the data based on the id value.                                                                                                                    |
+| **Operation**       | **Description**                                                                                                                                                                                                                 |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Full sync details   | Opens the full sync task view for this table.                                                                                                                                                                                   |
+| Prioritize          | During the full sync phase, bumps this table's priority so it is processed first.                                                                                                                                               |
+| Cancel run          | Cancels the current sync run for this table.                                                                                                                                                                                    |
+| Force stop          | Force-stops the sync sub-task process for this table. Because multiple tables may share a sub-task, this may also affect other tables — use with caution.                                                                       |
+| Resync              | Re-runs both full sync and incremental sync for this table.                                                                                                                                                                     |
+| View exceptions     | Shows exception details for this table's incremental sync, such as Schema Evolution errors.                                                                                                                                     |
+| Backfill sync       | Runs a targeted full sync for this table using a filter condition — for example, filtering by ID range to sync a subset of data.                                                                                                 |
 
-### Stop Task
+### Stop the Task
 
-Stopping the task will stop the ongoing full synchronization and incremental synchronization. The incremental synchronization position state will be automatically saved when stopping.
+Stopping the task halts all ongoing full sync and incremental sync. The incremental sync checkpoint is saved automatically on stop.
 
-* If the table is in the full synchronization stage when stopping, after restarting, the table that has not been fully synchronized will undergo a new full synchronization.
-* If the table is in the incremental synchronization stage when stopping, after restarting, it will continue to synchronize from the position where it stopped by default.
+* If a table is in the full sync phase when the task stops, it will re-run full sync from scratch after the task restarts.
+* If a table is in the incremental sync phase when the task stops, it will resume from its saved checkpoint after the task restarts.
 
-### Offline Task
+### Unpublish the Task
 
-Taking a task offline is a high-risk operation. After the task is taken offline, the current synchronization position will not be saved. If the task is brought online and started again, it will start synchronizing data from the beginning.
+Unpublishing a task is a high-risk operation. The current sync checkpoint is not preserved. If you bring the task back online and start it, it will begin syncing from scratch.
 
-* Taking a task offline will not clean the data that has already been synchronized to the target end, but it will clean the intermediate process cache data and position information.
-* Resynchronization will not recreate the table. Full data synchronization will overwrite the old table, and incremental synchronization will update the target table with a merge into.
-
-##
+* Unpublishing does not delete data that has already been synced to the target, but it clears intermediate cache data and checkpoint information.
+* Resync will not recreate the target table. Full sync will overwrite the existing target table data; incremental sync will update the target table using `MERGE INTO`.
 
 ## Known Limitations
 
-* Schema Evolution, does not currently support changing field types or automatically adding new tables.
+* Schema Evolution does not currently support changing field types or automatically adding new tables.
 
-* In multi-table real-time synchronization tasks, if there are data with the same primary key in different source tables, the synchronization result will be abnormal.
+* In multi-table real-time sync tasks, if different source tables contain rows with identical primary keys, the sync result may be incorrect.
 
-* Unsupported field types for MySQL synchronization:
+* Unsupported field types for MySQL sync:
 
-| Field Type | Behavior After Synchronization |
-| ---------- | ------------------------------ |
-| year       | Value does not correspond      |
+  | Field type | Behavior after sync     |
+  | ---------- | ----------------------- |
+  | year       | Values are not correct  |
 
-* Unsupported field types for PostgreSQL synchronization:
+* Unsupported field types for PostgreSQL sync:
 
-| Field Type | Behavior After Synchronization                                     |
-| ---------- | ------------------------------------------------------------------ |
-| varbit     | Value does not correspond                                          |
-| bytea      | Value does not correspond                                          |
-| TIMETZ     | Value does not correspond                                          |
-| interval   | Value does not correspond                                          |
-| NAME       | Value does not correspond                                          |
-| NUMERIC    | Precision does not correspond, target end precision will be higher |
-| decimal    | Precision does not correspond, target end precision will be higher |
+  | Field type | Behavior after sync                                        |
+  | ---------- | ---------------------------------------------------------- |
+  | varbit     | Values are not correct                                     |
+  | bytea      | Values are not correct                                     |
+  | TIMETZ     | Values are not correct                                     |
+  | interval   | Values are not correct                                     |
+  | NAME       | Values are not correct                                     |
+  | NUMERIC    | Precision mismatch — target-side precision may be higher   |
+  | decimal    | Precision mismatch — target-side precision may be higher   |
 
-## More
-
-You can refer to [this document](multitable_realtime_sync_sop.md) for more SOP guide.
+For more details, see [Multi-Table Real-Time Sync Complete Guide](multitable_realtime_sync_sop.md).

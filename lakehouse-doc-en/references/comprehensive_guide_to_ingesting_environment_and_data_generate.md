@@ -82,7 +82,11 @@ resorts = ["Da Dong Roast Duck", "Jing Ya Tang", "Xin Rong Ji", "Fang Shan Resta
            "New World Chinese Restaurant", "Jing Zhao Yin", "Din Tai Fung (Taiwan)", "Dianchi Guest",
            "Green Wave Gallery", "South America Time"]
 
-# Define data save directory
+```
+
+Define data save directory:
+
+```py
 data_dir = 'data'
 
 def random_date_in_2025():
@@ -431,10 +435,8 @@ CREATE TABLE accommodation_data (
 
 ```
 
-```markdown
-## 2. Copy the following code into a Python file and run it
-## 3. Open VS Code on your computer, create a file named import\_csv\_into\_pg.py, and copy the following code into the import\_csv\_into\_pg.py file. The lift\_tickets\_data.csv file is the file obtained after decompressing the gz file generated in the "Test Data Generation" step. (You can also [download this file](https://github.com/yunqiqiliang/clickzetta_quickstart/blob/main/a_comprehensive_guide_to_ingesting_data_into_clickzetta/import_csv_into_pg.py).)
-```
+2. Copy the following code into a Python file and run it
+3. Open VS Code on your computer, create a file named import\_csv\_into\_pg.py, and copy the following code into the import\_csv\_into\_pg.py file. The lift\_tickets\_data.csv file is the file obtained after decompressing the gz file generated in the "Test Data Generation" step. (You can also [download this file](https://github.com/yunqiqiliang/clickzetta_quickstart/blob/main/a_comprehensive_guide_to_ingesting_data_into_clickzetta/import_csv_into_pg.py).)
 
 ```Python
 import psycopg2
@@ -443,7 +445,11 @@ def load_csv_to_postgres(csv_file, table_name):
     with open(csv_file, 'r') as f:
         cur.copy_expert(f"COPY {table_name} FROM STDIN WITH CSV HEADER DELIMITER ','", f)
     conn.commit()
-# Database connection information
+```
+
+Database connection information:
+
+```Python
 conn = psycopg2.connect(
     dbname="postgres",
     user="postgres",
@@ -452,17 +458,33 @@ conn = psycopg2.connect(
     port="5432"
 )
 cur = conn.cursor()
-# Set search_path 
+```
+
+Set search_path:
+
+```Python
 cur.execute("SET search_path TO ingest_demo;")
 
-# Clear all data from the lift_tickets_data table 
+```
+
+Clear all data from the lift_tickets_data table:
+
+```Python
 # cur.execute("TRUNCATE lift_tickets_data;")
 
 
-# Define the directory where the CSV files are located
+```
+
+Define the directory where the CSV files are located:
+
+```Python
 csv_directory = 'data'
 
-# List of CSV files arranged in order of table dependencies
+```
+
+List of CSV files arranged in order of table dependencies:
+
+```Python
 csv_files = [
     "lift_tickets_data.csv",         # Import the dependent table first
     "weather_data.csv",
@@ -472,7 +494,11 @@ csv_files = [
     "accommodation_data.csv"
 ]
 
-# Iterate through the file list and load into the corresponding tables
+```
+
+Iterate through the file list and load into the corresponding tables:
+
+```Python
 for filename in csv_files:
     csv_file = os.path.join(csv_directory, filename)
     table_name = os.path.splitext(filename)[0]  # Use the filename without the extension as the table name
@@ -480,12 +506,24 @@ for filename in csv_files:
     load_csv_to_postgres(csv_file, table_name)
     print(f"Loaded {csv_file} into table {table_name} successfully!")
 
-# Execute the SELECT query to count the rows in the table 
+```
+
+Execute the SELECT query to count the rows in the table:
+
+```Python
 cur.execute("SELECT count(*) FROM lift_tickets_data;")
 count = cur.fetchone()[0] 
-# Print the result 
+```
+
+Print the result:
+
+```Python
 print(f"Total number of records in lift_tickets_data: {count}")
-# Close the cursor and connection
+```
+
+Close cursor and connection:
+
+```Python
 cur.close()
 conn.close()
 ```
@@ -597,7 +635,7 @@ The config-ingest.json file contains your account login information for Singdata
 {
   "username": "Please enter your username",
   "password": "Please enter your password",
-  "service": "Please enter your service address, e.g., api.clickzetta.com",
+  "service": "Please enter your service address, e.g., region_id.api.singdata.com",
   "instance": "Please enter your instance ID",
   "workspace": "Please enter your workspace, e.g., gharchive",
   "schema": "Please enter your schema, e.g., public",

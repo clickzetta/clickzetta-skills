@@ -188,7 +188,7 @@ Set the value for each parameter:
 
 :-: ![](.topwrite/assets/image_1737534633567.png =562)
 
-For how to obtain parameter values, please refer to [this article](https://uat-doc.clickzetta.com/JDBC-Driver).
+For how to obtain parameter values, please refer to [this article](https://uat-doc.singdata.com/JDBC-Driver).
 
 ^
 

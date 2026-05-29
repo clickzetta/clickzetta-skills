@@ -68,7 +68,7 @@ LIST USER VOLUME '/';
 |-----------|-----------|---------------|
 | data_export.csv | 1024 | 2024-06-01 10:00:00 |
 
-> **Tip**: `LIST` supports wildcards, e.g., `LIST USER VOLUME '/data/*.csv'`.
+> 💡 **Tip**: `LIST` supports wildcards, e.g., `LIST USER VOLUME '/data/*.csv'`.
 
 ***
 
@@ -96,7 +96,7 @@ Use the `REMOVE` command to delete files that are no longer needed in the Volume
 REMOVE USER VOLUME FILE 'data_export.csv';
 ```
 
-> **Note**: The `REMOVE` operation is irreversible; deleted files cannot be recovered via Time Travel.
+> ⚠️ **Note**: The `REMOVE` operation is irreversible; deleted files cannot be recovered via Time Travel.
 
 ***
 
@@ -116,7 +116,7 @@ USING CSV OPTIONS ('header' = 'true');
 * Parquet / ORC
 * Avro
 
-> **Tip**: Direct querying is suitable for temporary data exploration. For frequent queries, first use `COPY INTO` to import into a table.
+> 💡 **Tip**: Direct querying is suitable for temporary data exploration. For frequent queries, first use `COPY INTO` to import into a table.
 
 ***
 

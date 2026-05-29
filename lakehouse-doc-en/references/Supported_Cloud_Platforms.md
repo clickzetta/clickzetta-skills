@@ -31,4 +31,4 @@ When you register a Singdata Lakehouse account, the system will automatically as
 | Alibaba Cloud          | Singapore | ap-southeast-1-alicloud | jdbc\:clickzetta://\<instance\_name>.ap-southeast-1-alicloud.api.singdata.com/ |
 | Amazon Web Services    | Singapore | ap-southeast-1-aws      | jdbc\:clickzetta://\<instance\_name>.ap-southeast-1-aws.api.singdata.com/      |
 
-Note: For the creation and acquisition of account name \<account\_name> and instance name \<instance\_name>, please refer to [logging in](LoggingIn.md).
+Note: For the creation and acquisition of account name \<account\_name> and instance name \<instance\_name>, please refer to [logging in](logging-in.md).

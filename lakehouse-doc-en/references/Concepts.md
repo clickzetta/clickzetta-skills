@@ -4,7 +4,7 @@ Singdata Lakehouse is a fully managed, cloud-native lakehouse data platform equi
 
 Lakehouse unification solved the fragmentation between data storage and processing, but it did not solve the new challenges of the AI era: vector databases, LLM calls, and unstructured data processing remain outside the data platform, forcing AI teams and data teams to use two separate toolsets on the same data. Singdata defines this direction as **[AI Lakehouse](lakehouse-ai.md)** — GIC-driven incremental refresh allows AI processing results to flow back into the data processing pipeline in real time, rather than sitting in an external system; AI capabilities become native to the data platform, completing the full cycle within the same platform as data processing.
 
-The platform is delivered as SaaS, currently available on Alibaba Cloud (East China Shanghai), Tencent Cloud (East China Shanghai, North China Beijing, South China Guangzhou), Amazon Cloud (Beijing), and more — on-demand activation, no infrastructure management required. See [Supported Cloud Platforms and Regions](supported-cloud-platforms.md).
+The platform is delivered as SaaS, currently available on Alibaba Cloud (East China Shanghai), Tencent Cloud (East China Shanghai, North China Beijing, South China Guangzhou), Amazon Cloud (Beijing), and more — on-demand activation, no infrastructure management required. See [Supported Cloud Platforms and Regions](Supported-Cloud-Platforms.md).
 
 ## Architecture Overview
 
@@ -12,18 +12,18 @@ For years, data platforms served only two types of users: **humans** (data analy
 
 With the rise of AI coding tools like ChatGPT, Claude, Cursor, and Codex, more and more enterprises are letting AI Agents directly participate in data work — automatically generating ETL tasks, analyzing data quality, diagnosing slow queries, and answering business questions. This is not a future trend; it is happening now.
 
-But AI Agents participating in data work is fundamentally different from humans doing so: **humans can read UIs, consult documentation, and rely on experience; Agents can only operate through programmatic interfaces. They don't know which table and field "GMV" refers to. They cannot accept "the data is from yesterday." Their concurrent requests can surge to hundreds per second.** This cannot be solved by simply adding a CLI tool to an old platform — it requires the data platform to be redesigned at four levels:
+But AI Agents participating in data work is fundamentally different from humans doing so: **humans can read UIs, consult documentation, and rely on experience; Agents can only operate through programmatic interfaces. They don't know which table and field "GMV" refers to. They cannot accept "the data is from yesterday." Their concurrent requests can surge to hundreds per second**. This cannot be solved by simply adding a CLI tool to an old platform — it requires the data platform to be redesigned at four levels:
 
-- **Programmable interfaces**: Traditional platform Web UIs are designed for humans; having an Agent operate them is like asking someone to click on a screenshot — inefficient and unreliable. Singdata provides [cz-cli](setup_cz_cli.md) for AI Agents: deterministic command formats, structured output, and complete data warehouse operation coverage, enabling tools like Codex, Claude Code, Cursor, and Kiro to complete full workflows of table creation, SQL writing, task submission, and log inspection.
-- **Real-time data**: When Agents execute tasks, they need current state — is inventory sufficient? Has the order been paid? If data is yesterday's batch snapshot, the Agent's decisions are built on stale information and cannot be trusted. GIC-driven Dynamic Tables refresh the entire warehouse processing pipeline in minutes, so Agents query current state, not yesterday's snapshot.
-- **Understandable semantics**: Agents facing raw table structures can only guess at field meanings — does "order_amt" include tax? What is the definition of "active_user"? [Semantic Views](semantic-view-overview.md) build a business semantic layer on top of physical tables. Agents understand business concepts like "GMV" and "active users" through Semantic Views, generating SQL with accurate metric definitions.
-- **Elastically scalable compute**: Human access to data platforms has limited concurrency, but AI Agents can simultaneously issue tens or even hundreds of concurrent queries. With storage-compute separation, analytical clusters support automatic horizontal scaling based on concurrent load, automatically scaling back when pressure subsides, with scale-out latency measured in seconds — no impact on online services.
+* **Programmable interfaces**: Traditional platform Web UIs are designed for humans; having an Agent operate them is like asking someone to click on a screenshot — inefficient and unreliable. Singdata provides [cz-cli](setup_cz_cli.md) for AI Agents: deterministic command formats, structured output, and complete data warehouse operation coverage, enabling tools like Codex, Claude Code, Cursor, and Kiro to complete full workflows of table creation, SQL writing, task submission, and log inspection.
+* **Real-time data**: When Agents execute tasks, they need current state — is inventory sufficient? Has the order been paid? If data is yesterday's batch snapshot, the Agent's decisions are built on stale information and cannot be trusted. GIC-driven Dynamic Tables refresh the entire warehouse processing pipeline in minutes, so Agents query current state, not yesterday's snapshot.
+* **Understandable semantics**: Agents facing raw table structures can only guess at field meanings — does "order\_amt" include tax? What is the definition of "active\_user"? [Semantic Views](semantic-view-overview.md) build a business semantic layer on top of physical tables. Agents understand business concepts like "GMV" and "active users" through Semantic Views, generating SQL with accurate metric definitions.
+* **Elastically scalable compute**: Human access to data platforms has limited concurrency, but AI Agents can simultaneously issue tens or even hundreds of concurrent queries. With storage-compute separation, analytical clusters support automatic horizontal scaling based on concurrent load, automatically scaling back when pressure subsides, with scale-out latency measured in seconds — no impact on online services.
 
 Today, Singdata Lakehouse serves three types of users, each equally important as a first-class citizen:
 
-- **Human**: Operates through the [Studio](lakehouse-studio-101.md) Web interface, covering data development, scheduling, analysis Notebooks, and [DataGPT](LakehouseDataGPT-tour.md) conversational queries
-- **App**: Connects via JDBC, Python SDK, MySQL protocol, REST API, using Lakehouse as the data backend for applications
-- **AI Agent**: Connects via [cz-cli](setup_cz_cli.md), autonomously completing data warehouse development, operations, and data consumption
+* **Human**: Operates through the [Studio](lakehouse-studio-101.md) Web interface, covering data development, scheduling, analysis Notebooks, and [DataGPT](LakehouseDataGPT-tour.md) conversational queries
+* **App**: Connects via JDBC, Python SDK, MySQL protocol, REST API, using Lakehouse as the data backend for applications
+* **AI Agent**: Connects via [cz-cli](setup_cz_cli.md), autonomously completing data warehouse development, operations, and data consumption
 
 ![](/.topwrite/assets/01-architecture_1779606768355.svg)
 
@@ -31,7 +31,7 @@ Vertically, data is persisted from the bottom-most object storage layer, unified
 
 The following three sections explain Singdata's underlying architectural choices for storage, compute, and data freshness; programmable interfaces, semantic capabilities, multimodal storage, and other AI-layer capabilities are covered in the AI Lakehouse section.
 
----
+***
 
 ## Technical Foundations
 
@@ -47,7 +47,7 @@ The storage layer is built on Apache Iceberg. Singdata engineers are the first c
 
 ![](/.topwrite/assets/00-lakehouse-unified.svg)
 
-**What this means for you**: A single SQL can JOIN raw Parquet files in object storage with governed wide tables simultaneously; data from external systems (Hive, Delta Lake, Hudi, Paimon) is accessed directly via external tables without migration; permissions are managed uniformly in a single system.
+**What this means for you**: BI reports and AI applications no longer each maintain a separate copy of data — both read from the same table, with permissions and metadata managed in a single system. Historical data in Hive, Delta Lake, and Hudi is directly queryable via external tables; existing data assets can be onboarded without migration. A single SQL can simultaneously process raw files in object storage and processed wide tables, aligning BI and AI data definitions for the first time.
 
 ### Storage-Compute Separation
 
@@ -57,15 +57,15 @@ Singdata Lakehouse persists data to object storage (OSS / S3 / COS), with comput
 
 The compute layer is split into three cluster types by workload. GP and AP scale differently because their workload characteristics differ: ETL batch processing has high per-job resource requirements but low concurrency, making vertical scaling (larger nodes) more effective; BI queries have low per-job resource requirements but high concurrency, requiring horizontal scaling (more instances) to linearly increase throughput.
 
-- **[General Purpose (GP)](compute-overview.md)**: ETL batch processing, Dynamic Table incremental refresh, AI_COMPLETE / Embedding and other AI compute tasks. Jobs share resources with fair scheduling; supports vertical elastic scaling
-- **[Analytical (AP)](compute-overview.md)**: BI reports, ad-hoc queries, high-concurrency online analytics, and latency-sensitive AI inference scenarios. Jobs have dedicated resources; supports multi-instance horizontal scaling with built-in result cache acceleration
-- **[Integration](compute-overview.md)**: Offline batch sync and CDC real-time sync share one cluster, completely isolated from query traffic
+* [General Purpose (GP)](compute-overview.md): ETL batch processing, Dynamic Table incremental refresh, AI\_COMPLETE / Embedding and other AI compute tasks. Jobs share resources with fair scheduling; supports vertical elastic scaling
+* [Analytical (AP)](compute-overview.md): BI reports, ad-hoc queries, high-concurrency online analytics, and latency-sensitive AI inference scenarios. Jobs have dedicated resources; supports multi-instance horizontal scaling with built-in result cache acceleration
+* [Integration](compute-overview.md): Offline batch sync and CDC real-time sync share one cluster, completely isolated from query traffic
 
 The proliferation of AI Agents places higher demands on elastic scaling. AI Agents can simultaneously issue tens or even hundreds of concurrent queries, far exceeding the concurrency limits of human operations. With storage-compute separation, analytical clusters support automatic horizontal instance scaling based on concurrent load, automatically scaling back when pressure subsides, with scale-out latency measured in seconds — no data migration involved.
 
 ![](/.topwrite/assets/02-compute-separation_1779606809686.svg)
 
-**What this means for you**: Data written by ETL is immediately visible to BI queries without synchronization; ETL write clusters and online query clusters do not interfere with each other; clusters automatically scale out when AI Agent concurrency spikes and scale back when pressure subsides; as business grows, only compute needs to scale — no data migration required.
+**What this means for you**: Compute and storage are billed and scaled independently: when business data volume grows, only compute needs to scale; during query off-peak hours, compute clusters pause and stop billing while data remains online. Batch jobs and BI queries use separate independent clusters without competing for resources — a single large job cannot overwhelm all queries. When AI Agents begin concurrent access to the data platform, analytical clusters automatically scale out horizontally to handle peak load and scale back when pressure subsides — the entire process requires no manual intervention and no data migration.
 
 ### Unified Real-Time and Batch
 
@@ -81,7 +81,7 @@ Dynamic Tables support three scheduling modes, switchable without modifying the 
 
 **What this means for you**: No more maintaining a dual-pipeline Lambda architecture with Flink + data warehouse; warehouse layering logic is written once and reused for both batch and real-time scenarios; AI Agents query processing results fresh to the minute; switching upstream data sources from batch to real-time CDC requires no changes to downstream Dynamic Tables.
 
----
+***
 
 ## AI Lakehouse
 
@@ -95,31 +95,31 @@ The same table natively supports three data types and their corresponding indexe
 
 ![](/.topwrite/assets/22-multimodal_1779617786266.svg)
 
-| Data type | Index | Typical query | Use case |
-|---------|------|---------|---------|
-| Scalar (numbers, strings, timestamps) | Bloomfilter index | WHERE col = value · WHERE col IN (...) | BI reports, exact filtering |
-| Text (articles, logs, reviews) | Inverted index | match_any(col, 'keyword') · multi_match(c1, c2, 'term') | Full-text search, log analysis |
-| Vector (Embeddings) | Vector index (HNSW) | L2_DISTANCE(vec, query_vec) < threshold LIMIT K | Semantic search, RAG retrieval, recommendations |
+| Data type                             | Index               | Typical query                                             | Use case                                        |
+| ------------------------------------- | ------------------- | --------------------------------------------------------- | ----------------------------------------------- |
+| Scalar (numbers, strings, timestamps) | Bloomfilter index   | WHERE col = value · WHERE col IN (...)                    | BI reports, exact filtering                     |
+| Text (articles, logs, reviews)        | Inverted index      | match\_any(col, 'keyword') · multi\_match(c1, c2, 'term') | Full-text search, log analysis                  |
+| Vector (Embeddings)                   | Vector index (HNSW) | L2\_DISTANCE(vec, query\_vec) < threshold LIMIT K         | Semantic search, RAG retrieval, recommendations |
 
 A single SQL can simultaneously filter scalar fields, match keywords, and retrieve semantically similar vectors, fusing rankings with the RRF algorithm — no need to separately maintain Elasticsearch or a vector database. See [Full-Text + Vector Hybrid Search Best Practices](rrf-fulltext-vector-hybrid-search-best-practices.md).
 
-**[AI Functions](ai_function_best_practice.md)** embed LLM capabilities into the SQL engine, performing OCR, summarization, classification, and vectorization on unstructured data (contracts, images, tickets) in [Volumes](volume-overview.md), writing results directly into the table's vector or text columns for unified consumption by BI and AI.
+[AI Functions](ai_function_best_practice.md) embed LLM capabilities into the SQL engine, performing OCR, summarization, classification, and vectorization on unstructured data (contracts, images, tickets) in [Volumes](volume-overview.md), writing results directly into the table's vector or text columns for unified consumption by BI and AI.
 
 **Understanding Layer: AI Reads Business Semantics**
 
-**[Semantic Views](semantic-view-overview.md)** build a business semantic layer on top of physical tables, centralizing metric definitions and entity relationships. AI understands business concepts like "active users" and "GMV" through Semantic Views, rather than guessing at field meanings from raw table structures. **[Data Analytics Agent (DataGPT)](LakehouseDataGPT-tour.md)** implements natural language data queries based on Semantic Views — users describe business questions, the Agent generates SQL, executes queries, and interprets results.
+[Semantic Views](semantic-view-overview.md) build a business semantic layer on top of physical tables, centralizing metric definitions and entity relationships. AI understands business concepts like "active users" and "GMV" through Semantic Views, rather than guessing at field meanings from raw table structures. [Data Analytics Agent (DataGPT)](LakehouseDataGPT-tour.md) implements natural language data queries based on Semantic Views — users describe business questions, the Agent generates SQL, executes queries, and interprets results.
 
 **Operations Layer: AI Autonomously Completes Warehouse Development**
 
-**[cz-cli](setup_cz_cli.md)** is the standard interface for AI Agents to operate Lakehouse, encapsulating table creation, SQL writing, task submission, log inspection, and performance diagnostics as structured commands. **The Data Engineering Agent built into [Studio](lakehouse-studio-101.md)** participates directly in the development interface — understanding table structures and business context, automatically generating ETL SQL, debugging data quality issues, and explaining slow query causes. AI coding tools like Codex, Claude Code, Cursor, and Kiro can complete full data warehouse development and operations workflows through cz-cli.
+[cz-cli](setup_cz_cli.md) is the standard interface for AI Agents to operate Lakehouse, encapsulating table creation, SQL writing, task submission, log inspection, and performance diagnostics as structured commands. **The Data Engineering Agent built into** [Studio](lakehouse-studio-101.md) participates directly in the development interface — understanding table structures and business context, automatically generating ETL SQL, debugging data quality issues, and explaining slow query causes. AI coding tools like Codex, Claude Code, Cursor, and Kiro can complete full data warehouse development and operations workflows through cz-cli.
 
 **Governance Layer: Unified Management of AI Model Resources**
 
-**[AI Gateway (Model Management)](AI_Gateway.md)** is the enterprise's unified LLM access point, aggregating Alibaba Cloud Qwen, OpenAI, self-hosted models, and other sources. It provides RBAC permission isolation, call rate limiting, token usage statistics, and multi-tenant cost allocation — AI Functions and various Agents share the same model governance mechanism.
+[AI Gateway (Model Management)](AI_Gateway.md) is the enterprise's unified LLM access point, aggregating Alibaba Cloud Qwen, OpenAI, self-hosted models, and other sources. It provides RBAC permission isolation, call rate limiting, token usage statistics, and multi-tenant cost allocation — AI Functions and various Agents share the same model governance mechanism.
 
 **Overall value**: Data is stored only once; BI reports and AI applications read from the same table with unified permissions and metadata management; AI processing results flow back into the data processing pipeline in real time via GIC incremental refresh, no longer sitting in external systems waiting for batch runs; from data ingestion, processing, AI handling to analytics consumption, the full pipeline closes within a single platform — data teams need not switch tools or maintain multiple systems.
 
----
+***
 
 ## Lakehouse Studio
 
@@ -127,15 +127,15 @@ Singdata chose an integrated approach from the very beginning of product design 
 
 Studio's main modules:
 
-- **Data Sync**: Offline batch sync and CDC real-time sync for 40+ data sources, visually configured with no code required
-- **Task Development and Scheduling**: Unified management of SQL / Python / Shell tasks, DAG dependency orchestration, supports backfill and rerun
-- **Operations Monitoring**: Instance logs, run alerts, resource usage — troubleshoot without leaving the platform
-- **Data Catalog**: Metadata management, data lineage, data quality rules — governance and development in the same interface
-- **Analysis Notebook**: Interactive SQL and Python analysis, results directly connectable to BI
+* **Data Sync**: Offline batch sync and CDC real-time sync for 40+ data sources, visually configured with no code required
+* **Task Development and Scheduling**: Unified management of SQL / Python / Shell tasks, DAG dependency orchestration, supports backfill and rerun
+* **Operations Monitoring**: Instance logs, run alerts, resource usage — troubleshoot without leaving the platform
+* **Data Catalog**: Metadata management, data lineage, data quality rules — governance and development in the same interface
+* **Analysis Notebook**: Interactive SQL and Python analysis, results directly connectable to BI
 
 Quick start: [Lakehouse Studio Getting Started Guide](lakehouse-studio-101.md)
 
----
+***
 
 ## Core Object Relationships
 
@@ -143,13 +143,13 @@ Relationships between data objects:
 
 ![](/.topwrite/assets/04-object-relationship_1779606899090.svg)
 
-- **[Dynamic Table](dynamic-table.md)**: Define a SQL; the system automatically detects upstream table changes and incrementally refreshes. Suitable for building ODS→DWD→ADS data pipelines. Does not depend on Table Stream.
-- **[Table Stream](table_stream.md)**: An independent CDC capture mechanism that records every row's insert/update/delete changes for downstream custom consumption. Suitable for scenarios requiring fine-grained control over MERGE logic.
-- Both start from a Table and are two parallel paths — choose one based on your scenario.
+* [Dynamic Table](dynamic-table.md): Define a SQL; the system automatically detects upstream table changes and incrementally refreshes. Suitable for building ODS→DWD→ADS data pipelines. Does not depend on Table Stream.
+* [Table Stream](table_stream.md): An independent CDC capture mechanism that records every row's insert/update/delete changes for downstream custom consumption. Suitable for scenarios requiring fine-grained control over MERGE logic.
+* Both start from a Table and are two parallel paths — choose one based on your scenario.
 
 Dynamic Table's incremental computation is driven by Singdata's proprietary GIC (Generic Incremental Computation) model, supporting second-level trigger, minute-level periodic, and DAG dependency scheduling modes. Defined with standard SQL, no stream processing framework required. See [Incremental Computing Mechanism and Dynamic Tables](incremental-computing.md).
 
----
+***
 
 ## Typical Use Cases
 
@@ -187,7 +187,7 @@ Reference: [Real-Time Pipeline Selection Guide](realtime-pipeline-selection-guid
 
 Massive device data continuously written via Kafka; Dynamic Tables aggregate device status and alert metrics in real time; analytical clusters support high-concurrency online queries — one architecture covers real-time ingestion, processing, and analytics end-to-end. Device anomaly data is processed by AI Functions for pattern recognition, with results written back to structured tables for real-time consumption by operations Agents.
 
----
+***
 
 ## Ecosystem Compatibility
 
@@ -195,13 +195,15 @@ Singdata Lakehouse natively supports Apache Iceberg format and supports direct r
 
 ## Start Here
 
-| Your goal | Recommended starting point |
-|---------|---------|
-| Understand all platform concept definitions | [Key Concepts](key-concepts.md) |
-| Hands-on with your first complete workflow | [Quick Start](lakehouse-quick-experience_guide.md) |
-| Understand the full AI Lakehouse picture | [AI Lakehouse](lakehouse-ai.md) |
-| Build RAG or vector search | [Full-Text + Vector Hybrid Search Best Practices](rrf-fulltext-vector-hybrid-search-best-practices.md) |
-| Understand AI data analytics capabilities | [Data Analytics Agent Tour](LakehouseDataGPT-tour.md) |
-| Let AI Agents operate the data warehouse | [cz-cli Configuration Guide](setup_cz_cli.md) |
-| Learn common SQL commands | [SQL Reference](sql-reference.md) |
-| Design data models and object relationships | [Object Model Design](object_model_design.md) |
+| Your goal                                   | Recommended starting point                                                                             |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Understand all platform concept definitions | [Key Concepts](key-concepts.md)                                                                        |
+| Hands-on with your first complete workflow  | [Quick Start](lakehouse-quick-experience_guide.md)                                                     |
+| Understand the full AI Lakehouse picture    | [AI Lakehouse](lakehouse-ai.md)                                                                        |
+| Build RAG or vector search                  | [Full-Text + Vector Hybrid Search Best Practices](rrf-fulltext-vector-hybrid-search-best-practices.md) |
+| Understand AI data analytics capabilities   | [Data Analytics Agent Tour](LakehouseDataGPT-tour.md)                                                  |
+| Let AI Agents operate the data warehouse    | [cz-cli Configuration Guide](setup_cz_cli.md)                                                          |
+| Learn common SQL commands                   | [SQL Reference](sql-reference.md)                                                                      |
+| Design data models and object relationships | [Object Model Design](object_model_design.md)                                                          |
+
+^

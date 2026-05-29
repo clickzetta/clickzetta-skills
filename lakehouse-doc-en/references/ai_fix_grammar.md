@@ -51,7 +51,7 @@ SELECT AI_FIX_GRAMMAR('conn_bailian:qwen3.5-plus', 'He dont know what to did.');
 `CREATE API CONNECTION` field descriptions:
 
 | Field | Description |
-|------|------|
+|-------|-------------|
 | `TYPE` | Fixed as `ai_function` |
 | `PROVIDER` | Model provider identifier, e.g. `'bailian'`, `'openai'`, `'anthropic'` |
 | `BASE_URL` | Base API URL of the model service |
@@ -91,6 +91,13 @@ SELECT AI_FIX_GRAMMAR(
 ) AS fixed;
 -- Returns: He doesn't know what to do.
 
+-- Chinese grammar correction
+SELECT AI_FIX_GRAMMAR(
+    'endpoint:qwen3-max-preview',
+    '我昨天去了北京，那里的天气很好的很。'
+) AS fixed;
+-- Returns: 我昨天去了北京，那里的天气很好。
+
 -- No errors — text returned unchanged
 SELECT AI_FIX_GRAMMAR(
     'endpoint:qwen3-max-preview',
@@ -115,6 +122,13 @@ SELECT AI_FIX_GRAMMAR(
     'Je suis allé au magasin et je achète du pain.'
 ) AS fixed;
 -- Returns: Je suis allé au magasin et j''ai acheté du pain.
+
+-- Mixed Chinese-English text unification
+SELECT AI_FIX_GRAMMAR(
+    'endpoint:qwen3-max-preview',
+    '这个product的quality真的很good，我very喜欢。'
+) AS fixed;
+-- Returns: 这个产品的质量真的很好，我非常喜欢。
 ```
 
 ### Semantic Understanding Capabilities
@@ -129,6 +143,16 @@ SELECT AI_FIX_GRAMMAR('endpoint:qwen3-max-preview',
 SELECT AI_FIX_GRAMMAR('endpoint:qwen3-max-preview',
     'Yesterday I go to the store and buy some food.') AS fixed;
 -- Returns: Yesterday I went to the store and bought some food.
+
+-- Chinese redundant wording
+SELECT AI_FIX_GRAMMAR('endpoint:qwen3-max-preview',
+    '他大约大概有三十岁左右。') AS fixed;
+-- Returns: 他大约三十岁。
+
+-- Chinese missing sentence component
+SELECT AI_FIX_GRAMMAR('endpoint:qwen3-max-preview',
+    '通过这次活动，使我受到了教育。') AS fixed;
+-- Returns: 这次活动使我受到了教育。
 ```
 
 ### Batch Processing Table Data

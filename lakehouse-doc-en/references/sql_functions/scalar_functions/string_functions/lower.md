@@ -14,7 +14,6 @@ Here are some examples of using the LOWER function:
 
 1. Convert "HelloWorld" to "helloworld":
 
-#### Permalink
 ```sql
 SELECT LOWER('HelloWorld');
 ```

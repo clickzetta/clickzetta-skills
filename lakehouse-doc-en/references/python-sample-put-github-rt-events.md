@@ -215,15 +215,27 @@ def bulk_load_data(real_time_events):
 
         print("finally Singdata Lakehouse connection is closed")
 
-# tz = pytz.timezone('Asia/Shanghai')
+```
 
-# Initialize ETag and event list
+tz = pytz.timezone('Asia/Shanghai').:
+
+```
+
+```
+
+Initialize ETag and event list:
+
+```
 
 etag = None
 
 events = []
 
-# Create a dictionary to store unique event IDs
+```
+
+Create a dictionary to store unique event IDs:
+
+```
 
 seen_event_ids = {}
 

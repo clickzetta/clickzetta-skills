@@ -6,8 +6,7 @@ This article introduces how to create a retention analysis query using SQL tasks
 
 In this tutorial, we will analyze the retention rate based on the "E-commerce Dataset".
 
-```
-SQL
+```sql
 DROP TABLE if exists eCommerce_Retention_Week_Number;
 CREATE TABLE eCommerce_Retention_Week_Number 
 AS
@@ -17,14 +16,16 @@ SELECT a.user_id,
        a.event_week-first_week as week_number 
 FROM (SELECT user_id,
              weekofyear(event_date) AS event_week
-      FROM ecommerce_events_multicategorystore_enriched
+      FROM clickzetta_sample_data.ecommerce_events_history.ecommerce_events_multicategorystore
       GROUP BY user_id,
                event_week) a,
      (SELECT user_id,
              MIN(weekofyear (event_date)) AS first_week
-      FROM clickzetta_sample_data.ecommerce_events_history.ecommerce_events_multicategorystore_enriched
+      FROM clickzetta_sample_data.ecommerce_events_history.ecommerce_events_multicategorystore
       GROUP BY user_id) b
 WHERE a.user_id = b.user_id;
 ```
 
-^
+## Related Documentation
+
+* [Retention and Cohort Analysis](SQL_Retention_Cohort_Guide.md) — Complete retention analysis guide (N-day retention, cohort matrix, consecutive active users, churn analysis)

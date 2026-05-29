@@ -85,7 +85,7 @@ Understanding how users flow through Singdata Lakehouse:
 
 ### 2.4 Role Permission Scope Description
 
-> **Note**:
+> ⚠️ **Note**:
 > - Permission inheritance relationships between different roles need to be verified based on the actual environment, as different versions may vary
 > - The `system_admin` role is being deprecated; it is recommended to use `instance_admin` as the instance-level management role
 > - It is recommended to confirm the specific permission scope of each role through actual testing
@@ -173,7 +173,7 @@ ORDER BY
     role_name;
 ```
 
-> **Note**: Although roles like `instance_admin` are instance-level roles, they also appear in the workspace-level `information_schema.roles` view because there are users in the current workspace who have been granted that role.
+> ⚠️ **Note**: Although roles like `instance_admin` are instance-level roles, they also appear in the workspace-level `information_schema.roles` view because there are users in the current workspace who have been granted that role.
 
 ### Step 4: Permission Redundancy Detection
 

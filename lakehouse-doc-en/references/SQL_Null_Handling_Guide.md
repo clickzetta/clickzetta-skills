@@ -168,7 +168,7 @@ ORDER BY user_id;
 | 4 | David | 2024-04-20 | 2024-06-02 | 2024-04-20 |
 | 5 | Eve | NULL | 2024-04-20 | 2024-04-20 |
 
-> **Note**: NULL values of numeric types and time types may display as `nan` and `NaT` respectively, but `IS NULL` checks remain valid.
+> ⚠️ **Note**: NULL values of numeric types and time types may display as `nan` and `NaT` respectively, but `IS NULL` checks remain valid.
 
 ***
 
@@ -199,7 +199,7 @@ ORDER BY user_id;
 | 4 | David | NULL | NULL | NULL | NULL |
 | 5 | Eve | 22 | Shanghai | 25 | 22 |
 
-> **Tip**: If all values within a group are NULL, `AVG` also returns NULL, and `COALESCE` will not fill. You can combine with the global mean: `COALESCE(age, AVG(age) OVER (PARTITION BY city), AVG(age) OVER ())`.
+> 💡 **Tip**: If all values within a group are NULL, `AVG` also returns NULL, and `COALESCE` will not fill. You can combine with the global mean: `COALESCE(age, AVG(age) OVER (PARTITION BY city), AVG(age) OVER ())`.
 
 ***
 
@@ -253,7 +253,7 @@ After completing missing value handling verification, it is recommended to clean
 DROP TABLE IF EXISTS user_profiles;
 ```
 
-> **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
+> 💡 **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
 
 ***
 

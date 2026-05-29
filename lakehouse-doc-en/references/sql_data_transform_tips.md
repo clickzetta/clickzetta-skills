@@ -1,15 +1,17 @@
-# Some Tips for Data Transformation via SQL
+# Tips for Data Transformation via SQL
 
 ## Data Model
 
-TPC-H data represents a data warehouse for an auto parts supplier, recording orders, items that make up the orders (lineitem), suppliers, customers, parts sold (part), regions, countries, and parts suppliers (partsupp).
+The TPC-H dataset represents a data warehouse for an auto parts supplier, containing records for orders, line items, suppliers, customers, parts, regions, nations, and part suppliers (partsupp).
 
-Singdata Lakehouse has built-in shared TPC-H data, which each user can directly use by adding the data context, for example:
-```sql
+Singdata Lakehouse includes built-in shared TPC-H data that any user can query directly by specifying the data context, for example:
+
+```SQL
 SELECT * FROM 
 clickzetta_sample_data.tpch_100g.customer
 LIMIT 10;
 ```
+
 ## Prerequisites
 
 1. [Basics](sql_data_transform_basic.md)
@@ -17,10 +19,11 @@ LIMIT 10;
 3. [Window Functions](sql_data_transform_windows.md)
 4. [Nested Data Types](sql_data_transfom_NestedDataTypes.md)
 
-## 1. Practical Functions for Common Data Processing Scenarios
+## Practical Functions for Common Data Processing Scenarios
 
-### 1.1. Use ROW\_NUMBER When the First/Last Row in a Partition is Needed
-```sql
+### 1. Use ROW\_NUMBER When You Need the First or Last Row in a Partition
+
+```SQL
 SELECT 
     o_custkey, 
     o_orderdate, 
@@ -35,8 +38,10 @@ FROM (
 ) t
 WHERE rn = 1;
 ```
-### 1.2. STRUCT data types are sorted by their keys from left to right
-```sql
+
+### 2. STRUCT Data Types Are Sorted by Their Keys from Left to Right
+
+```SQL
 WITH order_struct AS (
     SELECT 
         o_orderkey,
@@ -48,18 +53,28 @@ SELECT
     MAX(order_info) AS max_order_date_price
 FROM order_struct;
 ```
-### 1.3. Use BOOL\_OR and BOOL\_AND to Check if at Least One or All Boolean Values are True
-```sql
+
+### 3. Use BOOL\_OR and BOOL\_AND to Check Whether at Least One or All Boolean Values Are True
+
+```SQL
+SELECT 
+    o_custkey, 
+    BOOL_OR(o_shippriority > 0) AS has_atleast_one_priority_order,
+    BOOL_AND(o_shippriority > 0) AS has_all_priority_order
+FROM clickzetta_sample_data.tpch_100g.orders
+GROUP BY o_custkey;
+```
+
+### 4. Use EXCEPT to Select All Columns Except a Few
+
+```SQL
 SELECT * EXCEPT(o_orderdate, o_totalprice)
 FROM clickzetta_sample_data.tpch_100g.orders;
 ```
-### 1.4. Use EXCEPT to Select All Columns Except a Few
-```sql
-SELECT * EXCEPT(o_orderdate, o_totalprice)
-FROM clickzetta_sample_data.tpch_100g.orders;
-```
-### 1.5. Tired of creating long column lists in GROUP BY with GROUP BY ALL
-```sql
+
+### 5. Use GROUP BY ALL When You're Tired of Writing Long Column Lists in GROUP BY
+
+```SQL
 SELECT 
     o_orderkey, 
     o_custkey, 
@@ -68,8 +83,23 @@ SELECT
 FROM clickzetta_sample_data.tpch_100g.orders
 GROUP BY ALL;
 ```
-### 1.6. Use COUNT IF to Count Rows Only When Specific Conditions Are Met
-```sql
+
+### 6. Use Column Position Numbers in ORDER BY and GROUP BY Instead of Column Names
+
+```SQL
+SELECT 
+    o_orderkey, 
+    o_custkey, 
+    o_orderstatus, 
+    SUM(o_totalprice) AS total_price
+FROM clickzetta_sample_data.tpch_100g.orders
+GROUP BY 1,2,3
+ORDER BY 3,2,1;
+```
+
+### 7. Use COUNT IF to Count Rows Only When a Specific Condition Is Met
+
+```SQL
 SELECT 
     o_custkey, 
     COUNT_IF(o_totalprice > 100000) AS high_value_orders,
@@ -77,8 +107,10 @@ SELECT
 FROM clickzetta_sample_data.tpch_100g.orders
 GROUP BY o_custkey;
 ```
-### 1.7. Using COALESCE to Handle Null Column Values with Other Columns or Fallback Values
-```sql
+
+### 8. Use COALESCE to Handle Null Column Values with a Fallback Column or Value
+
+```SQL
 WITH fake_orders AS (
     SELECT 1 AS o_orderkey, 100 AS o_totalprice, NULL AS discount
     UNION ALL
@@ -93,14 +125,16 @@ SELECT
     COALESCE(discount, o_totalprice * 0.10) AS final_discount
 FROM fake_orders;
 ```
-### 1.8. Using sequence and explode to Generate Number/Date Row Ranges
-```sql
+
+### 9. Use sequence and explode to Generate a Range of Numbers or Dates as Rows
+
+```SQL
 SELECT explode(sequence(1, 10)) AS num;
 ```
 
 ^
 
-```sql
+```SQL
 SELECT    EXPLODE (
           sequence(
           to_date('2024-01-01'),
@@ -109,8 +143,10 @@ SELECT    EXPLODE (
           )
           ) AS date;
 ```
-### 1.9. Using UNNEST to Convert ARRAY/LIST Elements into Individual Rows
-```sql
+
+### 10. Use UNNEST to Convert ARRAY/LIST Elements into Individual Rows
+
+```SQL
 WITH nested_data AS (
     SELECT 1 AS id, array(10, 20, 30) AS values
     UNION ALL
@@ -121,10 +157,12 @@ SELECT
     unnest(values) AS flattened_value
 FROM nested_data;
 ```
-## 2. Data Retrieval Based on Existence/Non-Existence in Another Table
 
-### 2.1. Use EXISTS to Retrieve Data Based on the Existence of Data in Another Table
-```sql
+## Retrieving Data Based on Existence or Non-Existence in Another Table
+
+### 1. Use EXISTS to Retrieve Rows Based on Matching Data in Another Table
+
+```SQL
 SELECT 
     c_custkey, 
     c_name
@@ -135,24 +173,30 @@ WHERE EXISTS (
     WHERE o.o_custkey = c.c_custkey AND o.o_totalprice > 1000
 );
 ```
-### 2.2. Use INTERSECT to Get Data Present in Both Tables
-```sql
+
+### 2. Use INTERSECT to Get Data That Exists in Both Tables
+
+```SQL
 SELECT    c_custkey
 FROM      clickzetta_sample_data.tpch_100g.customer
 INTERSECT
 SELECT    o_custkey
 FROM      clickzetta_sample_data.tpch_100g.orders;
 ```
-### 2.3. Using EXCEPT to Get Data Present in Table 1 but Not in Table 2
-```sql
+
+### 3. Use EXCEPT to Get Data That Exists in Table 1 but Not in Table 2
+
+```SQL
 SELECT c_custkey
 FROM clickzetta_sample_data.tpch_100g.customer
 EXCEPT
 SELECT o_custkey
 FROM clickzetta_sample_data.tpch_100g.orders;
 ```
-### 2.4. Get Data Differences (i.e., delta), Using (A - B) U (B - A)
-```sql
+
+### 4. Get the Data Difference (Delta) Using (A - B) ∪ (B - A)
+
+```SQL
 SELECT c_custkey, 'DELETED' as ops FROM ( 
 SELECT c_custkey
 FROM clickzetta_sample_data.tpch_100g.customer
@@ -171,10 +215,12 @@ SELECT c_custkey, c_name, c_address
 FROM clickzetta_sample_data.tpch_100g.customer
 );
 ```
-## 3.Using CASE Statements in SQL
 
-### 3.1. Creating Conditional Functions Using CASE Statements
-```sql
+## CASE Statements in SQL
+
+### 1. Using CASE Statements
+
+```SQL
 SELECT 
     o_orderkey, 
     o_totalprice,
@@ -185,21 +231,28 @@ SELECT
 FROM clickzetta_sample_data.tpch_100g.orders
 LIMIT 5;
 ```
-## 4. Access Metadata About Data
 
-### 4.1. Access Metadata Stored in information\_schema
-```sql
+## Accessing Metadata About Your Data
+
+### 1. Access Metadata Stored in information\_schema
+
+```SQL
 -- View table information
 DESCRIBE TABLE clickzetta_sample_data.tpch_100g.orders;
 ```
-```sql
+
+```SQL
 -- View all tables
 SHOW TABLES IN clickzetta_sample_data.tpch_100g;
 ```
-## 5. Using UPSERTS (i.e., MERGE INTO) to Avoid Data Duplication
 
-### 5.1. Using UPSERT/MERGE INTO to Insert New Data and Update Existing Data
-```sql
+^
+
+## Using UPSERTS (MERGE INTO) to Avoid Duplicate Data
+
+### 1. Use UPSERT/MERGE INTO to Insert New Data and Update Existing Data
+
+```SQL
 MERGE INTO dim_customer_scd2 AS target
 USING (
     VALUES
@@ -215,10 +268,12 @@ WHEN NOT MATCHED THEN
     INSERT (c_custkey, c_name, c_address, c_nationkey, c_phone, c_acctbal, c_mktsegment, c_comment, valid_from, valid_to, is_current)
     VALUES (source.c_custkey, source.c_name, source.c_address, source.c_nationkey, source.c_phone, source.c_acctbal, source.c_mktsegment, source.c_comment, source.valid_from, source.valid_to, source.is_current);
 ```
-## 6. Advanced JOIN Types
 
-### 6.1. Using JOIN and ROW\_NUMBER to Get the Closest Time Value from Table 2 to Table 1 Rows
-```sql
+## Advanced JOIN Types
+
+### 1. Use JOIN and ROW\_NUMBER to Get the Closest Time-Matched Value from Table 2 for Each Row in Table 1
+
+```SQL
 WITH stock_prices_data AS (
     SELECT 'APPL' AS ticker, to_timestamp('2001-01-01 00:00:00') AS ts, 1 AS price
     UNION ALL
@@ -276,16 +331,20 @@ ON h.ticker = p.ticker AND h.ts >= p.ts
 WHERE p.rn = 1
 ORDER BY h.ticker, h.ts;
 ```
-### 6.2. Using ANTI JOIN to Get Rows That Exist in Table 1 but Not in Table 2
-```sql
+
+### 2. Use ANTI JOIN to Get Rows That Exist in Table 1 but Not in Table 2
+
+```SQL
 SELECT    c.c_custkey
 FROM      clickzetta_sample_data.tpch_100g.customer c
 LEFT      ANTI JOIN clickzetta_sample_data.tpch_100g.orders o ON c.c_custkey = o.o_custkey
 ORDER BY  c.c_custkey
 LIMIT     5;
 ```
-### 6.3. Use LATERAL JOIN to join all "matching" rows in Table 2 for each row in Table 1
-```sql
+
+### 3. Use LATERAL JOIN to Join All "Matching" Rows from Table 2 for Each Row in Table 1
+
+```SQL
 SELECT    o.o_orderkey,
           o.o_totalprice,
           l.l_linenumber,
@@ -298,10 +357,12 @@ WHERE     l.l_orderkey = o.o_orderkey AND
 ORDER BY  o.o_orderkey,
           l.l_linenumber;
 ```
-## 7 Business Use Cases
 
-### 7.1. Using CASE and `GROUP BY` to Convert Dimension Values into Separate Columns
-```sql
+## Business Use Cases
+
+### 1. Use CASE and `GROUP BY` to Pivot Dimension Values into Separate Columns
+
+```SQL
 SELECT    o_custkey,
           SUM(
           CASE
@@ -325,8 +386,10 @@ FROM      clickzetta_sample_data.tpch_100g.orders
 GROUP BY  o_custkey
 ORDER BY  o_custkey;
 ```
-### 7.2. Using CUBE to Generate Metrics for Each Possible Dimension Combination
-```sql
+
+### 2. Use CUBE to Generate Metrics for Every Possible Combination of Dimensions
+
+```SQL
 SELECT    o_orderpriority,
           o_orderstatus,
           EXTRACT(
@@ -340,5 +403,3 @@ ORDER BY  1,
           2,
           3;
 ```
-
-^

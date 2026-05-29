@@ -111,7 +111,7 @@ Account
    │                  │   │ Files            │   │ Shared Files     │
    │ Protocol:        │   │                  │   │                  │
    │ volume:user://   │   │ Protocol:        │   │ Protocol:        │
-   │ ~/filename       │   │ volume:table://  │   │ volume://         │
+   │ ~/filename       │   │ volume:table://  │   │ volume://        │
    │                  │   │ table/filename   │   │ volume/filename  │
    │ Level: Workspace │   │                  │   │                  │
    │ Scope: User      │   │ Level: Table     │   │ Level: Schema    │
@@ -168,7 +168,7 @@ Singdata Lakehouse has built-in vector processing capabilities, optimized for RA
 | ----------- | -------------- | -------------- | ------------------------ |
 | GENERAL     | 1              | 256            | 1 CRU step              |
 | ANALYTICS   | 1              | 256            | Powers of 2 CRU         |
-| INTEGRATION | 0.25           | 256            | 0.25/0.5/1+ CRU steps  |
+| INTEGRATION | 0.25           | 256            | Supports any fractional CRU |
 
 #### Workspace Isolation
 
@@ -250,10 +250,18 @@ The system adopts a three-layer architecture to achieve a complete data processi
 ### Environment Setup
 
 ```bash
-# Install dependencies
+```
+
+Install dependencies:
+
+```bash
 pip install unstructured-ingest-clickzetta
 
-# Configure environment variables
+```
+
+Configure environment variables:
+
+```bash
 export CLICKZETTA_SERVICE="your-service-url"
 export CLICKZETTA_USERNAME="your-username"
 export CLICKZETTA_PASSWORD="your-password"
@@ -262,7 +270,11 @@ export CLICKZETTA_SCHEMA="your-schema"
 export CLICKZETTA_INSTANCE="your-instance"
 export CLICKZETTA_VCLUSTER="your-vcluster"
 
-# DashScope configuration
+```
+
+DashScope configuration:
+
+```bash
 export DASHSCOPE_API_KEY="your-dashscope-api-key"
 ```
 
@@ -272,13 +284,21 @@ export DASHSCOPE_API_KEY="your-dashscope-api-key"
 from unstructured_ingest.processes.connectors.sql.clickzetta import ClickzettaConnectionConfig
 from unstructured_ingest.embed.dashscope import DashScopeEmbeddingConfig
 
-# Test Singdata Lakehouse connection
+```
+
+Test Singdata Lakehouse connection:
+
+```python
 config = ClickzettaConnectionConfig()
 with config.get_session() as session:
     result = session.sql("SELECT 1").collect()
     print("Singdata Lakehouse connection successful")
 
-# Test DashScope connection
+```
+
+Test DashScope connection:
+
+```python
 embed_config = DashScopeEmbeddingConfig(model_name="text-embedding-v3")
 print("DashScope configuration ready")
 ```
@@ -300,10 +320,18 @@ from unstructured_ingest.processes.connectors.sql.clickzetta import (
     ClickzettaDownloaderConfig
 )
 
-# Connection configuration
+```
+
+Connection configuration:
+
+```python
 connection_config = ClickzettaConnectionConfig()
 
-# Indexer configuration - process table data in batches
+```
+
+Indexer configuration - process table data in batches:
+
+```python
 indexer = ClickzettaIndexer(
     connection_config=connection_config,
     index_config=ClickzettaIndexerConfig(
@@ -315,7 +343,11 @@ indexer = ClickzettaIndexer(
     )
 )
 
-# Downloader configuration
+```
+
+Downloader configuration:
+
+```python
 downloader = ClickzettaDownloader(
     connection_config=connection_config,
     download_config=ClickzettaDownloaderConfig(
@@ -324,7 +356,11 @@ downloader = ClickzettaDownloader(
     )
 )
 
-# Execute data processing
+```
+
+Execute data processing:
+
+```python
 for file_data in indexer.run():
     downloaded_files = downloader.run(file_data=file_data)
     print(f"Processing complete: {len(downloaded_files)} files")
@@ -339,7 +375,11 @@ from unstructured_ingest.processes.connectors.sql.clickzetta import (
     ClickzettaUploaderConfig
 )
 
-# DashScope embedding configuration
+```
+
+DashScope embedding configuration:
+
+```python
 embed_config = DashScopeEmbeddingConfig(
     model_name="text-embedding-v3",  # Supports v1/v2/v3/v4
     batch_size=25,
@@ -348,7 +388,11 @@ embed_config = DashScopeEmbeddingConfig(
     # v1: 1536-dim, v2: 1536-dim, v3: 1024-dim, v4: 1024-dim
 )
 
-# Uploader configuration - supports vector fields
+```
+
+Uploader configuration - supports vector fields:
+
+```python
 uploader = ClickzettaUploader(
     connection_config=connection_config,
     upload_config=ClickzettaUploaderConfig(
@@ -360,7 +404,11 @@ uploader = ClickzettaUploader(
     )
 )
 
-# Process documents and generate vectors
+```
+
+Process documents and generate vectors:
+
+```python
 processed_data = []
 for file_data in indexed_files:
     # Generate embeddings using DashScope
@@ -372,7 +420,11 @@ for file_data in indexed_files:
         'embedding': embeddings[0]
     })
 
-# Batch upload to Singdata Lakehouse
+```
+
+Batch upload to Singdata Lakehouse:
+
+```python
 uploader.upload_batch(processed_data)
 ```
 
@@ -382,9 +434,9 @@ Suitable for file-system-level data processing, supporting three volume types.
 
 #### Volume Type Descriptions
 
-1. **User Volume** -- User personal file space
-2. **Table Volume** -- File storage associated with a data table
-3. **Named Volume** -- Named shared file volume
+1. **User Volume** — User personal file space
+2. **Table Volume** — File storage associated with a data table
+3. **Named Volume** — Named shared file volume
 
 #### File Indexing and Downloading
 
@@ -397,10 +449,18 @@ from unstructured_ingest.processes.connectors.fsspec.clickzetta_volume import (
     ClickzettaVolumeDownloaderConfig
 )
 
-# Connection configuration
+```
+
+Connection configuration:
+
+```python
 connection_config = ClickzettaVolumeConnectionConfig()
 
-# Index different volume types
+```
+
+Index different volume types:
+
+```python
 configs = [
     # User Volume
     ClickzettaVolumeIndexerConfig(
@@ -421,7 +481,11 @@ configs = [
     )
 ]
 
-# Process each volume type
+```
+
+Process each volume type:
+
+```python
 for config in configs:
     indexer = ClickzettaVolumeIndexer(
         connection_config=connection_config,
@@ -451,7 +515,11 @@ from unstructured_ingest.processes.connectors.fsspec.clickzetta_volume import (
     ClickzettaVolumeUploaderConfig
 )
 
-# Uploader configuration
+```
+
+Uploader configuration:
+
+```python
 uploader = ClickzettaVolumeUploader(
     connection_config=connection_config,
     upload_config=ClickzettaVolumeUploaderConfig(
@@ -461,7 +529,11 @@ uploader = ClickzettaVolumeUploader(
     )
 )
 
-# Upload processed files
+```
+
+Upload processed files:
+
+```python
 local_files = ["/path/to/processed1.json", "/path/to/processed2.json"]
 for local_file in local_files:
     uploader.upload_file(local_file, "processed/" + os.path.basename(local_file))
@@ -569,7 +641,11 @@ async def complete_etl_pipeline():
     print(f"ETL pipeline complete: processed {len(processed_documents)} document chunks")
     return processed_documents
 
-# Run the pipeline
+```
+
+Run the pipeline:
+
+```python
 if __name__ == "__main__":
     results = asyncio.run(complete_etl_pipeline())
 ```
@@ -579,7 +655,11 @@ if __name__ == "__main__":
 ### Singdata Lakehouse SQL Connector
 
 ```bash
-# Basic data extraction
+```
+
+Basic data extraction:
+
+```bash
 unstructured-ingest \
     clickzetta \
     --table-name documents \
@@ -588,7 +668,11 @@ unstructured-ingest \
     --fields id,title,content \
     --output-dir ./output
 
-# Extraction with filter conditions
+```
+
+Extraction with filter conditions:
+
+```bash
 unstructured-ingest \
     clickzetta \
     --table-name documents \
@@ -597,7 +681,11 @@ unstructured-ingest \
     --fields id,content \
     --output-dir ./filtered_output
 
-# Vectorization processing
+```
+
+Vectorization processing:
+
+```bash
 unstructured-ingest \
     clickzetta \
     --table-name source_docs \
@@ -609,14 +697,22 @@ unstructured-ingest \
 ### Singdata Lakehouse Volume Connector
 
 ```bash
-# User Volume processing
+```
+
+User Volume processing:
+
+```bash
 unstructured-ingest \
     clickzetta-volume \
     --volume-type user \
     --remote-path documents/ \
     --output-dir ./user_docs
 
-# Table Volume processing
+```
+
+Table Volume processing:
+
+```bash
 unstructured-ingest \
     clickzetta-volume \
     --volume-type table \
@@ -624,7 +720,11 @@ unstructured-ingest \
     --remote-path images/ \
     --output-dir ./table_files
 
-# Named Volume processing (with regex filtering)
+```
+
+Named Volume processing (with regex filtering):
+
+```bash
 unstructured-ingest \
     clickzetta-volume \
     --volume-type named \
@@ -632,7 +732,11 @@ unstructured-ingest \
     --regexp ".*\.pdf$" \
     --output-dir ./pdf_files
 
-# Document partitioning configuration
+```
+
+Document partitioning configuration:
+
+```bash
 unstructured-ingest \
     clickzetta-volume \
     --volume-type named \
@@ -648,7 +752,11 @@ unstructured-ingest \
 ### Upload to Singdata Lakehouse
 
 ```bash
-# Upload processed data to SQL table
+```
+
+Upload processed data to SQL table:
+
+```bash
 unstructured-ingest \
     local \
     --input-path ./processed_docs \
@@ -657,7 +765,11 @@ unstructured-ingest \
     --table-name processed_documents \
     --batch-size 100
 
-# Upload files to Volume
+```
+
+Upload files to Volume:
+
+```bash
 unstructured-ingest \
     local \
     --input-path ./files_to_upload \
@@ -682,7 +794,11 @@ unstructured-ingest \
 #### Embedding Configuration Examples
 
 ```python
-# Configuration for different versions
+```
+
+Configuration for different versions:
+
+```python
 configs = {
     "v1": DashScopeEmbeddingConfig(
         model_name="text-embedding-v1",
@@ -704,7 +820,11 @@ configs = {
     )
 }
 
-# Choose the appropriate model
+```
+
+Choose the appropriate model:
+
+```python
 embed_config = configs["v4"]  # Recommended: use the latest version
 ```
 
@@ -774,10 +894,18 @@ embed_config = configs["v4"]  # Recommended: use the latest version
 import logging
 from unstructured_ingest.logger import logger
 
-# Configure detailed logging
+```
+
+Configure detailed logging:
+
+```python
 logging.getLogger("unstructured_ingest").setLevel(logging.DEBUG)
 
-# Add performance monitoring
+```
+
+Add performance monitoring:
+
+```python
 import time
 from contextlib import contextmanager
 
@@ -788,7 +916,11 @@ def timer(description):
     elapsed = time.time() - start
     logger.info(f"{description} took: {elapsed:.2f} seconds")
 
-# Usage example
+```
+
+Usage example:
+
+```python
 with timer("Document processing"):
     processed = process_documents(documents)
 ```
@@ -854,18 +986,34 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install dependencies
+```
+
+Install dependencies:
+
+```dockerfile
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-# Copy application code
+```
+
+Copy application code:
+
+```dockerfile
 COPY . .
 
-# Set environment variables
+```
+
+Set environment variables:
+
+```dockerfile
 ENV PYTHONPATH=/app
 ENV UNSTRUCTURED_LOG_LEVEL=INFO
 
-# Run ETL pipeline
+```
+
+Run ETL pipeline:
+
+```dockerfile
 CMD ["python", "etl_pipeline.py"]
 ```
 
@@ -915,7 +1063,11 @@ spec:
 ### Production Configuration
 
 ```python
-# production_config.py
+```
+
+production_config.py:
+
+```python
 import os
 from dataclasses import dataclass
 

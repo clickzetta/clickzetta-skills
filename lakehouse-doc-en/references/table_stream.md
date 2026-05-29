@@ -139,7 +139,7 @@ WHEN NOT MATCHED AND s.__change_type = 'INSERT'
 
 Table Stream can be created directly on any regular table; no additional configuration is required.
 
-> **Tip**: If the source table has `change_tracking` enabled, Table Stream behavior remains consistent. `change_tracking` is not a prerequisite for creating a Table Stream.
+> 💡 **Tip**: If the source table has `change_tracking` enabled, Table Stream behavior remains consistent. `change_tracking` is not a prerequisite for creating a Table Stream.
 
 ### Creating a Table Stream
 
@@ -223,7 +223,7 @@ DROP TABLE STREAM IF EXISTS data_change_test_stream;
 | Bulkload | Immediately visible after task completes successfully |
 | Streaming Ingestion (Ingestion Service) | Visible after changes are committed, by default every 1 minute |
 
-> **Note**: For streaming writes, SQL queries on the target table itself show data in real time. This constraint only applies to the visibility timeliness of a Table Stream based on that target table.
+> ⚠️ **Note**: For streaming writes, SQL queries on the target table itself show data in real time. This constraint only applies to the visibility timeliness of a Table Stream based on that target table.
 
 ## Relationship Between Table Stream and Dynamic Table
 

@@ -13,14 +13,6 @@ The INFORMATION_SCHEMA of LAKEHOUSE provides detailed information about project 
 To access INFORMATION_SCHEMA under SYS, you need INSTANCE ADMIN privileges. Here is an example of querying INFORMATION_SCHEMA:
 
 ```sql
-SELECT * FROM SYS.INFORMATION_SCHEMA.TABLES;
--- This query retrieves all tables in the INFORMATION_SCHEMA
-```
-
-<Notes>
-- Ensure you have the necessary permissions before attempting to query the INFORMATION_SCHEMA.
-</Notes>
-```SQL
 SELECT * FROM SYS.information_schema.tables;
 ```
 Here are some examples of querying INFORMATION_SCHEMA to help you better understand how to use these views and tables.
@@ -44,5 +36,18 @@ SELECT table_name, create_time FROM SYS.information_schema.tables WHERE table_sc
 5. Query JOB HISTORY Information:
 ```SQL
 SELECT * FROM SYS.information_schema.job_history;
+```
+6. Query instance compute usage cost details:
+```SQL
+SELECT workspace_name, sku_name, measurements_consumption, amount
+FROM SYS.information_schema.instance_usage
+WHERE measurement_start >= '2026-05-01'
+ORDER BY amount DESC;
+```
+7. Query object privilege grants:
+```SQL
+SELECT grantee, granted_to, object_name, object_type, privilege_type
+FROM SYS.information_schema.object_privileges
+WHERE object_type = 'TABLE';
 ```
 By the above example, you can gain a deeper understanding of how to use INFORMATION_SCHEMA to query and manage metadata information and usage history information in the LAKEHOUSE instance.

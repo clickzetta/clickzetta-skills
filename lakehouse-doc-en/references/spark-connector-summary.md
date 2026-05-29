@@ -24,7 +24,7 @@ Data transfer between the two systems is achieved through a Lakehouse volume tha
 
 | **Parameter**   | **Required** | **Description**                                                                                                                                                                                                                                                                                                                                                                                           |
 | -------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| endpoint       | Y        | The endpoint address for connecting to Lakehouse, e.g., 6861c888.cn-shanghai-alicloud.api.clickzetta.com. You can find the JDBC connection string in Lakehouse Studio under Management -> Workspace. The domain name in the JDBC connection string is the endpoint![](.topwrite/assets/image_1726133161757.png) |
+| endpoint       | Y        | The endpoint address for connecting to Lakehouse, e.g., 6861c888.cn-shanghai-alicloud.api.singdata.com. You can find the JDBC connection string in Lakehouse Studio under Management -> Workspace. The domain name in the JDBC connection string is the endpoint![](.topwrite/assets/image_1726133161757.png) |
 | username       | Y        | Username                                                                                                                                                                                                                                                                                                                                                                                              |
 | password       | Y        | Password                                                                                                                                                                                                                                                                                                                                                                                               |
 | workspace      | Y        | Workspace used                                                                                                                                                                                                                                                                                                                                                                                          |
@@ -225,7 +225,7 @@ object SparkLH {
      val df= rddSplit.map(arr => (arr(0).toInt, arr(1).toInt, arr(2).toFloat)).toDF()
     // Write to Lakehouse
     df.write.format("clickzetta")
-      .option(ClickzettaOptions.CZ_ENDPOINT, "jnsxwfyr.api.clickzetta.com")
+      .option(ClickzettaOptions.CZ_ENDPOINT, "jnsxwfyr.api.singdata.com")
       .option(ClickzettaOptions.CZ_USERNAME, "username")
       .option(ClickzettaOptions.CZ_PASSWORD, "paswword")
       .option(ClickzettaOptions.CZ_WORKSPACE, "quick_start")
@@ -282,7 +282,7 @@ os.environ['PYSPARK_SUBMIT_ARGS'] = '--jars 。/Downloads/spark-clickzetta-1.0.0
 if __name__ == "__main__":
     sc = SparkContext("local", "Simple App")
     spark = SQLContext(sc)
-    df=spark.read.format("clickzetta").option("endpoint", "jnsxwfyr.api.clickzetta.com").option("username", "user").option("password", "password").option("workspace", "qucik_start").option("virtualCluster", "default").option("schema", "public").option("table", "sample_movie_data").load()
+    df=spark.read.format("clickzetta").option("endpoint", "jnsxwfyr.api.singdata.com").option("username", "user").option("password", "password").option("workspace", "qucik_start").option("virtualCluster", "default").option("schema", "public").option("table", "sample_movie_data").load()
 
     # Convert DataFrame to RDD and parse as Rating objects
     ratings = df.rdd.map(lambda row: Rating(row.user_id, row.movie_id, row.rating-2.5))

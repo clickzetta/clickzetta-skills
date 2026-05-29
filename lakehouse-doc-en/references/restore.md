@@ -93,9 +93,9 @@ DESC HISTORY change_table;
 +---------+-------------------------+------------+-------------+----------+-----------+-------------------------------+------------------------------------------------------------------------------------+
 | version |          time           | total_rows | total_bytes |   user   | operation |            job_id             |                                                       source_tables                |
 +---------+-------------------------+------------+-------------+----------+-----------+-------------------------------+------------------------------------------------------------------------------------+
-| 3       | 2024-12-27 12:04:20.738 | 5          | 4950        | UAT_TEST | REFRESH   | 2024122712042034961pl5i9617jc | [{"table_name":"dy_base_a","workspace":"qingyun","schema":"public","version":"3"," |
-| 2       | 2024-12-27 12:01:33.349 | 4          | 2501        | UAT_TEST | REFRESH   | 2024122712013303061pl5i9617dk | [{"table_name":"dy_base_a","workspace":"qingyun","schema":"public","version":"2"," |
-| 1       | 2024-12-27 12:01:33.078 | 0          | 0           | UAT_TEST | CREATE    | 2024122712013279961pl5i9616do | [{"table_name":"dy_base_a","workspace":"qingyun","schema":"public"}]               |
+| 3       | 2024-12-27 12:04:20.738 | 5          | 4950        | UAT_TEST | REFRESH   | 2024122712042034961pl5i9617jc | [{"table_name":"dy_base_a","workspace":"example","schema":"public","version":"3"," |
+| 2       | 2024-12-27 12:01:33.349 | 4          | 2501        | UAT_TEST | REFRESH   | 2024122712013303061pl5i9617dk | [{"table_name":"dy_base_a","workspace":"example","schema":"public","version":"2"," |
+| 1       | 2024-12-27 12:01:33.078 | 0          | 0           | UAT_TEST | CREATE    | 2024122712013279961pl5i9616do | [{"table_name":"dy_base_a","workspace":"example","schema":"public"}]               |
 +---------+-------------------------+------------+-------------+----------+-----------+-------------------------------+------------------------------------------------------------------------------------+
 -- Restore to a specified version
 RESTORE TABLE change_table TO TIMESTAMP AS OF '2024-12-27 12:01:33.349';

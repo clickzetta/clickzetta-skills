@@ -75,7 +75,7 @@ SELECT emp_id, emp_name, dept, salary FROM employees_update ORDER BY emp_id;
 | 4 | David | Marketing | 7800 |
 | 5 | Eve | HR | 6000 |
 
-> **Note**: DOUBLE type calculations may have floating-point precision issues (e.g., 13200.000000000002). Use `ROUND(salary, 2)` for formatting. `UPDATE` without `WHERE` updates all rows in the table; use with caution.
+> ⚠️ **Note**: DOUBLE type calculations may have floating-point precision issues (e.g., 13200.000000000002). Use `ROUND(salary, 2)` for formatting. `UPDATE` without `WHERE` updates all rows in the table; use with caution.
 
 ***
 
@@ -101,7 +101,7 @@ LIMIT 2;
 | 3 | Carol | active |
 | 5 | Eve | active |
 
-> **Tip**: Repeat this statement in a loop until `affected rows = 0` to complete the full batch update.
+> 💡 **Tip**: Repeat this statement in a loop until `affected rows = 0` to complete the full batch update.
 
 ***
 
@@ -149,7 +149,7 @@ SELECT COUNT(*) FROM employees_update;
 |----------|
 | 0 |
 
-> **Note**:
+> ⚠️ **Note**:
 > * `TRUNCATE` is not rollback-able (not within Time Travel retention), use with caution.
 > * `TRUNCATE` does not support `WHERE` conditions; it can only clear the entire table.
 > * For conditional clearing, use `DELETE`.
@@ -193,7 +193,7 @@ WHERE emp_id IN (SELECT emp_id FROM salary_adjustments);
 | 1 | Alice | 13700 |
 | 2 | Bob | 10750 |
 
-> **Tip**: For complex related updates, `MERGE INTO` is recommended for clearer syntax.
+> 💡 **Tip**: For complex related updates, `MERGE INTO` is recommended for clearer syntax.
 
 ***
 
@@ -207,7 +207,7 @@ DROP TABLE IF EXISTS employees_update;
 DROP TABLE IF EXISTS salary_adjustments;
 ```
 
-> **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
+> 💡 **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
 
 ***
 

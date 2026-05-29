@@ -85,7 +85,7 @@ INSERT INTO bm25_demo_table VALUES
 ;
 ```
 
-> Note: If data is inserted before index creation, you need to BUILD INDEX for the index to take effect:
+> ⚠️ **Note**: If data is inserted before index creation, you need to BUILD INDEX for the index to take effect:
 >
 > ```
 > BUILD INDEX idx_content_cn_score ON bm25_demo_table;

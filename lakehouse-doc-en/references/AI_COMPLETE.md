@@ -1,157 +1,239 @@
-## AI\_COMPLETE
+# AI_COMPLETE
 
-`AI_COMPLETE` is the core scalar function for generative AI tasks on the Singdata Lakehouse platform. It allows users to directly invoke large language models (LLMs) within the SQL environment, generating responses (completions) based on text prompts or multimodal inputs, thereby enabling tasks such as text completion, translation, sentiment analysis, code generation, and complex reasoning.
+`AI_COMPLETE` is the core scalar function for generative AI tasks on the Singdata Lakehouse platform. It allows you to invoke large language models (LLMs) directly within the SQL environment, generating responses based on text prompts or multimodal inputs, enabling tasks such as text completion, translation, sentiment analysis, code generation, and complex reasoning.
 
-Singdata pushes AI computation down to the storage layer and execution engine, ensuring that data can be intelligently processed within the platform without needing to be transferred to external environments, thereby safeguarding data security while significantly reducing task latency.
+Singdata pushes AI computation down to the storage layer and execution engine, so data can be intelligently processed within the platform without being transferred to external environments — safeguarding data security while significantly reducing task latency.
 
-Users can provide the following types of input:
+> When a task can be accomplished with a dedicated function (such as `AI_TRANSLATE`, `AI_SENTIMENT`, `AI_CLASSIFY`, etc.), prefer the dedicated function — it has built-in prompts optimized for that specific task, producing more stable results at lower cost. Use `AI_COMPLETE` for custom scenarios that dedicated functions cannot cover.
 
-* **Text Prompt**: Provide a prompt in string form, and the model generates a response. See AI\_COMPLETE (Single String).
-* **Single Image and Text Prompt**: Provide one image and one text prompt, and the model generates a response based on both the image and the prompt. See AI\_COMPLETE (Single Image).
+---
 
-### Syntax
+## Syntax
 
-The function syntax depends on the type of input provided by the user:
+`AI_COMPLETE` supports two calling forms:
 
-* AI\_COMPLETE (Single String)
-* AI\_COMPLETE (Single Image)
-
-## AI\_COMPLETE (Single String)
-
-Uses a supported language model to generate a response (completion) based on a text prompt.
-
-### Syntax
-
-sql
+**Text mode**
 
 ```sql
-AI_COMPLETE(<model>,<prompt> [,<model_parameters>][,<response_format>][,<show_details>])
+ai_complete(<model>, <prompt> [, json '{}'])
 ```
 
-This function contains **2 required parameters** and **3 optional parameters**, supporting both positional and named parameter syntax.
+**Image mode**
 
-### Parameter Description
+```sql
+ai_complete(<model>, (<prompt> AS prompt, <image_url> AS image) [, json '{}'])
+```
 
-**Required Parameters**
+---
 
-\`\`（STRING）
+## Parameter Description
 
-Specifies the language model to invoke. Models come from two sources: **Endpoints** in [Model Management](AI_Gateway.md) and **API Connection objects**. In the function's first parameter, different prefixes distinguish the model source.
+### model (required)
 
-**Source 1**: Endpoints in Model Management:
+Specifies the language model to invoke. Two sources are supported:
 
-Model Management is the gateway layer for unified model service management on the Singdata Lakehouse platform. Models registered in the API Gateway can be directly referenced using the `endpoint:` prefix.
+**Source 1: API Gateway Endpoint (recommended)**
 
-**Syntax Format**:
+The platform administrator pre-configures model services in the API Gateway (including provider, version, and authentication credentials). Regular users reference them using the `endpoint:` prefix without needing to know the underlying connection details.
 
-```scheme
+```sql
 'endpoint:<endpoint_name>'
+
+-- Examples
+'endpoint:qwen3-max-preview'
+'endpoint:qwen3.5-plus'
+'endpoint:doubao-seed-2-0-pro-260215'
 ```
 
-**Usage Example**:
+**Source 2: API Connection object**
+
+Users create connection objects themselves via `CREATE API CONNECTION`, suitable for scenarios requiring custom service addresses, authentication keys, or connections to privately deployed models.
 
 ```sql
-SELECT AI_COMPLETE('endpoint:lis_openai_llm','prompt string',GET_PRESIGNED_URL(VOLUME volume_name, '<relative_file_path>', <expiration_time>));
-```
-
-Here, the `lis_openai_llm` model management endpoint is pre-configured by the platform administrator in the API Gateway, containing information such as the model provider, model version, and authentication credentials. Regular users do not need to worry about underlying connection details and can invoke the corresponding model simply by the endpoint name.
-
-***
-
-**Source 2**: API Connection Objects
-
-API Connections are model service connection objects created by users in Lakehouse, suitable for scenarios requiring custom model service addresses, authentication keys, or connections to privately deployed models. After creating a connection object via the `CREATE API CONNECTION` statement, it can be referenced in `AI_COMPLETE`.
-
-**Create Connection Object Syntax**:
-
-sql
-
-```sql
-CREATE API CONNECTION <connection_name>
-    TYPE ai_function
-    PROVIDER = '<provider_name>'
-    BASE_URL = '<service_endpoint_url>'
-    API_KEY = '<your_api_key>';
-```
-
-**Create Connection Object Example**:
-
-```sql
+-- Create a connection object
 CREATE API CONNECTION conn_bailian
     TYPE ai_function
     PROVIDER = 'bailian'
     BASE_URL = 'https://dashscope.aliyuncs.com/api/v1'
     API_KEY = 'sk-xxxxxxxxxxxxxxxxxxxxxxxx';
+
+-- Reference using the connection: prefix
+SELECT ai_complete('conn_bailian:qwen3.5-plus', 'Briefly introduce the basic principles of quantum computing.');
 ```
 
-The meaning of each field is as follows:
+`CREATE API CONNECTION` field descriptions:
 
-`connection_name` is the custom name of the connection object, used to reference it in subsequent `AI_COMPLETE` calls;
+| Field | Description |
+|-------|-------------|
+| `TYPE` | Fixed as `ai_function` |
+| `PROVIDER` | Model provider identifier, e.g. `'bailian'`, `'openai'`, `'anthropic'` |
+| `BASE_URL` | API base address of the model service |
+| `API_KEY` | Authentication key required to call the service |
 
-`TYPE` is fixed as `ai_function`, indicating this connection is used for AI function calls;
+---
 
-`PROVIDER` specifies the model provider identifier, such as `'bailian'` (Alibaba Bailian), `'openai'`, `'anthropic'`, etc.;
+### prompt (required)
 
-`BASE_URL` is the API base address of the model service; `API_KEY` is the authentication key required to call the service.
+The input content to send to the model, of type STRING.
 
-***
-
-**Referencing Connection Objects in AI\_COMPLETE**:
+**Text mode**: pass a string directly:
 
 ```sql
-SELECT AI_COMPLETE('connection:conn_bailian','Please briefly introduce the basic principles of quantum computing.');
+SELECT ai_complete('endpoint:qwen3-max-preview', 'Explain what a vector database is in one sentence');
 ```
 
-**Syntax Format**:
+Dynamic content can be concatenated using `CONCAT` or `||`:
 
-```scheme
-'connection:<connection_object_name>'
+```sql
+SELECT ai_complete(
+    'endpoint:qwen3-max-preview',
+    CONCAT('Summarize the following text in 20 words: ', content)
+) AS summary
+FROM articles;
 ```
 
-###
+**Image mode**: use named tuple syntax to pass both a text prompt and an image URL:
 
-### Examples
-
-**Basic Usage: Single Text Prompt**
-
-```
-SELECT AI_COMPLETE(
-    'endpoint:aliyun-qwen3max',
-    'What is the capital of China?'
+```sql
+SELECT ai_complete(
+    'endpoint:doubao-seed-2-0-pro-260215',
+    ('What is in the image?' AS prompt,
+     GET_PRESIGNED_URL(USER VOLUME, 'images/product.jpg', 36000) AS image)
 );
-
 ```
 
-**Image Recognition**:
+> In image mode, the `image` field cannot be NULL; otherwise the error `invalid type of image field: void` is thrown.
 
-Uses a supported multimodal language model to generate a response (completion) based on a single image and text prompt. This mode is suitable for Visual Question Answering (VQA), image content description, image information extraction, OCR recognition, and other scenarios requiring the model to understand image content.
+---
 
+### options (optional)
+
+Passed using the `json '{}'` literal syntax to control execution behavior and model parameters:
+
+| Parameter key | Type | Description |
+|---------------|------|-------------|
+| `model.params.temperature` | FLOAT | Output randomness, range [0, 2]; lower values produce more deterministic output |
+| `model.params.max_tokens` | INT | Maximum number of output tokens |
+| `model.params.top_p` | FLOAT | Nucleus sampling probability, range (0, 1] |
+| `model.params.enable_thinking` | BOOL | Whether to enable thinking mode; recommended to set to `false` for batch processing |
+| `response.timeout` | STRING | Timeout per request in seconds, e.g. `"60"` |
+| `task.concurrency` | STRING | Concurrency level for batch processing, e.g. `"5"` |
+
+```sql
+-- Disable thinking mode
+SELECT ai_complete(
+    'endpoint:qwen3-max-preview',
+    'What is artificial intelligence? Answer in one sentence',
+    json '{"model.params":{"enable_thinking":false}}'
+) AS result;
+
+-- Combine multiple parameters
+SELECT ai_complete(
+    'endpoint:qwen3-max-preview',
+    question,
+    json '{"model.params":{"enable_thinking":false},"task.concurrency":"5"}'
+) AS answer
+FROM questions;
 ```
-SELECT 
-        a.id, 
-        a.question,
-        a.answer AS standard_answer,
-        -- 1. AI-generated answer
-        ai_complete(
-            'endpoint:doubao-seed-2-0-pro-260215',
-            JSON_OBJECT(
-                'system', 'You are a VQA assistant. Answer based on the image in English. Be extremely concise (1-5 words).',
-                'user', a.question,
-                'images', ARRAY(CONCAT('volume://volumes/datagpt_ws/image_hub/my_images/', LPAD(CAST(a.id AS STRING), 11, '0'), '.jpg'))
-            )
-        ) AS ai_generated_answer,
-        -- 2. Generate image preview URL
-        get_presigned_url(
-            VOLUME lakehouse_ai.image_hub.my_images,
-            LPAD(CAST(a.id AS STRING), 11, '0') || '.jpg',
-            7200  
-        ) AS image_preview_url,
-        -- 3. Image storage path
-        CONCAT('volume://volumes/lakehouse_ai/image_hub/my_images/', LPAD(CAST(a.id AS STRING), 11, '0'), '.jpg') AS image_path
-    FROM 
-        lakehouse_ai.image_hub.evjvqa_annotations_20 AS a
+
+---
+
+## Return Value
+
+Returns a STRING — the response text generated by the model.
+
+- When prompt is `NULL` or an empty string, returns `NULL`
+- When the endpoint does not exist, throws `CZLH-67000: No available endpoints found`
+- When the model format is invalid (missing `endpoint:` or `connection:` prefix), throws `CZLH-65000: Invalid model coordinates`
+
+---
+
+## Usage Examples
+
+### Basic Text Completion
+
+```sql
+SELECT ai_complete('endpoint:qwen3-max-preview', 'What is the capital of China?') AS result;
 ```
 
-Result:
+### Batch Processing Table Data
 
-![](/.topwrite/assets/ai_complete_pic.jpeg)
+```sql
+SELECT
+    id,
+    ai_complete(
+        'endpoint:qwen3-max-preview',
+        question,
+        json '{"model.params":{"enable_thinking":false},"task.concurrency":"5"}'
+    ) AS answer
+FROM questions;
+```
+
+### Dynamic Prompt with CONCAT
+
+```sql
+SELECT
+    product_id,
+    ai_complete(
+        'endpoint:qwen3-max-preview',
+        CONCAT('Write a selling point description of no more than 30 words for the following product: ', product_name)
+    ) AS selling_point
+FROM products;
+```
+
+### Image Description
+
+```sql
+SELECT ai_complete(
+    'endpoint:doubao-seed-2-0-pro-260215',
+    ('What is in the image?' AS prompt,
+     GET_PRESIGNED_URL(USER VOLUME, 'images/product.jpg', 36000) AS image)
+) AS result;
+```
+
+### Image with a Specific Question
+
+```sql
+SELECT ai_complete(
+    'endpoint:doubao-seed-2-0-pro-260215',
+    ('What is the price of this product? Answer in one sentence.' AS prompt,
+     GET_PRESIGNED_URL(USER VOLUME, 'images/product.jpg', 36000) AS image)
+) AS result;
+```
+
+### Batch Image Processing
+
+```sql
+SELECT
+    relative_path,
+    ai_complete(
+        'endpoint:doubao-seed-2-0-pro-260215',
+        ('Describe the product in the image in one sentence.' AS prompt,
+         GET_PRESIGNED_URL(USER VOLUME, relative_path, 36000) AS image),
+        json '{"model.params":{"enable_thinking":false},"task.concurrency":"3"}'
+    ) AS description
+FROM (SHOW USER VOLUME DIRECTORY SUBDIRECTORY 'images/products')
+LIMIT 10;
+```
+
+### Combining with Other AI Functions
+
+```sql
+-- AI_COMPLETE generates text → AI_CLASSIFY categorizes it
+SELECT ai_classify(
+    'endpoint:qwen3.5-plus',
+    ai_complete('endpoint:qwen3-max-preview', 'Write a technology news headline'),
+    ARRAY('Technology', 'Sports', 'Finance', 'Entertainment')
+) AS category;
+```
+
+---
+
+## Notes
+
+- **Model selection**: Image mode requires a model that supports multimodal input (e.g. `doubao-seed-2-0-pro-260215`). Text-only models such as `qwen3-max-preview` do not support image input — passing an image does not cause an error, but the image content is ignored and the response is generated from the text prompt only.
+- **Thinking mode**: The qwen3 model series enables thinking mode by default, which increases latency and token consumption. For batch processing scenarios, it is recommended to disable it via options: `json '{"model.params":{"enable_thinking":false}}'`.
+- **Image field cannot be NULL**: Passing NULL for the `image` field in image mode throws `invalid type of image field: void`. Ensure `GET_PRESIGNED_URL()` returns a valid URL.
+- **NULL and empty strings**: When prompt is `NULL` or an empty string, the function returns `NULL` without error.
+- **Error codes**: A missing endpoint throws `CZLH-67000`; an invalid model format (missing `endpoint:` prefix) throws `CZLH-65000`.
+- **Token limits**: Different models have different context window limits. Inputs exceeding the limit will be truncated or cause an error. Pay attention to input length when processing long text.

@@ -1,4 +1,4 @@
-# Visual Analysis of ClickZetta Data with RATH
+# Visual Analysis of Singdata Data with RATH
 
 ## 1. Introduction to RATH
 
@@ -40,7 +40,7 @@ Main features include:
 
 ## 3. Import Data from Singdata Lakehouse
 
-1. Select Connection type as ClickZetta.
+1. Select Connection type as Singdata.
 
 2. Fill in the connection string in the following format:
    ```
@@ -81,4 +81,4 @@ In RATH, you can easily create various types of visual charts to analyze data. H
 
 ![Visual Analysis Illustration](.topwrite/assets/image_1697462345560.png)
 
-Through the above steps, you can easily use RATH to perform visual analysis on ClickZetta data. Whether discovering patterns, insights, or causal relationships in the data, RATH provides you with powerful support.
+Through the above steps, you can easily use RATH to perform visual analysis on Singdata data. Whether discovering patterns, insights, or causal relationships in the data, RATH provides you with powerful support.

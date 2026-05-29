@@ -42,7 +42,7 @@ In this quick tutorial, we will ingest PDFs/emails/images from an S3 bucket, use
 
 A. Obtain your [Unstructured Serverless API key](https://www.google.com/url?q=https%3A%2F%2Funstructured.io%2Fapi-key-hosted). It provides a 14-day trial with up to 1000 pages per day.
 
-B. Obtain your [Lakehouse account](https://www.yunqi.tech/). It provides a 1-month trial and 200 yuan in credits.
+B. Obtain your [Lakehouse account](https://www.singdata.com/). It provides a 1-month trial and 200 yuan in credits.
 
 C. Create an AWS S3 bucket and populate it with PDF files of your choice. Be sure to record your credentials.
 
@@ -57,7 +57,7 @@ conda activate unstructured
 
 Then select unstructured as the current environment
 
-2. You can contact <qiliang@clickzetta.com> to obtain unstructured_ingest-0.5.5-py3-none-any.whl.
+2. You can contact <qiliang@singdata.com> to obtain unstructured_ingest-0.5.5-py3-none-any.whl.
 
 You can [get the source code from the GitHub repository](https://github.com/yunqiqiliang/clickzetta_quickstart/blob/main/Zettapark/Unstructured_data_ETL_from_S3_to_Singdata_Lakehouse.ipynb).
 
@@ -77,7 +77,11 @@ import warnings
 logging.basicConfig(level=logging.ERROR)
 warnings.filterwarnings("ignore", category=UserWarning)
 
-# Set drop_tables to True if you want to delete tables
+```
+
+Set drop_tables to True if you want to delete tables:
+
+```python
 drop_tables = True
 ```
 
@@ -131,14 +135,22 @@ Before building the unstructured data pre-processing pipeline, let's first creat
 For an example of the schema, refer to the [Unstructured documentation](https://docs.unstructured.io/api-reference/ingest/destination-connector/singlestore#singlestore-table-schema). If you use the schema from the documentation, ensure that the embedding `dims` value matches the number of dimensions produced by the embedding model you choose to use. In this example, it is set to 768, but your embedding model may produce vectors of different dimensions.
 
 ```python
-# Define the table names for storing data in the Lakehouse.
+```
+
+Define the table names for storing data in the Lakehouse.:
+
+```python
 raw_table_name = "raw_elements"
 silver_table_name = "elements"
 embeddings_dimensions = 768
 ```
 
 ```python
-# Get connection parameters for connecting to the Lakehouse.
+```
+
+Get connection parameters for connecting to the Lakehouse.:
+
+```python
 _username = os.getenv("cz_username")
 _password = os.getenv("cz_password")
 _service = os.getenv("cz_service")
@@ -169,7 +181,11 @@ Data Consistency: Reducing the number of data copies from three to one improves 
 Overall, these indexes ensure that searches and retrievals on text and embedding fields are performed efficiently, supporting fast and accurate query results, which is critical for developing effective and efficient RAG applications.
 
 ```python
-# Define the schemas for storing data in the Lakehouse.
+```
+
+Define the schemas for storing data in the Lakehouse.:
+
+```python
 raw_table_ddl = f"""
 CREATE TABLE IF NOT EXISTS {_schema}.{raw_table_name} (
     id STRING, -- Auto-increment sequence
@@ -288,7 +304,11 @@ FROM {_schema}.{raw_table_name};
 ```
 
 ```python
-# Define a function to connect to the Lakehouse.
+```
+
+Define a function to connect to the Lakehouse.:
+
+```python
 from clickzetta.connector import connect
 import pandas as pd
 def get_connection(password, username, service, instance, workspace, schema, vcluster):
@@ -304,12 +324,20 @@ def get_connection(password, username, service, instance, workspace, schema, vcl
 ```
 
 ```python
-# Create a connection to the Lakehouse.
+```
+
+Create a connection to the Lakehouse.:
+
+```python
 conn = get_connection(password=_password, username=_username, service=_service, instance=_instance, workspace=_workspace, schema=_schema, vcluster=_vcluster)
 ```
 
 ```python
-# Function to execute SQL statements
+```
+
+Function to execute SQL statements:
+
+```python
 def excute_sql(conn,sql_statement: str):
     with conn.cursor() as cur:
         stmt = sql_statement
@@ -325,7 +353,11 @@ if drop_tables:
 ```
 
 ```python
-# Create tables in the Lakehouse
+```
+
+Create tables in the Lakehouse:
+
+```python
 excute_sql(conn, raw_table_ddl)
 excute_sql(conn, silver_table_ddl)
 ```
@@ -425,7 +457,11 @@ pipeline.run()
 ### Cleanse/Transform RAW Table and Insert into Silver Table
 
 ```python
-# You can execute more SQL statements to cleanse and transform data before inserting into the Silver table.
+```
+
+You can execute more SQL statements to cleanse and transform data before inserting into the Silver table.:
+
+```python
 excute_sql(conn, clean_transformation_data_sql)
 ```
 
@@ -519,7 +555,11 @@ def retrieve_documents(conn, query: str, num_results: int = 5):
 ^
 
 ```python
-# query_text = "Harmon, Dave Scott, Bill Schmidt, Chris Teumer • Gain an action plan to hiring top IT talent • Understand how to best position yourself in the market to gain top talent • Learn why CIOs need to pay attention to hiring IT talent Register The Gartner 2025 Technology Adoption Roadmap for Infrastructure & Operations (I&O) Wednesday, February 19, 2025 EST: 10:00 a.m. | GMT: 15:00 Presented by: Ajeeta Malhotra and Amol Nadkarni • Discover why 66% of surveyed technologies are"
+```
+
+query_text = "Harmon, Dave Scott, Bill Schmidt, Chris Teumer • Gain an action plan to hiring top IT talent • Understand how to best position yourself in the market to gain top talent • Learn why CIOs need to pay attention to hiring IT talent Register The Gartner 2025 Technology Adoption Roadmap for Infrastructure & Operations (I&O) Wednesday, February 19, 2025 EST: 10:00 a.m. | GMT: 15:00 Presented by: Ajeeta Malhotra and Amol Nadkarni • Discover why 66% of surveyed technologies are":
+
+```python
 query_text = "What is gartner leadership vision for digital tech?"
 retrieve_documents_df = retrieve_documents(conn, query_text)
 retrieve_documents_df
@@ -627,7 +667,11 @@ import torch
 import numpy as np
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
-# Define the reranking function
+```
+
+Define the reranking function:
+
+```
 def rerank_texts(query, texts, model_name="BAAI/bge-reranker-v2-m3", normalize=True):
     """
     Reranks a list of texts based on their relevance to a given query using a specified reranking model.
@@ -674,13 +718,25 @@ def rerank_texts(query, texts, model_name="BAAI/bge-reranker-v2-m3", normalize=T
 ```
 
 ```python
-# Example usage
-# query = "Which session is presented by Ajeeta Malhotra and Amol Nadkarni?"
+```
+
+Example usage:
+
+```python
+```
+
+query = "Which session is presented by Ajeeta Malhotra and Amol Nadkarni?":
+
+```python
 query = "What is gartner leadership vision for digital tech?"
 sorted_texts, sorted_scores = rerank_texts(query, merged_df["text"].tolist())
 
 
-# Update DataFrame with reranked texts and scores
+```
+
+Update DataFrame with reranked texts and scores:
+
+```python
 merged_df["reranked_text"] = sorted_texts
 merged_df["rerank_score"] = sorted_scores
 ```
@@ -692,7 +748,11 @@ merged_df
 ![](.topwrite/assets/image_1742442827200.png)
 
 ```python
-# Get the first row of the DataFrame, which has the highest reranking score
+```
+
+Get the first row of the DataFrame, which has the highest reranking score:
+
+```python
 first_row_reranked_text = merged_df.iloc[0]['reranked_text']
 print(first_row_reranked_text)
 ```

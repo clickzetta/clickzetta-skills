@@ -1,14 +1,14 @@
-# GROPU_BITMAP_XOR 
+# GROUP_BITMAP_XOR 
 
 ## Introduction
 
-The `GROPU_BITMAP_XOR` function is used to perform a bitwise XOR operation on a set of Bitmap data and returns the final result. This function is highly efficient when dealing with large-scale datasets, especially in scenarios where XOR operations on multiple Bitmaps are required. It can directly return the final Bitmap result without intermediate states.
+The `GROUP_BITMAP_XOR` function is used to perform a bitwise XOR operation on a set of Bitmap data and returns the final result. This function is highly efficient when dealing with large-scale datasets, especially in scenarios where XOR operations on multiple Bitmaps are required. It can directly return the final Bitmap result without intermediate states.
 
 
 ## Syntax
 
 ```sql
-groupBitmapXor(bitmap)
+group_bitmap_xor(bitmap)
 ```
 
 ## Parameters
@@ -28,7 +28,7 @@ Example 1: Computing the Bitwise XOR of Multiple Bitmaps
 Assume there is a table `t` with a column `v` that stores multiple arrays. Now, we need to compute the result of the bitwise XOR operation on these arrays.
 
 ```sql
-SELECT groupBitmapXor(bitmapBuild(v)) AS res
+SELECT group_bitmap_xor(bitmapBuild(v)) AS res
 FROM VALUES (array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)), (array(6, 7, 8, 9, 10, 11, 12, 13, 14, 15)), (array(2, 4, 6, 8, 10, 12)) AS t(v);
 +-----+
 | res |
@@ -42,11 +42,11 @@ Example 2: Real-world Example
 Assume there is a table `pv_bitmap` with a column `user_id` that stores Bitmap data. Now, we need to compute the result of the bitwise XOR operation on these Bitmaps.
 
 ```sql
-SELECT page, bitmap_to_string(groupBitmapXor(user_id)) AS res
+SELECT page, bitmap_to_string(group_bitmap_xor(user_id)) AS res
 FROM pv_bitmap
 GROUP BY page;
 +------+-----------------------------------------------+
-| page | bitmap_to_string(groupBitmapXor(`user_id`))   |
+| page | bitmap_to_string(group_bitmap_xor(`user_id`))   |
 +------+-----------------------------------------------+
 | m    | 1,3,6,8,15                                    |
 +------+-----------------------------------------------+

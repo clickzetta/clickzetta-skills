@@ -35,7 +35,7 @@ group by ${dims}
 
 In a metric template, multiple metrics can be defined. Each metric can specify multiple aliases.
 
-> Note: In the system Default Domain, duplicate metrics and aliases are allowed; in other user-created Domains, duplicate metric names (including aliases) are not allowed.
+> ⚠️ **Note**: In the system Default Domain, duplicate metrics and aliases are allowed; in other user-created Domains, duplicate metric names (including aliases) are not allowed.
 
 ### **Analysis Methods**:
 

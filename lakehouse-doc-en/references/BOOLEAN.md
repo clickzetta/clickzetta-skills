@@ -1,6 +1,6 @@
 # BOOLEAN
 
-The `BOOLEAN` type is used to represent logical truth values, with possible values of `TRUE`, `FALSE`, or `NULL`. It is commonly used in conditional judgments, logical operations, and query filtering.
+The `BOOLEAN` type represents logical truth values, with possible values of `TRUE`, `FALSE`, or `NULL`. Lakehouse uses three-valued logic: NULL means "unknown" and is not equivalent to FALSE.
 
 ## Syntax
 
@@ -8,77 +8,99 @@ The `BOOLEAN` type is used to represent logical truth values, with possible valu
 BOOLEAN
 ```
 
-## Constant Values
-
-```Plain
-TRUE | FALSE
-```
-
-## Type Conversion
-
-| Input Value | Conversion Result |
-|-------------|-------------------|
-| `1` | `TRUE` |
-| `0` | `FALSE` |
-| `'true'`, `'TRUE'` | `TRUE` |
-| `'false'`, `'FALSE'` | `FALSE` |
-| `NULL` | `NULL` |
+Literals: `TRUE` / `FALSE` (case-insensitive)
 
 ## Examples
 
-1. Use BOOLEAN literals:
+### Literals and Basic Operations
 
-   ```SQL
-   SELECT TRUE, FALSE;
-   ```
+```SQL
+SELECT TRUE, FALSE, NOT TRUE, NOT FALSE;
+```
 
-   Returns: `true`, `false`
+| true | false | (NOT true) | (NOT false) |
+|------|-------|------------|-------------|
+| true | false | false | true |
 
-2. Convert integers to BOOLEAN:
+### Three-Valued Logic (NULL in Operations)
 
-   ```SQL
-   SELECT CAST(1 AS BOOLEAN), CAST(0 AS BOOLEAN);
-   ```
+```SQL
+SELECT
+    TRUE  AND NULL  AS t_and_null,
+    FALSE AND NULL  AS f_and_null,
+    TRUE  OR  NULL  AS t_or_null,
+    FALSE OR  NULL  AS f_or_null;
+```
 
-   Returns: `true`, `false`
+| t_and_null | f_and_null | t_or_null | f_or_null |
+|------------|------------|-----------|-----------|
+| null | false | true | null |
 
-3. Convert strings to BOOLEAN:
+- `FALSE AND NULL` → `FALSE`: regardless of what NULL represents, the result is always FALSE
+- `TRUE OR NULL` → `TRUE`: regardless of what NULL represents, the result is always TRUE
+- In other cases the result depends on the unknown value and returns NULL
 
-   ```SQL
-   SELECT CAST('true' AS BOOLEAN), CAST('false' AS BOOLEAN), CAST('FALSE' AS BOOLEAN);
-   ```
+### Type Conversion
 
-   Returns: `true`, `false`, `false`
+**Numeric → BOOLEAN**
 
-4. Convert BOOLEAN to integers:
+```SQL
+SELECT CAST(1 AS BOOLEAN), CAST(0 AS BOOLEAN), CAST(2 AS BOOLEAN);
+```
 
-   ```SQL
-   SELECT CAST(TRUE AS INT), CAST(FALSE AS INT);
-   ```
+| CAST(1 AS boolean) | CAST(0 AS boolean) | CAST(2 AS boolean) |
+|--------------------|--------------------|--------------------|
+| true | false | true |
 
-   Returns: `1`, `0`
+`0` converts to `FALSE`; all other non-zero integers convert to `TRUE`.
 
-5. NULL value handling:
+**String → BOOLEAN**
 
-   ```SQL
-   SELECT CAST(NULL AS BOOLEAN);
-   ```
+```SQL
+SELECT
+    CAST('true'  AS BOOLEAN),
+    CAST('false' AS BOOLEAN),
+    CAST('yes'   AS BOOLEAN),
+    CAST('no'    AS BOOLEAN),
+    CAST('t'     AS BOOLEAN),
+    CAST('f'     AS BOOLEAN),
+    CAST('1'     AS BOOLEAN);
+```
 
-   Returns: `NULL`
+| true | false | yes→true | no→false | t→true | f→false | 1→true |
+|------|-------|----------|----------|--------|---------|--------|
+| true | false | true | false | true | false | true |
 
-6. Three-valued logic (NULL in logical operations):
+Supported strings (case-insensitive): `true`/`false`, `yes`/`no`, `t`/`f`, `1`/`0`. All other strings convert to NULL.
 
-   ```SQL
-   SELECT TRUE AND NULL, FALSE AND NULL, TRUE OR NULL, FALSE OR NULL;
-   ```
+**BOOLEAN → Other Types**
 
-   Returns: `NULL`, `false`, `true`, `NULL`
+```SQL
+SELECT CAST(TRUE AS INT), CAST(FALSE AS INT),
+       CAST(TRUE AS STRING), CAST(FALSE AS STRING);
+```
+
+| CAST(true AS int) | CAST(false AS int) | CAST(true AS string) | CAST(false AS string) |
+|-------------------|--------------------|----------------------|-----------------------|
+| 1 | 0 | true | false |
+
+### Using BOOLEAN in a WHERE Clause
+
+```SQL
+SELECT * FROM t WHERE is_active;          -- equivalent to WHERE is_active = TRUE
+SELECT * FROM t WHERE NOT is_active;      -- equivalent to WHERE is_active = FALSE
+SELECT * FROM t WHERE is_active IS NULL;  -- filter NULL rows
+```
+
+The WHERE clause returns only rows where the condition evaluates to `TRUE`; both `FALSE` and `NULL` are filtered out.
 
 ## Notes
 
-- BOOLEAN supports three-valued logic: `TRUE`, `FALSE`, `NULL`. NULL means "unknown" and is not equivalent to FALSE.
-- `FALSE AND NULL` returns `FALSE` (because regardless of what NULL represents, the result is always FALSE).
-- `TRUE OR NULL` returns `TRUE` (because regardless of what NULL represents, the result is always TRUE).
-- `TRUE AND NULL` and `FALSE OR NULL` return `NULL` (the result depends on the unknown value).
-- Arbitrary strings cannot be directly converted to BOOLEAN. Only `'true'` and `'false'` (case-insensitive) can be converted; all other string conversions result in NULL.
-- In a WHERE clause, only rows where the condition evaluates to `TRUE` are returned; both `FALSE` and `NULL` are filtered out.
+- BOOLEAN does not support comparison operators (`>`, `<`); only `=`, `!=`, `IS NULL`, and `IS NOT NULL` are supported.
+- In a WHERE clause, `NULL` rows are filtered out. Use `IS NULL` to handle them explicitly.
+- Converting BOOLEAN to DATE, TIMESTAMP, or other time types is not supported.
+
+## Related Documentation
+
+- [Data Types](data-type.md)
+- [Data Type Conversion](datatype-conversion.md)

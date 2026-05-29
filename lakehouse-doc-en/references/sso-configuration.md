@@ -15,7 +15,7 @@ This document is intended to guide you step-by-step through the configuration of
   * **SAML 2.0**: An XML-based identity assertion protocol that transmits user identity information via an Assertion.
   * **OAuth 2.0 / OpenID Connect (OIDC**): OAuth provides an authorization framework, while OIDC adds an identity layer using a JWT-formatted ID Token to represent user identity.
 
-## Relationship Between ClickZetta and the Customer’s IdP
+## Relationship Between Singdata and the Customer’s IdP
 
 * Register the Lakehouse application in the IdP (provide callback URL/ACS, Entity ID, signing or encryption certificates).
 * Enter the parameters provided by the IdP into the Lakehouse platform.

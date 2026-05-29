@@ -6,30 +6,59 @@
 
 If your environment supports MCP (Model Context Protocol) tools, you can add an [MCP server](LakehouseMCPServer.md) via the command line:
 
+Add an HTTP-type MCP server:
+
 ```bash
-# Add an HTTP-type MCP server
-Datus> .mcp add --transport http singdata_mcp_http http://localhost:8002/mcp
+Datus> .mcp add --transport http clickzetta_mcp_http http://localhost:8002/mcp
 
-# Or add an SSE-type MCP server
-Datus> .mcp add --transport sse singdata_mcp_sse http://localhost:8003/sse
+```
 
-# View the list of added MCP servers
+Or add an SSE-type MCP server:
+
+```bash
+Datus> .mcp add --transport sse clickzetta_mcp_sse http://localhost:8003/sse
+
+```
+
+View the list of added MCP servers:
+
+```bash
 Datus> .mcp list
 
-# Check MCP server connection status
-Datus> .mcp check singdata_mcp_http
+```
 
-# Call an MCP tool (format: server_name.tool_name; check specific tool names via .mcp check)
-Datus> .mcp call singdata_mcp_http.<tool_name>
+Check MCP server connection status:
 
-# Configure tool filters (optional)
-Datus> .mcp filter set singdata_mcp_http --allowed tool1,tool2 --enabled true
+```bash
+Datus> .mcp check clickzetta_mcp_http
 
-# View tool filter configuration
-Datus> .mcp filter get singdata_mcp_http
+```
 
-# Remove an MCP server (if needed)
-Datus> .mcp remove singdata_mcp_http
+Call an MCP tool (format: server_name.tool_name; check specific tool names via .mcp check):
+
+```bash
+Datus> .mcp call clickzetta_mcp_http.<tool_name>
+
+```
+
+Configure tool filters (optional):
+
+```bash
+Datus> .mcp filter set clickzetta_mcp_http --allowed tool1,tool2 --enabled true
+
+```
+
+View tool filter configuration:
+
+```bash
+Datus> .mcp filter get clickzetta_mcp_http
+
+```
+
+Remove an MCP server (if needed):
+
+```bash
+Datus> .mcp remove clickzetta_mcp_http
 ```
 
 **MCP Command Reference**:
@@ -47,17 +76,30 @@ Datus> .mcp remove singdata_mcp_http
 
 After adding an MCP server, it is recommended to use MCP tools through a subagent, which allows you to select the desired tools during the addition process:
 
+Add a subagent (launches interactive wizard):
+
 ```bash
-# Add a subagent (launches interactive wizard)
 Datus> .subagent add
 
-# View all configured subagents
+```
+
+View all configured subagents:
+
+```bash
 Datus> .subagent list
 
-# Build a knowledge base for a subagent (optional)
+```
+
+Build a knowledge base for a subagent (optional):
+
+```bash
 Datus> .subagent bootstrap agent_name
 
-# Remove a subagent (if needed)
+```
+
+Remove a subagent (if needed):
+
+```bash
 Datus> .subagent remove agent_name
 ```
 
@@ -71,7 +113,7 @@ Datus> .subagent remove agent_name
 **When adding a subagent, set the following**:
 
 ```
-agent_description: Singdata Lakehouse assistant with MCP tool integration
+agent_description: ClickZetta Lakehouse assistant with MCP tool integration
 ```
 
 ```
@@ -82,7 +124,7 @@ rules:
         format
       - For SQL generation requests: provide executable statements with explanations
         in JSON format
-      - Use MCP tools for instance switching, job history, system operations, etc
+      - Use MCP tools for instance switching, job history, system operations,etc
       - When users mention "instance switching", "job history", or similar operations
         - call MCP tools
       - Prefer specialized analysis tools over basic data collection tools when available

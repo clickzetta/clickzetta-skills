@@ -124,7 +124,7 @@ ORDER BY dept, pct_rank DESC;
 | Grace | HR | 90 | 0 |
 | Henry | HR | 85 | 1 |
 
-> **Tip**: A smaller `PERCENT_RANK` value indicates a higher ranking (0 is the top rank).
+> 💡 **Tip**: A smaller `PERCENT_RANK` value indicates a higher ranking (0 is the top rank).
 
 ***
 
@@ -157,7 +157,7 @@ ORDER BY dept, score DESC;
 | Grace | HR | 90 | NULL | NULL |
 | Henry | HR | 85 | 90 | -5 |
 
-> **Note**: The first row's `LAG` returns `NULL`, which may display as `nan` for numeric values, but `IS NULL` checks remain valid.
+> ⚠️ **Note**: The first row's `LAG` returns `NULL`, which may display as `nan` for numeric values, but `IS NULL` checks remain valid.
 
 ***
 
@@ -221,7 +221,7 @@ ORDER BY dept;
 | HR | 87.5 | 86.25 | 88.75 | 85 | 90 |
 | Marketing | 88 | 83 | 90 | 78 | 92 |
 
-> **Tip**: The `PERCENTILE` function supports passing an array parameter to compute multiple quantiles at once, e.g., `PERCENTILE(score, ARRAY(0.25, 0.5, 0.75))`.
+> 💡 **Tip**: The `PERCENTILE` function supports passing an array parameter to compute multiple quantiles at once, e.g., `PERCENTILE(score, ARRAY(0.25, 0.5, 0.75))`.
 
 ***
 
@@ -234,7 +234,7 @@ After completing ranking analysis verification, it is recommended to clean up te
 DROP TABLE IF EXISTS performance;
 ```
 
-> **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
+> 💡 **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
 
 ***
 

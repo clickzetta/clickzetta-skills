@@ -6,4 +6,3 @@
 
 [Continuously Importing Kafka Data Using Pipe](pipe-kafka.md)
 
-^

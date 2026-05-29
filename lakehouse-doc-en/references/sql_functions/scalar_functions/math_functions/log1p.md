@@ -27,7 +27,6 @@ Result:
    ```sql
    SELECT LOG1P(0.1), LOG1P(0.01), LOG1P(0.001);
    ```
-## Result: {#result}
 
 Result:
    ```

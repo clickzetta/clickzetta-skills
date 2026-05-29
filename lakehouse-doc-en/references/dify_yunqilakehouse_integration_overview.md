@@ -85,20 +85,36 @@ Based on in-depth analysis of the existing Dify Provider ecosystem, the Singdata
 **Traditional Separated Approach**:
 
 ```Python
-# Vector search: Qdrant/Milvus
+```
+
+Vector search: Qdrant/Milvus:
+
+```Python
 vector_results = qdrant_client.search(vector=query_vector, limit=top_k)
 
-# Full-text search: requires Elasticsearch
+```
+
+Full-text search: requires Elasticsearch:
+
+```Python
 text_results = elasticsearch.search(query=text_query)
 
-# Hybrid search: requires application-level fusion
+```
+
+Hybrid search: requires application-level fusion:
+
+```Python
 combined_results = merge_and_rank(vector_results, text_results)
 ```
 
 **Singdata Lakehouse Unified Approach**:
 
 ```Python
-# Vector search - HNSW index
+```
+
+Vector search - HNSW index:
+
+```Python
 vector_results = client.execute("""
     SELECT content, metadata, 
            COSINE_DISTANCE(vector, CAST(? AS VECTOR(1536))) as score
@@ -106,7 +122,11 @@ vector_results = client.execute("""
     ORDER BY score LIMIT ?
 """, [query_vector, top_k])
 
-# Full-text search - inverted index (Chinese word segmentation)
+```
+
+Full-text search - inverted index (Chinese word segmentation):
+
+```Python
 text_results = client.execute("""
     SELECT content, metadata, SCORE(content) as score
     FROM dataset_table 
@@ -114,7 +134,11 @@ text_results = client.execute("""
     ORDER BY score DESC LIMIT ?
 """, [text_query, top_k])
 
-# SQL Like search - fallback option
+```
+
+SQL Like search - fallback option:
+
+```Python
 like_results = client.execute("""
     SELECT content, metadata, 0.5 as score
     FROM dataset_table 
@@ -122,7 +146,11 @@ like_results = client.execute("""
     LIMIT ?
 """, [f"%{text_query}%", top_k])
 
-# Hybrid search - unified single SQL processing
+```
+
+Hybrid search - unified single SQL processing:
+
+```Python
 hybrid_results = client.execute("""
     SELECT content, metadata,
            (COSINE_DISTANCE(vector, CAST(? AS VECTOR(1536))) * 0.7 + 
@@ -142,18 +170,34 @@ hybrid_results = client.execute("""
 4\. **Provider Configuration Cross-Cloud Compatibility**
 
 ```Python
-# Traditional separated Provider approach: cross-cloud migration requires modifying multiple Provider configs
-# Migrating from AWS S3 to Alibaba Cloud OSS
+```
+
+Traditional separated Provider approach: cross-cloud migration requires modifying multiple Provider configs:
+
+```Python
+```
+
+Migrating from AWS S3 to Alibaba Cloud OSS:
+
+```Python
 STORAGE_TYPE = 's3'          # needs to be changed to 'aliyun-oss'
 AWS_ACCESS_KEY = '...'       # needs to be changed to ALIYUN_OSS_ACCESS_KEY
 AWS_SECRET_KEY = '...'       # needs to be changed to ALIYUN_OSS_SECRET_KEY
 VECTOR_STORE = 'qdrant'      # Vector Provider may also need adjustment
 
-# Singdata unified Provider approach: Volume abstraction layer shields cloud storage differences
-STORAGE_TYPE = 'singdata-volume'  # unchanged across clouds
-VECTOR_STORE = 'singdata'         # unchanged across clouds
+```
+
+Singdata unified Provider approach: Volume abstraction layer shields cloud storage differences:
+
+```Python
+STORAGE_TYPE = 'clickzetta-volume'  # unchanged across clouds
+VECTOR_STORE = 'clickzetta'         # unchanged across clouds
 CLICKZETTA_VOLUME_TYPE = 'user'     # unchanged across clouds
-# Singdata Provider backend auto-adapts to underlying cloud storage
+```
+
+Singdata Provider backend auto-adapts to underlying cloud storage:
+
+```Python
 ```
 
 ^

@@ -1,270 +1,344 @@
-#### WORKSPACES View
+# Information Schema (Instance Level)
 
-Records detailed information of WORKSPACE
+The instance-level Information Schema stores metadata for the entire instance, including object information across all workspaces, user permissions, and billing usage. Access it via `sys.information_schema.<view_name>`.
 
-| COLUMN NAME            | DATA TYPE           | DESCRIPTION                         |
-| ---------------------- | ------------------- | ----------------------------------- |
-| WORKSPACE\_ID          | STRING              | Workspace ID                        |
-| WORKSPACE\_NAME        | STRING              | Name of the workspace               |
-| WORKSPACE\_CREATOR     | STRING              | Owner of the workspace              |
-| WORKSPACE\_CREATOR\_ID | STRING              | Account ID of the workspace owner   |
-| WORKSPACE\_STORAGE     | BIGINT              | Workspace storage status, excluding external tables and external data lakes, only internal data lakes and table storage are counted |
-| CREATE\_TIME           | TIMESTAMP           | Workspace creation time             |
-| LAST\_MODIFY\_TIME     | TIMESTAMP           | Workspace modification time         |
-| COMMENT                | STRING              | Workspace comment information       |
-| DELETE\_TIME           | TIMESTAMP           | Workspace deletion time             |
-| PROPERTIES             | MAP\<STRING,STRING> | All set PROPERTIES are recorded in this parameter |
+```sql
+-- Example: list all workspaces in the instance
+SELECT workspace_name, create_time FROM sys.information_schema.workspaces;
 
-#### SCHEMAS View
+-- Example: list all schemas across workspaces
+SELECT catalog_name, schema_name, type FROM sys.information_schema.schemas;
+```
 
-Records detailed information of SCHEMA
-**Field Details**
+## WORKSPACES
 
-| COLUMN NAME         | DATA TYPE           | DESCRIPTION            |
-| ------------------- | ------------------- | ---------------------- |
-| CATALOG\_NAME       | STRING              | Name of the current WORKSPACE |
-| SCHEMA\_ID          | STRING              | SCHEMA ID              |
-| SCHEMA\_NAME        | STRING              | Name of the SCHEMA     |
-| TYPE                | STRING              | Enum values EXTERNAL, MANAGED |
-| SCHEMA\_CREATOR     | STRING              | Account name of the database owner |
-| SCHEMA\_CREATOR\_ID | STRING              | Account ID of the database owner   |
-| CREATE\_TIME        | TIMESTAMP           | Database creation time  |
-| LAST\_MODIFY\_TIME  | TIMESTAMP           | Database modification time |
-| COMMENT             | STRING              | Comment information when creating the database |
-| DELETE\_TIME        | TIMESTAMP           | Database deletion time  |
-| PROPERTIES          | MAP\<STRING,STRING> | All set PROPERTIES will be recorded in this parameter |
+Records information about all workspaces in the instance.
 
+| Column | Type | Description |
+|--------|------|-------------|
+| `workspace_id` | BIGINT | Workspace ID |
+| `workspace_name` | STRING | Workspace name |
+| `workspace_creator` | STRING | Creator account name |
+| `workspace_creator_id` | BIGINT | Creator account ID |
+| `create_time` | TIMESTAMP_LTZ | Creation time |
+| `last_modify_time` | TIMESTAMP_LTZ | Last modification time |
+| `delete_time` | TIMESTAMP_LTZ | Deletion time (NULL if not deleted) |
+| `comment` | STRING | Comment |
+| `properties` | MAP\<STRING,STRING\> | Properties set at creation |
 
-#### TABLES View
+## SCHEMAS
 
+Records schema information across all workspaces in the instance.
 
-Each table in the current WORKSPACE is displayed in one row
+| Column | Type | Description |
+|--------|------|-------------|
+| `catalog_name` | STRING | Name of the workspace the schema belongs to |
+| `schema_id` | BIGINT | Schema ID |
+| `schema_name` | STRING | Schema name |
+| `type` | STRING | Schema type, e.g. `MANAGED`, `SHARED`, `EXTERNAL` |
+| `schema_creator` | STRING | Creator account name |
+| `schema_creator_id` | BIGINT | Creator account ID |
+| `create_time` | TIMESTAMP_LTZ | Creation time |
+| `last_modify_time` | TIMESTAMP_LTZ | Last modification time |
+| `delete_time` | TIMESTAMP_LTZ | Deletion time (NULL if not deleted) |
+| `comment` | STRING | Comment |
+| `properties` | MAP\<STRING,STRING\> | Properties set at creation |
 
+## TABLES
 
-| COLUMN NAME        | DATA TYPE           | DESCRIPTION                                                                                                                                                                                                                                                                                                                        |
-| ------ | --- | ------------ |
-| TABLE\_CATALOG     | STRING              | Name of the current WORKSPACE                                                                                                                                                                                                                                                                                                                     |
-| TABLE\_CATALOG\_ID | STRING              | ID of the WORKSPACE                                                                                                                                                                                                                                                                                                                       |
-| TABLE\_SCHEMA      | STRING              | SCHEMA to which the current TABLE belongs                                                                                                                                                                                                                                                                                                                   |
-| TABLE\_SCHEMA\_ID  | STRING              | ID of the database corresponding to the table                                                                                                                                                                                                                                                                                                                          |
-| TABLE\_NAME        | STRING              | Table name                                                                                                                                                                                                                                                                                                                                |
-| TABLE\_ID          | STRING              | Table ID                                                                                                                                                                                                                                                                                                                                |
-| TABLE\_CREATOR     | STRING              | Table owner                                                                                                                                                                                                                                                                                                                              |
-| TABLE\_CREATOR\_ID | STRING              | Table creator ID                                                                                                                                                                                                                                                                                                                             |
-| TABLE\_TYPE        | STRING              | EXTERNAL TABLE: External table VIRTUAL\_VIEW: View MATERIALIIZED VIEW: Materialized view MANAGED\_TABLE: Standard table                                                                                                                                                                                                                                                     |
-| ROW\_COUNT         | BIGINT              | Number of rows, MATERIALIZED VIEW shows the corresponding number of rows. When the TABLE's ROW COUNT is NULL, it means it cannot be counted. The situations where it cannot be counted include:&#XA;1. Data written in real-time includes PRIMARY KEY tables. Since the data is constantly changing, the data in the MEMORY TABLE cannot be counted.&#XA;2. Most UPDATE and DELETE operations can usually be counted, but real-time written partition tables may not be counted after performing UPDATE/DELETE because the request does not carry information on how many rows were deleted at the time of deletion submission.&#XA;3. Deleting partitions with INSERT OVERWRITE PARTITION and TRUNCATE PARTITION, the request does not carry information on how many rows were deleted, so it cannot be recorded temporarily.&#XA;&#XA; |
-| BYTES              | BIGINT              | Space occupied, VIEW shows NULL, MATERIALIZED VIEW shows the corresponding size                                                                                                                                                                                                                                                                                       |
-| CREATE\_TIME       | TIMESTAMP           | Table creation time                                                                                                                                                                                                                                                                                                                              |
-| LAST\_MODIFY\_TIME | TIMESTAMP           | Table modification time                                                                                                                                                                                                                                                                                                                              |
-| DATA\_LIFECYCLE    | BIGINT              | Lifecycle                                                                                                                                                                                                                                                                                                                               |
-| IS\_PARTITIONED    | BOOLEAN             | Whether it is a partitioned table                                                                                                                                                                                                                                                                                                                             |
-| IS\_CLUSTERED      | BOOLEAN             | Whether it is a clustered table                                                                                                                                                                                                                                                                                                                             |
-| COMMENT            | STRING              | Table comment information                                                                                                                                                                                                                                                                                                                              |
-| DELETE\_TIME       | TIMESTAMP           | Deletion time, NULL if not deleted                                                                                                                                                                                                                                                                                                                     |
-| DATA\_LIFECYCLE    | INT                 | Set lifecycle, if not set it shows NULL representing permanent, if set it will show the corresponding time                                                                                                                                                                                                                                                                                                |
-| PROPERTIES         | MAP\<STRING,STRING> | All set PROPERTIES will be recorded in this parameter                                                                                                                                                                                                                                                                                                             |
+Records table information across all workspaces in the instance.
 
+| Column | Type | Description |
+|--------|------|-------------|
+| `table_catalog` | STRING | Name of the workspace the table belongs to |
+| `table_catalog_id` | BIGINT | Workspace ID |
+| `table_schema` | STRING | Schema name |
+| `table_schema_id` | BIGINT | Schema ID |
+| `table_name` | STRING | Table name |
+| `table_id` | BIGINT | Table ID |
+| `table_creator` | STRING | Creator account name |
+| `table_creator_id` | BIGINT | Creator account ID |
+| `table_type` | STRING | Table type, e.g. `MANAGED_TABLE`, `DYNAMIC_TABLE`, `MATERIALIZED_VIEW`, `VIRTUAL_VIEW`, `SEMANTIC_VIEW`, `EXTERNAL_TABLE` |
+| `row_count` | BIGINT | Row count (NULL for views) |
+| `bytes` | BIGINT | Data size in bytes (NULL for views) |
+| `create_time` | TIMESTAMP_LTZ | Creation time |
+| `last_modify_time` | TIMESTAMP_LTZ | Last modification time |
+| `delete_time` | TIMESTAMP_LTZ | Deletion time (NULL if not deleted) |
+| `is_partitioned` | BOOLEAN | Whether the table is partitioned |
+| `is_clustered` | BOOLEAN | Whether the table is clustered |
+| `comment` | STRING | Comment |
+| `properties` | MAP\<STRING,STRING\> | Properties set at creation |
+| `data_lifecycle` | INT | Data lifecycle in days; NULL means not set |
 
-#### COLUMNS View
+## COLUMNS
 
+Records column information for all tables in the instance.
 
-The query result contains each field in the table as a row
+| Column | Type | Description |
+|--------|------|-------------|
+| `table_catalog` | STRING | Name of the workspace the table belongs to |
+| `table_catalog_id` | BIGINT | Workspace ID |
+| `table_schema` | STRING | Schema name |
+| `table_schema_id` | BIGINT | Schema ID |
+| `table_name` | STRING | Table name |
+| `table_id` | BIGINT | Table ID |
+| `column_name` | STRING | Column name |
+| `column_id` | INT | Column ID |
+| `column_default` | BOOLEAN | Default value |
+| `is_nullable` | BOOLEAN NOT NULL | Whether NULL is allowed |
+| `data_type` | STRING | Column data type |
+| `comment` | STRING | Column comment |
+| `is_primary_key` | BOOLEAN NOT NULL | Whether the column is a primary key |
+| `is_clustering_column` | BOOLEAN NOT NULL | Whether the column is a clustering column |
+| `create_time` | TIMESTAMP_LTZ | Creation time |
+| `delete_time` | TIMESTAMP_LTZ | Deletion time (NULL if not deleted) |
 
+## VIEWS
 
-| COLUMN NAME              | DATA TYPE | DESCRIPTION      |
-| ------------------------ | --------- | ---------------- |
-| TABLE\_CATALOG           | STRING    | Name of the current WORKSPACE   |
-| TABLE\_CATALOG\_ID       | STRING    | ID of the WORKSPACE     |
-| TABLE\_SCHEMA            | STRING    | SCHEMA to which the current TABLE belongs |
-| TABLE\_SCHEMA\_ID        | STRING    | ID of the database corresponding to the table        |
-| TABLE\_NAME              | STRING    | Table name              |
-| TABLE\_ID                | STRING    | Table ID              |
-| COLUMN\_NAME             | STRING    | Field name            |
-| COLUMN\_ID               | STRING    | Field ID             |
-| COLUMN\_DEFAULT          | STRING    | Field default value, currently reserved value      |
-| IS\_NULLABLE             | BOOLEAN   | Whether it can be NULL        |
-| DATA\_TYPE               | STRING    | Field type             |
-| IS\_PARTITIONING\_COLUMN | BOOLEAN  | Whether it is a partition field          |
-| IS\_CLUSTERING\_COLUMN   | BOOLEAN  | Whether it is a CLUSTER table      |
-| IS\_PRIMARY\_KEY         | BOOLEAN  | Whether it is a primary key            |
-| COMMENT                  | STRING    | Field comment information          |
-| DELETE\_TIME             | TIMESTAMP | Deletion time, NULL if not deleted   |
+Records information about all views (regular views) in the instance.
 
+| Column | Type | Description |
+|--------|------|-------------|
+| `table_catalog` | STRING | Name of the workspace the view belongs to |
+| `table_catalog_id` | BIGINT | Workspace ID |
+| `table_schema` | STRING | Schema name |
+| `table_schema_id` | BIGINT | Schema ID |
+| `table_name` | STRING | View name |
+| `table_id` | BIGINT | View ID |
+| `table_creator` | STRING | Creator account name |
+| `table_creator_id` | BIGINT | Creator account ID |
+| `view_definition` | STRING | SQL definition used to create the view |
+| `create_time` | TIMESTAMP_LTZ | Creation time |
+| `last_modify_time` | TIMESTAMP_LTZ | Last modification time |
+| `delete_time` | TIMESTAMP_LTZ | Deletion time (NULL if not deleted) |
+| `comment` | STRING | Comment |
 
-​
+## USERS
 
+Records user information across all workspaces in the instance.
 
-#### VIEWS View
+| Column | Type | Description |
+|--------|------|-------------|
+| `workspace_id` | BIGINT | Workspace ID |
+| `workspace_name` | STRING | Workspace name |
+| `user_id` | BIGINT | User ID |
+| `user_name` | STRING | User account name |
+| `role_names` | STRING | Roles assigned to the user, multiple roles separated by commas |
+| `create_time` | TIMESTAMP_LTZ | Time the user joined the workspace |
+| `email` | STRING | User email |
+| `telphone` | STRING | User phone number |
+| `comment` | STRING | Comment |
+| `properties` | MAP\<STRING,STRING\> | Properties set at creation |
+| `delete_time` | TIMESTAMP_LTZ | Removal time (NULL if not removed) |
 
+## ROLES
 
-Each view displays a row, containing all views under the current INSTANCE
+Records role information across all workspaces in the instance.
 
+| Column | Type | Description |
+|--------|------|-------------|
+| `workspace_id` | BIGINT | Workspace ID |
+| `workspace_name` | STRING | Workspace name |
+| `role_name` | STRING | Role name |
+| `role_id` | BIGINT | Role ID |
+| `user_names` | STRING | Names of users granted this role, multiple users separated by commas |
+| `user_ids` | STRING | IDs of users granted this role, multiple IDs separated by commas |
+| `comment` | STRING | Comment |
+| `properties` | MAP\<STRING,STRING\> | Properties set at creation |
+| `delete_time` | TIMESTAMP_LTZ | Deletion time (NULL if not deleted) |
 
-| COLUMN NAME        | DATA TYPE | DESCRIPTION     |
-| ------------------ | --------- | --------------- |
-| TABLE\_CATALOG     | STRING    | Name of the current WORKSPACE  |
-| TABLE\_CATALOG\_ID | STRING    | ID of the WORKSPACE    |
-| TABLE\_SCHEMA      | STRING    | SCHEMA to which the current VIEW belongs |
-| TABLE\_SCHEMA\_ID  | STRING    | ID of the database corresponding to the view      |
-| TABLE\_NAME        | STRING    | View name            |
-| TABLE\_ID          | STRING    | View ID            |
-| TABLE\_CREATOR     | STRING    | Account name of the view owner      |
-| TABLE\_CREATOR\_ID | STRING    | Account ID of the view owner      |
-| VIEW\_DEFINITION   | STRING    | Statement to create the view         |
-| CREATE\_TIME       | TIMESTAMP | View creation time          |
-| LAST\_MODIFY\_TIME | TIMESTAMP | View modification time          |
-| COMMENT            | STRING    | View comment information         |
-| DELETE\_TIME       | TIMESTAMP | Deletion time, NULL if not deleted  |
+## CONNECTIONS
 
-#### USERS View
+Records connection object information across all workspaces in the instance.
 
-Each user and workspace displays one row, containing all users of the current ACCOUNT
+| Column | Type | Description |
+|--------|------|-------------|
+| `workspace_name` | STRING | Workspace name |
+| `workspace_id` | BIGINT | Workspace ID |
+| `connection_name` | STRING | Connection name |
+| `connection_id` | BIGINT | Connection ID |
+| `connection_kind` | STRING | Connection kind, e.g. `STORAGE_CONNECTION`, `STORAGE`, `CATALOG`, `API` |
+| `type` | STRING | Data source type, e.g. `FILE_SYSTEM`, `CLOUD_FUNCTION`, `OSS`, `KAFKA`, `MESSAGE_QUEUE`, `DATABRICKS_UNITY_CATALOG` |
+| `provider` | STRING | Cloud provider, e.g. `OSS`, `COS`, `S3`, `aliyun`, `tencent` |
+| `region` | STRING | Connection region, e.g. `cn-shanghai`, `ap-beijing` |
+| `source_creator` | STRING | Creator account name |
+| `create_time` | TIMESTAMP_LTZ | Creation time |
+| `last_modify_time` | TIMESTAMP_LTZ | Last modification time |
+| `delete_time` | TIMESTAMP_LTZ | Deletion time (NULL if not deleted) |
+| `comment` | STRING | Comment |
+| `properties` | MAP\<STRING,STRING\> | Properties set at creation |
 
-| COLUMN NAME          | DATA TYPE           | DESCRIPTION                        |
-| -------------------- | ------------------- | ---------------------------------- |
-| WORKSPACE\_NAME       | STRING              | Workspace of the user                          |
-| WORKSPACE\_ID         | STRING              | Workspace ID of the user                          |
-| USER\_ID             | STRING              | User ID generated by the system                     |
-| USER\_NAME           | STRING              | User name, concatenated with WORKSPACE NAME and USER NAME |
-| ROLE\_NAME           | STRING              | Roles owned by the current user, multiple roles separated by commas               |
-| ADD\_TIME            | TIEMSTAMP           | User creation time                             |
-| EMAIL                | STRING              | User email                               |
-| TELEPHONE             | STRING              | User phone                               |
-| LAST\_SUCCESS\_LOGIN | TIMESTAMP           | Last login time                             |
-| COMMENT              | STRING              | Description of user information                             |
-| DELETE\_TIME         | TIMESTAMP           | Deletion time, NULL if not deleted                     |
-| PROPERTIES           | MAP\<STRING,STRING> | All set PROPERTIES will be recorded in this parameter             |
+## VOLUMES
 
-#### ROLES View
+Records Volume information across all workspaces in the instance.
 
-Each role and workspace displays one row, containing all roles of the current ACCOUNT
+| Column | Type | Description |
+|--------|------|-------------|
+| `volume_catalog` | STRING | Name of the workspace the volume belongs to |
+| `volume_catalog_id` | BIGINT | Workspace ID |
+| `volume_schema` | STRING | Schema name |
+| `volume_schema_id` | BIGINT | Schema ID |
+| `volume_name` | STRING | Volume name |
+| `volume_id` | BIGINT | Volume ID |
+| `volume_url` | STRING | Mount path (empty for internal volumes) |
+| `volume_region` | STRING | Region where the volume resides |
+| `volume_type` | STRING | Volume type: `MANAGED` (internal) or `EXTERNAL` |
+| `volume_creator` | STRING | Creator account name |
+| `connection_name` | STRING | Referenced connection name (empty for internal volumes) |
+| `connection_id` | BIGINT | Referenced connection ID |
+| `comment` | STRING | Comment |
+| `properties` | MAP\<STRING,STRING\> | Properties set at creation |
+| `create_time` | TIMESTAMP_LTZ | Creation time |
+| `last_modify_time` | TIMESTAMP_LTZ | Last modification time |
+| `delete_time` | TIMESTAMP_LTZ | Deletion time (NULL if not deleted) |
 
-| COLUMN NAME    | DATA TYPE | DESCRIPTION                         |
-| -------------- | --------- | ----------------------------------- |
-| WORKSPACE\_NAME | STRING    | Name of the current workspace                             |
-| WORKSPACE\_ID   | STRING    | Workspace ID of the role                           |
-| ROLE\_NAME     | STRING    | Role name                               |
-| ROLE\_ID       | STRING    | ROLE ID                             |
-| USER\_NAME     | STRING    | The name of the user granted this role, multiple users are separated by commas. Corresponding users for the ROLE |
-| USER\_ID       | STRING    | The ID of the user granted this role                         |
-| COMMENT        | STRING    | Description of user information                              |
-| DELETE\_TIME   | TIMESTAMP | Deletion time, NULL if not deleted                      |
+## JOB_HISTORY
 
-#### JOB_HISTORY View
+Records the execution history of all jobs in the instance.
 
-Run information under all spaces
+| Column | Type | Description |
+|--------|------|-------------|
+| `workspace_name` | STRING | Workspace where the job ran |
+| `workspace_id` | BIGINT | Workspace ID |
+| `job_id` | STRING | Job ID |
+| `job_name` | STRING | Job name |
+| `job_creator` | STRING | Account name of the user who submitted the job |
+| `job_creator_id` | BIGINT | User ID of the submitter |
+| `status` | STRING | Job status, e.g. `SUCCEED`, `FAILED`, `CANCELLED` |
+| `cru` | DOUBLE | Compute resources consumed (CRU·hours) |
+| `error_message` | STRING | Error message if the job failed |
+| `job_type` | STRING | Job type, e.g. `SQL_JOB`, `COMPACTION_JOB` |
+| `job_sub_type` | STRING | Job sub-type |
+| `job_text` | STRING | SQL text that was executed |
+| `start_time` | TIMESTAMP_LTZ | Start time |
+| `end_time` | TIMESTAMP_LTZ | End time |
+| `execution_time` | DOUBLE | Execution duration in seconds (millisecond precision) |
+| `input_bytes` | BIGINT | Actual scanned data volume in bytes |
+| `output_bytes` | BIGINT | Output data volume in bytes |
+| `input_objects` | STRING | Input object names |
+| `output_objects` | STRING | Output object names |
+| `input_tables` | STRING | Input table names |
+| `output_tables` | STRING | Output table names |
+| `cache_hit` | BIGINT | Data read from cache in bytes |
+| `rows_produced` | BIGINT | Total rows processed |
+| `rows_inserted` | BIGINT | Rows inserted |
+| `rows_updated` | BIGINT | Rows updated |
+| `rows_deleted` | BIGINT | Rows deleted |
+| `virtual_cluster` | STRING | Name of the virtual cluster used |
+| `virtual_cluster_id` | BIGINT | ID of the virtual cluster used |
+| `job_config` | STRING | Parameters set when the job was submitted |
+| `job_priority` | STRING NOT NULL | Job priority |
+| `query_tag` | STRING | Query tag set by the user |
+| `client_info` | STRING | Client information (from JDBC, CLI, web, etc.) |
+| `pt_date` | STRING | Partition date for filtering by day |
 
-| COLUMN NAME          | DATA TYPE     | DESCRIPTION                                                                                                                                                                                                           |
-| ------ | --- | ------------ |
-| WORKSPACE\_NAME       | STRING        | The space where the JOB is running                                                                                                                                                                                                            |
-| WORKSPACE\_ID        | STRING        |                                                                                                                                                                                                                       |
-| JOB\_ID              | STRING        | Job ID                                                                                                                                                                                                                  |
-| JOB\_NAME            | STRING        | Job name                                                                                                                                                                                                                  |
-| JOB\_CREATOR\_ID     | STRING        | User ID running the job                                                                                                                                                                                                             |
-| JOB\_CREATOR         | STRING        | User running the job                                                                                                                                                                                                               |
-| STATUS               | STRING        | SETUP RESUMING\_CLUSTER QUEUED RUNNING SUCCESS FAILED CANCELED                                                                                                                                                        |
-| CRU                  | DECIMAL(38,5) | Computing resources consumed by the user                                                                                                                                                                                                   |
-| ERROR\_MESSAGE       | STRING        | This information will be available if there is an error during execution                                                                                                                                                                                                           |
-| JOB\_TYPE            | STRING        | Job type  SQL                                                                                                                                                                                                             |
-| JOB\_TEXT            | STRING        | Statement executed by the JOB                                                                                                                                                                                                              |
-| START\_TIME          | TIMESTAMP     | JOB start time                                                                                                                                                                                                             |
-| END\_TIME            | TIMESTAMP     | JOB end time                                                                                                                                                                                                             |
-| EXECUTION\_TIME      | DOUBLE        | Execution time, in seconds                                                                                                                                                                                                             |
-| INPUT\_BYTES         | BIGINT        | Actual scanned data volume.                                                                                                                                                                                                             |
-| CACHE\_HIT           | BIGINT        | Data read from cache                                                                                                                                                                                                             |
-| OUTPUT\_BYTES        | BIGINT        | Output bytes.                                                                                                                                                                                                                |
-| INPUT\_OBJECTS       | STRING        | Input table names in the format \[SCHEMA].\[TABLE], multiple tables separated by commas                                                                                                                                                                                      |
-| OUTPUT\_OBJECTS      | STRING        | Output table names in the format \[SCHEMA].\[TABLE]                                                                                                                                                                                            |
-| CLIENT\_INFO         | STRING        | Client information, from JDBC, client, web page, JAVA SDK                                                                                                                                                                                      |
-| VIRTUAL\_CLUSTER     | STRING        | Computing resources used                                                                                                                                                                                                               |
-| VIRTUAL\_CLUSTER\_ID | BIGINT        |                                                                                                                                                                                                                       |
-| ROWS\_PRODUCED       | BIGINT        | Total number of records processed, input data                                                                                                                                                                                                         |
-| ROWS\_INSERTED       | BIGINT        | Should have a value if it is an insert action                                                                                                                                                                                                           |
-| ROWS\_UPDATED        | BIGINT        | Should have a value if it is an update action                                                                                                                                                                                                           |
-| ROWS\_DELETED        | BIGINT        | Should have a value if it is a delete action                                                                                                                                                                                                           |
-| JOB\_CONFIG          | STRING        | Parameter information set when submitting the job                                                                                                                                                                                                          |
-| JOB\_PRIORITY        | STRING        | Job priority                                                                                                                                                                                                                 |
-| INPUT\_TABLES        | STRING        | JSON format array INPUT\_TABLES:{\[{TABLE:WORKSAPCE\_NAME.SCHEMA.TABLENAME1, SIZE:0,RECORD:0,CACHESIZE:0,PARTITIONS:\[]},{TABLE:WORKSAPCE\_NAME.SCHEMA.TABLENAME2 SIZE:0,RECORD:0,CACHESIZE:0,PARTITIONS:\[]}......]}         |
-| OUTPUT\_TABLES       | STRING        | Name of the output object |
-| QUERY\_TAG          | STRING        | Users can tag the JOB in the client                                                                                                                                                                                                        |
-| ERROR\_MESSAGE       | STRING        | Error message                                                                                                                                                                                                                  |
+## MATERIALIZED_VIEW_REFRESH_HISTORY
 
+Records the refresh history of materialized views.
 
-#### MATERIALIZED VIEW Refresh View (MATERIALIZED\_VIEW\_REFRESH\_HISTORY) {#materialized-view-refresh-history}
+| Column | Type | Description |
+|--------|------|-------------|
+| `workspace_id` | BIGINT | Workspace ID |
+| `workspace_name` | STRING | Workspace name |
+| `schema_id` | BIGINT | Schema ID |
+| `schema_name` | STRING | Schema name |
+| `materialized_view_id` | BIGINT | Materialized view ID |
+| `materialized_view_name` | STRING | Materialized view name |
+| `cru` | DOUBLE | Compute resources consumed by the refresh (CRU·hours) |
+| `virtual_cluster_id` | BIGINT | Virtual cluster ID used |
+| `virtual_cluster_name` | STRING | Virtual cluster name used |
+| `status` | STRING | Refresh status, e.g. `SUCCEED`, `FAILED` |
+| `scheduled_start_time` | TIMESTAMP_LTZ | Scheduled refresh time |
+| `start_time` | TIMESTAMP_LTZ | Actual start time |
+| `end_time` | TIMESTAMP_LTZ | End time |
+| `error_code` | STRING | Error code |
+| `error_message` | STRING | Error message if the refresh failed |
+| `pt_date` | DATE | Partition date for filtering by day |
 
-| COLUMN\_NAME             | DATA\_TYPE   | DESCRIPTION                          |
-| ------------------------ | ------------ | ------------------------------------ |
-| WORKSPACE\_ID            | BIGINT       | Project space ID                               |
-| WORKSPACE\_NAME          | STRING       | Project space name                               |
-| SCHEMA\_ID               | BIGINT       | SCHEMA ID                            |
-| SCHEMA\_NAME             | STRING       | SCHEMA name                             |
-| MATERIALIZED\_VIEW\_ID   | BIGINT       | Materialized view ID                               |
-| MATERIALIZED\_VIEW\_NAME | STRING       | Materialized view name                               |
-| CREDITS\_USED            | DECIMAL      | Credits used for refreshing the materialized view    |
-| VIRTUAL\_CLUSER\_ID      | BIGINT       | Materialized view ID                                 |
-| VIRTUAL\_CLUSTER         | STRING       | Materialized view name, this information is available for automatic refresh |
-| STATUS                   | STRING       | PENDING\RUNNING\FINISHED\FAILED                      |
-| REFRESH\_MODE            | STRING       | Enum values INCREMENTAL FULL\_REFRESH NO\_DATA       |
-| STATISTICS               | STRING       | Records the number of incremental rows               |
-| SCHEDULE\_START\_TIME    | TIMESTAMP_LTZ | Scheduled refresh time                               |
-| START\_TIME              | TIMESTAMP_LTZ | Materialized view start time                         |
-| END\_TIME                | TIMESTAMP_LTZ | Materialized view end time                           |
-| ERROR\_MESSAGE           | STRING       | Error message if the refresh fails, it will be here  |
+## AUTOMV_REFRESH_HISTORY
 
+Records the refresh history of Auto Materialized Views.
 
-#### VOLUMES View
+| Column | Type | Description |
+|--------|------|-------------|
+| `workspace_name` | STRING | Workspace name |
+| `schema_name` | STRING | Schema name |
+| `materialized_view_name` | STRING | Materialized view name |
+| `cru` | DOUBLE | Compute resources consumed by the refresh (CRU·hours) |
+| `status` | STRING | `PROCESSING`, `SUCCEEDED`, `FAILED`, `CANCELLED` |
+| `mv_process_type` | STRING NOT NULL | `BUILD` (initial build) or `REFRESH` (incremental refresh) |
+| `start_time` | TIMESTAMP_LTZ | Start time |
+| `end_time` | TIMESTAMP_LTZ | End time |
+| `build_from_workspace` | STRING | Workspace name of the source tables |
+| `build_from_workspace_id` | BIGINT | Workspace ID of the source tables |
+| `job_id` | STRING | Corresponding job ID |
+| `error_message` | STRING | Error message if the refresh failed |
+| `pt_date` | STRING | Partition date for filtering by day |
 
+## OBJECT_PRIVILEGES
 
-| column\_name        | data\_type          | description                                           |
-| ------------------- | ------------------- | ----------------------------------------------------- |
-| VOLUME\_CATALOG     | STRING              | Name of the associated Workspace                      |
-| VOLUME\_CATALOG\_ID | STRING              | ID of the associated Workspace                        |
-| VOLUME\_SCHEMA      | STRING              | Name of the associated Schema                         |
-| VOLUME\_SCHEMA\_ID  | STRING              | ID of the schema corresponding to the Volume          |
-| VOLUME\_NAME        | STRING              | Volume name                                           |
-| VOLUME\_ID          | STRING              | Volume ID                                             |
-| VOLUME\_URL         | STRING              | URL bound to the Volume                               |
-| VOLUME\_REGION      | STRING              | Region to which the Volume belongs                    |
-| VOLUME\_TYPE        | STRING              | Volume type (internal means no need to specify third-party cloud provider address when creating volume, or external) |
-| VOLUME\_CREATOR     | STRING              | Volume owner                                        |
-| CONNECTION\_NAME    | STRING              | Referenced connection name                                       |
-| CONNECTION\_ID      | STRING              | Referenced connection ID                                      |
-| PROPERTIES          | map\<string,string> |                                                       |
-| COMMENT             | STRING              | Comment                                                    |
-| CREATE\_TIME        | TIMESTAMP           | Creation time                                                  |
-| LAST\_MODIFY\_TIME  | TIMESTAMP           | Modification time                                                  |
+Records privilege grant information for all objects in the instance.
 
-#### CONNECTIONS View
+| Column | Type | Description |
+|--------|------|-------------|
+| `grantee` | STRING | Name of the grantee (user name or role name) |
+| `grantor` | STRING | Name of the grantor |
+| `granted_to` | STRING NOT NULL | Grantee type, e.g. `user`, `role` |
+| `object_catalog` | STRING | Workspace name where the object resides |
+| `object_schema` | STRING | Schema name where the object resides |
+| `object_name` | STRING | Object name |
+| `object_type` | STRING | Object type, e.g. `TABLE`, `SCHEMA`, `VIRTUAL_CLUSTER`, `FUNCTION`, `INDEX` |
+| `sub_object_type` | STRING | Sub-object type |
+| `privilege_type` | STRING | Privilege type, e.g. `["AT_ALL"]`, `["SELECT"]` (JSON array format) |
+| `is_grantable` | BOOLEAN | Whether the privilege can be re-granted |
+| `authorization_time` | TIMESTAMP_LTZ | Time the privilege was granted |
 
+## INSTANCE_USAGE
 
-| column_name     | data type           | description                                                                   |
-| ---------------- | ------------------- | ----------------------------------------------------------------------------- |
-| WORKSPACE\_NAME  | STRING              | The workspace where the object is located                                                                       |
-| WORKSPACE\_ID    | STRING              |                                                                               |
-| CONNECTION\_NAME | STRING              | Connection object name                                                                   |
-| CONNECTION\_ID   | STRING              |                                                                               |
-| CONNECTION\_KIND | STRING              | Enum values supporting connection types, STORAGE CONNECTION, API CONNECTION                         |
-| TYPE             | STRING              | Specifies the type of data source connection, storage connection supports FILE\_SYSTEM, API connection supports CLOUD\_FUNCTION |
-| PROVIDER         | STRING              | When TYPE is FILE\_SYSTEM, it is OSS / COS; when TYPE is CLOUD\_FUNCTION, it is aliyun / tencent   |
-| REGION           | STRING              | The region connected to, such as ap-shanghai / cn-beijing                              |
-| SOURCE\_CREATOR  | STRING              | Creator                                                                           |
-| CREATED\_TIME    | TIMESTAMP           | Creation time                                                                          |
-| COMMENT          | STRING              | Comment information                                                                          |
-| PROPERTIES       | map\<string,string> |                                                                               |
+Records compute resource usage and billing details for the instance, aggregated by day.
 
+| Column | Type | Description |
+|--------|------|-------------|
+| `account_id` | BIGINT | Account ID |
+| `account_name` | STRING | Account name |
+| `instance_id` | BIGINT | Instance ID |
+| `region_name` | STRING NOT NULL | Region where the instance resides |
+| `sku_category` | STRING | Billing category, e.g. `compute`, `storage`, `network` |
+| `sku_name` | VARCHAR(255) | Billing item name |
+| `workspace_id` | BIGINT | Workspace ID |
+| `workspace_name` | STRING | Workspace name |
+| `measurement_start` | STRING | Measurement period start time |
+| `measurement_end` | STRING | Measurement period end time |
+| `measurements_unit` | VARCHAR(50) | Measurement unit, e.g. `yuan/GiB/day`, `yuan/CRU/hour` |
+| `measurements_consumption` | DOUBLE | Actual usage |
+| `price_rate` | DECIMAL(13,7) | Unit price |
+| `amount` | DOUBLE | Billing amount |
+| `discount_rate` | DOUBLE NOT NULL | Discount rate |
+| `total_after_discount` | DOUBLE | Amount after discount |
 
-### OBJECT_PRIVILEGES View
+Common `sku_name` values include `AP-type compute cluster`, `GP-type compute cluster`, `Task Scheduling`, `Data Integration`, and `Streaming Integration`. `measurements_consumption` represents the CRU consumed in the corresponding period; `amount` is the original billing amount; `total_after_discount` is the discounted amount.
 
-| Column Name         | Data Type      | Description                                                                 |
-|---------------------|----------------|-----------------------------------------------------------------------------|
-| GRANTOR             | TEXT           | The USER who grants the privilege.                                  |
-| GRANTEE             | TEXT           | The user\_name or role\_name that is granted the privilege.               |
-| GRANTED\_TO         | TEXT           | Whether the privilege is granted to a USER or ROLE.                     |
-| OBJECT\_CATALOG     | TEXT           | The workspace or catalog name where the granted object resides.           |
-| OBJECT\_SCHEMA      | TEXT           | The schema where the granted object resides, or null if the object is not schema-bound. |
-| OBJECT\_NAME        | TEXT           | The name of the object that the privilege is granted on. Displayed directly without using workspace.schema.name format. |
-| OBJECT\_TYPE        | TEXT           | The type of the object that the privilege is granted on.                 |
-| SUB\_OBJECT\_TYPE   | TEXT           | Sub-object type (details not provided).                                  |
-| PRIVILEGE\_TYPE     | TEXT           | The specific type of privilege granted.                                  |
-| IS\_GRANTABLE       | TEXT           | Whether the privilege was granted with the WITH GRANT OPTION.            |
-| AUTHORIZATION\_TIME | TIMESTAMP\_LTZ | The time when the privilege was granted.                                 |
+## STORAGE_METERING
+
+Records storage usage and billing details for the instance. The column structure is the same as `INSTANCE_USAGE` and is dedicated to querying storage billing items.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `account_id` | BIGINT | Account ID |
+| `account_name` | STRING | Account name |
+| `instance_id` | BIGINT | Instance ID |
+| `region_name` | STRING NOT NULL | Region where the instance resides |
+| `sku_category` | STRING | Billing category |
+| `sku_name` | VARCHAR(255) | Billing item name |
+| `workspace_id` | BIGINT | Workspace ID |
+| `workspace_name` | STRING | Workspace name |
+| `measurement_start` | STRING | Measurement period start time |
+| `measurement_end` | STRING | Measurement period end time |
+| `measurements_unit` | VARCHAR(50) | Measurement unit |
+| `measurements_consumption` | DOUBLE | Actual usage |
+| `price_rate` | DECIMAL(13,7) | Unit price |
+| `amount` | DOUBLE | Billing amount |
+| `discount_rate` | DOUBLE NOT NULL | Discount rate |
+| `total_after_discount` | DOUBLE | Amount after discount |
+
+Common `sku_category` values include `storage` and `network`. Common `sku_name` values include `Managed Storage Capacity`, `Multi-version Undeleted Storage`, and `Data Query Internet Data Transfer`.

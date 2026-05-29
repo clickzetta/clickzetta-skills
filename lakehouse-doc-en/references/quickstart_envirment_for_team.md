@@ -8,11 +8,11 @@ This document aims to help you quickly set up a Lakehouse data development envir
 
 1. **Create a Singdata Account**
 
-   If you do not have a Singdata account, you can register at the [Singdata official website](https://www.singdata.com/). For registration instructions, refer to [logging in](LoggingIn.md).
+   If you do not have a Singdata account, you can register at the [Singdata official website](https://www.singdata.com/). For registration instructions, refer to [logging in](logging-in.md).
 
 2. **Create a Lakehouse Service Instance**
 
-   You need to have at least one Lakehouse service instance created. If you have not yet created a service instance, refer to the "Create a Lakehouse Service Instance" section in [logging in](LoggingIn.md) for instructions.
+   You need to have at least one Lakehouse service instance created. If you have not yet created a service instance, refer to the "Create a Lakehouse Service Instance" section in [logging in](logging-in.md) for instructions.
 
 3. **Have the instance\_admin (Instance Administrator) Role for the Lakehouse Service Instance**
 
@@ -222,7 +222,7 @@ Return to the Singdata login page <https://accounts.singdata.com/login>, and seq
 
 :-: ![](.topwrite/assets/quickstart_team_p15.png =746)
 
-Now, use the developer user to log in at the .accounts.clickzetta.com/login URL, and click the "Enter" service instance button under the "Lakehouse" product to enter the Lakehouse service instance.
+Now, use the developer user to log in at the .accounts.singdata.com/login URL, and click the "Enter" service instance button under the "Lakehouse" product to enter the Lakehouse service instance.
 
 :-: ![](.topwrite/assets/quickstart_team_p16.png =740)
 

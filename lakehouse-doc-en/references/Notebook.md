@@ -51,8 +51,8 @@ Notebook contains two types of cell collections: Code cells and Markdown cells.
 
 #### Code Cells&#xA;Code cells contain executable code, supporting:
 
-* **SQL Cell**: Executes ClickZetta SQL queries.
-  If an SQL cell is selected, the user needs to choose the specific Schema information of the Yunqi data they want to access. After filtering, in this unit cell, users can directly input table names, and the system will auto-complete the specific three-part identifier code based on the Schema and current workspace information.
+* **SQL Cell**: Executes Singdata SQL queries.
+  If an SQL cell is selected, the user needs to choose the specific Schema information of the Singdata data they want to access. After filtering, in this unit cell, users can directly input table names, and the system will auto-complete the specific three-part identifier code based on the Schema and current workspace information.
 * **Python Cell**: Executes Python data analysis code.
 * **Markdown Cells**: Markdown cells contain Markdown code that is rendered as text and graphics. Use Markdown to document or explain your code.
   You can add or delete any type of cell in the Notebook to organize your work.
@@ -88,7 +88,7 @@ To run a code cell, click the run button in the upper left corner of the code ce
 
 ### Context Communication Between Cells
 
-Yunqi Notebook uses a communication mechanism based on cell naming. Each cell has a unique name (e.g., cell1, cell2, etc.), which can be directly referenced in other cells.
+Singdata Notebook uses a communication mechanism based on cell naming. Each cell has a unique name (e.g., cell1, cell2, etc.), which can be directly referenced in other cells.
 
 * **SQL Cell Output**: For multi-segment SQL, only the last segment serves as the output of that cell.
 * **Direct Referencing**: The result of an SQL cell can be directly used as a pandas DataFrame.

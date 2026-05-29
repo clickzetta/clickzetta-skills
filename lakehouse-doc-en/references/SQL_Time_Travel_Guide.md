@@ -60,7 +60,7 @@ TIMESTAMP AS OF (CURRENT_TIMESTAMP() - INTERVAL '1' MINUTE);
 * If no write operations have been performed on the table within the last hour, the current data is returned.
 * If write operations have been performed, the historical version before the write is returned.
 
-> **Note**: The Time Travel retention period defaults to 1 day and can be configured up to 90 days. Data beyond the retention period cannot be queried.
+> ⚠️ **Note**: The Time Travel retention period defaults to 1 day and can be configured up to 90 days. Data beyond the retention period cannot be queried.
 
 ***
 
@@ -105,7 +105,7 @@ UNDROP TABLE orders_history;
 SELECT * FROM orders_history;
 ```
 
-> **Tip**: Recovered tables retain their original table type (e.g., a Dynamic Table remains a Dynamic Table after recovery).
+> 💡 **Tip**: Recovered tables retain their original table type (e.g., a Dynamic Table remains a Dynamic Table after recovery).
 
 ***
 
@@ -153,7 +153,7 @@ After completing Time Travel verification, it is recommended to clean up the tes
 DROP TABLE IF EXISTS orders_history;
 ```
 
-> **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
+> 💡 **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
 
 ***
 

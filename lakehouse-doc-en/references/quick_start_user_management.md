@@ -2,7 +2,7 @@
 
 ## Use Cases
 
-After completing product [registration and login](LoggingIn.md), you will receive an initial account with the highest global privileges, commonly referred to as the "account administrator" or "admin". You can use this account to access all product features. If you need to collaborate with colleagues and create individual accounts for different team members, please read this guide. Otherwise, you may skip this document and refer to the following guides to start using the product:
+After completing product [registration and login](logging-in.md), you will receive an initial account with the highest global privileges, commonly referred to as the "account administrator" or "admin". You can use this account to access all product features. If you need to collaborate with colleagues and create individual accounts for different team members, please read this guide. Otherwise, you may skip this document and refer to the following guides to start using the product:
 
 * [How to Quickly Run a SQL Query](quick_start_sql_query.md)
 * [How to Quickly Upload and Import Data](quick_start_upload_data.md)

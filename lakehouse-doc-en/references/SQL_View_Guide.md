@@ -76,7 +76,7 @@ SELECT * FROM v_region_sales ORDER BY total_amount DESC;
 | East | 2 | 10000 |
 | West | 1 | 3000 |
 
-> **Tip**: Views are suitable for encapsulating complex logic, but they recompute every query. For high-frequency queries, consider using Materialized Views.
+> 💡 **Tip**: Views are suitable for encapsulating complex logic, but they recompute every query. For high-frequency queries, consider using Materialized Views.
 
 ***
 
@@ -107,7 +107,7 @@ SELECT * FROM mv_daily_sales ORDER BY sale_date;
 | 2024-06-01 | 8000 |
 | 2024-06-02 | 5000 |
 
-> **Note**: Materialized views are not automatically refreshed upon creation; you need to manually execute `REFRESH` or configure scheduled refresh.
+> ⚠️ **Note**: Materialized views are not automatically refreshed upon creation; you need to manually execute `REFRESH` or configure scheduled refresh.
 
 ***
 
@@ -145,7 +145,7 @@ FROM sales_detail
 GROUP BY sale_date;
 ```
 
-> **Tip**: Use `EXPLAIN` to view the execution plan and confirm whether a materialized view rewrite was triggered.
+> 💡 **Tip**: Use `EXPLAIN` to view the execution plan and confirm whether a materialized view rewrite was triggered.
 
 ***
 
@@ -161,7 +161,7 @@ DROP VIEW v_region_sales;
 DROP MATERIALIZED VIEW mv_daily_sales;
 ```
 
-> **Tip**: Dropping a materialized view does not delete the source table data. Materialized views can be recovered via `UNDROP TABLE` within the Time Travel retention period.
+> 💡 **Tip**: Dropping a materialized view does not delete the source table data. Materialized views can be recovered via `UNDROP TABLE` within the Time Travel retention period.
 
 ***
 
@@ -174,7 +174,7 @@ After completing view verification, it is recommended to clean up the test table
 DROP TABLE IF EXISTS sales_detail;
 ```
 
-> **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
+> 💡 **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
 
 ***
 

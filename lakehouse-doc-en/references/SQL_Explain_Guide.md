@@ -58,7 +58,7 @@ EXPLAIN SELECT order_id, amount FROM orders_explain WHERE customer_id = 101;
 * `Filter`: Row filtering, applies `WHERE` conditions.
 * `Project`: Column pruning, reads only needed columns.
 
-> **Tip**: The execution plan shows how the query actually executes in the distributed engine and is the core basis for performance tuning.
+> 💡 **Tip**: The execution plan shows how the query actually executes in the distributed engine and is the core basis for performance tuning.
 
 ***
 
@@ -122,7 +122,7 @@ After completing execution plan verification, it is recommended to clean up test
 DROP TABLE IF EXISTS orders_explain;
 ```
 
-> **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
+> 💡 **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
 
 ***
 

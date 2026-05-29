@@ -89,19 +89,39 @@ cz-cli agent llm add my-relay \
 ### Verify and Manage
 
 ```bash
-# View the currently active LLM and all configurations
+```
+
+View the currently active LLM and all configurations:
+
+```bash
 cz-cli agent llm show
 
-# List all configured LLMs
+```
+
+List all configured LLMs:
+
+```bash
 cz-cli agent llm list
 
-# Test connectivity
+```
+
+Test connectivity:
+
+```bash
 cz-cli agent llm test my-openai
 
-# Switch the active LLM
+```
+
+Switch the active LLM:
+
+```bash
 cz-cli agent llm use my-openai
 
-# Remove an LLM configuration
+```
+
+Remove an LLM configuration:
+
+```bash
 cz-cli agent llm remove my-openai
 ```
 

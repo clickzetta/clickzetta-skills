@@ -1,28 +1,40 @@
-### MAP_FROM_ARRAYS
-```sql
-map_from_arrays(k, v)
+# MAP_FROM_ARRAYS
+
+## Overview
+
+Constructs a MAP type using two arrays as keys and values respectively. The two arrays must have strictly equal lengths.
+
+> ⚠️ **Note**: Integer keys appear as strings in JSON output (e.g., `{"1":"a"}`). This is normal behavior per the JSON specification; the internal MAP type is unchanged.
+
+## Syntax
+
+```Plain
+MAP_FROM_ARRAYS(<keys>, <values>)
 ```
 
-#### Function
-Create a map from two arrays, where the keys and values in the map correspond to the elements in the input arrays by their order. The lengths of the two arrays must be strictly identical.
+## Parameters
 
-#### Parameters
-- `k`: `array<K>`
-- `v`: `array<V>`
+- `<keys>`: ARRAY&lt;K&gt; type, the array of keys.
+- `<values>`: ARRAY&lt;V&gt; type, the array of values. Must have the same length as `<keys>`; values may be NULL. If either argument is NULL, the result is NULL.
 
-#### Return Value
-- `map<K, V>`
+## Examples
 
-#### Example
 ```sql
-> SELECT map_from_arrays(k, v)
-FROM VALUES
-    (ARRAY[1, 2, 3], ARRAY['a', 'b', 'c']),
-    (ARRAY[1, 2, 3], ARRAY['a', NULL, 'c']),
-    (NULL, ARRAY['a', 'b', 'c']),
-    (ARRAY[1, 2, 3], NULL) AS t(k, v);
-{1:"a",2:"b",3:"c"}
-{1:"a",2:null,3:"c"}
-NULL
-NULL
+SELECT map_from_arrays(array(1, 2, 3), array('a', 'b', 'c'));
+-- {"1":"a","2":"b","3":"c"}
+
+SELECT map_from_arrays(array(1, 2, 3), array('a', NULL, 'c'));
+-- {"1":"a","2":null,"3":"c"}
+
+SELECT map_from_arrays(NULL, array('a', 'b', 'c'));
+-- NULL
+
+SELECT map_from_arrays(array(1, 2, 3), NULL);
+-- NULL
 ```
+
+## Related Documentation
+
+- [MAP_FROM_ENTRIES](map_from_entries.md) — Construct a MAP from an array of key-value pairs
+- [MAP_KEYS](map_keys.md) — Extract the key array from a MAP
+- [MAP_VALUES](map_values.md) — Extract the value array from a MAP

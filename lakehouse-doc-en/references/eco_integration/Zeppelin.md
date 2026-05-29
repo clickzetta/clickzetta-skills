@@ -56,19 +56,23 @@
 ## Switch the Computing Resources (vcluster) and Data Schema for Job Execution
 
 1. Use the following command to switch the computing resources (vcluster) for job execution:
+
    ```
    use vcluster <vcluster_name>;
    ```
-For example:
+
+   For example:
    ```
    use vcluster qiliang_ap;
    ```
-## 2. Use the following command to switch the data schema to be accessed:
+
+2. Use the following command to switch the data schema to be accessed:
 
    ```
    use schema <schema_name>;
    ```
-For example:
+
+   For example:
    ```
    use schema nyc_taxi_data;
    ```

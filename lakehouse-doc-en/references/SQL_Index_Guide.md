@@ -20,6 +20,7 @@ In large-scale data query scenarios, full table scans can be time-consuming. Sin
 |------|------|----------|
 | `CREATE BLOOMFILTER INDEX` | Create Bloom filter index | Equality queries on high-cardinality columns (e.g., ID, phone number) |
 | `CREATE INVERTED INDEX` | Create inverted index | Full-text search on text fields (e.g., logs, comments) |
+| `CREATE VECTOR INDEX` | Create vector index | Vector similarity search, semantic retrieval, RAG recall |
 | `BUILD INDEX` | Build index for existing data | Generate indexes for historical data |
 | `SHOW INDEX` | View index list | Monitor index status |
 | `DROP INDEX` | Drop index | Clean up unused indexes |
@@ -58,7 +59,7 @@ CREATE BLOOMFILTER INDEX idx_user_id_bloom
 ON TABLE app_logs_idx(user_id);
 ```
 
-> **Note**: Bloom filter indexes only take effect for data written after creation. Existing data requires `BUILD INDEX`.
+> ⚠️ **Note**: Bloom filter indexes only take effect for data written after creation. Existing data requires `BUILD INDEX`.
 
 ***
 
@@ -89,7 +90,7 @@ Newly created indexes do not automatically scan historical data. Use `BUILD INDE
 BUILD INDEX idx_content_inverted ON app_logs_idx;
 ```
 
-> **Tip**: `BUILD INDEX` is a synchronous operation that consumes compute resources. It is recommended to execute during off-peak hours or build by partition in batches.
+> 💡 **Tip**: `BUILD INDEX` is a synchronous operation that consumes compute resources. It is recommended to execute during off-peak hours or build by partition in batches.
 
 ***
 
@@ -120,7 +121,7 @@ SELECT * FROM app_logs_idx
 WHERE match_any(content, 'dashboard settings', map('analyzer', 'chinese'));
 ```
 
-> **Tip**: Use `EXPLAIN` to view the execution plan and confirm whether the query hit the index.
+> 💡 **Tip**: Use `EXPLAIN` to view the execution plan and confirm whether the query hit the index.
 
 ***
 
@@ -133,14 +134,14 @@ After completing index verification, it is recommended to clean up the test tabl
 DROP TABLE IF EXISTS app_logs_idx;
 ```
 
-> **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
+> 💡 **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
 
 ***
 
 ## Notes
 
 1. **Bloom Filter Limitations**: Does not support `LIKE`, range queries (`>`, `<`), or complex types (ARRAY/MAP/STRUCT).
-2. **Inverted Index Building**: `BUILD INDEX` is only effective for inverted indexes and vector indexes; Bloom filters do not support historical data building.
+2. **Historical Index Building**: `BUILD INDEX` supports Bloom filter indexes, inverted indexes, and vector indexes.
 3. **Storage Overhead**: Indexes consume additional storage space, typically 5%-20% of the original table.
 4. **Write Performance**: Indexes slightly increase `INSERT`/`UPDATE` latency because the index structure must be updated simultaneously.
 5. **Automatic Application**: The query optimizer automatically determines whether to use an index; no explicit specification is needed in SQL.

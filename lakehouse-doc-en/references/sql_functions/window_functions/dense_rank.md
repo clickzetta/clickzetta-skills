@@ -107,5 +107,3 @@ In this example, we first partition by exam subjects, then sort by exam scores i
 * When the values in the `ORDER BY` clause are the same, the `DENSE_RANK` function does not generate skipped rankings; the rankings will repeat.
 * Compared to the `RANK()` function, the `DENSE_RANK()` function provides more compact rankings when dealing with the same values, whereas the `RANK()` function will produce discontinuous rankings.
 * When using the `DENSE_RANK()` function, ensure that the `ORDER BY` clause correctly reflects the way you want to sort the data.
-
-^

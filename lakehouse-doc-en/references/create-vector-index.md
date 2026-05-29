@@ -44,7 +44,7 @@ Index element type refers to the type specified by scalar.type in properties; wh
 |        |                     |                                                                                                              |
 | ------ | ------------------- | ------------------------------------------------------------------------------------------------------------ |
 | Index Element Type | Supported Vector Element Types           | Remarks                                                                                                           |
-| b1     | tinyint, int, float | When "conversion.rule" = "bits", each bit in vector(tinyint, N) is treated as an element in the vector. When "conversion.rule" = "default", the vector is binarized. |
+| b1     | tinyint, int, float | When "conversion.rule" = "as_bits", each bit in vector(tinyint, N) is treated as an element in the vector. When "conversion.rule" = "default", the vector is binarized. |
 | i8     | tinyint, int, float | When the vector element type is inconsistent with the index, cast is performed (note that overflow may occur).                                                                       |
 | f16    | int, float          | When the vector element type is inconsistent with the index, cast is performed.                                                                                        |
 | f32    | int, float          | When the vector element type is inconsistent with the index, cast is performed.                                                                                        |
@@ -62,7 +62,7 @@ CREATE TABLE test_vector1 (
 ```
 ## Reference Documentation
 
-* [Build Index](build-inverted-index.md)
+* [Build Index](build-index.md)
 * [Drop Index](DROP-INDEX.md)
 * [List All Indexes](SHOW-INDEX.md)
 * [View Index Details](DESC-INDEX.md)
@@ -81,13 +81,15 @@ CREATE  VECTOR INDEX [IF NOT EXISTS] index_name ON TABLE
 ```
 **VECTOR**: Index type, vector index
 
-**index\_name**: Table name, located under schema, index name under schema must be unique
+**index\_name**: Index name, located under the schema of the target table. Index names cannot be duplicated within the same schema. The index must be in the same schema as the target table.
 
 **PROPERTIES**: Specify parameters for INDEX
 
 **Description**
 
-Executing CREATE INDEX is only effective for new data
+Executing CREATE INDEX is only effective for new data. Existing data requires [BUILD INDEX](build-index.md) to build the vector index.
+
+The index must be in the same schema as the target table; creating an index across schemas will result in an error.
 
 **Example**
 ```SQL

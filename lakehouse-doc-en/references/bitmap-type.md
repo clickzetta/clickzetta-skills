@@ -1,6 +1,6 @@
 # Bitmap Type Documentation
 
-Bitmap is an efficient data type in ClickZetta Lakehouse for storing and processing collection-type data. The Bitmap in ClickZetta Lakehouse is **64-bit**, optimized using the Roaring Bitmap compression algorithm, enabling efficient storage and processing of large-scale integer sets.
+Bitmap is an efficient data type in Singdata Lakehouse for storing and processing collection-type data. The Bitmap in Singdata Lakehouse is **64-bit**, optimized using the Roaring Bitmap compression algorithm, enabling efficient storage and processing of large-scale integer sets.
 
 Bitmap represents integer sets through bit-level operations, providing extremely high space compression rates. Compared to directly storing arrays, Bitmap can significantly reduce storage costs while providing fast set operation performance.
 
@@ -71,7 +71,7 @@ GROUP BY user_id;
 1. **No Comparison Operations**: Bitmap type does not support direct comparison operations (<, >, =, !=, etc.)
 2. **No Sorting or Grouping**: Bitmap columns cannot be used in ORDER BY, GROUP BY, or DISTINCT operations
 3. **Cannot Be Used as Keys**: Bitmap cannot be used as a table's PRIMARY KEY, PARTITION KEY, or CLUSTER KEY
-4. **Query Display Requirements**: ClickZetta Java version must be >3.0.21
+4. **Query Display Requirements**: Singdata Java version must be >3.0.21
 
 ### Data Validity
 
@@ -320,7 +320,7 @@ Execution Result:
 
 ### Java SDK Example
 
-Use BulkloadStream in ClickZetta Java SDK to write Bitmap data in bulk. You need to use `RoaringBitmap` to construct Bitmap objects.
+Use BulkloadStream in Singdata Java SDK to write Bitmap data in bulk. You need to use `RoaringBitmap` to construct Bitmap objects.
 
 **Constructing Bitmap Objects**:
 

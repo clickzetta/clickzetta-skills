@@ -2,6 +2,8 @@
 
 Singdata Lakehouse integrates AI capabilities natively into the data platform — you can call large language models, run vector search, and build RAG pipelines directly in SQL, without moving data to an external AI platform.
 
+![](/.topwrite/assets/26-lakehouse-ai-overview.svg)
+
 :-: ![](/.topwrite/assets/image_1779796213194.png =825)
 
 ***
@@ -10,7 +12,7 @@ Singdata Lakehouse integrates AI capabilities natively into the data platform �
 
 | What I want to do | Recommended approach |
 | ----------------------------------- | ---------------------------------------------- |
-| Call an LLM in a SQL query (text classification, summarization, extraction, translation) | [AI Functions / AI\_COMPLETE](ai_complete.md) |
+| Call an LLM in a SQL query (text classification, summarization, extraction, translation) | [AI Functions / AI\_COMPLETE](AI_COMPLETE.md) |
 | Manage and switch between multiple LLM models (OpenAI, Qwen, etc.) | [AI Gateway](AIGateway.md) |
 | Semantic similarity search, RAG retrieval, image search | [Vector Search](vector_search_ai.md) |
 | Call external HTTP services (cloud functions, vision APIs, custom models) | [External Function](RemoteFunction-intro.md) |
@@ -39,7 +41,7 @@ SELECT
 FROM user_reviews;
 ```
 
-→ [AI Functions Full Documentation](ai_functions_overview.md) · [AI\_COMPLETE Syntax Reference](ai_complete.md) · [AI Gateway Model Management](AIGateway.md)
+→ [AI Functions Full Documentation](ai_functions_overview.md) · [AI\_COMPLETE Syntax Reference](AI_COMPLETE.md) · [AI Gateway Model Management](AIGateway.md)
 
 ***
 

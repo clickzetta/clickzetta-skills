@@ -22,7 +22,7 @@ SELECT name, nvl(salary, 'Unknown') AS salary FROM employees;
 ```sql
 SELECT order_id, nvl(amount, 0) AS total_amount FROM orders;
 ```
-### 3. Compare two numeric fields, if one of the fields is NULL, return the value of the other field: {#compare-two-numeric-fields-if-one-of-the-fields-is-null-return-the-value-of-the-other-field}
+3. Compare two numeric fields, if one of the fields is NULL, return the value of the other field:
 ```sql
 SELECT product_id, nvl(column1, column2) AS result FROM products;
 ```

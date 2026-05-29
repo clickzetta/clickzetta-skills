@@ -63,7 +63,7 @@ INSERT INTO doc_ts_events VALUES
 (15, 104, 'purchase',  95.00, CAST('2024-03-25 12:00:00' AS TIMESTAMP));
 ```
 
-> **Note**: `TIMESTAMP` literals do not support direct string values; use `CAST('...' AS TIMESTAMP)` for explicit conversion.
+> ⚠️ **Note**: `TIMESTAMP` literals do not support direct string values; use `CAST('...' AS TIMESTAMP)` for explicit conversion.
 
 ***
 
@@ -339,7 +339,7 @@ After completing time series analysis verification, it is recommended to clean u
 DROP TABLE IF EXISTS doc_ts_events;
 ```
 
-> **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
+> 💡 **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
 
 ***
 

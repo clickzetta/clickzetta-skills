@@ -51,19 +51,31 @@ FROM doc_test.dept_stats;
 CZ-CLI is the currently recommended method for AI Agent access, supporting natural language-driven operations on semantic views.
 
 ```bash
-# View semantic views under the current schema
+```
+
+View semantic views under the current schema:
+
+```bash
 cz-cli agent run "List all semantic views in the doc_test schema" --profile aliyun_shanghai_prod
 
-# Query a semantic view
+```
+
+Query a semantic view:
+
+```bash
 cz-cli agent run "Query doc_test.emp_dept_analysis, count employees and average salary by department" \
     --profile aliyun_shanghai_prod
 
-# Create a semantic view
+```
+
+Create a semantic view:
+
+```bash
 cz-cli agent run "Create a semantic view in doc_test to analyze employee salaries, including department dimension and average salary metric" \
     --profile aliyun_shanghai_prod
 ```
 
-See [CZ-CLI Documentation](CZ-CLI.md) for details.
+See [CZ-CLI Documentation](cz-cli.md) for details.
 
 ## MCP Server Tools
 
@@ -167,6 +179,6 @@ The YAML format is compatible with the Snowflake Cortex Analyst specification. U
 ## Related Documents
 
 - [AI Functions](AI_function_in_SQL.md)
-- [CZ-CLI](CZ-CLI.md)
+- [CZ-CLI](cz-cli.md)
 - [MCP Server](MCPServers.md)
 - [Query Semantic View](semantic-view-query.md)

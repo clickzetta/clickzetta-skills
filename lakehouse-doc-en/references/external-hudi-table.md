@@ -1,22 +1,24 @@
 # HUDI External Table
-**[Preview Release] This feature is currently in public preview.**
 
-HUDI introduces a structured storage layer to the data lake, greatly enhancing the usability of the data lake and making its operation experience close to that of a data warehouse. Through the external table feature supported by Lakehouse, users can easily access and manipulate this structured data.
+> ⚠️ **Note**: This feature is currently in public preview.
 
-## Create HUDI Format External Table
+HUDI introduces a structured storage layer to data lakes, greatly enhancing their usability and making the experience comparable to working with a data warehouse. Through the external table feature supported by Singdata Lakehouse, you can easily access and work with this structured data.
 
-\[Create External Table Syntax]\(create-external-table.md)
+## Creating a HUDI Format External Table
+
+[Create External Table Syntax](create-external-table.md)
 
 **Example**
+
 ```SQL
---Create connection
+--Create a connection
 CREATE STORAGE CONNECTION if not exists oss_hudi
     TYPE oss
     ENDPOINT = 'oss-cn-beijing.aliyuncs.com'
     access_id = 'xxx'
     access_key = 'xxxx'
     comments = 'hudi';
---Create external table using the above connection information
+--Create an external table using the connection above
 CREATE EXTERNAL TABLE IF NOT EXISTS sales_data
 (
   order_id INT,
@@ -29,88 +31,104 @@ CONNECTION oss_hudi
 LOCATION 'oss://my-bucket/data/sales'
 COMMENT 'External table for sales data stored in OSS';
 ```
-## Delete External Table
+
+## Dropping an External Table
+
 ```SQL
-DROP TABLE [ IF EXISTS ] [schema_name.]<table_name
+DROP TABLE [ IF EXISTS ] [schema_name.]<table_name>
 ```
+
 **Parameter Description**
 
-* `IF EXISTS`: Optional, if the specified table does not exist, the system will not report an error.
-* `schema_name`: Optional, specifies the name of the schema. If not specified, the current user's schema is used by default.
-* `table_name`: The name of the table to be deleted.
+* `IF EXISTS`: Optional. If specified, no error is raised when the table does not exist.
+* `schema_name`: Optional. Specifies the schema name. If not specified, the current user's schema is used by default.
+* `table_name`: The name of the table to drop.
 
-**Description**
+**Notes**
 
-* Deleting an external table does not delete the data, as the data is stored in an external system. Deleting only removes the table mapping information.
+* Dropping an external table does not delete the underlying data, because the data is stored in an external system. The drop operation only removes the table's mapping metadata.
 
 **Example**
+
 ```SQL
---Delete external tables that have already been created
+--Drop an existing external table
 DROP TABLE sales_data;
---Delete the table named sales_data. If the table does not exist, no error will be reported:
+--Drop the table named sales_data; no error if the table does not exist:
 DROP TABLE IF EXISTS sales_data;
---Delete the sales_data table under the name my_stemplate
+--Drop the sales_data table under the schema my_schema
 DROP TABLE my_schema.my_table;
 ```
-## View External Table Details
+
+## Viewing External Table Details
+
 ```SQL
 DESC[RIBE] [TABLE] [EXTENDED] table_name;
 ```
+
 **Parameter Description**
 
-* **DESC\\\[RIBE]**: DESC and DESCRIBE can be used interchangeably, both representing the command to describe the table structure.
-* **TABLE**: Optional parameter, used to specify the type of table structure to view, such as BASE TABLE or VIEW, etc.
-* **EXTENDED**: Optional parameter, adding this keyword will display more extended information, such as the table creation statement and Location information, etc.
-* **table\\\_name**: Specifies the name of the table whose structure needs to be viewed.
+* **DESC\[RIBE]**: `DESC` and `DESCRIBE` are interchangeable; both describe the table structure.
+* **TABLE**: Optional. Specifies the type of object to describe, such as `BASE TABLE` or `VIEW`.
+* **EXTENDED**: Optional. When included, additional extended information is displayed, such as the table's creation statement and Location.
+* **table\_name**: The name of the table whose structure you want to view.
 
-## Modify External Table
+## Modifying an External Table
 
-### Rename Table
+### Renaming a Table
 
-Using the ALTER TABLE command, you can rename an existing table to a new table name.
+You can use the `ALTER TABLE` command to rename an existing table.
 
 **Syntax**
+
 ```SQL
 ALTER TABLE name RENAME TO new_table_name;
 ```
+
 **Example**
+
 ```SQL
 ALTER TABLE old_table_name RENAME TO new_table_name;
 ```
-### Modify Table Comments
 
-Using the ALTER TABLE command, you can add or modify comments for a table.
+### Modifying Table Comments
+
+You can use the `ALTER TABLE` command to add or update a comment on a table.
 
 **Syntax**
+
 ```SQL
 ALTER TABLE tbname SET COMMENT '';
 ```
+
 **Example**
+
 ```SQL
 ALTER TABLE scores SET COMMENT 'This is a scores table';
 ```
+
 ## **External Table Billing**
 
-* **Storage Fees**: External tables do not incur storage fees because the data is not stored in the Lakehouse.
-* **Computation Fees**: Using external tables for computation consumes computational resources, thus incurring computation fees.
+* **Storage cost**: External tables do not incur storage costs because the data is not stored in Singdata Lakehouse.
+* **Compute cost**: Querying an external table consumes compute resources and therefore incurs compute costs.
 
 ## **External Table Permissions**
 
-External tables have the same permission points as internal tables. Operations such as insert, update, truncate, delete, and undrop cannot be performed externally, so there are no corresponding operations.
+External tables share the same permission model as internal tables. Because external tables do not support `INSERT`, `UPDATE`, `TRUNCATE`, `DELETE`, or `UNDROP` operations, there are no corresponding permission points for those operations.
 
-* **Creation Permissions**: Requires the permission to create tables.
-* **Deletion Permissions**: Requires the permission to drop tables.
-* **Read Permissions**: Requires the permission to select.
+* **Create permission**: Requires the `create table` privilege.
+* **Drop permission**: Requires the `DROP` privilege.
+* **Read permission**: Requires the `SELECT` privilege.
 
 ## **Usage Notes**
 
-* **Connection Configuration**: When creating a connection, ensure the endpoint is configured correctly so that the Lakehouse can connect successfully. If the Lakehouse and the object storage are in the same cloud service and in the same region, using the internal network address usually ensures network connectivity. If they are not in the same network environment, it is recommended to use the public address of the object storage.
+* **Connection configuration**: When creating a connection, make sure the `endpoint` is configured correctly so that Singdata Lakehouse can connect successfully. If Singdata Lakehouse and the object storage are in the same cloud service and the same region, you can typically use the internal network address for connectivity. If they are in different network environments, use the public endpoint of the object storage.
 
-## Specific Cases
+## Examples
 
-### Connecting to Alibaba Cloud Oss
+### Connecting to Alibaba Cloud OSS
+
 ```SQL
---Create connection for connecting to object storage
+--Create a connection to object storage
 CREATE STORAGE CONNECTION  oss_hudi
     TYPE oss
     ENDPOINT = 'oss-cn-hangzhou-internal.aliyuncs.com'
@@ -118,7 +136,7 @@ CREATE STORAGE CONNECTION  oss_hudi
     access_key = 'xxxxxx'
     comments = 'hudi'
     ;
---Use the above connection information to create an external table
+--Create an external table using the connection above
 CREATE    EXTERNAL TABLE pepole_hudi (id int, name string,dt string) 
 USING HUDI 
 CONNECTION oss_hudi 
@@ -126,24 +144,26 @@ PARTITIONED BY (dt )
 LOCATION 'oss://bucketmy/hudi-format/uploadhudi/' 
 COMMENT 'external';
 ```
-### Connect to Google GCS
 
-When Lakehouse connects to Google Cloud Storage (GCS), it uses a service account key for authentication. Please follow the steps below:
+### Connecting to Google GCS
+
+When Singdata Lakehouse connects to Google Cloud Storage (GCS), it uses a service account key for authentication. Follow the steps below:
 
 1. **Obtain the service account key**:
 
-* Log in to the Google Cloud Console.
-* Follow the instructions in the *[Google Cloud documentation](https://cloud.google.com/docs/authentication/getting-started)* to create and download the JSON key file for the service account.
+   * Log in to the Google Cloud Console.
+   * Follow the *[Google Cloud documentation](https://cloud.google.com/docs/authentication/getting-started)* to create and download a JSON key file for your service account.
 
-2. **Configure the ****`private_key`**** parameter**:
+2. **Configure the `private_key` parameter**:
 
-* Open the downloaded JSON key file and copy the entire content of the private key.
+   * Open the downloaded JSON key file and copy the full private key content.
 
 3. **Note**:
 
-* When configuring the `private_key`, you must add an 'r' at the beginning. The 'r' indicates that the string is case-sensitive, and special characters and unicode characters will not be escaped.
+   * When configuring `private_key`, you must prefix the value with `r`. The `r` prefix means the string is treated as a raw string, so special characters and Unicode characters will not be escaped.
+
 ```SQL
---Create a connection to connect object storage
+--Create a connection to object storage
 CREATE STORAGE CONNECTION  oss_hudi
     TYPE gcs
     private_key=r'{
@@ -158,7 +178,7 @@ CREATE STORAGE CONNECTION  oss_hudi
   "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
   "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/SERVICE_ACCOUNT_EMAIL"
 }';
---Create an external table using the link information above
+--Create an external table using the connection above
 CREATE    EXTERNAL TABLE pepole_hudi (id int, name string,dt string) 
 USING HUDI 
 CONNECTION oss_hudi 

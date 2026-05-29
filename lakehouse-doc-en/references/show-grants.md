@@ -1,6 +1,39 @@
 # SHOW GRANTS
 
-Queries the permissions held by the current user, a specified role, or a specified user, helping to understand permission settings and ensure data access security.
+Queries the permissions held by the current user, a specified role, or a specified user, helping you understand permission settings and ensure data access security.
+
+## View Permissions on an Object
+
+View which permissions have been granted on a specific object (table, schema, workspace, VCluster, etc.).
+
+```Plain
+SHOW GRANTS ON TABLE [schema.]table_name;
+SHOW GRANTS ON SCHEMA schema_name;
+SHOW GRANTS ON WORKSPACE workspace_name;
+SHOW GRANTS ON VCLUSTER vcluster_name;
+SHOW GRANTS ON VOLUME [schema.]volume_name;
+SHOW GRANTS ON ROLE role_name;
+```
+
+### Usage Examples
+
+```SQL
+-- View all grants on a table
+SHOW GRANTS ON TABLE public.orders;
+
+-- View all grants on a schema
+SHOW GRANTS ON SCHEMA public;
+
+-- View all grants on a VCluster
+SHOW GRANTS ON VCLUSTER default;
+
+-- View all grants on a workspace
+SHOW GRANTS ON WORKSPACE my_workspace;
+```
+
+The returned columns are the same as those for `SHOW GRANTS TO ROLE`; see the return column description below.
+
+---
 
 ## Workspace Role Permission Query Syntax
 

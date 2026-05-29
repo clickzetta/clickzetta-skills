@@ -67,7 +67,7 @@ SELECT * FROM orders_clone_backup ORDER BY order_id;
 | 2 | 102 | 300 | 2024-06-02 |
 | 3 | 103 | 800 | 2024-06-03 |
 
-> **Tip**: Zero-copy cloning is a core Lakehouse feature. The clone operation completes instantly, regardless of table size.
+> 💡 **Tip**: Zero-copy cloning is a core Lakehouse feature. The clone operation completes instantly, regardless of table size.
 
 ***
 
@@ -86,7 +86,7 @@ TIMESTAMP AS OF (CURRENT_TIMESTAMP() - INTERVAL '1' MINUTE);
 * Audit historical data
 * Compare data changes
 
-> **Note**: The point in time must be within the Time Travel retention period (default 1 day).
+> ⚠️ **Note**: The point in time must be within the Time Travel retention period (default 1 day).
 
 ***
 
@@ -151,7 +151,7 @@ SELECT 'clone' as tbl, COUNT(*) as cnt FROM orders_clone_backup;
 | source | 3 |
 | clone | 4 |
 
-> **Note**: When performing write operations on the cloned table, Lakehouse creates independent data files for the new data, without affecting the source table's shared files.
+> ⚠️ **Note**: When performing write operations on the cloned table, Lakehouse creates independent data files for the new data, without affecting the source table's shared files.
 
 ***
 
@@ -167,7 +167,7 @@ DROP TABLE IF EXISTS orders_clone_history;
 DROP TABLE IF EXISTS orders_clone_empty;
 ```
 
-> **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
+> 💡 **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
 
 ***
 

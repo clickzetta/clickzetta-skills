@@ -114,6 +114,17 @@ SELECT AI_SUMMARIZE(
 ) AS summary;
 ```
 
+### English Text Example
+
+```sql
+-- English input returns an English summary
+SELECT AI_SUMMARIZE(
+    'endpoint:qwen3-max-preview',
+    'Singdata Lakehouse is an enterprise data platform supporting batch, streaming, and interactive analytics across multiple cloud environments.',
+    15
+) AS summary;
+```
+
 ### max_words=0 Returns Original Text
 
 ```sql

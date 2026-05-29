@@ -266,3 +266,12 @@ The following shortcuts are supported in the code editor to improve editing effi
 * **Batch line operations**
   * Mac: Shift + Option
   * Windows: Hold Shift + Alt
+
+## Related Documents
+
+- [Task Parameters](task_param.md) — Use dynamic parameters (dates, timestamps, etc.) in SQL tasks
+- [Task Parameter Syntax Reference](task_param_reference.md) — Complete syntax for system built-in parameters, time expressions, and time functions
+- [Task Parameter Scenario Examples](task_param_examples.md) — Complete business scenarios such as daily, monthly, and weekly reports
+- [Workflow (Composite Task)](composite_task.md) — Orchestrate multiple SQL tasks into a DAG
+- [Task Groups](task_group.md) — Share parameters across tasks and manage them uniformly
+- [Python Tasks](python-task.md) — Use parameters in Python scripts

@@ -403,8 +403,8 @@ Solution: Check whether the VECTOR(FLOAT, n) definition matches the actual data 
 **Issue 2: Bloom Filter Not Taking Effect**
 
 ```
-Reason: Bloom filter only takes effect on new data, does not support BUILD INDEX
-Solution: For existing data, consider using inverted index instead
+Reason: A newly created Bloom filter index only takes effect on new data; existing data requires BUILD INDEX
+Solution: Run BUILD INDEX on existing data
 ```
 
 **Issue 3: Poor Chinese Tokenization Results**
@@ -665,6 +665,6 @@ DROP TABLE IF EXISTS demo_table_2;
 
 \- \[Create Bloom Filter Index]\(CREATE-BLOOMFILTER-INDEX.md)
 
-\- \[Build Index]\(build-inverted-index.md)
+\- \[Build Index]\(build-index.md)
 
 \- \[Show Index]\(SHOW-INDEX.md)

@@ -213,4 +213,8 @@ CREATE EXTERNAL CATALOG catalog_name
 **Parameter Description**
 - **`catalog_name`**  ：The name of the external Catalog. This name is used to identify the Catalog, and it must be unique and comply with naming conventions.                                       
 - **`CONNECTION catalog_api_connection`** ：Specifies the connection to the external Catalog. `catalog_api_connection` is the name of a pre-created connection used to access the external Catalog.   
-- **`OPTIONS ('catalog'='catalog_name')`**  ：Specifies the configuration options for the external Catalog. `'catalog'='catalog_name'`：Indicates the name of the external Catalog, `catalog_name` is the name of the target Catalog.
+- **`OPTIONS ('catalog'='catalog_name')`**  : Specifies the configuration options for the external Catalog. `'catalog'='catalog_name'`: Indicates the name of the external Catalog, `catalog_name` is the name of the target Catalog.
+
+## Related Guides
+
+- [Federated Query](SQL_External_Catalog_Guide.md): Complete examples for querying external data sources such as Hive and Databricks through External Catalog.

@@ -21,7 +21,7 @@ The meanings of each parameter are as follows:
 * `<user_login_name>`: Your Singdata Lakehouse login username.
 * `<password>`: Your Singdata Lakehouse login password.
 * `<instance_name>`: Your Singdata Lakehouse instance name.
-* `<region_id>`: The cloud provider and region code for the service instance, e.g. `cn-shanghai-alicloud`. See [Supported Cloud Platforms](supported-cloud-platforms.md) for all region IDs.
+* `<region_id>`: The cloud provider and region code for the service instance, e.g. `cn-shanghai-alicloud`. See [Supported Cloud Platforms](Supported-Cloud-Platforms.md) for all region IDs.
 * `<workspace_name>`: Your Singdata Lakehouse workspace name.
 * `<target_schema>`: The name of the target schema you wish to access.
 * `<your_vcluster_name>`: The name of your virtual cluster.

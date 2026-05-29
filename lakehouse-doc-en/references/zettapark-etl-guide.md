@@ -253,5 +253,5 @@ df.with_column("cumulative", F.sum("monthly_amount").over(w)).show()
 |------|------|
 | [Zettapark DataFrame API Guide](zettapark-dataframe-guide.md) | Complete DataFrame operations reference |
 | [Zettapark Functions Reference](zettapark-functions-guide.md) | String, numeric, date, and conditional functions |
-| [Dynamic Table](../dynamic-table.md) | Create auto-incrementally refreshed data pipelines with Zettapark |
-| [Python Connector SDK](../python_reference/connector.md) | Standard SQL execution interface |
+| [Dynamic Table](dynamic-table.md) | Create auto-incrementally refreshed data pipelines with Zettapark |
+| [Python Connector SDK](python_reference/connector.md) | Standard SQL execution interface |

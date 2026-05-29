@@ -2,7 +2,7 @@
 
 The `DESCRIBE HISTORY` command is used to obtain historical information about tables, dynamic tables, or materialized views. Through these historical records, users can perform rollback operations or query table data at specific points in time. Whether the operation history of an object can be viewed depends on the data [retention period](TIMETRAVEL.md).
 
-# Syntax 
+## Syntax 
 ```SQL
 DESCRIBE HISTORY object_name;
 ```
@@ -10,7 +10,7 @@ Parameter Description:
 
 * `object_name`: Supported types include table, dynamic table, and materialized view.
 
-#  Example
+##  Example
 
 Example 1: View the history of table operations
 ```
@@ -55,7 +55,7 @@ DESC HISTROY mv_inventory_basic;
 | 2       | 2024-12-26 15:18:21.626 | 1          | 2915        | qiliang | CREATE    | 202412261518212641gmspelya5ne | [{"table_name":"inventory","workspace":"ql_ws","schema":"public","version":"2","commit_time":"2024-12-26 14:38:14.258"}] |
 +---------+-------------------------+------------+-------------+---------+-----------+-------------------------------+--------------------------------------------------------------------------------------------------------------------------+
 ```
-# Precautions
+## Precautions
 
 * When using the `DESCRIBE HISTORY` command, make sure that `object_name` is a valid table, dynamic table, or materialized view name.
 * When querying data at a specific point in time, ensure that the provided time format is correct.

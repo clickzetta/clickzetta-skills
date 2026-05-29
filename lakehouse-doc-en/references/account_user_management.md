@@ -12,7 +12,7 @@ Users with the account administrator (Account\_admin) role can configure other u
 
 The steps to manage the account administrator role are:
 
-1\. After logging in, go to .accounts.clickzetta.com/workbench, click "User Management", click the "..." button on the right side of the user you want to set as an account administrator to expand the operation buttons, and click "Edit";
+1\. After logging in, go to .accounts.singdata.com/workbench, click "User Management", click the "..." button on the right side of the user you want to set as an account administrator to expand the operation buttons, and click "Edit";
 
 :-: ![](.topwrite/assets/image_1740572948427.png =802)
 

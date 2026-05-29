@@ -1,18 +1,18 @@
-# Superset ClickZetta adapter User Guide
+# Superset Singdata adapter User Guide
 
 ## Superset Introduction
 
 Superset is an open-source BI data analysis and visualization platform by Airbnb, originally named Caravel and Panoramix. The main features of this tool include self-service analysis, custom dashboards, visualization (export) of analysis results, and user/role permission control. Superset also integrates an SQL editor, allowing users to perform SQL editing and querying. Initially, Superset was mainly used to support the visualization analysis of Druid, but later it evolved to support various relational databases and big data computing frameworks, such as MySQL, Oracle, PostgreSQL, Presto, SQLite, Redshift, Impala, SparkSQL, Greenplum, and MSSQL. Superset is based on the Python framework and integrates technologies such as Flask, D3, Pandas, and SqlAlchemy.
 
-## Superset ClickZetta Adapter
+## Superset Singdata Adapter
 
-`clickzetta-sqlalchemy` is a dialect adapter for SQLAlchemy that provides ClickZetta Lakehouse, making it easy for code or upper-layer applications written using the SQLAlchemy interface to connect to ClickZetta Lakehouse. Superset supports URL configuration data source links in the SQLAlchemy specification, so connecting to the ClickZetta database in Superset only requires configuring the corresponding URL.
+`clickzetta-sqlalchemy` is a dialect adapter for SQLAlchemy that provides Singdata Lakehouse, making it easy for code or upper-layer applications written using the SQLAlchemy interface to connect to Singdata Lakehouse. Superset supports URL configuration data source links in the SQLAlchemy specification, so connecting to the Singdata database in Superset only requires configuring the corresponding URL.
 
 ## Installation and Configuration
 
 ### Using Docker Image
 
-By using the Docker image, you can quickly experience the effect of Superset connecting to ClickZetta Lakehouse:
+By using the Docker image, you can quickly experience the effect of Superset connecting to Singdata Lakehouse:
 ```shell
 docker pull clickzetta/superset:2.1.0-1
 docker run -p 8088:8088 clickzetta/superset:2.1.0-1
@@ -25,7 +25,7 @@ Open the browser and go to http://localhost:8088.
    `clickzetta-sqlalchemy` needs to be installed in an environment with Python version 3.7 or above.
 Installation command (ensure the current environment does not need to use clickzetta-sqlalchemy and clickzetta-connector, uninstall them to avoid dependency conflicts):
 ```
-pip uninstall -y clickzetta-sqlalchemy clickzetta-connector && pip install clickzetta-connector
+pip uninstall -y clickzetta-sqlalchemy clickzetta-connector && pip install clickzetta-connector -U
 ```
 2. Install Superset:
    You can choose to install the same version of Superset as the image, or install a higher version of Superset.
@@ -57,17 +57,17 @@ superset run -p 8088 --with-threads --reload --debugger
 * If you are using the image, the default username is `admin` and the password is `clickzetta`.
 * If you have a local installation, please use the username and password you set during the installation step `superset fab create-admin`.
 
-### Connect to ClickZetta Database
+### Connect to Singdata Database
 
 1. Click on Settings in the upper right corner and then Database Connections to navigate to the Superset database creation page.
 2. Click on Database in the upper right corner and select Other as the database type.
-3. Fill in the database name and the service URL of ClickZetta Lakehouse.
+3. Fill in the database name and the service URL of Singdata Lakehouse.
 4. Click the TESTING CONNECTION button to test if the connection is successful.
 5. If the test passes, click the CONNECT button below to complete the database connection.
 
-### ClickZetta URL Format
+### Singdata URL Format
 
-The format of the ClickZetta URL is as follows:
+The format of the Singdata URL is as follows:
 ```
 clickzetta://username:password@instance.service/workspace?vcluster=vcluster
 ```
@@ -91,8 +91,8 @@ service supports both http and https protocols.
 
 ### Using Superset for Visualization Analysis
 
-After successfully connecting to the ClickZetta database, you can use Superset for data visualization analysis. Here are some usage examples:
+After successfully connecting to the Singdata database, you can use Superset for data visualization analysis. Here are some usage examples:
 
-1. Create a chart: Click on Charts in the left menu bar and select New Chart. On the chart settings page, select the ClickZetta database you just connected to, then choose the appropriate table and fields to create the chart.
+1. Create a chart: Click on Charts in the left menu bar and select New Chart. On the chart settings page, select the Singdata database you just connected to, then choose the appropriate table and fields to create the chart.
 2. Create a dashboard: Click on Dashboards in the left menu bar and select New Dashboard. On the dashboard settings page, you can add multiple charts and adjust their layout and style.
 3. Export and share: On the chart or dashboard page, you can click the export button in the upper right corner to export the analysis results as images,

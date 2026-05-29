@@ -283,7 +283,7 @@ memory usage: 9.5+ KB
 
 ## Credit Scoring with Zettapark for Python
 
-In this notebook, we will use the [Zettapark](https://www.clickzetta.com/documents) Python API for a credit scoring demo.
+In this notebook, we will use the [Zettapark](https://www.singdata.com/documents) Python API for a credit scoring demo.
 
 In this scenario, Zettabank wants to leverage its existing credit files to analyze the current credit standing, i.e., whether loans are being repaid smoothly or if there are any delays/defaults.
 

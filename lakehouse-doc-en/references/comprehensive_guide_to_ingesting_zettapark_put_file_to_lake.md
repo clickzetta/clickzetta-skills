@@ -17,28 +17,45 @@ Suitable for those familiar with Python programming, leveraging Python's powerfu
 You can also [download the file directly](https://github.com/yunqiqiliang/clickzetta_quickstart/blob/main/a_comprehensive_guide_to_ingesting_data_into_clickzetta/put_data_to_datalake_by_Zettapark.ipynb) to your local machine.
 
 ##### **Put Local Files into the Data Lake Managed by Singdata Lakehouse (Volume) via Zettapark**
+
 ```Python
-# !pip install clickzetta_zettapark_python  -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
+
+!pip install clickzetta_zettapark_python  -i https://pypi.tuna.tsinghua.edu.cn/simple:
+
+```Python
+```
+
 ```Python
 from clickzetta.zettapark.session import Session
 import json,requests
 import os
 from datetime import datetime
 ```
+
 ##### **Create a Session to Singdata Lakehouse**
+
 ```Python
-# Read parameters from the configuration file
+```
+
+Read parameters from the configuration file:
+
+```Python
 with open('config/config-ingest.json', 'r') as config_file:
     config = json.load(config_file)
 
 print("Connecting to Singdata Lakehouse.....\n")
 
-# Create session
+```
+
+Create session:
+
+```Python
 session = Session.builder.configs(config).create()
 
 print("Connection successful!...\n")
 ```
+
 Connecting to Singdata Lakehouse.....
 
 Connection successful!...
@@ -46,6 +63,7 @@ Connection successful!...
 ##### **PUT file to Singdata Lakehouse Data Lake Volume**
 
 Please change 'data/' to the directory where the data generated in the 'Test Data Generation' step is stored.
+
 ```Python
 for filename in os.listdir("data/"):
         if filename.endswith(".gz"):
@@ -58,27 +76,37 @@ for filename in os.listdir("data/"):
             file_path = os.path.join("data/", filename)
             session.file.put(file_path,"volume://ingest_demo/json/")
 ```
+
 ```Python
-# Or upload all files in the directory
-# session.file.put("../data/","volume://ingest_demo/gz/")
+```
+
+Or upload all files in the directory# session.file.put("../data/","volume://ingest_demo/gz/"):
+
+```Python
+```
+
 ##### **Resynchronize the Data Lake Volume Directory to the Lakehouse**
+
 ```Python
 session.sql(alter_datalake_sql).show()
 ```
+
 \---------------------
 
 |result\_message |
 
 \---------------------
 
-|OPERATION SUCCEED |
+|OPERATION SUCCEEDED |
 
 \---------------------
 
 ##### **Check the files on the Singdata Lakehouse data lake Volume again, the data has been successfully ingested**
+
 ```Python
 results = session.sql("select * from directory(volume ingest_demo)").show()
 ```
+
 \----------------------------------------------------------------------------------------------------------------------------
 
 |relative\_path |url |size |last\_modified\_time |
@@ -92,14 +120,17 @@ results = session.sql("select * from directory(volume ingest_demo)").show()
 \----------------------------------------------------------------------------------------------------------------------------
 
 ##### **Test pulling files from the data lake back to local**
+
 ```Python
 session.file.get("volume://ingest_demo/gz/lift_tickets_data.json.gz","tmp/gz/")
 ```
+
 \[GetResult(file='tmp/gz/lift\_tickets\_data.json.gz', size=11146044, status='DOWNLOADED', message='')]
 
 ##### Verify the number of rows in the data lake file
 
 Data validation, check the number of rows in the file. The query result is 100000, which is the same as the number of rows in the original file. From the perspective of the number of rows, the data has been correctly ingested into the lake.
+
 ```Python
 datalake_data_verify_sql = """
 select count() from volume ingest_demo (txid string) using csv
@@ -111,9 +142,11 @@ select count() from volume ingest_demo (txid string) using csv
  limit 10
 """
 ```
+
 ```Python
 session.sql(datalake_data_verify_sql).show()
 ```
+
 \-------------
 
 |`count`() |
@@ -125,6 +158,7 @@ session.sql(datalake_data_verify_sql).show()
 \-------------
 
 ##### Query data in the data lake file
+
 ```Python
 datalake_data_analytics_sql = """
 select * from volume ingest_demo (txid string,name string, address_state string) using csv
@@ -136,9 +170,11 @@ select * from volume ingest_demo (txid string,name string, address_state string)
  limit 10
 """
 ```
+
 ```Python
 session.sql(datalake_data_analytics_sql).show()
 ```
+
 \-------------------------------------------------------------------------------------
 
 |txid |name |address\_state |
@@ -168,9 +204,11 @@ session.sql(datalake_data_analytics_sql).show()
 \-------------------------------------------------------------------------------------
 
 ##### Close Zettapark Session
+
 ```Python
 session.close()
 ```
+
 #### Next Steps Recommendations
 
 * Clean and transform data using Zettapark in Dataframe format

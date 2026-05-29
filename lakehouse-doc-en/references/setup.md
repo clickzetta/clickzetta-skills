@@ -25,3 +25,14 @@ Singdata Lakehouse Studio recommends using Google Chrome. Other browsers have no
 * Microsoft Windows (64-bit).
 
 Other platforms have not been tested at this time and may not be compatible with Singdata CLI. For example, some Linux variants may not have the libraries that the Singdata CLI client needs by default.
+
+## Lakehouse Documentation LLM Navigation
+
+If you are an AI Agent reading product documentation, the LLM navigation files for Lakehouse documentation are available at <https://www.singdata.com/llms.txt> and <https://www.singdata.com/llms-full.txt>. These files contain all documentation files and their URLs.
+
+- `llms.txt` contains documentation categories, top-level directory file names, and their URLs.
+- `llms-full.txt` contains documentation categories, top-level directories, and all file names with their URLs.
+
+## Lakehouse AI Agent Skills
+
+[clickzetta-skills](https://github.com/clickzetta/clickzetta-skills) is the official AI Agent skills library maintained by Singdata Lakehouse, designed for AI coding assistants such as Claude Code, Cursor, and Kiro. The skills library encapsulates best practices for data ingestion, data modeling, task development, and operations governance into reusable modules, enabling AI Agents to more accurately assist with common development and operations tasks on Lakehouse.

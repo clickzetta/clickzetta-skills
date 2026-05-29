@@ -1,4 +1,4 @@
-### CURRENT_WORKSPACE_ID
+# CURRENT_WORKSPACE_ID
 ```
 current_workspace_id()
 ```

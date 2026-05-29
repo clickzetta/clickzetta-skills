@@ -59,7 +59,7 @@ Taking downloading httpx and pydantic as an example, use the following command t
 pip3 install httpx pydantic -t . 
 ```
 
-> Note: When you use a non-Linux system such as macOS / Windows, or a non-X86-64 device, or when your third-party libraries contain native code, to avoid Python ABI compatibility issues, it is strongly recommended to use a container based on `quay.io/pypa/manylinux2014_x86_64:2022-10-25-fbea779` to download third-party dependencies. Refer to the appendix: Development Environment Image Installation.
+> ⚠️ **Note**: When you use a non-Linux system such as macOS / Windows, or a non-X86-64 device, or when your third-party libraries contain native code, to avoid Python ABI compatibility issues, it is strongly recommended to use a container based on `quay.io/pypa/manylinux2014_x86_64:2022-10-25-fbea779` to download third-party dependencies. Refer to the appendix: Development Environment Image Installation.
 
 ## Uploading Functions
 
@@ -102,7 +102,7 @@ Objective: Use a Large Language Model (LLM) service to fill in the nationally st
 
 ![](.topwrite/assets/20250612-171447.jpeg =675)
 
-> Note: To complete this example, you need:
+> ⚠️ **Note**: To complete this example, you need:
 >
 > 1. Docker installed (mainly to ensure the development environment is consistent with the environment where Singdata runs functions)
 > 2. An Alibaba Cloud account with the Bailian platform API-KEY enabled. Refer to [Alibaba Cloud Bailian](https://www.aliyun.com/product/bailian)
@@ -287,7 +287,7 @@ Execute the packaging command, ensuring the current directory is the program dir
 [root@docker cz_llm]# ls ../
 ```
 
-> Tip: If your environment does not have the zip command, try downloading it with `yum install zip`. If you encounter problems during the download, please refer to the appendix "**Errors When Installing Tools**".
+> 💡 **Tip**: If your environment does not have the zip command, try downloading it with `yum install zip`. If you encounter problems during the download, please refer to the appendix "**Errors When Installing Tools**".
 
 You will find a `cz_llm.zip` file in the `/root` directory. Copy this file to the Lakehouse USER VOLUME storage:
 
@@ -384,7 +384,7 @@ To ensure consistency between the data types used in Python UDF development and 
 | BIGINT            | int                    |
 | BOOLEAN           | bool                   |
 | CHAR              | unicode                |
-| DATE              | datatime.date          |
+| DATE              | datetime.date          |
 | DECIMAL           | decimal.Decimal        |
 | DOUBLE            | float                  |
 | FLOAT             | float                  |

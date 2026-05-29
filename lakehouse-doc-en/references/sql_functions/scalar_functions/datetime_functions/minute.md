@@ -21,16 +21,12 @@ Returns an integer representing the minute part of the timestamp parameter.
 SELECT MINUTE('2022-01-01 10:23:15.321');
 -- Result: 23
 ```
-```markdown
 2. Extract the minute part from the current timestamp:
-```
 ```
 SELECT MINUTE(TIMESTAMP "2022-01-02 03:21:00");
 -- Result: 21
 ```
-```markdown
 3. Extract the minute part from a string type time and use it in conjunction with other time operations:
-```
 ```
 SELECT MINUTE('2022-01-01 10:23:15.321') + INTERVAL '1' MINUTE;
 -- Result: 24

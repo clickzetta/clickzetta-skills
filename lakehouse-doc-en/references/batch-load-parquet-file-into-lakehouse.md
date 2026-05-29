@@ -12,7 +12,7 @@ This guide will help you import large amounts of data from public URL Parquet fi
 
 Script download address: <https://github.com/yunqiqiliang/nyc-taxi-data-clickzetta>
 
-## 1. Install [ClickZetta SQLLine](https://doc.clickzetta.com/zh-CN/connect-with-cli)
+## 1. Install [Singdata SQLLine](https://doc.clickzetta.com/zh-CN/connect-with-cli)
 
 ## 2. Install [R](https://www.r-project.org/)
 

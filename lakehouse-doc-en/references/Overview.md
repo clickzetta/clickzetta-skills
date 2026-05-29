@@ -10,12 +10,12 @@ Supports seven global clouds, already live in multiple Asia-Pacific regions, and
 <tr>
 <td style="width:25%; vertical-align:top; overflow-wrap:break-word;"><strong>Migrating from Spark / Databricks</strong><br>
 <small><a href="tutorial_migration.md">Migration Guide</a> · <a href="migrate-spark-data-engineering-best-practices-to-lakehouse.md">Migration Best Practices</a> · <a href="sql-reference.md">SQL Syntax Comparison</a> · <a href="spark-connector-summary.md">Spark Connector</a> · <a href="benchmark_guide.md">Performance Testing</a></small></td>
-<td style="width:25%; vertical-align:top; overflow-wrap:break-word;"><strong>Accelerate on Existing Data Lake</strong><br>
+<td style="width:25%; vertical-align:top; overflow-wrap:break-word;"><strong>Lake Acceleration (existing data lake)</strong><br>
 <small><a href="lakehouse-acceleration-guide.md">In-Place Lake Acceleration Guide</a> · <a href="external-catalog-summary.md">External Catalog Federation</a> · <a href="external-table-guide.md">External Tables</a> · <a href="external_volume.md">Object Storage Mount</a> · <a href="benchmark_guide.md">Performance Testing</a></small></td>
 <td style="width:25%; vertical-align:top; overflow-wrap:break-word;"><strong>AI Data Infrastructure</strong><br>
 <small><a href="LakehouseAI-overview.md">Lakehouse AI Overview</a> · <a href="server-data-for-ai.md">AI Data Readiness</a> · <a href="vector_search_ai.md">Vector Search</a> · <a href="AIGateway.md">AI Gateway</a> · <a href="datagpt_introduction.md">Data Analytics Agent</a></small></td>
 <td style="width:25%; vertical-align:top; overflow-wrap:break-word;"><strong>Cloud Platforms and Deployment</strong><br>
-<small><a href="supported-cloud-platforms.md">Supported Cloud Platforms and Regions</a> · <a href="pricing.md">Pricing and Billing</a></small></td>
+<small><a href="Supported-Cloud-Platforms.md">Supported Cloud Platforms and Regions</a> · <a href="pricing.md">Pricing and Billing</a></small></td>
 </tr>
 </table>
 
@@ -26,9 +26,9 @@ Supports seven global clouds, already live in multiple Asia-Pacific regions, and
 <table style="width:100%; table-layout:auto;">
 <tr>
 <td style="vertical-align:top; text-align:center; padding:12px; overflow-wrap:break-word;">
-<strong>① Create an Account</strong><br>
+<strong>① Set Up Your Account</strong><br>
 <small>5 minutes</small><br><br>
-Register, activate a service instance, and complete initial configuration<br><br>
+Register an account, activate a service instance, complete initialization<br><br>
 <a href="logging-in.md">Get Started →</a>
 </td>
 <td style="vertical-align:top; text-align:center; padding:12px; overflow-wrap:break-word;">
@@ -55,15 +55,15 @@ Dedicated paths for data engineers, analysts, AI engineers, and administrators<b
 <td style="width:22%; vertical-align:top; overflow-wrap:break-word;"><strong>Data Integration / Data Sync</strong><br><small>Data ingestion, CDC sync, file import, streaming writes</small></td>
 <td style="vertical-align:top; overflow-wrap:break-word;">
 
-[Studio Data Integration](data-integration.md) (visual configuration for 40+ data sources) · [Real-time Sync Tasks](realtime_sync.md) (full-database CDC for MySQL / PG / Oracle) · [Batch Sync Tasks](batch_sync.md) (scheduled batch sync) · [Pipe Continuous Ingestion](pipe-introduction.md) (auto-write from object storage / Kafka) · [COPY INTO](COPY-INTO-table.md) (one-time file import) · [Complete Data Ingestion Guide](a_comprehensive_guide_to_ingesting_data_into_clickzetta_lakehouse.md)
+[Studio Data Integration](data-integration.md) (visual configuration for 40+ data sources) · [Real-time Sync Tasks](realtime_sync.md) (full-database CDC for MySQL / PG / Oracle) · [Batch Sync Tasks](batch_sync.md) (scheduled batch sync) · [Pipe Continuous Ingestion](pipe-introduction.md) (auto-write from object storage / Kafka) · [COPY INTO](copy-into-table.md) (one-time file import) · [Complete Data Ingestion Guide](a_comprehensive_guide_to_ingesting_data_into_clickzetta_lakehouse.md)
 
 </td>
 </tr>
 <tr>
-<td style="width:22%; vertical-align:top; overflow-wrap:break-word;"><strong>Data Engineer</strong><br><small>Build data pipelines, ETL processing, manage warehouse layers</small></td>
+<td style="width:22%; vertical-align:top; overflow-wrap:break-word;"><strong>Data Engineer</strong><br><small>Build data pipelines, ETL processing, manage data warehouse layers</small></td>
 <td style="vertical-align:top; overflow-wrap:break-word;">
 
-[Dynamic Table Incremental Computation](incremental-computing.md) · [Dynamic Table Overview](dynamic_table_summary.md) · [Real-time Data Pipeline](streaming_data_pipeline_overview.md) · [Studio Task Development and Scheduling](task-develop.md) · [Task Parameters](task_param.md) · [CREATE TABLE Syntax Reference](create-table-ddl.md) · [SQL Syntax Reference](sql-reference.md) · [COPY INTO](COPY-INTO-table.md) · [cz-cli Command-Line Tool](setup_cz_cli.md)
+[Dynamic Table Incremental Computation](incremental-computing.md) · [Dynamic Table Overview](dynamic_table_summary.md) · [Real-time Data Pipeline](streaming_data_pipeline_overview.md) · [Studio Task Development and Scheduling](task-develop.md) · [Task Parameters](task_param.md) · [CREATE TABLE Syntax Reference](create-table-ddl.md) · [SQL Syntax Reference](sql-reference.md) · [COPY INTO](copy-into-table.md) · [cz-cli Command-Line Tool](setup_cz_cli.md) · [TPC-DS Performance Testing](tpcds-benchmark.md)
 
 </td>
 </tr>
@@ -71,7 +71,7 @@ Dedicated paths for data engineers, analysts, AI engineers, and administrators<b
 <td style="width:22%; vertical-align:top; overflow-wrap:break-word;"><strong>Data Analyst</strong><br><small>SQL queries, BI connections, ad-hoc analysis</small></td>
 <td style="vertical-align:top; overflow-wrap:break-word;">
 
-[Run Your First SQL Query](quick_start_sql_query.md) · [Connect BI Tools](tutorial_connect_to_lakehouse.md) · [Data Analytics Agent (natural language queries)](datagpt_introduction.md) · [Semantic View](semantic-view-overview.md) · [Pricing and Billing](pricing.md)
+[Run Your First SQL Query](quick_start_sql_query.md) · [Connect BI Tools](tutorial_connect_to_lakehouse.md) · [Data Analytics Agent (natural language queries)](datagpt_introduction.md) · [Semantic View](semantic-view-overview.md) · [Pricing and Billing](pricing.md) · [SSB Performance Testing](ssb-benchmark.md) · [TPC-H Performance Testing](tpch-benchmark.md)
 
 </td>
 </tr>
@@ -79,7 +79,7 @@ Dedicated paths for data engineers, analysts, AI engineers, and administrators<b
 <td style="width:22%; vertical-align:top; overflow-wrap:break-word;"><strong>AI / ML Engineer</strong><br><small>Vector search, RAG, AI functions, model invocation</small></td>
 <td style="vertical-align:top; overflow-wrap:break-word;">
 
-[AI Data Readiness](server-data-for-ai.md) · [Vector Search](vector_search_ai.md) · [AI Functions (AI_COMPLETE / AI_EMBEDDING)](AI_function_in_SQL.md) · [AI Gateway](AIGateway.md) · [Python SDK Connection](python_reference/connector.md)
+[AI Data Readiness](server-data-for-ai.md) · [Vector Search](vector_search_ai.md) · [AI Functions (AI\_COMPLETE / AI\_EMBEDDING)](AI_function_in_SQL.md) · [AI Gateway](AIGateway.md) · [Python SDK (SQL interface)](python_reference/connector.md) · [ZettaPark (DataFrame API)](LakehousePython-zettapark.md)
 
 </td>
 </tr>
@@ -95,7 +95,7 @@ Dedicated paths for data engineers, analysts, AI engineers, and administrators<b
 <td style="width:22%; vertical-align:top; overflow-wrap:break-word;"><strong>AI Agent / Automation</strong><br><small>Deterministic interface calls, semantic layer queries, automated data pipelines</small></td>
 <td style="vertical-align:top; overflow-wrap:break-word;">
 
-[cz-cli Command-Line Tool](setup_cz_cli.md) (deterministic interface, ideal for Agent calls) · [Semantic View](semantic-view-overview.md) (business semantic layer, natural-language friendly) · [Python connector](python_reference/connector.md) · [Zettapark](zettapark-quick-start.md) · [Data Analytics Agent](datagpt_introduction.md)
+[cz-cli Command-Line Tool](setup_cz_cli.md) (deterministic interface, ideal for Agent calls) · [Semantic View](semantic-view-overview.md) (business semantic layer, natural-language friendly) · [Python SDK (SQL interface)](python_reference/connector.md) · [ZettaPark (DataFrame API)](LakehousePython-zettapark.md) · [Data Analytics Agent](datagpt_introduction.md)
 
 </td>
 </tr>
@@ -107,13 +107,13 @@ Dedicated paths for data engineers, analysts, AI engineers, and administrators<b
 
 <table style="width:100%; table-layout:auto;">
 <tr>
-<td style="width:50%; vertical-align:top; padding:0 16px 16px 0; overflow-wrap:break-word;">
+<td style="width:50%; vertical-align:top; padding:0 16px 16px 16px; overflow-wrap:break-word;">
 
 **Data Ingestion**
 
 40+ data sources out of the box: full-database CDC real-time sync for MySQL / PG / Oracle, Kafka streaming writes, continuous import from OSS / S3 / COS files, one-time batch import via COPY INTO.
 
-[Data Ingestion Guide](a_comprehensive_guide_to_ingesting_data_into_clickzetta_lakehouse.md) · [Studio Data Integration](data-integration.md) · [Pipe](pipe-introduction.md) · [COPY INTO](COPY-INTO-table.md)
+[Data Ingestion Guide](a_comprehensive_guide_to_ingesting_data_into_clickzetta_lakehouse.md) · [Studio Data Integration](data-integration.md) · [Pipe](pipe-introduction.md) · [COPY INTO](copy-into-table.md)
 
 </td>
 <td style="width:50%; vertical-align:top; padding:0 0 16px 16px; overflow-wrap:break-word;">
@@ -127,7 +127,7 @@ Existing data lakes (OSS / S3 / COS) require no migration — mount existing obj
 </td>
 </tr>
 <tr>
-<td style="width:50%; vertical-align:top; padding:0 16px 16px 0; overflow-wrap:break-word;">
+<td style="width:50%; vertical-align:top; padding:0 16px 16px 16px; overflow-wrap:break-word;">
 
 **Incremental Computation**
 
@@ -147,11 +147,11 @@ Vectorized execution engine. Leading industry performance on TPC-DS / TPC-H / SS
 </td>
 </tr>
 <tr>
-<td style="width:50%; vertical-align:top; padding:0 16px 0 0; overflow-wrap:break-word;">
+<td style="width:50%; vertical-align:top; padding:0 16px 0 16px; overflow-wrap:break-word;">
 
 **AI-Native**
 
-Vector indexes, full-text search, AI Functions (AI_COMPLETE / AI_EMBEDDING), and Semantic Views are built into the data platform. Build RAG knowledge bases and AI-enhanced analytics without external services. Data Analytics Agent supports natural language conversational data queries.
+Vector indexes, full-text search, AI Functions (AI\_COMPLETE / AI\_EMBEDDING), and Semantic Views are built into the data platform. Build RAG knowledge bases and AI-enhanced analytics without external services. Data Analytics Agent supports natural language conversational data queries.
 
 [Lakehouse AI Overview](LakehouseAI-overview.md) · [Vector Search](vector_search_ai.md) · [AI Functions](AI_function_in_SQL.md) · [Semantic View](semantic-view-overview.md) · [Data Analytics Agent](datagpt_introduction.md)
 
@@ -179,9 +179,9 @@ Built-in IDE, task scheduling, data integration, data quality, and operations mo
 ## This Section
 
 | Page | Description |
-|------|------|
+|------|-------------|
 | [Before You Begin](setup.md) | Ways to access Lakehouse: Studio, CLI, drivers and connectors |
 | [Account Signup and Setup](logging-in.md) | Register an account, activate a service instance, complete initialization |
-| [Supported Cloud Platforms](supported-cloud-platforms.md) | Supported cloud providers and available regions |
+| [Supported Cloud Platforms](Supported-Cloud-Platforms.md) | Supported cloud providers and available regions |
 | [Pricing and Billing](pricing.md) | Billing model and cost breakdown |
 | [Trial Account Quotas and Limits](trial-account-quotas-and-limits.md) | Resource quota limits during the trial period |

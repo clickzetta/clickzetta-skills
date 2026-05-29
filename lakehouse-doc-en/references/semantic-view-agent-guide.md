@@ -471,4 +471,4 @@ SELECT dept, max_salary - min_salary AS range FROM semantic_view(...)
 - [Query Semantic View](semantic-view-query.md): `semantic_view()` function usage
 - [Best Practices](semantic-view-best-practices.md): Common issues and limitations
 - [Integrate with AI](semantic-view-ai.md): CZ-CLI and MCP tool reference
-- [CZ-CLI Documentation](CZ-CLI.md): Agent access configuration
+- [CZ-CLI Documentation](cz-cli.md): Agent access configuration

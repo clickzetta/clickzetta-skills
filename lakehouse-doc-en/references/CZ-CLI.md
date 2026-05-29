@@ -67,16 +67,32 @@ Anthropic's Research feature uses the same architecture — benchmarks show a 90
 ## Quick Start
 
 ```bash
-# Install
+```
+
+Install:
+
+```bash
 npm install -g @clickzetta/cz-cli
 
-# Configure connection
+```
+
+Configure connection:
+
+```bash
 cz-cli setup --credential <CLI connection string>
 
-# Verify connection
+```
+
+Verify connection:
+
+```bash
 cz-cli status
 
-# Run a query
+```
+
+Run a query:
+
+```bash
 cz-cli sql "SELECT current_timestamp()" --sync
 ```
 

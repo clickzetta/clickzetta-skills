@@ -508,5 +508,5 @@ This project passed 71/71 validation checks, confirming that data integrity afte
 - Medallion three-layer data warehouse: [Building a Medallion Architecture from Scratch on Lakehouse](medallion-lakehouse-from-scratch.md)
 - Volume usage guide: [Volume Usage Guide](zettapark-volume-guide.md)
 - Data type compatibility: [Data Type Compatibility Reference](migration-sql-compatibility.md)
-- Custom functions: [SQL Function](create-sql-function.md) · [External Function](create_external_function.md)
+- Custom functions: [SQL Function](create-sql-function.md) · [External Function](CREATE_EXTERNAL_FUNCTION.md)
 - Spark Connector: [Using Spark Connector](spark-connector-use.md)

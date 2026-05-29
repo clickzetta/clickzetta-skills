@@ -22,7 +22,7 @@ SHOW INDEX { IN | FROM } [schema.]table_name [LIMIT num];
 | Column | Description |
 |--------|-------------|
 | `index_name` | The name of the index |
-| `index_type` | The index type, such as `inverted` (inverted index), `bloomfilter` (Bloom filter), `vector` (vector index) |
+| `index_type` | The index type, such as `inverted` (inverted index), `bloom_filter` (Bloom filter), `vector` (vector index) |
 
 ## Examples
 
@@ -62,6 +62,6 @@ SHOW INDEX FROM doc_test.departments;
 ## Notes
 
 - If no indexes have been created on the table, the command returns an empty result set without an error.
-- Supported index types include: inverted index (`inverted`), Bloom filter (`bloomfilter`), and vector index (`vector`).
+- Supported index types include: inverted index (`inverted`), Bloom filter (`bloom_filter`), and vector index (`vector`).
 - To view index details (including indexed columns, properties, size, etc.), use the `DESC INDEX` or `DESC INDEX EXTENDED` command.
-- To create an index, see [Create Inverted Index](create-inverted-index.md); to build an index on existing data, see [Build Index](build-inverted-index.md).
+- To create an index, see [Create Inverted Index](create-inverted-index.md); to build an index on existing data, see [Build Index](build-index.md).

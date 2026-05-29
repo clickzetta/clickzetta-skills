@@ -54,14 +54,23 @@ conn_pg.close()
 
 ### 4. View PostgreSQL Data and Perform Cleaning and Visual Analysis
 
+View total row count:
+
 ```python
-# View total row count
 print(df.shape[0])
 
-# Replace all NaN values with 0
+```
+
+Replace all NaN values with 0:
+
+```python
 df.fillna(0, inplace=True)
 
-# Display the first 5 rows
+```
+
+Display the first 5 rows:
+
+```python
 print(df.head(5))
 ```
 
@@ -74,7 +83,7 @@ walker = pyg.walk(df)
 ### 6. Create a Target Table in Singdata Lakehouse
 
 ```python
-engine_cz = create_engine("clickzetta://<username>:<password>@<instanceid>.<region_id>.api.clickzetta.com/<workspacename>?virtualcluster=<vcluster>&schema=<public>")
+engine_cz = create_engine("clickzetta://<username>:<password>@<instanceid>.<region_id>.api.singdata.com/<workspacename>?virtualcluster=<vcluster>&schema=<public>")
 sql_cz = text("""
 CREATE TABLE IF NOT EXISTS orders_tmp (
     id INT,
@@ -98,7 +107,7 @@ with engine_cz.connect() as conn:
 conn_cz = connect(
     username="<username>",
     password="<password>",
-    service="<region_id>.api.clickzetta.com",
+    service="<region_id>.api.singdata.com",
     instance="<instanceid>",
     workspace="<workspacename>",
     schema="public",
@@ -130,5 +139,3 @@ sql_cz = text("""drop table if exists orders ;""")
 with engine_cz.connect() as conn:
     results = conn.execute(sql_cz)
 ```
-
-^

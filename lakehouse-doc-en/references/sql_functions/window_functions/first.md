@@ -1,4 +1,4 @@
-### FIRST 
+# FIRST 
 ```
 FIRST(expr[, ignoreNull]) OVER ([partition_clause] [orderby_clause] [frame_clause])
 ```
@@ -146,5 +146,3 @@ AS tab(name, dep_no, salary);
 | 4      | null   | null                         |
 +--------+--------+------------------------------+
 ```
-
-^

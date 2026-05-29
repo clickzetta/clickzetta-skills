@@ -14,7 +14,7 @@
    Install the ingestion package, which requires Python version 3.7 or higher:
 
    ```python
-   pip install clickzetta-connector -U
+   pip install clickzetta-connector
    ```
 
 ## Real-time Write Principle
@@ -77,7 +77,12 @@ from clickzetta.connector.v0.enums import RealtimeOperation
 from clickzetta_ingestion.realtime.realtime_options import RealtimeOptionsBuilder, FlushMode
 from clickzetta_ingestion.realtime.arrow_stream import RowOperator
 
-# Create a connection
+
+```
+
+Create a connection:
+
+```python
 with connect(username='your_username',
              password='your_password',
              service='your_service_endpoint',
@@ -91,7 +96,7 @@ with connect(username='your_username',
         schema="your_schema",
         table="your_table",
         operate=RealtimeOperation.APPEND_ONLY,  # Use APPEND_ONLY for regular tables
-        options=RealtimeOptionsBuilder().with_flush_mode(FlushMode.AUTO_FLUSH_BACKGROUND)
+        options=RealtimeOptionsBuilder().with_flush_mode(FlushMode.AUTO_FLUSH_BACKGROUND).build()
     )
     
     # Close the stream after use
@@ -173,7 +178,28 @@ Create a specific data object (Row) using the `stream.create_row` method and enc
 ```python
 ```
 
-### Row Type Description:
+Create a row:
+
+```python
+row = stream.create_row(RowOperator.INSERT)  # Regular tables use INSERT
+
+```
+
+Set field values:
+
+```python
+row.set_value("id", 1)
+row.set_value("name", "test_name")
+
+```
+
+Apply the row to the stream:
+
+```python
+stream.apply(row)
+```
+
+**Row type description**:
 
 - When the Stream is created with `RealtimeOperation.APPEND_ONLY`, only `RowOperator.INSERT` type Rows can be created.
 - When the Stream is created with `RealtimeOperation.CDC`, the following Row types can be used:

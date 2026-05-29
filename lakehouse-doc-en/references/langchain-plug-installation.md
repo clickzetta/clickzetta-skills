@@ -75,7 +75,11 @@ Includes pytest, ruff, black, mypy, and other development tools.
 Create a `.env` file or set environment variables:
 
 ```bash
-# Singdata connection configuration
+```
+
+Singdata connection configuration:
+
+```bash
 export CLICKZETTA_SERVICE="your-service"
 export CLICKZETTA_INSTANCE="your-instance"
 export CLICKZETTA_WORKSPACE="your-workspace"
@@ -84,7 +88,11 @@ export CLICKZETTA_USERNAME="your-username"
 export CLICKZETTA_PASSWORD="your-password"
 export CLICKZETTA_VCLUSTER="your-vcluster"
 
-# Optional: DashScope configuration (recommended for Chinese AI)
+```
+
+Optional: DashScope configuration (recommended for Chinese AI):
+
+```bash
 export DASHSCOPE_API_KEY="your-dashscope-api-key"
 ```
 
@@ -120,12 +128,16 @@ You can also use a configuration file by creating `~/.clickzetta/connections.jso
 ### Basic Import Test
 
 ```python
-# Test basic import
+```
+
+Test basic import:
+
+```python
 try:
     from langchain_clickzetta import ClickZettaEngine
-    print("LangChain Singdata import successful")
+    print("✅ LangChain Singdata import successful")
 except ImportError as e:
-    print(f"Import failed: {e}")
+    print(f"❌ Import failed: {e}")
 ```
 
 ### Connection Test
@@ -133,7 +145,11 @@ except ImportError as e:
 ```python
 from langchain_clickzetta import ClickZettaEngine
 
-# Create engine instance
+```
+
+Create engine instance:
+
+```python
 engine = ClickZettaEngine(
     service="your-service",
     instance="your-instance",
@@ -144,13 +160,17 @@ engine = ClickZettaEngine(
     vcluster="your-vcluster"
 )
 
-# Test connection
+```
+
+Test connection:
+
+```python
 try:
     results, columns = engine.execute_query("SELECT 1 as test")
-    print("Singdata connection successful")
+    print("✅ Singdata connection successful")
     print(f"Test result: {results}")
 except Exception as e:
-    print(f"Connection failed: {e}")
+    print(f"❌ Connection failed: {e}")
 ```
 
 ### Full Feature Test
@@ -163,12 +183,20 @@ from langchain_clickzetta import (
 )
 from langchain_community.embeddings import DashScopeEmbeddings
 
-# Initialize components
+```
+
+Initialize components:
+
+```python
 engine = ClickZettaEngine(
     # ... your connection parameters
 )
 
-# Test vector store
+```
+
+Test vector store:
+
+```python
 try:
     embeddings = DashScopeEmbeddings(
         dashscope_api_key="your-api-key",
@@ -180,16 +208,20 @@ try:
         embedding=embeddings,
         table_name="test_vectors"
     )
-    print("Vector store initialization successful")
+    print("✅ Vector store initialization successful")
 except Exception as e:
-    print(f"Vector store initialization failed: {e}")
+    print(f"⚠️  Vector store initialization failed: {e}")
 
-# Test key-value store
+```
+
+Test key-value store:
+
+```python
 try:
     store = ClickZettaStore(engine=engine, table_name="test_store")
-    print("Key-value store initialization successful")
+    print("✅ Key-value store initialization successful")
 except Exception as e:
-    print(f"Key-value store initialization failed: {e}")
+    print(f"❌ Key-value store initialization failed: {e}")
 ```
 
 ## FAQ

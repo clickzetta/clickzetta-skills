@@ -57,7 +57,7 @@ DESCRIBE EXTENDED customer_masked;
 | comment                      |                                                                                                                                                                           |
 | properties                   | ()                                                                                                                                                                        |
 | type                         | VIEW                                                                                                                                                                      |
-| view_text                    | SELECT customer.id, customer.name, mask_outer(CAST(customer.phone AS string), 3, 4) AS phone, mask_inner(customer.email, 0, 12) AS email FROM qingyun.`public`.customer c |
+| view_text                    | SELECT customer.id, customer.name, mask_outer(CAST(customer.phone AS string), 3, 4) AS phone, mask_inner(customer.email, 0, 12) AS email FROM example.`public`.customer c |
 | view_original_text           | SELECT id, name, mask_outer(phone, 3, 4) AS phone, mask_inner(email, 0, 12) AS email
 FROM customer                                                                        |
 | format                       | INVALID                                                                                                                                                                   |

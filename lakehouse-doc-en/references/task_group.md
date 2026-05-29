@@ -1,139 +1,158 @@
-# Task Group Management
+# Task Group
 
 ## Concept
 
-A task group is a virtual business management group used within the development module to manage a list of tasks. You can use task groups to organize and arrange a series of tasks, including adding/creating task nodes, creating dependencies between task nodes, configuring task group parameters, and performing unified batch submission operations.
+A task group is a virtual business management group within the development module used to manage a list of tasks. You can use task groups to organize and orchestrate a series of tasks — including adding or creating task nodes, defining dependencies between nodes, configuring task group parameters, and performing unified batch submission.
 
-This article introduces how to create, edit, submit task groups, and the ability to copy task groups.
+This article covers how to create, edit, and submit task groups, as well as how to copy them.
 
 ## Usage Restrictions
 
-1. Only periodic tasks can be added/created within a task group, real-time tasks are not supported for now.
+1. Only periodic tasks can be added or created within a task group. Real-time tasks are not supported at this time.
 
-2. Task group parameters can only be used after being submitted and published, and the custom variable values configured by the task group parameters can participate in execution.
+2. Task group parameters only take effect after the task group has been submitted and published. Until then, any task node that references a task group parameter will not have access to the configured variable value during execution.
 
-For example, if the task group parameter is aaa=2023, and the task uses this parameter, but the task group is not submitted. Then, when the task is executed periodically, the instance parameter will be displayed as empty.
+   For example, if a task group parameter is set to `aaa=2023` and a task references it, but the task group has not been submitted, the instance parameter will appear empty during periodic execution.
 
-3. A node task can only belong to one task group.
+3. A task node can only belong to one task group.
 
-4. Downstream link copying: Only all nodes in the workspace can be copied. If the downstream link has task nodes from other workspaces, they will not be copied.
+4. Downstream link copying: Only nodes within the current workspace can be copied. If the downstream link includes task nodes from other workspaces, those nodes will not be included in the copy.
 
-## Application Scenarios
+## Use Cases
 
-### Scenario 1: Batch Copy of Tasks and Dependency Management
+### Scenario 1: Batch Task Copy and Dependency Management
 
-When you need to batch copy a group of tasks with dependencies and create new dependencies in the new tasks, you can use the task group copy function to achieve this.
+When you need to batch-copy a group of tasks that have dependencies and recreate those dependencies in the new tasks, you can use the task group copy feature.
 
-![](.topwrite/assets/image_1740369112650.png =700)
+![](.topwrite/assets/91c6efc6cd/3c6fcb545a6b507a072943955259ae593b4f1892.jpeg =700)
 
-Add the task group that needs to copy new dependencies to Task Group 1. After copying Task Group 1, Task Group 2 will include:
+Add the tasks you want to copy (along with their dependencies) to Task Group 1. After copying Task Group 1, the resulting Task Group 2 will contain:
 
-1. Batch copy of all tasks in Task Group 1.
-2. Nodes with dependencies in Task Group 1 (such as nodes B, C, D, E, F) will maintain their original dependencies in Task Group 2.
-3. Other nodes with dependencies in the task group but not belonging to the task group (such as nodes A, G) will maintain their original dependencies.
+1. Copies of all tasks in Task Group 1.
+2. Nodes that had dependencies within Task Group 1 (such as nodes B, C, D, E, F) will maintain those same dependencies in Task Group 2.
+3. Nodes outside the task group that had dependencies with nodes inside it (such as nodes A and G) will maintain their original dependencies.
 
-### Scenario 2: Task Link Transformation and Batch Modification of Custom Variables
+### Scenario 2: Task Pipeline Refactoring and Batch Variable Updates
 
-When you need to transform any branch in the current task link and batch modify custom variables in the tasks, you can use the downstream link copy function combined with the task group function to achieve this.
+When you need to refactor a branch in the current task pipeline and batch-update custom variables across tasks, you can combine the downstream link copy feature with task groups.
 
-![](.topwrite/assets/image_1740369139052.png =750)
+![](.topwrite/assets/91c6efc6cd/f8dfd42b7ace23593c3f7d3d79bff8eb46d2a1f9.jpeg =751)
 
-On any node (the node can belong to a task group or be independent), click "Downstream Link Copy" to batch copy the node and all its downstream nodes.
+On any node (whether it belongs to a task group or is standalone), clicking "Copy Downstream Link" will batch-copy that node and all its downstream nodes.
 
 ## Creating a Task Group
 
-Before creating a task group, you can plan and design a business process that meets your business needs based on your own business situation. The following are the detailed steps to create a task group.
+Before creating a task group, plan and design a business process that fits your needs. Here are the detailed steps:
 
-1. Create a task group
+1. Create a task group.
 
-**Method 1**: Click "Development" in the left navigation bar; hover over the +, and click "Task Group"
+**Method 1**: Click "Development" in the left navigation bar → hover over the "+" icon → click "Task Group."
 
-**Method 2**: Click "Workspace" in the left navigation bar; hover over the new button, and click "Task Group"
+**Method 2**: Click "Workspace" in the left navigation bar → hover over the New button → click "Task Group."
 
-2. In the new task group dialog box, enter the task group name
+2. In the New Task Group dialog, enter the task group name.
 
-3. Click OK
+3. Click OK.
+
+![](.topwrite/assets/image_1722251763584.png =434)
 
 After creation:
 
-* You can manage task nodes within the current task group, including creating/adding existing tasks to the task group
-* After all tasks in the task group are developed, you can directly submit the task group to the production environment.
+* You can manage task nodes within the task group, including creating new tasks or adding existing tasks to the group.
+* Once all tasks in the task group are developed, you can submit the entire task group to the production environment directly.
 
 ## Editing a Task Group
 
-Users can design and manage task nodes and dependencies within the task group in both list and DAG modes.
+You can design and manage task nodes and dependencies within a task group in either list mode or DAG mode.
 
-1. Create/Add Nodes: Both modes support creating new task nodes in the task group or adding existing tasks to the task group.
+![](.topwrite/assets/image_1722251928404.png)
 
-* **DAG Mode**
+1. **Create/Add nodes**: Both modes support creating new task nodes or adding existing tasks to the task group.
 
-  * Add Existing Tasks: Click "Add Existing Tasks" on the right, then drag tasks from the list to the DAG canvas area;
-  * Add New Tasks: Under "Add New Tasks", drag any task node to the canvas area, and a creation pop-up window will appear. After entering the task name and directory, a new node will be successfully created in the task group.
+* **DAG mode**
 
-In DAG mode, click "Added Tasks" at the bottom right to highlight the task node in the diagram.
+  * Add existing tasks: Click "Add Existing Tasks" on the right, then drag tasks from the list onto the DAG canvas.
+  * Add new tasks: Under "Add New Task," drag any task node onto the canvas. A creation dialog will appear. Enter the task name and folder, and the new node will be added to the task group.
 
-* **List Mode**
+  In DAG mode, click "Added Tasks" at the bottom right to highlight the corresponding node in the diagram.
 
-  * Click the "Add" button at the top right of the list mode, and choose to add an existing task or a new task.
+* **List mode**
 
-After successfully creating/adding a node, you need to enter the node's operation interface to edit the code.
+  * Click the "Add" button in the top-right corner of list mode to choose between adding an existing task or creating a new one.
 
-2. Create Dependencies Between Tasks:
+After successfully creating or adding a node, enter the node's editing interface to write the code.
 
-* In DAG mode: You can set node scheduling dependencies by dragging dependency lines. You can also manually edit node dependencies by entering the node's scheduling configuration interface.
-* In list mode, the business process of newly created nodes can set node scheduling dependencies based on code lineage relationships.
+2. **Create dependencies between tasks**:
 
-3. Task Group Parameters: Global parameters under the task group will automatically apply to task nodes that reference the task group parameters after the task group is submitted to the production environment. Task nodes submitted before the task group parameters take effect need to be updated and submitted to reference the parameters.
+* In DAG mode: Set scheduling dependencies by dragging dependency lines between nodes. You can also manually edit dependencies through the node's scheduling configuration interface.
+* In list mode: Dependencies for newly created nodes can be set automatically based on code lineage or configured manually.
 
-* Click the "Parameters" tab in the task group operation area to enter the task group parameter configuration interface.
-* Click the new button, and enter the parameter name and parameter value in the pop-up window. For details on built-in parameter values, see [Task Parameters](task_param.md)
+3. **Task group parameters**: These are global parameters for the task group. After the task group is submitted to the production environment, these parameters automatically apply to any task nodes that reference them. Task nodes that were submitted before the task group parameters took effect need to be resubmitted to use the parameters.
 
-How to use task group parameters after creation:
+* Click the "Parameters" tab in the task group operation area to open the parameter configuration interface.
+* Click the New button and enter the parameter name and value in the dialog. For details on built-in parameter values, see [Task Parameters](task_param.md). For the full syntax, see [Task Parameter Syntax Reference](task_param_reference.md).
 
-* Enter ${task group parameter name} in the SQL code of the task node, or enter the parameter name in the parameter configuration of the scheduling configuration;
+  ![](.topwrite/assets/image_1722252018555.png =497)
 
-* Select the task group parameter from the "Value Source" dropdown
+After creating task group parameters, use them as follows:
 
-After creating and referencing the task group parameter:
+* In the SQL code of a task node, enter `${task_group_parameter_name}`, or enter the parameter name in the scheduling configuration's parameter settings.
 
-* After the task group is submitted to the production environment, the applied task nodes can use the parameter values of the task group parameters
-* If the changed task group parameters need to take effect in the task node, the task node needs to be resubmitted
+  ![](.topwrite/assets/image_1722252076469.png =496)
 
-### Batch Submit Scheduling Time
+* In the "Value Source" dropdown, select the task group parameter.
 
-You can use the function of batch editing scheduling time to batch modify the scheduling time of all (or selected) tasks in the task group. This reduces the operational cost of configuring each one individually. The specific operations are as follows:
+  ![](.topwrite/assets/image_1722252102342.png =472)
 
-1. Click Batch Edit Scheduling Time
+After creating and referencing a task group parameter:
 
-* In DAG editing mode: When the mouse hovers over the batch button, select "Edit Scheduling Time"
-* In list mode: After selecting the target tasks that need to be batch modified, click Edit Scheduling Time.
+* Task nodes can only use the task group parameter values after the task group has been submitted to the production environment.
+* If a task group parameter is updated, the task node must be resubmitted for the change to take effect.
 
-2. Batch Edit Scheduling Time
-   Select the scheduling time for batch modification. The operation here is the same as the scheduling configuration in task scheduling. For specific operations, refer to [Task Development Scheduling](taskdevelop.md)
+### Batch Edit Scheduling Time
 
-3. Confirm and submit the batch operation
+You can use the batch edit scheduling time feature to update the scheduling time for all (or selected) tasks in the task group at once, reducing the effort of configuring each task individually. Steps:
 
-## Submit Task Group
+1. Click "Batch Edit Scheduling Time."
 
-After the task group is edited and created, the task group needs to be submitted to the production environment before the tasks it manages can reference the parameter information within the task group. At the same time, the ability to batch submit task nodes is provided within the task group.
+* In DAG editing mode: Hover over the batch button and select "Edit Scheduling Time."
+  ![](.topwrite/assets/image_1736303777548.png =498)
+* In list mode: Select the target tasks you want to update, then click "Edit Scheduling Time."
 
-1. Click the submit button in the upper right corner to pop up the task group submission window, which also supports batch submission of the task list within the task group.
+2. Batch edit the scheduling time.
+   Select the scheduling time for the batch update. The operation is the same as the scheduling configuration in task scheduling. For details, see [Task Development and Scheduling](task-develop.md).
+   ![](.topwrite/assets/image_1736303843406.png =499)
 
-2. In DAG diagram mode, when the mouse hovers over the batch button, the batch submit tasks are displayed. This function only supports batch submission of tasks within the task group and will not submit the parameters and management information of the task group itself to the production environment.
+3. Confirm and submit the batch operation.
 
-## Related Issues
+## Submitting a Task Group
 
-Q1: Why can't the submit button be clicked again after the task group is submitted
+After editing and creating the task group, you need to submit it to the production environment before the tasks it manages can reference the task group's parameter information. The task group also provides a batch submission feature for task nodes.
 
-After the task group is submitted, if no changes have occurred, that is, before the status changes to the submitted with modifications status, it cannot be submitted again. If you need to batch submit the task information within the task group, you can submit it in two ways
+1. Click the Submit button in the top-right corner. A task group submission dialog will appear, which also supports batch submission of the task list within the task group.
 
-Option 1: Directly operate the submission within the task
+2. In DAG mode, hover over the batch button to reveal the "Batch Submit Tasks" option. Note that this function only batch-submits the tasks within the task group — it does not submit the task group's own parameters and management information to the production environment.
 
-Option 2: In the DAG diagram mode of the task group, click Batch Submit Tasks under Batch Operations
+## FAQ
 
-Task group status change conditions:
+**Q1: Why can't I click the Submit button again after the task group has been submitted?**
 
-* Add or delete tasks within the task group
-* Add, delete, modify, or query task group parameters
+After a task group is submitted, if no changes have been made (i.e., the status has not changed to "Submitted with modifications"), it cannot be submitted again. To batch-submit task information within the task group, use one of these two approaches:
 
-^
+Option 1: Submit directly from within each task.
+
+Option 2: In the task group's DAG mode, click "Batch Submit Tasks" under the batch operations menu.
+
+Task group status changes when:
+
+* Tasks are added to or removed from the task group.
+* Task group parameters are added, deleted, modified, or queried.
+
+---
+
+## Related Documentation
+
+- [Task Parameters](task_param.md) — Task-level parameter concepts and configuration, and how they differ from task group parameters
+- [Task Parameter Syntax Reference](task_param_reference.md) — Full syntax for built-in parameters and time expressions
+- [Composite Task](composite_task.md) — How composite task parameters and task group parameters work together
+- [Task Development and Scheduling](task-develop.md) — Referencing task group parameters in individual tasks

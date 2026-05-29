@@ -1,44 +1,39 @@
-### JSON_NORMALIZE
-```sql
-json_normalize(json)
+# JSON_NORMALIZE
+
+## Overview
+
+Normalizes a JSON string by recursively sorting the keys of JSON objects in alphabetical order and removing extra spaces. Suitable for standardizing JSON before comparison or deduplication.
+
+## Syntax
+
+```Plain
+JSON_NORMALIZE(<json>)
 ```
-#### Description
-Normalizes a JSON string by sorting the keys of JSON objects in alphabetical order and removing extra spaces.
 
-#### Parameters
-* json : An expression of type string
+## Parameters
 
-#### Returns
-* string type, returns the normalized JSON string
-* Returns NULL if the input is NULL or invalid JSON
+- `<json>`: STRING type, the JSON string to normalize. Returns NULL when the input is NULL or invalid JSON.
 
-#### Examples
+## Examples
+
 ```sql
 SELECT json_normalize('{"b": 1, "a": 2, "c": 3}');
--- Result: {"a":2,"b":1,"c":3}
-```
+-- {"a":2,"b":1,"c":3}
 
-```sql
 SELECT json_normalize('[{"a": 4, "c": 5, "b": 6}]');
--- Result: [{"a":4,"b":6,"c":5}]
-```
+-- [{"a":4,"b":6,"c":5}]
 
-```sql
 SELECT json_normalize('1');
--- Result: 1
-```
+-- 1
 
-```sql
-SELECT json_normalize(null);
--- Result: NULL
-```
-
-```sql
 SELECT json_normalize('[');
--- Result: NULL
+-- NULL
+
+SELECT json_normalize(NULL);
+-- NULL
 ```
-#### Notes
-* Sorts JSON object keys alphabetically, useful for comparison and deduplication
-* Recursively processes nested JSON objects and arrays
-* For non-object types (such as numbers, strings, etc.), returns the compressed form of the original value directly
-* Returns NULL for invalid JSON strings
+
+## Related Documentation
+
+- [JSON_MINIFY](json_minify.md) — Compress whitespace only, without sorting keys
+- [PARSE_JSON](parse_json.md) — Parse a string into a JSON object

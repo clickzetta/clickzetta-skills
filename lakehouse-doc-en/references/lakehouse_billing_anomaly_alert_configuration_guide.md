@@ -1,4 +1,4 @@
-^
+# Billing Anomaly Alert Configuration Guide
 
 # Singdata Lakehouse Billing Anomaly Alert Configuration Guide
 
@@ -20,15 +20,15 @@ The fields and content of the sys.information_schema.instance_usage view are des
 
 ### Step 1: Create a Data Quality Rule
 
-1. Enter the **Data Quality Management** module
+1\. Enter the **Data Quality Management** module
 
-2. Click **Create Quality Rule**
+2\. Click **Create Quality Rule**
 
 :-: ![](.topwrite/assets/image_1760009305873.png =804)
 
 ^
 
-3. Fill in basic information:
+3\. Fill in basic information:
 
 :-:
 ![](.topwrite/assets/image_1760009346751.png =793)
@@ -42,11 +42,11 @@ For other field configurations, refer to the complete Data Quality configuration
 
 ### Step 2: Configure Monitoring & Alerting
 
-1. Enter the **Monitoring & Alerting** module and click **Create Rule**
+1\. Enter the **Monitoring & Alerting** module and click **Create Rule**
 
 :-: ![](.topwrite/assets/image_1760009359793.png =776)
 
-2. Configure the alert rule
+2\. Configure the alert rule
 
 In this case, focus on the following three options:
 
@@ -70,7 +70,7 @@ The following section details the available monitoring rules for data quality ru
 
 **Monitoring SQL**:
 
-```SQL
+```sql
 -- Query yesterday's total cost
 SELECT
   ROUND(SUM(COALESCE(total_after_discount, amount * discount_rate)), 2) AS total_amount
@@ -84,7 +84,7 @@ WHERE CAST(SUBSTR(measurement_start, 1, 10) AS DATE) = current_date() - INTERVAL
 
 **Threshold Reference Query**:
 
-```SQL
+```sql
 -- Query cost benchmarks over the past 90 days
 WITH day_sum AS (
   SELECT
@@ -108,7 +108,7 @@ FROM day_sum
 
 **Monitoring SQL**:
 
-```SQL
+```sql
 -- Compare yesterday's cost with the historical median
 WITH daily_costs AS (
   SELECT
@@ -147,7 +147,7 @@ CROSS JOIN historical_median h
 
 If you are unsure about the appropriate expected result value, you can execute the following SQL to obtain the tp90, tp95, and tp99 values from the past 30 days as a reference:
 
-```SQL
+```sql
 -- Analyze historical cost volatility to determine reasonable alert multipliers
 WITH daily_costs AS (
   SELECT
@@ -216,6 +216,74 @@ SELECT
   ) AS p99_ratio,  -- Relaxed monitoring
   NULL AS max_ratio;
 ```
+
+## Cost Attribution Analysis SQL
+
+The following queries are used to identify monitoring targets before configuring alerts, or to locate cost sources after an alert is triggered.
+
+### Compute Cost Summary by Workspace for the Current Month
+
+```sql
+SELECT workspace_name,
+       sku_name,
+       ROUND(SUM(measurements_consumption), 2) AS total_cru,
+       ROUND(SUM(amount), 2) AS total_yuan
+FROM sys.information_schema.instance_usage
+WHERE measurement_start >= DATE_TRUNC('month', CURRENT_DATE)
+GROUP BY workspace_name, sku_name
+ORDER BY total_yuan DESC;
+```
+
+### Storage Cost Summary by Workspace for the Current Month
+
+```sql
+SELECT workspace_name,
+       sku_name,
+       ROUND(SUM(measurements_consumption), 4) AS consumption,
+       measurements_unit,
+       ROUND(SUM(amount), 4) AS total_yuan
+FROM sys.information_schema.storage_metering
+WHERE measurement_start >= DATE_TRUNC('month', CURRENT_DATE)
+GROUP BY workspace_name, sku_name, measurements_unit
+ORDER BY workspace_name, total_yuan DESC;
+```
+
+### Combined Storage and Compute Cost
+
+```sql
+SELECT cost_type, workspace_name,
+       ROUND(SUM(amount), 2) AS total_yuan
+FROM (
+  SELECT 'compute' AS cost_type, workspace_name, amount
+  FROM sys.information_schema.instance_usage
+  WHERE measurement_start >= DATE_TRUNC('month', CURRENT_DATE)
+  UNION ALL
+  SELECT 'storage' AS cost_type, workspace_name, amount
+  FROM sys.information_schema.storage_metering
+  WHERE measurement_start >= DATE_TRUNC('month', CURRENT_DATE)
+) t
+GROUP BY cost_type, workspace_name
+ORDER BY cost_type, total_yuan DESC;
+```
+
+### Compute Cost Trend for the Past 30 Days
+
+```sql
+SELECT DATE(measurement_start) AS dt,
+       sku_name,
+       ROUND(SUM(amount), 2) AS daily_yuan
+FROM sys.information_schema.instance_usage
+WHERE measurement_start >= CURRENT_DATE - INTERVAL 30 DAY
+GROUP BY DATE(measurement_start), sku_name
+ORDER BY dt, daily_yuan DESC;
+```
+
+### Notes on Cost Views
+
+- `sys.information_schema.instance_usage` records daily-aggregated compute billing data including amounts; `job_history.cru` records per-job consumption without final amounts and cannot substitute for the cost view.
+- `sys.information_schema.storage_metering` records storage and network costs; common SKUs include managed storage capacity, multi-version undeleted storage, and data query Internet data transfer.
+- `workspace_name` may be NULL, indicating instance-level costs not attributed to a specific workspace.
+- `amount` is the original amount; `total_after_discount` is the discounted amount. Alert rules should preferably use `COALESCE(total_after_discount, amount * discount_rate)`.
 
 ## Monitoring Effect Verification
 

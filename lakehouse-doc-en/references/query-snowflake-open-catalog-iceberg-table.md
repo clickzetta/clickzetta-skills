@@ -87,7 +87,7 @@ USING ICEBERG
 CONNECTION snow_opencatalog;
 ```
 
-> **Note**: The external table name must exactly match the table name in Snowflake.
+> ⚠️ **Note**: The external table name must exactly match the table name in Snowflake.
 
 ### Step 3: Verify and Query
 

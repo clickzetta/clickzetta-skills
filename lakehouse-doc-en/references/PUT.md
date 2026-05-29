@@ -1,61 +1,94 @@
 # PUT Command
 
-## Description
+The PUT command is used to upload local files from the client to a Lakehouse Volume object. It supports three target types: external Volume, TABLE VOLUME, and USER VOLUME.
 
-The PUT command is a utility in Lakehouse SQL used to upload local files from the client host to the data lake Volume object in Lakehouse. With this command, users can easily transfer local files to the cloud, achieving rapid data migration and synchronization. To execute the PUT command, you can use the [sqlline](connect-with-cli.md) tool or [database management tools](eco_integration/dbeaver-lakehouse.md).
+## Execution Methods
 
-## Usage Scenarios
+PUT is a client-side command; the Lakehouse client tool reads the local file and transfers the data. The following execution methods are supported:
 
-The PUT command is suitable for the following scenarios:
-
-1. Uploading local files to the data lake Volume object.
-2. Rapid migration and synchronization of local and cloud data.
+- [SQLLine command-line client](connect-with-cli.md)
+- [DBeaver and other JDBC clients](eco_integration/dbeaver-lakehouse.md)
+- Studio SQL editor (supported)
 
 ## Syntax
-```
-PUT 'local_path' [ , 'local_path' [ , ... ] ] 
-    TO 
-    [ VOLUME volume_name | TABLE VOLUME table_name | USER VOLUME ]
+
+```Plain
+PUT 'local_path' [, 'local_path' [, ...]]
+    TO
+    { VOLUME volume_name | TABLE VOLUME table_name | USER VOLUME }
     [ SUBDIRECTORY 'dir' | FILE 'filename' ]
-    [ option_key = option_value ] ..
+    [ option_key = option_value ] ...
 ```
+
 ## Parameter Description
 
-* `local_path`: The path of the local file to be uploaded. **Linux / macOS**: The path starts with the root directory '/' or uses the `'file:///'` prefix to indicate the local path. **Windows System**: If the directory path and/or file name contains special characters, the entire file URI must be enclosed in single quotes. Note that within the enclosed URI, the separator is a forward slash ('/').
-* `VOLUME/TABLE VOLUME/USER VOLUME`: Refer to uploading local data to external Volume, TABLE VOLUME, and USER VOLUME respectively.
-* `SUBDIRECTORY/FILE`: Specifies the target path for the uploaded file. You can specify a subdirectory (`SUBDIRECTORY`) or use the FILE parameter to rename the uploaded file.
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `local_path` | Yes | Local file path. Linux/macOS paths start with `/`; Windows uses forward slashes as separators. Enclose paths containing special characters in single quotes. Multiple paths can be specified, separated by commas. |
+| `VOLUME volume_name` | One of three | Upload to the specified external Volume. |
+| `TABLE VOLUME table_name` | One of three | Upload to the staging space of the specified table's TABLE VOLUME. |
+| `USER VOLUME` | One of three | Upload to the current user's USER VOLUME. |
+| `SUBDIRECTORY 'dir'` | No | Specifies the target subdirectory; the filename remains unchanged. Mutually exclusive with `FILE`. |
+| `FILE 'filename'` | No | Specifies the target filename; can be used to rename the file during upload. Mutually exclusive with `SUBDIRECTORY`. |
 
-## Example
+## Examples
 
-1. Use internal volume to upload files to the table
+### Example 1: Upload a File to USER VOLUME
+
+Upload a local file to the root of the current user's USER VOLUME:
+
+```SQL
+PUT '/Users/Downloads/data.csv' TO USER VOLUME;
 ```
--- Upload file
-PUT '/Users/Downloads/data.csv' TO TABLE VOLUME my_table FILE 'data.csv';
--- View file
-SHOW TABLE VOLUME DIRECTORY my_table;
--- Import file
-COPY INTO my_table FROM TABLE VOLUME my_table(id int, name string)  USING csv  
-OPTIONS(
-        'header'='true',
-        'lineSep'='\n'
+
+After uploading, verify the file is in place:
+
+```SQL
+SHOW USER VOLUME DIRECTORY;
+```
+
+### Example 2: Upload to USER VOLUME with a Target Path
+
+Upload a file to a subdirectory of USER VOLUME and rename it:
+
+```SQL
+PUT '/Users/Downloads/data.csv' TO USER VOLUME FILE 'import/data_2026.csv';
+```
+
+### Example 3: Upload to an External Volume and Rename
+
+Upload a local archive to the external Volume named `hz_image_volume` and rename it:
+
+```SQL
+PUT '/Users/Downloads/cats_and_dogs.zip' TO VOLUME hz_image_volume FILE 'catsdogs.zip';
+```
+
+### Example 4: Upload to TABLE VOLUME and Then Import
+
+Upload a file to the table's staging space, then import it using COPY INTO:
+
+```SQL
+-- Upload file to the table's TABLE VOLUME
+PUT '/Users/Downloads/region.tbl' TO TABLE VOLUME tbl_region;
+
+-- View staged files
+SHOW TABLE VOLUME DIRECTORY tbl_region;
+
+-- Import data from TABLE VOLUME
+COPY INTO tbl_region FROM TABLE VOLUME tbl_region (id INT, name STRING)
+USING CSV
+OPTIONS (
+    'header' = 'true',
+    'lineSep' = '\n'
 )
-FILES ('data.csv')
--- Delete files in volume to save storage
-PURGE=TRUE;
+FILES ('region.tbl')
+PURGE = TRUE;
 ```
 
-2. Create an external volume object named `hz_image_volume` and upload the file `'/Users/derekmeng/Downloads/cats_and_dogs.zip'`
-   ```SQL
-   PUT '/Users/Downloads/cats_and_dogs.zip' to volume hz_image_volume FILE '/Users/derekmeng/Downloads/catsdogs.zip'
-   ```
-3. There is a table named `tbl_region`, and you want to upload the local table data to the table's volume space:
-   ```SQL
-   PUT '/Users/Downloads/region.tbl' TO TABLE VOLUME tbl_region;
-   ```
 ## Notes
 
-* The PUT command cannot be executed through the Studio SQL task node. Users can execute this command through the Lakehouse SQLLine client, JDBC client, and SDK.
-* Please ensure that the size of a single file to be uploaded does not exceed 5G.
-* When using the PUT command, please ensure that the local file path and file name are correct to avoid upload failures due to incorrect paths.
-* When uploading files, if a file with the same name already exists in the target volume object, the system will automatically overwrite the original file. If necessary, please perform the appropriate backup operations before uploading.
-
+- The maximum size for a single file is **5 GB**.
+- If a file with the same name already exists in the target Volume, the system will automatically overwrite it. Back up the existing file before uploading if needed.
+- `SUBDIRECTORY` and `FILE` cannot be used at the same time.
+- Uploading to an external Volume incurs object storage write fees for the associated cloud account.
+- Executing the PUT command requires write permission on the target Volume.

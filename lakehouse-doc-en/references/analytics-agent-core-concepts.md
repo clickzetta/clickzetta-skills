@@ -6,7 +6,7 @@ As a data-based Q&A system, answer accuracy is especially important. The system 
 
 * **Data Profiling** (Analytics Agent Profile): The system provides data profiling to help you understand the data status of underlying dataset tables. Through **Left Navigation -> Data -> Data Tables**, on the table details page under the **Statistical Analysis** tab, you can view data status to assist with data governance. Establishing data profiles also helps find the right target data through natural language.
 
-> Note: Analytics Agent only provides the **Statistical Analysis** feature for customers to view data distribution and perform statistical analysis. Data quality is ensured by the upstream data platform.
+> ⚠️ **Note**: Analytics Agent only provides the **Statistical Analysis** feature for customers to view data distribution and perform statistical analysis. Data quality is ensured by the upstream data platform.
 
 * **Table/Column Descriptions and Column Alias Configuration**: Add accurate descriptions and alias information for tables and columns, which helps the system precisely match questions with data. In **Left Navigation -> Data -> Data Tables**, you can configure table-level descriptions, column aliases (Alias), and column descriptions (Description). When data tables and columns have clear and accurate aliases and descriptions, with minimal ambiguity in names and descriptions across different tables and columns, answer accuracy is higher.
 

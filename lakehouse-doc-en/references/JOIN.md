@@ -1,204 +1,265 @@
-## JOIN
+# JOIN
 
-Join refers to the operation of using the JOIN clause in an SQL statement to merge data from two or more tables based on certain conditions. It allows you to retrieve related information from different data sources and can perform some transformations or processing on the data before or after merging. The syntax of Join is as follows:
+JOIN is used to merge data from two or more tables based on specified conditions. Lakehouse supports the following JOIN types:
 
-```SQL
-left_table_reference { 
-[ join_type ] JOIN right_table_reference join_criteria |
- NATURAL  JOIN right_table_reference | 
- CROSS JOIN right_table_reference } 
- --join type
-join_type::= 
-     { [ INNER ] | LEFT [ OUTER ] | [ LEFT ] SEMI | RIGHT [ OUTER ] | FULL [ OUTER ] | [ LEFT ] ANTI | CROSS } 
---join criteria
-join_criteria::=
-     { ON boolean_expression | USING ( column_name [, ...] ) }
+```Plain
+left_table_reference {
+    [ join_type ] JOIN right_table_reference join_criteria |
+    NATURAL JOIN right_table_reference |
+    CROSS JOIN right_table_reference
+}
+
+join_type ::=
+    { [ INNER ] | LEFT [ OUTER ] | [ LEFT ] SEMI | RIGHT [ OUTER ] | FULL [ OUTER ] | [ LEFT ] ANTI | CROSS }
+
+join_criteria ::=
+    { ON boolean_expression | USING ( column_name [, ...] ) }
 ```
 
-`left_table_reference` refers to the left table of the join, `right_table_reference` refers to the right table of the join, `join_type` refers to the type of join, and `join_criteria` refers to the condition of the join.
+`left_table_reference` and `right_table_reference` are the two tables (or subqueries) participating in the JOIN, `join_type` specifies the join type, and `join_criteria` specifies the join condition.
 
-## Types of Join
+## JOIN Types
 
-The types of join are as follows:
+| Type | Description |
+|------|------|
+| **INNER JOIN** | Returns rows from both tables that satisfy the join condition (intersection); this is the default JOIN type |
+| **LEFT [OUTER] JOIN** | Returns all rows from the left table; fills with NULL when there is no match in the right table |
+| **RIGHT [OUTER] JOIN** | Returns all rows from the right table; fills with NULL when there is no match in the left table |
+| **FULL [OUTER] JOIN** | Returns all rows from both tables; fills with NULL on the side with no match |
+| **[LEFT] SEMI JOIN** | Returns rows from the left table that have a match in the right table; does not return right table columns |
+| **[LEFT] ANTI JOIN** | Returns rows from the left table that have no match in the right table; does not return right table columns |
+| **CROSS JOIN** | Returns the Cartesian product of both tables (all combinations of rows) |
+| **NATURAL JOIN** | Performs an implicit equi-join on all columns with the same name in both tables; no condition needs to be specified |
 
-* **INNER JOIN**: Returns the rows from both tables that satisfy the join condition, which is the intersection of the two tables. This is the default join type.
-* **LEFT \[OUTER] JOIN**: Returns all rows from the left table and the rows from the right table that satisfy the join condition. If there are no matching rows in the right table, NULL is used to fill in. This is also called a left outer join.
-* **RIGHT \[OUTER] JOIN**: Returns all rows from the right table and the rows from the left table that satisfy the join condition. If there are no matching rows in the left table, NULL is used to fill in. This is also called a right outer join.
-* **FULL \[OUTER] JOIN**: Returns all rows from both tables. If there are no matching rows in one of the tables, NULL is used to fill in. This is also called a full outer join.
-* \[**LEFT] SEMI JOIN**: Returns the rows from the left table that satisfy the join condition, without returning the rows from the right table. This is also called a left semi join.
-* \[**LEFT] ANTI JOIN**: Returns the rows from the left table that do not satisfy the join condition, without returning the rows from the right table. This is also called a left anti join.
-* **CROSS JOIN**: Returns the Cartesian product of the two tables, which is all possible combinations of the two tables.
-* **NATURAL JOIN**: Performs an implicit equi-join based on columns with the same name in both tables, without needing to specify the join condition.
+## JOIN Conditions
 
-## Join Conditions
+- `ON boolean_expression`: Specifies any boolean expression as the join condition. Subqueries are not supported in JOIN conditions.
+- `USING (column_name [, ...])`: Specifies one or more column names for an equi-join; these columns must exist in both tables.
 
-The join conditions are as follows:
+## Test Data Description
 
-* **ON boolean\_expression**: Specifies an expression that returns a boolean value to determine if the rows from the two tables match. If the result is true, they are considered a match. The join condition does not support subqueries.
-* **USING (column\_name** \[, …]): Specifies one or more column names to perform an equi-join. These column names must exist in both tables. The join condition does not support subqueries.
+The following examples use two tables in the `doc_test` schema:
 
-## Example
+- `employees(id, name, dept, salary, hire_date, is_active)` — 5 employee records
+- `departments(dept_id, dept_name, manager)` — 3 departments
 
-Below are some examples of SQL statements using join and their output results. Suppose we have the following two tables:
+`employees.dept` is joined with `departments.dept_name`. The `Dave` employee belongs to the `Marketing` department which exists in `departments`, but the `HR` department in `departments` has only 1 employee, and `departments` also has an extra `Finance` department (no employees belong to it in `employees`) — this clearly demonstrates how each JOIN type handles unmatched rows.
 
-```SQL
-create table students(name string,class string);
-INSERT INTO students (name, class) VALUES
-('Alice', 'A'),
-('Bob', 'B'),
-('Carol', 'A'),
-('David', 'C');
-create table scores(name string,score int);
-INSERT INTO scores (name, score) VALUES
-('Alice', 90),
-('Bob', 80),
-('Carol', 85),
-('David', 95);
-```
+## Usage Examples
 
 ### INNER JOIN
 
-* Query: Use INNER JOIN to merge the data of two tables, match by name, and display each student's name, class, and grade.
+Returns rows where `dept = dept_name` matches in both `employees` and `departments`.
 
 ```SQL
-SELECT students.name, students.class, scores.score
-FROM students
-INNER JOIN scores
-ON students.name = scores.name;
-
-+-------+-------+-------+
-| name  | class | score |
-+-------+-------+-------+
-| Carol | A     | 85    |
-| Bob   | B     | 80    |
-| David | C     | 95    |
-| Alice | A     | 90    |
-+-------+-------+-------+
+SELECT e.id, e.name, e.dept, d.manager
+FROM doc_test.employees e
+INNER JOIN doc_test.departments d
+ON e.dept = d.dept_name
+ORDER BY e.id;
 ```
 
-### LEFT \[OUTER] JOIN
+Result (only employees with matches in both tables):
 
-* Query: Use LEFT JOIN to merge the data of two tables, match by name, display each student's name, class, and grade. If a student does not have a grade, fill it with NULL.
+```
++----+-------+-------------+---------+
+| id | name  | dept        | manager |
++----+-------+-------------+---------+
+|  1 | Alice | Engineering | Charlie |
+|  2 | Bob   | Engineering | Charlie |
+|  3 | Carol | Marketing   | Diana   |
+|  4 | Dave  | Marketing   | Diana   |
+|  5 | Eve   | HR          | Frank   |
++----+-------+-------------+---------+
+```
+
+### LEFT [OUTER] JOIN
+
+Returns all rows from `employees`; fills with NULL when there is no match in `departments`.
 
 ```SQL
-SELECT students.name, students.class, scores.score
-FROM students
-LEFT JOIN scores
-ON students.name = scores.name;
-+-------+-------+-------+
-| name  | class | score |
-+-------+-------+-------+
-| Carol | A     | 85    |
-| Bob   | B     | 80    |
-| David | C     | 95    |
-| Alice | A     | 90    |
-+-------+-------+-------+
+SELECT e.id, e.name, e.dept, d.dept_id, d.manager
+FROM doc_test.employees e
+LEFT JOIN doc_test.departments d
+ON e.dept = d.dept_name
+ORDER BY e.id;
 ```
 
-### RIGHT \[OUTER] JOIN
+Result (all employees are retained; `dept_id`/`manager` are NULL if `dept` has no corresponding record in `departments`):
 
-* Query: Use RIGHT JOIN to merge data from two tables, matching by name, displaying each student's name, class, and grade. If a student does not have a class, fill with NULL.
+```
++----+-------+-------------+---------+---------+
+| id | name  | dept        | dept_id | manager |
++----+-------+-------------+---------+---------+
+|  1 | Alice | Engineering |       1 | Charlie |
+|  2 | Bob   | Engineering |       1 | Charlie |
+|  3 | Carol | Marketing   |       2 | Diana   |
+|  4 | Dave  | Marketing   |       2 | Diana   |
+|  5 | Eve   | HR          |       3 | Frank   |
++----+-------+-------------+---------+---------+
+```
+
+### RIGHT [OUTER] JOIN
+
+Returns all rows from `departments`; fills with NULL when there is no match in `employees`.
 
 ```SQL
-SELECT students.name, students.class, scores.score
-FROM students
-RIGHT JOIN scores
-ON students.name = scores.name;
-
-+-------+-------+-------+
-| name  | class | score |
-+-------+-------+-------+
-| Carol | A     | 85    |
-| Bob   | B     | 80    |
-| David | C     | 95    |
-| Alice | A     | 90    |
-+-------+-------+-------+
+SELECT e.id, e.name, d.dept_name, d.manager
+FROM doc_test.employees e
+RIGHT JOIN doc_test.departments d
+ON e.dept = d.dept_name
+ORDER BY d.dept_id, e.id;
 ```
 
-### FULL \[OUTER] JOIN
+Result (all departments are retained; `id`/`name` are NULL if a department has no employees):
 
-* Query: Use FULL JOIN to merge the data of two tables, matching by name, and display each student's name, class, and grade. If a student does not have a class or grade, fill it with NULL.
+```
++------+-------+-------------+---------+
+| id   | name  | dept_name   | manager |
++------+-------+-------------+---------+
+|    1 | Alice | Engineering | Charlie |
+|    2 | Bob   | Engineering | Charlie |
+|    3 | Carol | Marketing   | Diana   |
+|    4 | Dave  | Marketing   | Diana   |
+|    5 | Eve   | HR          | Frank   |
+| NULL | NULL  | Finance     | Grace   |
++------+-------+-------------+---------+
+```
+
+### FULL [OUTER] JOIN
+
+Returns all rows from both tables; fills with NULL on the side with no match.
 
 ```SQL
-SELECT students.name, students.class, scores.score
-FROM students
-FULL JOIN scores
-ON students.name = scores.name;
-
-
-+-------+-------+-------+
-| name  | class | score |
-+-------+-------+-------+
-| Carol | A     | 85    |
-| Bob   | B     | 80    |
-| David | C     | 95    |
-| Alice | A     | 90    |
-+-------+-------+-------+
+SELECT e.id, e.name, e.dept, d.dept_name, d.manager
+FROM doc_test.employees e
+FULL JOIN doc_test.departments d
+ON e.dept = d.dept_name
+ORDER BY e.id, d.dept_id;
 ```
 
-### \[LEFT] SEMI JOIN
+Result (both the employee side and department side are fully retained; corresponding columns are NULL when there is no match):
 
-* Query: Use SEMI JOIN to merge data from two tables, matching by name, and only display the names and classes of students who have grades.
+```
++------+-------+-------------+-------------+---------+
+| id   | name  | dept        | dept_name   | manager |
++------+-------+-------------+-------------+---------+
+|    1 | Alice | Engineering | Engineering | Charlie |
+|    2 | Bob   | Engineering | Engineering | Charlie |
+|    3 | Carol | Marketing   | Marketing   | Diana   |
+|    4 | Dave  | Marketing   | Marketing   | Diana   |
+|    5 | Eve   | HR          | HR          | Frank   |
+| NULL | NULL  | NULL        | Finance     | Grace   |
++------+-------+-------------+-------------+---------+
+```
+
+### [LEFT] SEMI JOIN
+
+Returns rows from the left table that have a match in the right table; does not return right table columns.
 
 ```SQL
-SELECT students.name, students.class
-FROM students
-SEMI JOIN scores
-ON students.name = scores.name;
-+-------+-------+
-| name  | class |
-+-------+-------+
-| Carol | A     |
-| Bob   | B     |
-| David | C     |
-| Alice | A     |
-+-------+-------+
+SELECT e.id, e.name, e.dept
+FROM doc_test.employees e
+SEMI JOIN doc_test.departments d
+ON e.dept = d.dept_name
+ORDER BY e.id;
 ```
 
-### \[LEFT] ANTI JOIN
+Result (only employee information is returned, without department table columns):
 
-* Query: Use ANTI JOIN to merge data from two tables, match by name, and only display the names and classes of students who do not have grades.
+```
++----+-------+-------------+
+| id | name  | dept        |
++----+-------+-------------+
+|  1 | Alice | Engineering |
+|  2 | Bob   | Engineering |
+|  3 | Carol | Marketing   |
+|  4 | Dave  | Marketing   |
+|  5 | Eve   | HR          |
++----+-------+-------------+
+```
+
+### [LEFT] ANTI JOIN
+
+Returns rows from the left table that have **no** match in the right table; does not return right table columns.
 
 ```SQL
-SELECT students.name, students.class
-FROM students
-ANTI JOIN scores
-ON students.name = scores.name;
-
-+------+-------+
-| name | class |
-+------+-------+
+SELECT e.id, e.name, e.dept
+FROM doc_test.employees e
+ANTI JOIN doc_test.departments d
+ON e.dept = d.dept_name
+ORDER BY e.id;
 ```
+
+Result (empty result when no employees have a `dept` that does not exist in `departments`):
+
+```
++----+------+------+
+| id | name | dept |
++----+------+------+
+(0 rows)
+```
+
+If there are employees in `employees` whose department is not in `departments`, those employees will appear in the result.
 
 ### CROSS JOIN
 
-* Query: Use CROSS JOIN to combine the data of two tables, displaying all possible combinations of each student's name, class, and grades.
+Returns the Cartesian product of both tables; every row is combined with every other row. Result rows = left table rows × right table rows.
 
 ```SQL
-SELECT students.name, students.class, scores.score
-FROM students
-CROSS JOIN scores;
-
-+-------+-------+-------+
-| name  | class | score |
-+-------+-------+-------+
-| Alice | A     | 90    |
-| Bob   | B     | 90    |
-| Carol | A     | 90    |
-| David | C     | 90    |
-| Alice | A     | 80    |
-| Bob   | B     | 80    |
-| Carol | A     | 80    |
-| David | C     | 80    |
-| Alice | A     | 85    |
-| Bob   | B     | 85    |
-| Carol | A     | 85    |
-| David | C     | 85    |
-| Alice | A     | 95    |
-| Bob   | B     | 95    |
-| Carol | A     | 95    |
-| David | C     | 95    |
-+-------+-------+-------+
+SELECT e.name, d.dept_name
+FROM doc_test.employees e
+CROSS JOIN doc_test.departments d
+ORDER BY e.id, d.dept_id
+LIMIT 9;
 ```
 
-^
+Result (5 employees × 3 departments = 15 rows; first 9 rows shown here):
+
+```
++-------+-------------+
+| name  | dept_name   |
++-------+-------------+
+| Alice | Engineering |
+| Alice | Marketing   |
+| Alice | HR          |
+| Bob   | Engineering |
+| Bob   | Marketing   |
+| Bob   | HR          |
+| Carol | Engineering |
+| Carol | Marketing   |
+| Carol | HR          |
++-------+-------------+
+```
+
+### NATURAL JOIN
+
+Performs an implicit equi-join based on all columns with the same name in both tables; no ON or USING condition needs to be specified.
+
+```SQL
+-- NATURAL JOIN: automatically joins on columns with the same name
+SELECT *
+FROM doc_test.employees e
+NATURAL JOIN doc_test.departments d;
+```
+
+> ⚠️ **Note**: `NATURAL JOIN` matches **all** columns with the same name in both tables. If both tables have multiple columns with the same name, all of them participate in the join condition, which can easily produce unexpected results. It is recommended to use this only when column names are unambiguous. For everyday development, it is recommended to use `ON` to explicitly specify join conditions.
+
+### USING Syntax
+
+When the join columns have the same name in both tables, you can use `USING` instead of `ON`; the column appears only once in the result set:
+
+```SQL
+-- Assuming both tables have a dept_name column, use USING to simplify
+SELECT e.name, e.salary, dept_name, d.manager
+FROM doc_test.employees e
+JOIN doc_test.departments d
+USING (dept_name);
+```
+
+## Notes
+
+- JOIN conditions (`ON` clause) do not support subqueries.
+- SEMI JOIN and ANTI JOIN only return left table columns; referencing right table columns in SELECT will cause an error.
+- FULL OUTER JOIN can have significant performance overhead in some distributed engines; pay attention to the execution plan when dealing with large data volumes.
+- CROSS JOIN does not require an ON condition; if you accidentally write `JOIN` without an `ON`, the optimizer will treat it as a CROSS JOIN.

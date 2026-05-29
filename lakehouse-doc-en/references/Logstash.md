@@ -1,24 +1,41 @@
+# Logstash Data Import Guide
+
 Logstash is an open-source data processing pipeline that can simultaneously collect data from multiple sources, process the data, and send it to a destination of your choice. Logstash is part of the Elastic Stack (formerly known as the ELK Stack), which also includes Elasticsearch and Kibana. These three tools are often used together to provide powerful search, analysis, and visualization capabilities. Lakehouse provides a Logstash Connector that can directly connect to Lakehouse.
 
+
 # Deployment
+
+Uninstall plugin:
+
 ```JSON
-# Uninstall Plugin
 ./bin/logstash-plugin uninstall logstash-output-clickzetta && rm -rf ./vendor/local_gems/
 
-# Install Plugin
+```
+
+Install plugin:
+
+```JSON
 ./bin/logstash-plugin install --no-verify --local logstash-output-clickzetta-0.0.1.gem 
 
-# View Plugin
+```
+
+View plugin:
+
+```JSON
 ./bin/logstash-plugin list --verbose
 ```
-> When installing the plugin, although --no-verify --local is specified, it still seems to download and verify certain packages from the remote server. So if you encounter a long time stuck at the installing ... stage, you can directly ctrl+c to force kill it. At this point, the plugin has already been successfully installed, and you can check the plugin to verify.
+
+> When installing the plugin, although `--no-verify --local` is specified, it still seems to download or verify certain packages from the remote server. So if you encounter a long time stuck at the `installing ...` stage, you can directly press `Ctrl+C` to force terminate. At this point, the plugin may have already been successfully installed, and you can verify by viewing the plugin list.
 
 # Test
+
 ```JSON
 cd /logstash-data
 /usr/share/logstash/bin/logstash -f data/logstash.conf.5 --log.level error
-# The default number of workers is the number of machine cores (-w), and the default batch size is 125 (-b). You can adjust the corresponding parameters with -w 16 -b 200.
 ```
+
+The default number of workers is the number of machine cores (-w), and the default batch size is 125 (-b). You can adjust the corresponding parameters with -w 16 -b 200:
+
 **File input**
 
 Refer to [file input plugin](https://www.elastic.co/guide/en/logstash/7.17/plugins-inputs-file.html#plugins-inputs-file-sincedb_clean_after)

@@ -31,7 +31,7 @@ Before installation, confirm you have the following information. Refer to the do
 
 | Item                | Description                           | Example                                                                                    |
 | ------------------- | ------------------------------------- | ----------------------------------------------------------------------------------------- |
-| Service Endpoint    | Singdata API service address          | [cn-shanghai-alicloud.api.clickzetta.com](http://cn-shanghai-alicloud.api.clickzetta.com) |
+| Service Endpoint    | Singdata API service address          | [cn-shanghai-alicloud.api.singdata.com](http://cn-shanghai-alicloud.api.singdata.com) |
 | Instance Name       | Singdata instance name or ID          | demo\_instance                                                                            |
 | Workspace           | Workspace name                        | analytics\_prod                                                                           |
 | Username & Password | Account credentials for connecting to Singdata | data\_user                                                                                |
@@ -134,7 +134,7 @@ cz-cli setup --credencial <your cli Connection String>
 
 #### How to Obtain a PAT
 
-1\) Log in to your [Singdata account](https://accounts.clickzetta.com/login?ref=cz-cli), and select LakehouseMCP from the left menu.
+1\) Log in to your [Singdata account](https://accounts.singdata.com/login?ref=cz-cli), and select LakehouseMCP from the left menu.
 
 ![](/.topwrite/assets/image_1779090472848.png)
 
@@ -482,6 +482,15 @@ cz-cli -p prod job result \<job\_id>
 6. Hand cz-cli over to your AI Agent, with an agreement that high-risk operations require manual confirmation.
 
 For concepts such as account name (account\_name) and service name (instance\_name) and how to find them, see: <https://www.singdata.com/documents/key-concepts>
+
+---
+
+## Related Documentation
+
+- [SQL Execution and Data Exploration](cz-cli-sql.md) — Complete command reference for sql, schema, table, job, workspace
+- [Studio Task Development and Operations](cz-cli-studio-tasks.md) — Task creation, scheduling, runs operations, backfill, task flow
+- [AI Agent Integration](cz-cli-agent.md) — Agent LLM configuration, natural language operations, enterprise bot scenarios
+- [External Data Source Management](cz-cli-datasource.md) — Data source browsing, connectivity testing, sample data preview
 
 ^
 

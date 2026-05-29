@@ -1,1 +1,1 @@
-^
+# Kafka Storage Connection

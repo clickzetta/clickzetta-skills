@@ -80,7 +80,7 @@ The goal of this step is to allow the Singdata Lakehouse cluster to access the c
 
 * Modify CzUDFRole's **Trust Policy**:
 
-```Python
+```json
 {
   "Statement": [
     {
@@ -221,7 +221,7 @@ as 'com.clickzetta.nlp.GenericUDFSentiment'
 using archive 'oss://hz-oss-lakehouse/functions/sentiment/UDF_code/SentimentAnalysis.zip'
 connection udf_sentiment_hz 
 with properties ( 
- 'remote.udf.api' = 'java8.hive2.v0', 
+ 'remote.udf.api' = 'java8.hive2.v0'
 );
 ```
 
@@ -306,13 +306,13 @@ class image_to_text(object):
 
 #### 3. Create a New External Function
 
-```Python
+```SQL
 create external function public.image_to_text
 as 'video_contents.image_to_text'    # Script name + class name
 using archive 'oss://derek-bj-oss/bj_remote_udf/image_to_text/image_to_text.zip'
 connection udf_sentiment_bj2
 with properties (
- 'remote.udf.api' = 'python3.mc.v0',   
+ 'remote.udf.api' = 'python3.mc.v0'
 );
 ```
 

@@ -1,45 +1,58 @@
-## Introduction to Lakehouse Time Travel Functionality
+# Lakehouse Time Travel
 
-The Time Travel functionality of Lakehouse allows users to access historical data at any point within a defined time period, including data that has been changed or deleted. Currently, this feature is in Preview version and offers a free seven-day data retention period. During this period, users can query data within seven days. After the retention period, Lakehouse will charge storage fees for the Time Travel functionality separately and will adjust the default retention period to one day.
+Lakehouse Time Travel allows users to access historical data at any point within a defined retention period, including data that has been changed or deleted.
+
+## Overview
+
+Time Travel is implemented on top of Lakehouse's MVCC (Multi-Version Concurrency Control) mechanism — every data change generates a new version. Users can query historical data by specifying a timestamp or version number.
+
+> ⚠️ **Note**: Time Travel incurs storage fees. The default retention period is **1 day** (24 hours). Setting a longer retention period increases storage costs.
 
 ## Application Scenarios
 
-1. Recover data that may have been accidentally or intentionally deleted.
-2. Copy and back up critical data from the past.
-3. Analyze data changes within a specified time period.
+1. **Recover accidentally deleted or modified data**: Restore a dropped table with `UNDROP TABLE`, or roll back to a specific point in time with `RESTORE TABLE`
+2. **Data comparison and analysis**: Compare data changes between different points in time
+3. **Audit and compliance**: Trace historical data states
 
-##  Syntax
+## Time Travel Retention Period
+
+The default retention period for Lakehouse table history is **1 day** (24 hours). To retain history longer, set it per table:
+
 ```sql
-SELECT 
-    table_identifier TIMESTAMP AS OF timestamp_expression
+-- Set retention period to 7 days
+ALTER TABLE tablename SET PROPERTIES ('data_retention_days'='7');
+
+-- Specify retention period at table creation
+CREATE TABLE orders (id INT, amount DECIMAL(10,2))
+PROPERTIES ('data_retention_days'='30');
 ```
-By using the TIMESTAMP AS OF clause, users can specify a specific point in time to query the exact position in the table's history within the retention period or the data just before the specified point. The timestamp_expression is a parameter that returns a timestamp type expression, for example:
 
-* `'2023-11-07 14:49:18'`, a string that can be cast to a timestamp.
-* `CAST('2023-11-07 14:49:18' AS TIMESTAMP)`.
-* `CURRENT_TIMESTAMP() - INTERVAL 12 HOURS`. The version from 12 hours ago.
-* Any expression that is itself a timestamp type or can be cast to a timestamp.
+Retention period range: **0–90 days**. Setting to 0 disables version history.
 
-## Query Description
+## Query Syntax
 
-* By specifying a point in time, users can query the version data at the specified time.
-* The specified point in time cannot be earlier than the table creation time, nor can it exceed the data retention period. If the specified point in time is out of range, an error will be reported.
-* If the timestamp_expression is a future time, an error will also be reported because future data is not available.
+```sql
+SELECT * FROM <table_name> TIMESTAMP AS OF <timestamp_expression>;
+```
 
-## Permission Requirements
+`timestamp_expression` supports the following forms:
 
-* Users need to have SELECT permissions on the table.
+- Timestamp string literal: `'2024-01-15 14:49:18'`
+- CAST conversion: `CAST('2024-01-15 14:49:18' AS TIMESTAMP)`
 
-## Usage Restrictions
+> ⚠️ **Note**: `timestamp_expression` only accepts **constant literals**. Runtime expressions such as `CURRENT_TIMESTAMP() - INTERVAL 12 HOURS` or `NOW() - INTERVAL 1 HOUR` are NOT supported. To query data from "N hours ago", first check the version timestamp with `DESC HISTORY`, then use the specific timestamp literal.
 
-* Views do not support Time Travel queries.
-* External schemas are not supported.
-* The data retention period is currently seven days. After the retention period, queries cannot be performed.
-* RealtimeStream real-time writes of uncommitted data do not support Time Travel queries. This is because RealtimeStream prioritizes writing to a temporary area to facilitate quick queries for real-time query functionality. Time Travel queries rely on querying committed records, so it is currently not possible to query uncommitted data written by RealtimeStream.
+## View Version History
 
-## Example
+```sql
+DESC HISTORY <table_name>;
+```
 
-### Analyzing Data Within a Specified Time Period
+Returns version number (`version`), timestamp (`time`), row count (`total_rows`), and operation type (`operation`).
+
+## Usage Examples
+
+### Example 1: Query Historical Data
 
 ```sql
 CREATE TABLE birds (
@@ -49,140 +62,89 @@ CREATE TABLE birds (
     colors STRING
 );
 
-INSERT INTO birds (id, name, wingspan_cm, colors) VALUES
+INSERT INTO birds VALUES
     (1, 'Sparrow', 15.5, 'Brown'),
-    (2, 'Blue Jay', 20.2, 'Blue'),
-    (3, 'Cardinal', 22.1, 'Red'),
-    (4, 'Robin', 18.7, 'Red","Brown');
+    (2, 'Blue Jay', 20.2, 'Blue');
 
 -- Insert more data
-INSERT INTO birds (id, name, wingspan_cm, colors) VALUES
-    (5, 'Hummingbird', 8.2, 'Green'),
-    (6, 'Penguin', 99.5, 'Black", "White'),
-    (7, 'Eagle', 200.8, 'Brown'),
-    (8, 'Owl', 105.3, 'Gray'),
-    (9, 'Flamingo', 150.6, 'Pink'),
-    (10, 'Pelican', 180.4, 'White');
--- View version
+INSERT INTO birds VALUES
+    (3, 'Cardinal', 22.1, 'Red'),
+    (4, 'Robin', 18.7, 'Red,Brown');
+
+-- View version history
 DESC HISTORY birds;
 +---------+-------------------------+------------+-------------+----------+----+
-| version |          time           | total_rows | total_bytes |   user   |  o |
+| version |          time           | total_rows | total_bytes |   user   | op |
 +---------+-------------------------+------------+-------------+----------+----+
-| 3       | 2024-12-23 16:41:47.831 | 10         | 5786        | UAT_TEST | IN |
-| 2       | 2024-12-23 16:36:04.426 | 4          | 2859        | UAT_TEST | IN |
+| 3       | 2024-12-23 16:41:47.831 | 4          | 5786        | UAT_TEST | IN |
+| 2       | 2024-12-23 16:36:04.426 | 2          | 2859        | UAT_TEST | IN |
 | 1       | 2024-12-23 16:36:04.233 | 0          | 0           | UAT_TEST | CR |
 +---------+-------------------------+------------+-------------+----------+----+
--- Query after waiting for five minutes
-SELECT * FROM birds TIMESTAMP AS OF timestamp'2024-12-23 16:36:04.426';
-+----+----------+-------------+-------------+
-| id |   name   | wingspan_cm |   colors    |
-+----+----------+-------------+-------------+
-| 1  | Sparrow  | 15.5        | Brown       |
-| 2  | Blue Jay | 20.2        | Blue        |
-| 3  | Cardinal | 22.1        | Red         |
-| 4  | Robin    | 18.7        | Red","Brown |
-+----+----------+-------------+-------------+
-```
-### Join data of a specified version with other tables
-```
-DROP TABLE students;
-DROP TABLE scores;
-CREATE TABLE students (name string, class string);
-INSERT INTO students (name, class) VALUES
-('Alice', 'A'),
-('Bob', 'B');
-CREATE TABLE scores (name string, score int);
-INSERT INTO scores (name, score) VALUES
-('Alice', 90),
-('Bob', 80),
-('Carol', 85),
-('David', 95);
 
---Wait 1 minute to insert
-INSERT INTO students (name, class) VALUES
-('Carol', 'A'),
-('David', 'C');
---View version
-DESC HISTORY  students;
-+---------+-------------------------+------------+-------------+----------+----+
-| version |          time           | total_rows | total_bytes |   user   |  o |
-+---------+-------------------------+------------+-------------+----------+----+
-| 3       | 2024-12-23 16:17:01.792 | 4          | 3884        | UAT_TEST | IN |
-| 2       | 2024-12-23 16:15:22.957 | 2          | 1939        | UAT_TEST | IN |
-| 1       | 2024-12-23 16:15:22.829 | 0          | 0           | UAT_TEST | CR |
-+---------+-------------------------+------------+-------------+----------+----+
---Current version query
-SELECT students.name, students.class, scores.score
-FROM students 
-INNER JOIN scores
-ON students.name = scores.name;
-+-------+-------+-------+
-| name  | class | score |
-+-------+-------+-------+
-| Carol | A     | 85    |
-| Bob   | B     | 80    |
-| David | C     | 95    |
-| Alice | A     | 90    |
-+-------+-------+-------+
---Use students version from 2024-12-23 16:15:22.957
-SELECT students.name, students.class, scores.score
-FROM students timestamp as of '2024-12-23 16:15:22.957'
-INNER JOIN scores
-ON students.name = scores.name;
-+-------+-------+-------+
-| name  | class | score |
-+-------+-------+-------+
-| Alice | A     | 90    |
-| Bob   | B     | 80    |
-+-------+-------+-------+
-
+-- Query data at version 2 (2 rows)
+SELECT * FROM birds TIMESTAMP AS OF '2024-12-23 16:36:04.426';
++----+----------+-------------+---------+
+| id |   name   | wingspan_cm | colors  |
++----+----------+-------------+---------+
+| 1  | Sparrow  | 15.5        | Brown   |
+| 2  | Blue Jay | 20.2        | Blue    |
++----+----------+-------------+---------+
 ```
-### Restore Data That May Have Been Accidentally or Intentionally Deleted
 
-Simulate data deletion:
+### Example 2: Historical Data JOIN
+
 ```sql
-CREATE TABLE birds (
-    id INT,
-    name VARCHAR(50),
-    wingspan_cm FLOAT,
-    colors STRING
-);
+-- Current version query (4 students)
+SELECT s.name, s.class, sc.score
+FROM students s
+INNER JOIN scores sc ON s.name = sc.name;
 
-INSERT INTO birds (id, name, wingspan_cm, colors) VALUES
-    (1, 'Sparrow', 15.5, 'Brown'),
-    (2, 'Blue Jay', 20.2, 'Blue'),
-    (3, 'Cardinal', 22.1, 'Red'),
-    (4, 'Robin', 18.7, 'Red","Brown');
+-- Query historical version (2 students)
+SELECT s.name, s.class, sc.score
+FROM students TIMESTAMP AS OF '2024-12-23 16:15:22.957' s
+INNER JOIN scores sc ON s.name = sc.name;
+```
 
--- Delete data
+### Example 3: Restore TRUNCATE'd Data
+
+```sql
+-- Create table and insert data
+CREATE TABLE birds (id INT, name VARCHAR(50));
+INSERT INTO birds VALUES (1, 'Sparrow'), (2, 'Blue Jay');
+
+-- Truncate the table
 TRUNCATE TABLE birds;
 
--- Check if the data still exists
-SELECT * FROM birds; -- Data has been deleted
-```
-Viewing the truncate time of the running history:
-```
-DESCRIBE HISTORY birds;
-```
-
-Restoring data:
-```sql
--- View the data before deletion, set the time travel version according to the execution time of the above run history
-SELECT * FROM birds TIMESTAMP AS OF '2023-11-07 14:49:18';
+-- Query data before truncation via Time Travel
+SELECT * FROM birds TIMESTAMP AS OF '2024-01-15 10:00:00';
 
 -- Restore data
 INSERT OVERWRITE TABLE birds
-SELECT * FROM birds TIMESTAMP AS OF '2023-11-07 14:49:18';
+SELECT * FROM birds TIMESTAMP AS OF '2024-01-15 10:00:00';
 ```
-## Copy and Backup Data from Past Key Points.
 
-You can back up data from a specified point in time to another table.
+### Example 4: Back Up Historical Data to a New Table
+
+```sql
+CREATE TABLE birds_backup AS
+SELECT * FROM birds TIMESTAMP AS OF '2024-01-15 10:00:00';
 ```
-CREATE    TABLE birds_backup AS
-SELECT    *
-FROM      birds TIMESTAMP AS OF '2023-11-20 15:48:40';
 
-SELECT    *
-FROM      birds_backup;
+## Usage Restrictions
 
-```
+- **Views** do not support Time Travel queries
+- **External schemas** do not support Time Travel
+- **RealtimeStream uncommitted data** does not support Time Travel queries
+- The query timestamp cannot be earlier than the table creation time, nor exceed the data retention period
+- Future timestamps cannot be queried
+
+## Permission Requirements
+
+Users need `SELECT` permission on the table.
+
+## Related Documentation
+
+- [UNDROP TABLE](UNDROP-TABLE.md): Restore a dropped table
+- [RESTORE TABLE](restore.md): Roll back a table to a specific point in time
+- [Data Lifecycle](data-lifecycle.md): Configure automatic data cleanup
+- [Time Travel Guide](SQL_Time_Travel_Guide.md): Typical Time Travel use cases including data recovery, historical snapshot comparison, and RESTORE operations

@@ -73,7 +73,11 @@ JOIN <cte_name2> ON ...
 The chained DataFrame operations familiar to Spark users are perfectly replicated in Lakehouse through CTEs:
 
 ```python
-# Spark DataFrame operation thinking
+```
+
+Spark DataFrame operation thinking:
+
+```python
 df_filtered = df.filter(col("order_date") >= "2024-01-01")
 df_grouped = df_filtered.groupBy("customer_id").agg(
     sum("amount").alias("total_amount"),
@@ -116,7 +120,11 @@ ORDER BY total_amount DESC;
 #### 1. Complex Aggregation Operation Conversion
 
 ```python
-# Spark complex aggregation
+```
+
+Spark complex aggregation:
+
+```python
 from pyspark.sql.functions import *
 from pyspark.sql.window import Window
 
@@ -172,7 +180,11 @@ ORDER BY category, rank;
 #### 2. JOIN Operation Optimization Conversion
 
 ```python
-# Spark broadcast JOIN
+```
+
+Spark broadcast JOIN:
+
+```python
 from pyspark.sql.functions import broadcast
 
 result = large_df.join(
@@ -211,7 +223,11 @@ ORDER BY ld.amount DESC;
 ### Converting Spark UDF to SQL Functions
 
 ```python
-# Spark custom UDF
+```
+
+Spark custom UDF:
+
+```python
 from pyspark.sql.types import StringType
 
 def categorize_amount(amount):
@@ -1478,7 +1494,7 @@ All code in this guide has passed the following feature verification:
 - ✅ Array processing (SPLIT, EXPLODE, etc.)
 - ✅ Cross-stack syntax compatibility
 - ✅ Performance optimization best practices
-- ❌ Recursive CTE (not currently supported)
+- ❌ Recursive CTE (not currently supported in the current version; see [Hierarchical Query Workaround](SQL_Hierarchy_Workaround_Guide.md) for alternatives)
 
 ### Get Started Now
 
@@ -1506,3 +1522,5 @@ No matter what technology background you come from, Singdata Lakehouse WITH CTE 
 - 📚 It is recommended to start with simple examples and gradually master advanced features
 
 ---
+
+**Note**: This document is compiled based on the Lakehouse product documentation as of June 2025. It is recommended to regularly check the official documentation for the latest updates. Before using in a production environment, always verify the correctness and performance impact of all operations in a test environment.

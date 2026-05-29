@@ -1,4 +1,4 @@
-## MATCH\_PHRASE
+# MATCH_PHRASE
 
 ```SQL
 MATCH_PHRASE(inverted_column,query, option) 
@@ -35,22 +35,9 @@ select match_phrase('a b c', 'a c', map('analyzer', 'english')) as res;
 +-------+
 ```
 
-2. Query data containing Elfriede Heaney, requiring both Elfriede and Heaney, order not required
+2. Query data containing 'Elfriede Heaney', requiring both words in order and consecutive:
 
 ```SQL
---Query data containing Elfriede Heaney
-select * from bulkload_data where match_all(data,'Elfriede Heaney',map('analyzer', 'auto'));
-+------------------------------------------------------------------------------------------------------------------------------------------+
-|                                                                   data                                                                   |
-+------------------------------------------------------------------------------------------------------------------------------------------+
-| {"address":"Apt. 423 78018 Wisozk Meadow, West Marge, WV 16958","name":"Elfriede Heaney","email":"jamar.schoen@gmail.com"}               |
-| {"address":"Suite 654 89305 Dan Drive, Haiview, AZ 55461","name":"Elfriede Heaney","email":"kristofer.upton@yahoo.com"}                  |
-| {"address":"1133 Cartwright Orchard, Port Jonathon, UT 71589-4026","name":"Elfriede Heaney","email":"douglass.nitzsche@yahoo.com"}       |
-| {"address":"115 Avery Mountains, New Elfriede, TN 83686-3466","name":"Clarence Heaney","email":"emmanuel.lockman@yahoo.com"}             |
-| {"address":"Suite 342 631 Konopelski Hollow, East Chingview, UT 79212","name":"Elfriede Heaney DDS","email":"mikel.keebler@hotmail.com"} |
-| {"address":"415 Elfriede Row, New Adriene, SC 90250","name":"Jefferson Heaney","email":"len.price@yahoo.com"}                            |
-+------------------------------------------------------------------------------------------------------------------------------------------+
-
 select * from bulkload_data where match_phrase(data,'Elfriede Heaney',map('analyzer', 'unicode'));
 +------------------------------------------------------------------------------------------------------------------------------------------+
 |                                                                   data                                                                   |

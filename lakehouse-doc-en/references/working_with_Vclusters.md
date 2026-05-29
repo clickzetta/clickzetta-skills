@@ -62,7 +62,7 @@ In the workspace where ETL jobs need to be executed, create a General Purpose co
 | Tableau/FineBI            | Ad-Hoc Analytics                  | Ad-Hoc              | 8               | 1   TB      | General Purpose | <1 Min&#xA;TP90 <5s    | 16                     |
 | Data Application Products | Applications                      | On demand           | 8               | 100 GB      | Analytical      | <3 seconds             | 4                      |
 |                           |                                   | On demand           | 96              | 100 MB      | Analytical      | <3 seconds             | 4                      |
-| ClickZetta Web-UI         | Ad-Hoc Analytics                  | Ad-Hoc              | 8               | 3   TB      | General Purpose | < 1 Min&#xA;TP90 <15 s | 16                     |
+| Singdata Web-UI         | Ad-Hoc Analytics                  | Ad-Hoc              | 8               | 3   TB      | General Purpose | < 1 Min&#xA;TP90 <15 s | 16                     |
 
 Assume the data to be processed is 10TB, and it is expected to be completed within 4 hours. Therefore, a general-purpose computing cluster with a specification of 8 CRU needs to be created.
 

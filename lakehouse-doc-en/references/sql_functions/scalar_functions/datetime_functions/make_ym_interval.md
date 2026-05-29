@@ -1,4 +1,4 @@
-### MAKE\_YM\_INTERVAL
+# MAKE_YM_INTERVAL
 
 ### Description
 
@@ -35,15 +35,15 @@ Returns a value of type `interval year to month`.
    ```
 3. Create a time period that only includes 6 months:
    ```sql
-   SELECT MAKE_YM_INTERVAL(NULL, 6);
-   +---------------------------+
-   | MAKE_YM_INTERVAL(NULL, 6) |
-   +---------------------------+
-   | null                      |
-   +---------------------------+
+   SELECT MAKE_YM_INTERVAL(0, 6);
+   +------------------------+
+   | MAKE_YM_INTERVAL(0, 6) |
+   +------------------------+
+   | 0-6                    |
+   +------------------------+
    ```
 ### Notes
 
-* When there is only one parameter, the system defaults the year to 1.
-* When `NULL` is used as a parameter, it means that the parameter is not involved in the calculation of the time interval.
+* When there is only one parameter, `months` defaults to 0.
+* When `NULL` is used as a parameter, the function returns `NULL`. To create an interval with only months, use `MAKE_YM_INTERVAL(0, 6)` instead of `MAKE_YM_INTERVAL(NULL, 6)`.
 

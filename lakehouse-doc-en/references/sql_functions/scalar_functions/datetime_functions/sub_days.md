@@ -1,4 +1,4 @@
-### SUB\_DAYS 
+# SUB_DAYS
 
 #### Description
 
@@ -41,7 +41,7 @@ SELECT SUB_DAYS('2025-01-01', 20) as res;
 | 2024-12-12 |
 +------------+
 ```
-4. Calculate the date 5 days after December 31, 2023:
+4. Calculate the date 5 days before December 31, 2023:
 ```sql
 SELECT SUB_DAYS('2023-12-31', 5) as res;
 +------------+

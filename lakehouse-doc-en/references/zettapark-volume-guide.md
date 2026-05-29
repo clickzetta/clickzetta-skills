@@ -43,7 +43,7 @@ session.sql("CREATE VOLUME IF NOT EXISTS my_named_vol").collect()
 
 > ⚠️ After uploading files with `session.file.put`, run `ALTER VOLUME my_named_vol REFRESH` to refresh the directory index before `session.read` methods can see the new files.
 >
-> 💡 To mount existing OSS/S3/COS object storage, use an External Volume. See [External Volume](../external_volume.md).
+> 💡 To mount existing OSS/S3/COS object storage, use an External Volume. See [External Volume](external_volume.md).
 
 ---
 
@@ -284,8 +284,8 @@ session.sql("GET USER VOLUME FILE 'subdir/file.csv' TO '/local/output/'").collec
 
 | Document | Description |
 |------|------|
-| [External Volume](../external_volume.md) | Mount OSS/S3/COS to create an External Volume |
-| [Internal Volume](../internal_volume.md) | Named Volume and User Volume details |
+| [External Volume](external_volume.md) | Mount OSS/S3/COS to create an External Volume |
+| [Internal Volume](internal_volume.md) | Named Volume and User Volume details |
 | [Zettapark DataFrame API Guide](zettapark-dataframe-guide.md) | Complete DataFrame operations reference |
 | [Zettapark Data Engineering Practice](zettapark-etl-guide.md) | Multi-table joins, window functions, and more |
-| [COPY INTO](../COPY-INTO-table.md) | Import data from Volume using SQL |
+| [COPY INTO](copy-into-table.md) | Import data from Volume using SQL |

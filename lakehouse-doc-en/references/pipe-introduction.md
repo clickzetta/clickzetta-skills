@@ -57,9 +57,9 @@ CREATE PIPE oss_pipe
 | Source File Processing | **Auto-deletes source files after successful import** (requires `PURGE = TRUE`) | Preserves source files |
 | Configuration Complexity | Simple, no extra configuration needed | Requires MNS queue configuration |
 
-> **Warning**: `LIST_PURGE` mode **permanently deletes** the source files in object storage after successful import. If you need to preserve the original files, use `EVENT_NOTIFICATION` mode.
+> ⚠️ **Warning**: `LIST_PURGE` mode **permanently deletes** the source files in object storage after successful import. If you need to preserve the original files, use `EVENT_NOTIFICATION` mode.
 
-> **Note**: Each Pipe must correspond to an independent Volume. Pipe COPY statements do not support `FILES`, `SUBDIRECTORY`, or `REGEXP` parameters.
+> ⚠️ **Note**: Each Pipe must correspond to an independent Volume. Pipe COPY statements do not support `FILES`, `SUBDIRECTORY`, or `REGEXP` parameters.
 
 ## Pipe Lifecycle
 

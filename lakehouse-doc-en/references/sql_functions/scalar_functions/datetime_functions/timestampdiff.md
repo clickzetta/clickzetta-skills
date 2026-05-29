@@ -27,9 +27,7 @@ SELECT TIMESTAMPDIFF(MICROSECOND, '2022-03-31 00:00:00', '2022-03-30 06:00:00') 
 | -64800000000 |
 +--------------+
 ```
-```markdown
 2. Calculate the number of hours between two timestamps:
-```
 ```sql
 SELECT TIMESTAMPDIFF(HOUR, '2022-03-31 00:00:00', '2022-03-30 06:00:00') as res ;
 +-----+

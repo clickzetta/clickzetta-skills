@@ -90,7 +90,8 @@ Real-time synchronization begins:
 
 ##### Incremental Real-time Synchronization
 
-Insert incremental data into the PG database for incremental real-time synchronization. Create a new file in VS Code named “[rt\_data\_generate\_insert\_into\_pg.py](https://github.com/yunqiqiliang/clickzetta_quickstart/blob/main/a_comprehensive_guide_to_ingesting_data_into_clickzetta/rt_data_generate_insert_into_pg.py)” and copy the following code into it:
+Insert incremental data into the PG database for incremental real-time synchronization. Create a new file in VS Code named "[rt\_data\_generate\_insert\_into\_pg.py](https://github.com/yunqiqiliang/clickzetta_quickstart/blob/main/a_comprehensive_guide_to_ingesting_data_into_clickzetta/rt_data_generate_insert_into_pg.py)" and copy the following code into it:
+
 ```py
 import os
 import sys
@@ -105,17 +106,21 @@ from datetime import date, datetime, timedelta
 from dotenv import load_dotenv
 
 load_dotenv()
-fake = Faker('en_US')  # Use English locale
-resorts = ["The Golden Duck", "Jing Yaa Tang", "Xin Rong Ji", "Fangshan Restaurant", "Quanjude", 
-           "Li Qun Roast Duck", "Din Tai Fung", "Haidilao", "Jiangsu Club", "The Guest House",
-           "Zhou Hei Ya", "Night Shanghai", "Xiang Palace", "Chang'an No.1", "Jade Restaurant", "Beijing Hotel",
-           "Sichuan Bean Flower", "Haidilao Hot Pot", "Chuanban Restaurant", "Nanmen Hot Pot",
-           "Hutong", "Jade Garden", "Lei Garden", "Imperial Treasure", "Jindingxuan", 
-           "Grandma's Home", "Da Dong", "Shunfeng Seafood", "Xiaolongkan Hot Pot",
-           "New World Chinese", "King's Joy", "Din Tai Fung (Taiwan)", "Dianchi Visitor", 
-           "Green Wave Pavilion", "South America Time"]
+fake = Faker('zh_CN')  # Use Chinese locale
+resorts = ["大董烤鸭", "京雅堂", "新荣记", "仿膳饭庄", "全聚德", 
+           "利群烤鸭店", "鼎泰丰", "海底捞", "江苏会所", "店客店来",
+           "周黑鸭", "夜上海", "香宫", "长安壹号", "翡翠餐厅", "北京饭店",
+           "四川豆花饭庄", "海底捞火锅", "川办餐厅", "南门火锅",
+           "胡同", "翠园", "利苑酒家", "御宝轩", "金鼎轩", 
+           "外婆家", "大董", "顺峰海鲜酒家", "小龙坎火锅",
+           "新大陆中餐厅", "京兆尹", "鼎泰丰（台湾）", "滇池来客", 
+           "绿波廊", "南美时光"]
 
-# Load database credentials from environment variables
+```
+
+Load database credentials from environment variables:
+
+```py
 DB_NAME = 'postgres'
 DB_USER = 'postgres'
 DB_PASSWORD = 'postgres'
@@ -214,16 +219,21 @@ if __name__ == "__main__":
     
     main(total_count, batch_size, sleep_time)
 ```
+
 In VS Code, create a new "Terminal" and run the following command to activate the Python environment created in the "Environment Setup" step. If you are already in the cz-ingest-examples environment, please skip this step.
+
 ```Shell
 conda activate cz-ingest-examples
 ```
+
 Then run the following command in the same terminal:
 
 Insert 100,000 rows of data into the ingest\_demo.lift\_tickets\_data table, inserting 100 rows at a time, with a 10-second sleep between each batch.
+
 ```Shell
 python rt_data_generate_insert_into_pg.py 100000 100 10
 ```
+
 In Singdata Lakehouse Studio, view the real-time synchronization progress:
 
 :-: ![](.topwrite/assets/image_1736148122833.png =484)

@@ -185,7 +185,7 @@ ORDER BY log_id;
 | 7 | www.example.com | /product/detail | id=456 |
 | 8 | shop.example.com | /checkout | order=789 |
 
-> **Note**: In `[?](.*)`, the `?` is placed inside the character class `[?]` to prevent the regex engine from treating it as a quantifier. URLs without query parameters (such as log_id=6) return an empty string.
+> ⚠️ **Note**: In `[?](.*)`, the `?` is placed inside the character class `[?]` to prevent the regex engine from treating it as a quantifier. URLs without query parameters (such as log_id=6) return an empty string.
 
 ### Extract the First Parameter Key and Value from a URL
 
@@ -243,7 +243,7 @@ ORDER BY log_id;
 | 7 | Phone: 138-0013-8000, please contact | Phone13800138000please contact |
 | 8 | Order #789 confirmed! | Order 789 confirmed |
 
-> **Note**: `\u4e00-\u9fa5` is the Unicode range for basic CJK characters, used to preserve Chinese characters in regex.
+> ⚠️ **Note**: `\u4e00-\u9fa5` is the Unicode range for basic CJK characters, used to preserve Chinese characters in regex.
 
 ### Mask Phone Numbers
 
@@ -271,7 +271,7 @@ ORDER BY log_id;
 | 7 | Phone: 138-0013-8000, please contact | Phone: PHONE_HIDDEN, please contact |
 | 8 | Order #789 confirmed! | Order #789 confirmed! |
 
-> **Note**: `REGEXP_REPLACE` replaces all matching positions in the string. If the content contains multiple phone numbers, every one will be replaced.
+> ⚠️ **Note**: `REGEXP_REPLACE` replaces all matching positions in the string. If the content contains multiple phone numbers, every one will be replaced.
 
 ### Remove Fixed Prefixes with REPLACE
 
@@ -367,7 +367,7 @@ ORDER BY log_count DESC, tag;
 | static | 1 |
 | tutorial | 1 |
 
-> **Note**: `SPLIT(tags, ',')` returns a string array. `LATERAL VIEW EXPLODE(...)` expands each element of the array into a separate row, with the expanded column named via `AS tag`.
+> ⚠️ **Note**: `SPLIT(tags, ',')` returns a string array. `LATERAL VIEW EXPLODE(...)` expands each element of the array into a separate row, with the expanded column named via `AS tag`.
 
 If you only need to convert the string to an array and count the number of elements without expanding into rows, you can use `SIZE(SPLIT(...))`:
 
@@ -502,7 +502,7 @@ ORDER BY user_id;
 | u004 | data,lakehouse,cloud |
 | u005 | tech,mobile,new |
 
-> **Note**: `DISTINCT` and `ORDER BY` cannot be used together in the same `GROUP_CONCAT` call; doing so will produce an error. To deduplicate results, use a subquery to deduplicate first, then aggregate.
+> ⚠️ **Note**: `DISTINCT` and `ORDER BY` cannot be used together in the same `GROUP_CONCAT` call; doing so will produce an error. To deduplicate results, use a subquery to deduplicate first, then aggregate.
 
 ### WM_CONCAT: Concise Syntax
 
@@ -527,7 +527,7 @@ ORDER BY user_id;
 | u004 | data,lakehouse,cloud |
 | u005 | tech,mobile,new |
 
-> **Note**: `WM_CONCAT` does not guarantee aggregation order. If deterministic merge ordering is needed, use `GROUP_CONCAT ... ORDER BY`.
+> ⚠️ **Note**: `WM_CONCAT` does not guarantee aggregation order. If deterministic merge ordering is needed, use `GROUP_CONCAT ... ORDER BY`.
 
 ### GROUP_CONCAT DISTINCT: Aggregate Unique Values
 
@@ -628,7 +628,7 @@ ORDER BY log_id;
 | 7 | u005 | u005 | 21 |
 | 8 | u003 | u003 | 21 |
 
-> **Note**: `LENGTH` returns the character count (not byte count). Chinese characters and English characters each count as 1 character.
+> ⚠️ **Note**: `LENGTH` returns the character count (not byte count). Chinese characters and English characters each count as 1 character.
 
 ***
 
@@ -640,7 +640,7 @@ After completing string processing verification, it is recommended to clean up t
 DROP TABLE IF EXISTS doc_str_logs;
 ```
 
-> **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
+> 💡 **Tip**: Lakehouse supports `UNDROP TABLE`, allowing recovery of accidentally dropped tables within the retention period.
 
 ***
 

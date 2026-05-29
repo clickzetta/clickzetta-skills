@@ -2,7 +2,7 @@
 
 Adds a user to the current workspace, allowing them to access and operate on resources within the workspace.
 
-> **Note**: `CREATE USER` adds a user who already exists in the instance user management system into the current workspace, rather than creating a brand-new account. If the user does not exist in the instance, the command will report an error.
+> ⚠️ **Note**: `CREATE USER` adds a user who already exists in the instance user management system into the current workspace, rather than creating a brand-new account. If the user does not exist in the instance, the command will report an error.
 
 ## Syntax
 

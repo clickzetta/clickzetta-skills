@@ -1,6 +1,6 @@
 ### STRUCT_INSERT
 
-### Dexcription
+### Description
 The `struct_insert` function is used to insert a new field into a structure (struct). The name of the new field is specified by the `name` parameter, and its value is specified by the `expr` parameter. The optional `indexToInsert` parameter is used to specify the insertion position. If `indexToInsert` is not specified or its value is 0, the new field will be inserted at the end of the structure. If `indexToInsert` is 1, the new field will be inserted after the first field, and so on.
 
 ### Functionality

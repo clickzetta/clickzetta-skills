@@ -2,23 +2,18 @@
 
 This document provides basic usage examples for LangChain Singdata integration, suitable for beginners to get started quickly.
 
-## 📚 Table of Contents
-
-- [Database Connection](#database-connection)
-- [SQL Queries](#sql-queries)
-- [Vector Store](#vector-store)
-- [Full-Text Search](#full-text-search)
-- [Key-Value Store](#key-value-store)
-- [Chat History](#chat-history)
-
-## 🔌 Database Connection
+## Database Connection
 
 ### Basic Connection
 
 ```python
 from langchain_clickzetta import ClickZettaEngine
 
-# Create database engine
+```
+
+Create a database engine:
+
+```python
 engine = ClickZettaEngine(
     service="your-service",
     instance="your-instance",
@@ -29,7 +24,11 @@ engine = ClickZettaEngine(
     vcluster="your-vcluster"
 )
 
-# Test connection
+```
+
+Test the connection:
+
+```python
 try:
     results, columns = engine.execute_query("SELECT 1 as test")
     print("✅ Connection successful")
@@ -43,7 +42,11 @@ except Exception as e:
 import os
 from langchain_clickzetta import ClickZettaEngine
 
-# Read configuration from environment variables
+```
+
+Read configuration from environment variables:
+
+```python
 engine = ClickZettaEngine(
     service=os.getenv("CLICKZETTA_SERVICE"),
     instance=os.getenv("CLICKZETTA_INSTANCE"),
@@ -75,20 +78,32 @@ engine = ClickZettaEngine(
 )
 ```
 
-## 📊 SQL Queries
+## SQL Queries
 
 ### Basic Queries
 
 ```python
-# Simple query
+```
+
+Simple query:
+
+```python
 results, columns = engine.execute_query("SELECT COUNT(*) as total FROM users")
 print(f"Total users: {results[0]['total']}")
 
-# View all tables
+```
+
+View all tables:
+
+```python
 tables = engine.get_table_names()
 print(f"Tables in database: {tables}")
 
-# Get table structure info
+```
+
+Get table structure info:
+
+```python
 table_info = engine.get_table_info(table_names=["users"])
 print(f"Table structure:\n{table_info}")
 ```
@@ -99,20 +114,32 @@ print(f"Table structure:\n{table_info}")
 from langchain_clickzetta import ClickZettaSQLChain
 from langchain_community.llms import Tongyi
 
-# Initialize large language model
+```
+
+Initialize the large language model:
+
+```python
 llm = Tongyi(
     dashscope_api_key="your-dashscope-api-key",
     model_name="qwen-plus"
 )
 
-# Create SQL chain
+```
+
+Create SQL chain:
+
+```python
 sql_chain = ClickZettaSQLChain.from_engine(
     engine=engine,
     llm=llm,
     return_sql=True
 )
 
-# Natural language queries
+```
+
+Natural language queries:
+
+```python
 questions = [
     "How many tables are in the database?",
     "How many records are in the users table?",
@@ -133,18 +160,26 @@ for question in questions:
 ### Parameterized Queries
 
 ```python
-# Parameterized query to avoid SQL injection
+```
+
+Parameterized query to avoid SQL injection:
+
+```python
 def get_users_by_age(min_age: int):
     sql = "SELECT name, age FROM users WHERE age >= ?"
     results, columns = engine.execute_query(sql, parameters={"age": min_age})
     return results
 
-# Usage example
+```
+
+Usage example:
+
+```python
 adult_users = get_users_by_age(18)
 print(f"Adult users: {len(adult_users)}")
 ```
 
-## 🔍 Vector Store
+## Vector Store
 
 ### Basic Vector Store
 
@@ -153,20 +188,32 @@ from langchain_clickzetta import ClickZettaVectorStore
 from langchain_community.embeddings import DashScopeEmbeddings
 from langchain_core.documents import Document
 
-# Initialize embedding model
+```
+
+Initialize the embedding model:
+
+```python
 embeddings = DashScopeEmbeddings(
     dashscope_api_key="your-dashscope-api-key",
     model="text-embedding-v4"
 )
 
-# Create vector store
+```
+
+Create vector store:
+
+```python
 vector_store = ClickZettaVectorStore(
     engine=engine,
     embeddings=embeddings,
     table_name="example_vectors"
 )
 
-# Add documents
+```
+
+Add documents:
+
+```python
 documents = [
     Document(page_content="Singdata is a high-performance analytical database"),
     Document(page_content="LangChain is an AI application development framework"),
@@ -180,7 +227,11 @@ print("✅ Documents added to vector store")
 ### Similarity Search
 
 ```python
-# Basic similarity search
+```
+
+Basic similarity search:
+
+```python
 query = "What is a database?"
 results = vector_store.similarity_search(query, k=3)
 
@@ -192,7 +243,11 @@ for i, doc in enumerate(results, 1):
 ### Similarity Search with Scores
 
 ```python
-# Get similarity scores
+```
+
+Get similarity scores:
+
+```python
 results_with_scores = vector_store.similarity_search_with_score(query, k=3)
 
 print(f"Query: {query}")
@@ -203,7 +258,11 @@ for i, (doc, score) in enumerate(results_with_scores, 1):
 ### Search with Metadata Filtering
 
 ```python
-# Add documents with metadata
+```
+
+Add documents with metadata:
+
+```python
 documents_with_metadata = [
     Document(
         page_content="Python is a programming language",
@@ -217,7 +276,11 @@ documents_with_metadata = [
 
 vector_store.add_documents(documents_with_metadata)
 
-# Search with filter conditions
+```
+
+Search with filter conditions:
+
+```python
 results = vector_store.similarity_search(
     "programming related",
     k=5,
@@ -229,12 +292,16 @@ for doc in results:
     print(f"- {doc.page_content}")
 ```
 
-## 🔍 Full-Text Search
+## Full-Text Search
 
 ```python
 from langchain_clickzetta.retrievers import ClickZettaFullTextRetriever
 
-# Create full-text retriever
+```
+
+Create full-text retriever:
+
+```python
 fulltext_retriever = ClickZettaFullTextRetriever(
     engine=engine,
     table_name="example_documents",
@@ -242,7 +309,11 @@ fulltext_retriever = ClickZettaFullTextRetriever(
     k=5
 )
 
-# Add documents to full-text index
+```
+
+Add documents to full-text index:
+
+```python
 documents = [
     Document(page_content="Artificial intelligence technology is developing rapidly"),
     Document(page_content="Big data analytics applications in business"),
@@ -251,7 +322,11 @@ documents = [
 
 fulltext_retriever.add_documents(documents)
 
-# Perform full-text search
+```
+
+Perform full-text search:
+
+```python
 query = "artificial intelligence"
 results = fulltext_retriever.get_relevant_documents(query)
 
@@ -262,20 +337,28 @@ for doc in results:
         print(f"  Relevance score: {doc.metadata['relevance_score']}")
 ```
 
-## 💾 Key-Value Store
+## Key-Value Store
 
 ### Basic Key-Value Operations
 
 ```python
 from langchain_clickzetta import ClickZettaStore
 
-# Create key-value store
+```
+
+Create key-value store:
+
+```python
 store = ClickZettaStore(
     engine=engine,
     table_name="example_store"
 )
 
-# Store data
+```
+
+Store data:
+
+```python
 data = [
     ("user:123", b"Zhang San"),
     ("user:456", b"Li Si"),
@@ -286,7 +369,11 @@ data = [
 store.mset(data)
 print("✅ Data stored")
 
-# Retrieve data
+```
+
+Retrieve data:
+
+```python
 keys = ["user:123", "user:456", "config:theme"]
 values = store.mget(keys)
 
@@ -298,11 +385,19 @@ for key, value in zip(keys, values):
 ### Prefix Search
 
 ```python
-# Get all user-related keys
+```
+
+Get all user-related keys:
+
+```python
 user_keys = list(store.yield_keys(prefix="user:"))
 print(f"User keys: {user_keys}")
 
-# Get all config-related keys
+```
+
+Get all config-related keys:
+
+```python
 config_keys = list(store.yield_keys(prefix="config:"))
 print(f"Config keys: {config_keys}")
 ```
@@ -310,18 +405,26 @@ print(f"Config keys: {config_keys}")
 ### Delete Operations
 
 ```python
-# Delete specified keys
+```
+
+Delete specified keys:
+
+```python
 store.mdelete(["user:456", "config:theme"])
 print("✅ Specified keys deleted")
 
-# Verify deletion result
+```
+
+Verify deletion result:
+
+```python
 remaining_values = store.mget(["user:123", "user:456", "config:language"])
 for key, value in zip(["user:123", "user:456", "config:language"], remaining_values):
     status = "exists" if value else "deleted"
     print(f"{key}: {status}")
 ```
 
-## 💬 Chat History
+## Chat History
 
 ### Basic Chat History Management
 
@@ -329,18 +432,26 @@ for key, value in zip(["user:123", "user:456", "config:language"], remaining_val
 from langchain_clickzetta import ClickZettaChatMessageHistory
 from langchain_core.messages import HumanMessage, AIMessage
 
-# Create chat history manager
+```
+
+Create chat history manager:
+
+```python
 chat_history = ClickZettaChatMessageHistory(
     engine=engine,
     session_id="user_123",
     table_name="example_chat_history"
 )
 
-# Add conversation messages
+```
+
+Add conversation messages:
+
+```python
 chat_history.add_message(HumanMessage(content="Hello"))
 chat_history.add_message(AIMessage(content="Hello! How can I help you?"))
 chat_history.add_message(HumanMessage(content="Tell me about Singdata"))
-chat_history.add_message(AIMessage(content="Singdata is a next-generation cloud-native lakehouse platform launched by Singdata..."))
+chat_history.add_message(AIMessage(content="Singdata is a next-generation cloud-native lakehouse platform..."))
 
 print("✅ Chat history saved")
 ```
@@ -348,7 +459,11 @@ print("✅ Chat history saved")
 ### Retrieving Chat History
 
 ```python
-# Get all messages
+```
+
+Get all messages:
+
+```python
 messages = chat_history.messages
 print(f"Chat history ({len(messages)} messages total):")
 for msg in messages:
@@ -359,7 +474,11 @@ for msg in messages:
 ### Get Recent Conversations
 
 ```python
-# Get the 3 most recent messages
+```
+
+Get the 3 most recent messages:
+
+```python
 recent_messages = chat_history.get_messages_by_count(3)
 print(f"Recent conversations ({len(recent_messages)} messages total):")
 for msg in recent_messages:
@@ -370,7 +489,11 @@ for msg in recent_messages:
 ### Get Conversations by Time Range
 
 ```python
-# Get today's conversations
+```
+
+Get today's conversations:
+
+```python
 from datetime import datetime, timedelta
 
 today = datetime.now().strftime("%Y-%m-%d 00:00:00")
@@ -390,20 +513,32 @@ for msg in today_messages:
 ### Clear Chat History
 
 ```python
-# Get conversation statistics
+```
+
+Get conversation statistics:
+
+```python
 message_count = chat_history.get_session_count()
 print(f"Session has {message_count} messages total")
 
-# Clear all messages in current session
+```
+
+Clear all messages in current session:
+
+```python
 chat_history.clear()
 print("✅ Chat history cleared")
 
-# Verify cleanup result
+```
+
+Verify cleanup result:
+
+```python
 remaining_count = chat_history.get_session_count()
 print(f"Messages remaining after cleanup: {remaining_count}")
 ```
 
-## 🔄 Batch Operations Examples
+## Batch Operations Examples
 
 ### Batch Add Documents
 
@@ -418,7 +553,11 @@ def batch_add_documents(vector_store, document_texts, batch_size=10):
         vector_store.add_documents(batch)
         print(f"Processed {min(i + batch_size, len(documents))}/{len(documents)} documents")
 
-# Usage example
+```
+
+Usage example:
+
+```python
 sample_texts = [
     f"This is the {i}th sample document, containing some test content"
     for i in range(1, 51)  # 50 documents
@@ -441,7 +580,11 @@ def batch_search(vector_store, queries, k=3):
             results[query] = f"Query failed: {e}"
     return results
 
-# Usage example
+```
+
+Usage example:
+
+```python
 queries = [
     "What is a database?",
     "How to do machine learning?",
@@ -459,7 +602,7 @@ for query, results in search_results.items():
     print()
 ```
 
-## 🛠️ Utility Functions
+## Utility Functions
 
 ### Connection Test Tool
 
@@ -480,7 +623,11 @@ def test_connection(engine):
         print(f"❌ Connection test failed: {e}")
         return False
 
-# Usage example
+```
+
+Usage example:
+
+```python
 if test_connection(engine):
     print("Database connection is normal, you can continue")
 else:
@@ -515,14 +662,18 @@ def get_document_stats(vector_store):
         print(f"Failed to get statistics: {e}")
         return None
 
-# Usage example
+```
+
+Usage example:
+
+```python
 stats = get_document_stats(vector_store)
 if stats:
     print(f"Total documents: {stats['total_documents']}")
     print(f"Added in last 24 hours: {stats['recent_documents']}")
 ```
 
-## 🎯 Complete Example: Mini Q&A System
+## Complete Example: Mini Q&A System
 
 ```python
 def create_mini_qa_system():
@@ -577,11 +728,15 @@ def create_mini_qa_system():
         ask_question(question)
         print()
 
-# Run the mini Q&A system
+```
+
+Run the mini Q&A system:
+
+```python
 create_mini_qa_system()
 ```
 
-## 💡 Best Practices Summary
+## Best Practices Summary
 
 1. **Connection Management**
    - Reuse the `ClickZettaEngine` instance

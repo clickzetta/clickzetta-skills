@@ -49,6 +49,6 @@ Results are empty
 ```sql
 SELECT array_min(array(null, null, null));
 ```
-## Result is Empty
+Results are empty
 
 Through the above example, you can see the application of the `array_min` function in different situations. This function is very suitable for use in scenarios where it is necessary to compare the size of elements in an array and find the minimum value.

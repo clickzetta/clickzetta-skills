@@ -6,7 +6,7 @@ Singdata Lakehouse integrates with N8N. This document is a complete installation
 
 In addition to serving as a standard N8N node, the Singdata Lakehouse extension also provides data comparison features, including:
 
-* **Multi-database support**: In addition to supporting Singdata Lakehouse, this extension also supports Alibaba Cloud MaxCompute, HUAWEI CLOUD DLI, PostgreSQL, Singdata, MySQL, SQLite, Oracle, Microsoft SQL Server, and more.
+* **Multi-database support**: In addition to supporting Singdata Lakehouse, this extension also supports Alibaba Cloud MaxCompute, HUAWEI CLOUD DLI, PostgreSQL, ClickZetta, MySQL, SQLite, Oracle, Microsoft SQL Server, and more.
 * **Data comparison**: Table data comparison, schema comparison, real-time difference detection.
 * **Workflow automation**: Visual workflow based on N8N.
 * **Automatic parameter filling**: Intelligently fetches connection information and table lists from upstream nodes.
@@ -40,7 +40,7 @@ Below are descriptions of the extension nodes:
 
 :-: ![](.topwrite/assets/image_1756881921377.png =333)
 
-## 📋 Prerequisites
+## Prerequisites
 
 * Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) or Docker Engine
 
@@ -55,26 +55,37 @@ Below are descriptions of the extension nodes:
   * 9090 (Prometheus, modifiable via .env)
   * 5432 (PostgreSQL, modifiable via .env)
 
-## 🎯 Installation and Deployment
+## Installation and Deployment
 
 ### 1️⃣ Download the Deployment Package
 
 Download `data-diff-n8n-deploy-latest.zip` and extract it to any directory:
 
+Download using curl (recommended):
+
 ```bash
-# Download using curl (recommended)
 curl -L -O https://github.com/yunqiqiliang/clickzetta_quickstart/raw/main/datadiff_n8n_clickzetta/data-diff-n8n-deploy-latest.zip
 
-# Or download using wget (overwrite existing files)
+```
+
+Or download using wget (overwrite existing files):
+
+```bash
 wget -O data-diff-n8n-deploy-latest.zip https://github.com/yunqiqiliang/clickzetta_quickstart/raw/main/datadiff_n8n_clickzetta/data-diff-n8n-deploy-latest.zip
 
-# Extract deployment package (overwrite mode)
+```
+
+Extract deployment package (overwrite mode):
+
+```bash
 unzip -o data-diff-n8n-deploy-latest.zip
 cd data-diff-n8n/
 
-# If you need interactive confirmation for each file overwrite
-# unzip data-diff-n8n-deploy-latest.zip
 ```
+
+If you need interactive confirmation for each file overwrite:
+
+unzip data-diff-n8n-deploy-latest.zip:
 
 ### 2️⃣ Check Ports (Recommended)
 
@@ -115,13 +126,13 @@ This command will:
 
 ⚠️ **Important Reminder**:
 
-* After initialization, **please immediately view and save** the passwords in the `.undefined` **file**.
+*   After initialization, **please immediately view and save** the passwords in the `.undefined` **file**.
 
-* Automatically generated passwords include:
+*   Automatically generated passwords include:
 
-  * PostgreSQL database password (POSTGRES_PASSWORD)
-  * N8N basic authentication password (N8N_BASIC_AUTH_PASSWORD, default username is admin)
-  * Grafana admin password (GRAFANA_PASSWORD, default username is admin)
+  *   PostgreSQL database password (POSTGRES_PASSWORD)
+  *   N8N basic authentication password (N8N_BASIC_AUTH_PASSWORD, default username is admin)
+  *   Grafana admin password (GRAFANA_PASSWORD, default username is admin)
 
 * Please keep these passwords safe. They cannot be recovered if lost.
 
@@ -170,7 +181,7 @@ The `start` command directly starts all services, suitable for daily use.
 * Use `deploy.sh status` to check startup progress
 * Use `deploy.sh logs` to view service logs
 
-## 🎉 Access Services
+## Access Services
 
 After deployment is complete, you can access the services as follows:
 
@@ -194,25 +205,35 @@ For login credentials, check the passwords in the `.env` file.
 * **Remote access**: When deployed on a server, replace `localhost` with the server IP address (e.g., `http://172.17.1.220`).
 * **Modify port**: To modify port 80, edit `HTTP_PORT` in the `.env` file and restart the services.
 
-## 🛠️ Daily Operations
+## Daily Operations
 
 ### Check Service Status
 
+Windows:
+
 ```bash
-# Windows
 deploy.bat status
 
-# macOS/Linux
+```
+
+macOS/Linux:
+
+```bash
 ./deploy.sh status
 ```
 
 ### View Logs
 
+View all service logs:
+
 ```bash
-# View all service logs
 deploy.bat logs
 
-# View specific service logs
+```
+
+View specific service logs:
+
+```bash
 deploy.bat logs n8n
 ```
 
@@ -260,7 +281,7 @@ deploy.bat restart
 * `stop` only stops containers; `stop-all` removes them.
 * `init` and `restart-full` include full initialization checks, suitable for troubleshooting.
 
-## 📝 Configuration Guide
+## Configuration Guide
 
 Edit the `.env` file to modify:
 
@@ -271,21 +292,34 @@ Edit the `.env` file to modify:
 
 Example:
 
+Modify the unified entry port (default 80):
+
 ```env
-# Modify the unified entry port (default 80)
 HTTP_PORT=8080
 
-# Configure N8N public URL (for generating invitation links, etc.)
+```
+
+Configure N8N public URL (for generating invitation links, etc.):
+
+```env
 N8N_PUBLIC_URL=http://172.17.1.220/n8n
 
-# Modify the number of API worker processes (default 4)
+```
+
+Modify the number of API worker processes (default 4):
+
+```env
 API_WORKERS=8
 
-# Modify the database port (if external access is needed)
+```
+
+Modify the database port (if external access is needed):
+
+```env
 POSTGRES_PORT=5433
 ```
 
-## 🔧 Diagnostic Tools
+## Diagnostic Tools
 
 ### check-env-vars.sh Usage Guide
 
@@ -334,30 +368,44 @@ If password mismatch is found, a cleanup and redeployment is usually needed:
 ./deploy.sh init
 ```
 
-## 🔄 Update Deployment
+## Update Deployment
 
 When a new version is released, follow these steps to update:
 
 ### Update with Configuration Preservation
 
+1. Backup current configuration (recommended):
+
 ```bash
-# 1. Backup current configuration (recommended)
 cp .env .env.backup
 
-# 2. Download the latest version (overwrite old files)
+```
+
+2. Download the latest version (overwrite old files):
+
+```bash
 curl -L -O https://github.com/yunqiqiliang/clickzetta_quickstart/raw/main/datadiff_n8n_clickzetta/data-diff-n8n-deploy-latest.zip
 
-# 3. Extract and overwrite (excluding .env file)
+```
+
+3. Extract and overwrite (excluding .env file):
+
+```bash
 unzip -o data-diff-n8n-deploy-latest.zip -x "data-diff-n8n/.env"
 
-# 4. Restart services
+```
+
+4. Restart services:
+
+```bash
 ./deploy.sh restart
 ```
 
 ### Full Overwrite Update
 
+Warning: This will overwrite all files, including configurations:
+
 ```bash
-# Warning: This will overwrite all files, including configurations
 unzip -o data-diff-n8n-deploy-latest.zip
 ```
 
@@ -367,7 +415,7 @@ unzip -o data-diff-n8n-deploy-latest.zip
 * The `-x` option can exclude specific files from being overwritten.
 * It is recommended to always backup the `.env` file first, as it contains your password configuration.
 
-## 🚨 Troubleshooting
+## Troubleshooting
 
 ### Port Occupied
 
@@ -412,14 +460,12 @@ If you see the following errors:
 
 **Cause**:
 
-1. The PostgreSQL data volume retains old configuration or passwords.
-2. The database initialization script failed to execute (PostgreSQL only executes scripts in `/docker-entrypoint-initdb.d/` when the data volume is first created).
+1.  The PostgreSQL data volume retains old configuration or passwords.
+2.  The database initialization script failed to execute (PostgreSQL only executes scripts in `/docker-entrypoint-initdb.d/` when the data volume is first created).
 
 **Solution**:
 
-```bash
-# Full cleanup and redeployment./deploy.sh clean./deploy.sh setup./deploy.sh init
-```
+Full cleanup and redeployment: ./deploy.sh clean ./deploy.sh setup ./deploy.sh init:
 
 **Notes**:
 
@@ -429,7 +475,7 @@ If you see the following errors:
 
 **Important**: The `clean` command will delete all data. Please ensure important data is backed up.
 
-## 📚 Advanced Usage
+## Advanced Usage
 
 ### Create Your First Comparison Workflow
 
@@ -475,13 +521,13 @@ If you see the following errors:
 
 3. You can test API calls directly on the documentation page.
 
-## 🆘 Need Help?
+## Need Help?
 
-* 📖 View project documentation
-* 🐛 Report issues
-* 💬 Contact technical support
+* View project documentation
+* Report issues
+* Contact technical support
 
-## ⚠️ Security Tips
+## Security Tips
 
 * Please be sure to modify the default passwords in the `.env` file
 * Regularly backup database data
@@ -490,6 +536,3 @@ If you see the following errors:
 ## Reference
 
 This project is open source: <https://github.com/yunqiqiliang/data-diff-n8n>
-
-^
-

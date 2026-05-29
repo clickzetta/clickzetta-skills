@@ -15,7 +15,11 @@ from datetime import datetime, timedelta
 
 import oss2
 
-# Alibaba Cloud OSS configuration. ak/sk are custom parameters. Modify ENDPOINT based on the actual OSS region.
+```
+
+Alibaba Cloud OSS configuration. ak/sk are custom parameters. Modify ENDPOINT based on the actual OSS region.:
+
+```
 
 ACCESS_KEY_ID = '${ak}'
 
@@ -27,17 +31,33 @@ ENDPOINT = 'oss-cn-shanghai-internal.aliyuncs.com'
 
 ROOT_PATH = 'ghachive'
 
-# Get current UTC+8 time
+```
 
-# beijing_time = datetime.now()
+Get current UTC+8 time:
+
+```
+
+```
+
+beijing_time = datetime.now().:
+
+```
 
 beijing_time = datetime.strptime('${datetime}', "%Y-%m-%d %H:%M:%S")
 
-# Get file time. Offset Beijing time by 9 hours (8 hours timezone + 1 hour delay for gharchive data file generation, 8+1)
+```
+
+Get file time. Offset Beijing time by 9 hours (8 hours timezone + 1 hour delay for gharchive data file generation, 8+1):
+
+```
 
 ny_time = beijing_time - timedelta(hours=9)
 
-# Format the time
+```
+
+Format the time:
+
+```
 
 year = ny_time.strftime('%Y')
 
@@ -47,15 +67,27 @@ day = ny_time.strftime('%d')
 
 hour = ny_time.strftime('%H')
 
-# Print the converted time
+```
+
+Print the converted time:
+
+```
 
 print(f"Converted to data file Time and -9 hour: {year}-{month}-{day} {hour}:00:00")
 
-# Check if hour is in '0x' format, if so remove the leading zero
+```
+
+Check if hour is in '0x' format, if so remove the leading zero:
+
+```
 
 if hour.startswith('0') and len(hour) > 1:
 
-# Remove the leading '0'
+```
+
+Remove the leading '0':
+
+```
 
 hour = hour[1:]
 

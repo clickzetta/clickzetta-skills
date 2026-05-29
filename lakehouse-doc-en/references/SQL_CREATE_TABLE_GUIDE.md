@@ -4,15 +4,6 @@
 
 Singdata Lakehouse provides full-featured, high-performance table creation capabilities, perfectly supporting smooth migration from Spark, Hive, MaxCompute, Snowflake, Databricks, and traditional databases. This guide is based on official documentation and production environment validation, providing professional migration paths and best practices for users from different technology backgrounds.
 
-### Quick Navigation
-
-* [Spark User Migration Guide](#spark-user-migration-guide) - Seamless conversion from DataFrame to SQL DDL
-* [Hive User Migration Guide](#hive-user-migration-guide) - Perfect partition syntax compatibility and performance improvement
-* [MaxCompute User Migration Guide](#maxcompute-user-migration-guide) - Natural extension of the Alibaba Cloud ecosystem
-* [Snowflake User Migration Guide](#snowflake-user-migration-guide) - Advanced optimization of cloud-native architecture
-* [Databricks User Migration Guide](#databricks-user-migration-guide) - Deep integration of Delta Lake concepts
-* [Traditional Database User Migration Guide](#traditional-database-user-migration-guide) - Elegant transformation from OLTP to OLAP
-
 ***
 
 ## CREATE TABLE Complete Syntax
@@ -87,7 +78,11 @@ column_name column_type
 **Spark DataFrame Approach**:
 
 ```python
-# Spark DataFrame table creation
+```
+
+Spark DataFrame table creation:
+
+```python
 df = spark.read.parquet("path/to/data")
 df.write.partitionBy("year", "month") \
   .bucketBy(10, "user_id") \
@@ -433,7 +428,11 @@ Lakehouse draws from Delta Lake's design philosophy, offering similar but more c
 **Databricks Delta Table**:
 
 ```python
-# Databricks Python API
+```
+
+Databricks Python API:
+
+```python
 (spark.sql("""
     CREATE TABLE IF NOT EXISTS events (
         event_id LONG,
@@ -1179,8 +1178,7 @@ By following the table creation best practices in this guide:
 ### Index Constraints
 
 * Index names must be unique across the entire database
-* BLOOMFILTER indexes do not support `BUILD INDEX` after creation
-* Inverted indexes must specify an analyzer
+* String-type inverted indexes must specify an analyzer
 * Vector indexes cannot be used in ORDER BY or GROUP BY
 
 ### Data Type Restrictions

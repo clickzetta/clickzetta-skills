@@ -10,7 +10,7 @@ Restores deleted Singdata Lakehouse data objects. `UNDROP` relies on the Time Tr
 UNDROP TABLE <table_name>
 ```
 
-> **Note**: `UNDROP` currently uses the unified `UNDROP TABLE` syntax, regardless of whether the original object was a regular table, dynamic table, or materialized view.
+> ⚠️ **Note**: `UNDROP` currently uses the unified `UNDROP TABLE` syntax, regardless of whether the original object was a regular table, dynamic table, or materialized view.
 
 ## Supported Object Types
 
