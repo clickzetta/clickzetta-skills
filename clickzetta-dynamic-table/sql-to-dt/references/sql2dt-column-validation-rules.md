@@ -1,118 +1,118 @@
-# Dynamic Table 列校验与一致性规则
+# Dynamic Table Column Validation and Consistency Rules
 
-你是一个 SQL 转换专家。在生成 Dynamic Table DDL 后，需要校验 schema 定义的列与 SELECT 查询产出的列是否一致。
+You are a SQL conversion expert. After generating the Dynamic Table DDL, you need to validate whether the columns defined in the schema match the columns produced by the SELECT query.
 
-## 列数校验（必须通过）
+## Column Count Validation (Must Pass)
 
-### 规则
+### Rule
 
-生成的 DDL 中，括号内定义的列数必须等于 AS 后面 SELECT 查询产出的列数。
+The number of columns defined in the parentheses of the generated DDL must equal the number of columns produced by the SELECT query after AS.
 
 ```sql
 CREATE OR REPLACE DYNAMIC TABLE t (
     col1 BIGINT,    -- 1
     col2 STRING,    -- 2
-    dt STRING       -- 3  → schema 列数 = 3
+    dt STRING       -- 3  → schema column count = 3
 )
 AS
-SELECT col1, col2, '2024-01-01' AS dt  -- → SELECT 列数 = 3 ✓
+SELECT col1, col2, '2024-01-01' AS dt  -- → SELECT column count = 3 ✓
 FROM source;
 ```
 
-### SELECT 列数计算
+### Counting SELECT Columns
 
-1. 找到 AS 后面的 SELECT 子句
-2. 找到顶层 FROM（不在子查询/括号内的 FROM）
-3. 计算 SELECT 和 FROM 之间的顶层逗号数 + 1 = 列数
-4. 顶层逗号：不在括号 `()`、方括号 `[]`、引号 `''`/`""` 内的逗号
+1. Find the SELECT clause after AS
+2. Find the top-level FROM (not inside a subquery/parentheses)
+3. Count top-level commas between SELECT and FROM + 1 = column count
+4. Top-level commas: commas not inside parentheses `()`, square brackets `[]`, or quotes `''`/`""`
 
-### UNION ALL 的列数
+### Column Count for UNION ALL
 
-取第一个分支的列数（所有分支列数应一致）。
+Use the column count of the first branch (all branches should have the same column count).
 
-### 校验失败
+### Validation Failure
 
-如果 schema 列数 ≠ SELECT 列数，转换失败，报错：
+If schema column count ≠ SELECT column count, conversion fails with error:
 ```
-Schema列数(N) != SELECT列数(M)
-```
-
-## 列名校验（可选）
-
-### 规则
-
-逐位对比 schema 中的列名与 SELECT 中推断出的别名。建议在列数校验通过后，如果 SELECT 中大部分列都有明确别名（AS 或裸标识符），开启列名校验做二次确认。
-
-### SELECT 列别名推断
-
-按优先级从高到低：
-
-1. **AS 别名**：`expression AS alias` → 别名为 `alias`
-2. **末尾标识符**：`table.column` → 别名为 `column`
-3. **裸标识符**：`column_name` → 别名为 `column_name`
-4. **无法推断**：`func(a, b)` 没有 AS → 标记为 `<expr>`，跳过校验
-
-### 对比规则
-
-- 逐位对比（第1列对第1列，第2列对第2列...）
-- 如果某位是 `<expr>`（无法推断），跳过该位
-- 对比不区分大小写
-- 不匹配时报错并列出具体不对齐的列
-
-## 静态分区注入后的列数
-
-注入静态分区列后，SELECT 列数会增加。校验应在注入后进行。
-
-### 避免重复注入
-
-在注入前检查 SELECT 中是否已包含该分区列：
-
-1. 解析 SELECT 中每个表达式的最终别名
-2. 如果别名（不区分大小写）与分区列名匹配 → 该列已存在，跳过注入
-3. 只注入 SELECT 中不存在的分区列
-
-## UNION ALL 一致性
-
-### 分支列数一致性
-
-所有 UNION ALL 分支的列数必须相同。如果不一致，记录警告：
-```
-UNION分支列数不一致: [12, 13, 12]
+Schema column count (N) != SELECT column count (M)
 ```
 
-### 注入后复核
+## Column Name Validation (Optional)
 
-静态分区注入后，再次检查各分支列数是否一致：
+### Rule
+
+Compare schema column names against inferred aliases from SELECT, position by position. Recommended to enable after column count validation passes, if most columns in SELECT have explicit aliases (AS or bare identifiers).
+
+### Inferring SELECT Column Aliases
+
+In order of priority from high to low:
+
+1. **AS alias**: `expression AS alias` → alias is `alias`
+2. **Trailing identifier**: `table.column` → alias is `column`
+3. **Bare identifier**: `column_name` → alias is `column_name`
+4. **Cannot infer**: `func(a, b)` without AS → mark as `<expr>`, skip validation
+
+### Comparison Rules
+
+- Compare position by position (1st column vs 1st column, 2nd vs 2nd, ...)
+- If a position is `<expr>` (cannot infer), skip that position
+- Comparison is case-insensitive
+- On mismatch, report error and list the specific misaligned columns
+
+## Column Count After Static Partition Injection
+
+After injecting static partition columns, the SELECT column count increases. Validation should be performed after injection.
+
+### Avoid Duplicate Injection
+
+Before injection, check whether SELECT already contains the partition column:
+
+1. Parse the final alias of each expression in SELECT
+2. If the alias (case-insensitive) matches the partition column name → the column already exists; skip injection
+3. Only inject partition columns not already present in SELECT
+
+## UNION ALL Consistency
+
+### Branch Column Count Consistency
+
+All UNION ALL branches must have the same column count. If inconsistent, record a warning:
 ```
-注入后UNION各分支列数: [13, 13, 13]
+UNION branch column counts are inconsistent: [12, 13, 12]
 ```
 
-## 重复别名检测
+### Post-injection Recheck
 
-如果 SELECT 中有重复的列别名，记录警告：
+After static partition injection, recheck whether all branch column counts are consistent:
 ```
-检测到重复列别名: ['dt']
-```
-
-重复别名可能导致：
-- 列数看起来正确但实际语义错误
-- 下游查询引用歧义
-
-## 缺失分区列检测
-
-如果 SELECT 中缺少某些分区列（注入前），记录信息：
-```
-检测到缺失分区列: ['dt', 'ds']
+UNION branch column counts after injection: [13, 13, 13]
 ```
 
-这些列会在注入步骤中被自动添加。
+## Duplicate Alias Detection
 
-## 完整校验流程
+If SELECT contains duplicate column aliases, record a warning:
+```
+Duplicate column aliases detected: ['dt']
+```
+
+Duplicate aliases may cause:
+- Column count appears correct but actual semantics are wrong
+- Ambiguous references in downstream queries
+
+## Missing Partition Column Detection
+
+If SELECT is missing some partition columns (before injection), record information:
+```
+Missing partition columns detected: ['dt', 'ds']
+```
+
+These columns will be automatically added in the injection step.
+
+## Complete Validation Flow
 
 ```
-1. 生成 DDL（含静态分区注入）
-2. 提取 schema 列数
-3. 提取 SELECT 列数
-4. 比较列数 → 不等则失败
-5. （可选）逐位对比列名 → 不匹配则失败
+1. Generate DDL (including static partition injection)
+2. Extract schema column count
+3. Extract SELECT column count
+4. Compare column counts → fail if unequal
+5. (Optional) Compare column names position by position → fail if mismatched
 ```

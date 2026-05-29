@@ -1,58 +1,58 @@
-# Dynamic Table 增量刷新历史查询指南
+# Dynamic Table Incremental Refresh History Query Guide
 
-查看 DT/MV 的增量刷新历史有三种方式，适用于不同场景。
+There are three ways to view the incremental refresh history of a DT/MV, each suited to different scenarios.
 
 ---
 
-## 方式一：SHOW DYNAMIC TABLE REFRESH HISTORY
+## Method 1: SHOW DYNAMIC TABLE REFRESH HISTORY
 
-查看 DT 的刷新作业级别信息，包括每次刷新的状态、耗时、触发方式、刷新模式等。
+View job-level information for DT refreshes, including the status, duration, trigger type, and refresh mode of each refresh.
 
-### 语法
+### Syntax
 
 ```sql
--- 通过 WHERE 过滤（name 列匹配表名）
+-- Filter by WHERE (name column matches table name)
 SHOW DYNAMIC TABLE REFRESH HISTORY WHERE name = 'my_dt';
 
--- 组合 WHERE + LIMIT
+-- Combine WHERE + LIMIT
 SHOW DYNAMIC TABLE REFRESH HISTORY WHERE name = 'my_dt' AND state = 'SUCCEED' LIMIT 20;
 
--- MV 也支持同样的语法
+-- MV supports the same syntax
 SHOW MATERIALIZED VIEW REFRESH HISTORY WHERE name = 'my_mv' LIMIT 10;
 ```
 
-### 输出列
+### Output Columns
 
-| 列名 | 类型 | 说明 |
+| Column | Type | Description |
 |------|------|------|
-| workspace_name | STRING | 所属 Workspace |
-| schema_name | STRING | 所属 Schema |
-| name | STRING | DT/MV 名称 |
-| virtual_cluster | STRING | 执行刷新的虚拟集群 |
-| start_time | TIMESTAMP | 刷新开始时间 |
-| end_time | TIMESTAMP | 刷新结束时间（运行中为 NULL） |
-| duration | INTERVAL | 刷新耗时（运行中显示已经过的时间） |
-| state | STRING | 刷新状态（SUCCEED / FAILED / RUNNING 等） |
-| refresh_trigger | STRING | 触发方式：`SYSTEM_SCHEDULED`（系统调度自动触发）或 `MANUAL`（用户手动 REFRESH） |
-| refresh_mode | STRING | 刷新模式，见下方详细说明 |
-| error_message | STRING | 失败时的错误信息（成功时为 NULL） |
-| source_tables | ARRAY<MAP<STRING,STRING>> | 源表列表，每个元素是一个 MAP，包含 `workspace`、`schema`、`table_name` 三个 key |
-| stats | MAP<STRING,STRING> | 刷新统计，包含 `rows_inserted`（插入行数）和 `rows_deleted`（删除行数） |
-| job_id | STRING | 对应的 Job ID，可用于关联 `information_schema.job_history` 查更多详情 |
+| workspace_name | STRING | Workspace the DT/MV belongs to |
+| schema_name | STRING | Schema the DT/MV belongs to |
+| name | STRING | DT/MV name |
+| virtual_cluster | STRING | Virtual cluster that executed the refresh |
+| start_time | TIMESTAMP | Refresh start time |
+| end_time | TIMESTAMP | Refresh end time (NULL while running) |
+| duration | INTERVAL | Refresh duration (shows elapsed time while running) |
+| state | STRING | Refresh status (SUCCEED / FAILED / RUNNING, etc.) |
+| refresh_trigger | STRING | Trigger type: `SYSTEM_SCHEDULED` (auto-triggered by system) or `MANUAL` (user manually triggered REFRESH) |
+| refresh_mode | STRING | Refresh mode; see detailed description below |
+| error_message | STRING | Error message on failure (NULL on success) |
+| source_tables | ARRAY<MAP<STRING,STRING>> | Source table list; each element is a MAP with keys `workspace`, `schema`, `table_name` |
+| stats | MAP<STRING,STRING> | Refresh statistics, including `rows_inserted` and `rows_deleted` |
+| job_id | STRING | Corresponding Job ID; can be used to join `information_schema.job_history` for more details |
 
-### refresh_mode 详解
+### refresh_mode Details
 
-`refresh_mode` 是判断增量计算是否生效的关键字段：
+`refresh_mode` is the key field for determining whether incremental computation is working:
 
-| 值 | 含义 | 说明 |
+| Value | Meaning | Description |
 |----|------|------|
-| `INCREMENTAL` | 增量刷新 | 增量引擎成功生成了增量计划，只处理了源表的变更数据 |
-| `FULL` | 全量刷新 | 回退到全量重算。可能原因：首次刷新、维度表变更、增量计划生成失败、用户强制全量等 |
-| `NO_DATA` | 无数据变更 | 源表在上次刷新后没有新的数据变更，本次刷新跳过计算 |
+| `INCREMENTAL` | Incremental refresh | The incremental engine successfully generated an incremental plan and only processed change data from source tables |
+| `FULL` | Full refresh | Fell back to full recomputation. Possible reasons: first refresh, dimension table change, incremental plan generation failed, user forced full, etc. |
+| `NO_DATA` | No data changes | No new data changes in source tables since the last refresh; this refresh skipped computation |
 
-### source_tables 详解
+### source_tables Details
 
-`source_tables` 列返回该次刷新涉及的所有输入表信息，每个元素是一个 MAP：
+The `source_tables` column returns information about all input tables involved in this refresh; each element is a MAP:
 
 ```
 [
@@ -61,77 +61,77 @@ SHOW MATERIALIZED VIEW REFRESH HISTORY WHERE name = 'my_mv' LIMIT 10;
 ]
 ```
 
-### stats 详解
+### stats Details
 
-`stats` 列返回该次刷新对目标表的写入统计：
+The `stats` column returns write statistics for the target table from this refresh:
 
 ```
 {"rows_inserted": "1000", "rows_deleted": "50"}
 ```
 
-- `rows_inserted`：本次刷新向目标表插入的行数
-- `rows_deleted`：本次刷新从目标表删除的行数（增量模式下，更新操作会产生 delete + insert）
+- `rows_inserted`: number of rows inserted into the target table in this refresh
+- `rows_deleted`: number of rows deleted from the target table in this refresh (in incremental mode, update operations produce delete + insert)
 
-### 典型用法
+### Typical Usage
 
 ```sql
--- 查看失败的刷新记录
+-- View failed refresh records
 SHOW DYNAMIC TABLE REFRESH HISTORY WHERE name = 'my_dt' AND state = 'FAILED';
 
--- 查看是否回退到了全量刷新（排查增量是否生效）
+-- Check if it fell back to full refresh (troubleshoot whether incremental is working)
 SHOW DYNAMIC TABLE REFRESH HISTORY WHERE name = 'my_dt' AND refresh_mode = 'FULL';
 
--- 查看无数据变更的刷新（源表没有新数据时会出现）
+-- View no-data-change refreshes (appears when source table has no new data)
 SHOW DYNAMIC TABLE REFRESH HISTORY WHERE name = 'my_dt' AND refresh_mode = 'NO_DATA';
 
--- 查看系统自动调度的刷新
+-- View system auto-scheduled refreshes
 SHOW DYNAMIC TABLE REFRESH HISTORY WHERE name = 'my_dt' AND refresh_trigger = 'SYSTEM_SCHEDULED';
 ```
 
 ---
 
-## 方式二：DESC HISTORY
+## Method 2: DESC HISTORY
 
-查看表的版本级别历史，包括每个版本的行数、字节数、操作类型等。适用于了解数据变更粒度。
+View version-level history of a table, including row count, bytes, and operation type for each version. Useful for understanding data change granularity.
 
-### 语法
+### Syntax
 
 ```sql
--- 查看 DT 的版本历史
+-- View version history of a DT
 DESC HISTORY my_dt;
 
--- 查看源表的版本历史
+-- View version history of a source table
 DESC HISTORY source_table;
 
--- 支持 WHERE 过滤
+-- Supports WHERE filtering
 DESC HISTORY my_dt WHERE version > 10;
 
--- 支持 LIMIT
+-- Supports LIMIT
 DESC HISTORY my_dt LIMIT 20;
 ```
 
-### 输出列
+### Output Columns
 
-对于普通表（DESC_TABLE_HISTORY）：
+For regular tables (DESC_TABLE_HISTORY):
 
-| 列名 | 类型 | 说明 |
+| Column | Type | Description |
 |------|------|------|
-| sequence | BIGINT | 序列号 |
-| version | BIGINT | 版本号 |
-| time | TIMESTAMP | 版本创建时间 |
-| total_rows | BIGINT | 该版本的总行数 |
-| total_bytes | BIGINT | 该版本的总字节数 |
-| user | STRING | 操作用户 |
-| operation | STRING | 操作类型（INSERT / COMPACTION / REFRESH 等） |
-| job_id | STRING | 对应的 Job ID |
+| sequence | BIGINT | Sequence number |
+| version | BIGINT | Version number |
+| time | TIMESTAMP | Version creation time |
+| total_rows | BIGINT | Total row count for this version |
+| total_bytes | BIGINT | Total bytes for this version |
+| user | STRING | User who performed the operation |
+| operation | STRING | Operation type (INSERT / COMPACTION / REFRESH, etc.) |
+| job_id | STRING | Corresponding Job ID |
 
-对于 DT/MV（DESC_MV_HISTORY），额外包含：
+For DT/MV (DESC_MV_HISTORY), additionally includes:
 
-| 列名 | 类型 | 说明 |
+| Column | Type | Description |
 |------|------|------|
-| source_tables | ARRAY<MAP<STRING,STRING>> | 源表及其对应的版本信息 |
+| source_tables | ARRAY<MAP<STRING,STRING>> | Source tables and their corresponding version information |
 
-DESC HISTORY 对 DT/MV 的 `source_tables` 比 SHOW REFRESH HISTORY 更详细，包含每个源表在该版本对应的快照信息：
+DESC HISTORY's `source_tables` for DT/MV is more detailed than SHOW REFRESH HISTORY, including snapshot information for each source table at that version:
 
 ```
 [
@@ -140,75 +140,75 @@ DESC HISTORY 对 DT/MV 的 `source_tables` 比 SHOW REFRESH HISTORY 更详细，
 ]
 ```
 
-- `version`：源表的 snapshot_id
-- `sequence`：源表的 sequence 号
-- `commit_time`：源表该版本的提交时间
+- `version`: snapshot_id of the source table
+- `sequence`: sequence number of the source table
+- `commit_time`: commit time of that version of the source table
 
-这些信息可以用来追溯某次刷新读取了源表的哪个版本数据。
+This information can be used to trace which version of source table data was read in a given refresh.
 
-### 典型用法
+### Typical Usage
 
 ```sql
--- 查看 DT 最近的版本变化，确认 compaction 是否正常执行
+-- View recent version changes of a DT; confirm compaction is executing normally
 DESC HISTORY my_dt LIMIT 10;
 
--- 查看源表的版本历史，判断数据写入频率
+-- View version history of a source table; determine data write frequency
 DESC HISTORY source_table LIMIT 20;
 
--- 查看 DT 的 compaction 记录
+-- View compaction records of a DT
 DESC HISTORY my_dt WHERE operation = 'COMPACTION';
 ```
 
 ---
 
-## 方式三：information_schema.materialized_view_refresh_history
+## Method 3: information_schema.materialized_view_refresh_history
 
-从 information_schema 查询刷新历史，适合跨表批量分析、与其他系统集成、或做长期趋势监控。数据按天分区（pt_date），保留天数由系统配置决定。
+Query refresh history from information_schema; suitable for cross-table batch analysis, integration with other systems, or long-term trend monitoring. Data is partitioned by day (pt_date); retention days are determined by system configuration.
 
-### 语法
+### Syntax
 
 ```sql
--- 查看指定 DT 的刷新历史
+-- View refresh history for a specific DT
 SELECT *
 FROM information_schema.materialized_view_refresh_history
 WHERE materialized_view_name = 'my_dt'
 ORDER BY start_time DESC
 LIMIT 10;
 
--- 查看某天所有 DT 的刷新情况
+-- View refresh status of all DTs on a given day
 SELECT materialized_view_name, status, start_time, end_time, error_message
 FROM information_schema.materialized_view_refresh_history
 WHERE pt_date = '2025-01-15'
 ORDER BY start_time DESC;
 
--- 查看失败的刷新
+-- View failed refreshes
 SELECT materialized_view_name, error_code, error_message, start_time
 FROM information_schema.materialized_view_refresh_history
 WHERE status = 'FAILED' AND pt_date >= '2025-01-01'
 ORDER BY start_time DESC;
 ```
 
-### 输出列
+### Output Columns
 
-| 列名 | 类型 | 说明 |
+| Column | Type | Description |
 |------|------|------|
-| workspace_name | STRING | 所属 Workspace |
-| schema_name | STRING | 所属 Schema |
-| materialized_view_name | STRING | DT/MV 名称 |
-| cru | DOUBLE | 消耗的计算资源单位 |
-| virtual_cluster_name | STRING | 执行刷新的虚拟集群 |
-| status | STRING | 刷新状态 |
-| scheduled_start_time | TIMESTAMP | 计划开始时间 |
-| start_time | TIMESTAMP | 实际开始时间 |
-| end_time | TIMESTAMP | 结束时间 |
-| error_code | STRING | 错误码 |
-| error_message | STRING | 错误信息 |
-| pt_date | STRING | 分区日期 |
+| workspace_name | STRING | Workspace the DT/MV belongs to |
+| schema_name | STRING | Schema the DT/MV belongs to |
+| materialized_view_name | STRING | DT/MV name |
+| cru | DOUBLE | Compute resource units consumed |
+| virtual_cluster_name | STRING | Virtual cluster that executed the refresh |
+| status | STRING | Refresh status |
+| scheduled_start_time | TIMESTAMP | Scheduled start time |
+| start_time | TIMESTAMP | Actual start time |
+| end_time | TIMESTAMP | End time |
+| error_code | STRING | Error code |
+| error_message | STRING | Error message |
+| pt_date | STRING | Partition date |
 
-### 典型用法
+### Typical Usage
 
 ```sql
--- 统计某个 DT 最近 7 天的刷新成功率
+-- Calculate the refresh success rate of a DT over the last 7 days
 SELECT
     pt_date,
     COUNT(*) AS total,
@@ -220,7 +220,7 @@ WHERE materialized_view_name = 'my_dt'
 GROUP BY pt_date
 ORDER BY pt_date;
 
--- 查看消耗 CRU 最多的刷新
+-- View refreshes that consumed the most CRU
 SELECT materialized_view_name, cru, start_time, end_time
 FROM information_schema.materialized_view_refresh_history
 WHERE pt_date >= '2025-01-01'
@@ -228,33 +228,33 @@ ORDER BY cru DESC
 LIMIT 10;
 ```
 
-### 与 information_schema.job_history 的区别
+### Difference from information_schema.job_history
 
-`information_schema.job_history` 记录所有类型的 Job（SQL 查询、DML、DDL 等），而 `materialized_view_refresh_history` 专门记录 DT/MV 的刷新历史，字段更有针对性。
+`information_schema.job_history` records all types of Jobs (SQL queries, DML, DDL, etc.), while `materialized_view_refresh_history` specifically records DT/MV refresh history with more targeted fields.
 
-如果需要查看刷新 Job 的完整信息（如 job_text、input_bytes 等），可以通过 job_id 关联：
+If you need to view complete information about a refresh Job (e.g., job_text, input_bytes, etc.), you can join via job_id:
 
 ```sql
--- 通过 SHOW DYNAMIC TABLE REFRESH HISTORY 获取 job_id，再到 job_history 查详情
+-- Get job_id from SHOW DYNAMIC TABLE REFRESH HISTORY, then look up details in job_history
 SELECT *
 FROM information_schema.job_history
-WHERE job_id = '<从 SHOW REFRESH HISTORY 获取的 job_id>'
+WHERE job_id = '<job_id from SHOW REFRESH HISTORY>'
   AND pt_date = '2025-01-15';
 ```
 
 ---
 
-## 三种方式对比
+## Comparison of Three Methods
 
-| 特性 | SHOW REFRESH HISTORY | DESC HISTORY | information_schema |
+| Feature | SHOW REFRESH HISTORY | DESC HISTORY | information_schema |
 |------|---------------------|--------------|-------------------|
-| 粒度 | 刷新作业级别 | 表版本级别 | 刷新作业级别 |
-| 刷新模式（增量/全量/无数据） | ✅ refresh_mode | ❌ | ❌ |
-| 触发方式（调度/手动） | ✅ refresh_trigger | ❌ | ❌ |
-| 写入统计（inserted/deleted） | ✅ stats | ❌ | ❌ |
-| 源表列表 | ✅ 表名级别 | ✅ 含版本/sequence/commit_time | ❌ |
-| 版本号/总行数/总字节数 | ❌ | ✅ version/total_rows/total_bytes | ❌ |
-| CRU 消耗 | ❌ | ❌ | ✅ cru |
-| 跨表批量查询 | ❌（单表） | ❌（单表） | ✅（可批量） |
-| compaction 记录 | ❌ | ✅ | ❌ |
-| 适用场景 | 排查增量是否生效、刷新状态 | 查看数据版本变化、追溯源表版本 | 批量分析/监控/CRU 统计 |
+| Granularity | Refresh job level | Table version level | Refresh job level |
+| Refresh mode (incremental/full/no data) | ✅ refresh_mode | ❌ | ❌ |
+| Trigger type (scheduled/manual) | ✅ refresh_trigger | ❌ | ❌ |
+| Write statistics (inserted/deleted) | ✅ stats | ❌ | ❌ |
+| Source table list | ✅ table name level | ✅ includes version/sequence/commit_time | ❌ |
+| Version number / total rows / total bytes | ❌ | ✅ version/total_rows/total_bytes | ❌ |
+| CRU consumption | ❌ | ❌ | ✅ cru |
+| Cross-table batch queries | ❌ (single table) | ❌ (single table) | ✅ (batch supported) |
+| Compaction records | ❌ | ✅ | ❌ |
+| Applicable scenarios | Troubleshoot whether incremental is working; refresh status | View data version changes; trace source table versions | Batch analysis / monitoring / CRU statistics |

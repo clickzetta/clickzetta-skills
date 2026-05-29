@@ -1,14 +1,14 @@
-# Pipe SQL 参考
+# Pipe SQL Reference
 
-> **⚠️ ClickZetta 特有语法**
-> - Kafka 读取函数是 `read_kafka(...)`，使用**位置参数**（不是命名参数 `=>`）
-> - JSON 字段提取用 `parse_json(value::string)['field']::TYPE` 语法
-> - Pipe 创建后默认自动启动，无需手动 RESUME
-> - OSS Pipe 的 `PURGE=true` 紧跟在 `USING <format>` 之后（如 `USING CSV PURGE=true`）
+> **⚠️ ClickZetta-specific syntax**
+> - The Kafka read function is `read_kafka(...)`, using **positional parameters** (not named parameters with `=>`)
+> - JSON field extraction uses `parse_json(value::string)['field']::TYPE` syntax
+> - A Pipe starts automatically after creation; no manual RESUME is needed
+> - For OSS Pipes, `PURGE=true` follows immediately after `USING <format>` (e.g., `USING CSV PURGE=true`)
 
-Pipe 是 ClickZetta Lakehouse 的持续数据导入对象，通过 SQL 定义从 Kafka 或对象存储（OSS/S3/COS）自动、持续地将数据导入目标表，无需外部调度。
+Pipe is the continuous data ingestion object in ClickZetta Lakehouse. Defined by SQL, it automatically and continuously imports data from Kafka or object storage (OSS/S3/COS) into a target table without external scheduling.
 
-## CREATE PIPE — 从 Kafka 导入
+## CREATE PIPE — Ingest from Kafka
 
 ```sql
 CREATE [ OR REPLACE ] PIPE <pipe_name>
@@ -21,22 +21,22 @@ AS
 COPY INTO <target_table> FROM (
   SELECT <expr> [, ...]
   FROM read_kafka(
-    '<bootstrap_servers>',   -- 必填：Kafka 集群地址
-    '<topic>',               -- 必填：Topic 名称
-    '',                      -- 保留（填空字符串）
-    '<group_id>',            -- 必填：持久消费者组 ID
-    '', '', '', '',          -- 位置参数留空，由 Pipe 自动管理
-    'raw',                   -- key 格式（目前只支持 raw）
-    'raw',                   -- value 格式（目前只支持 raw）
+    '<bootstrap_servers>',   -- required: Kafka cluster address
+    '<topic>',               -- required: topic name
+    '',                      -- reserved (leave empty string)
+    '<group_id>',            -- required: persistent consumer group ID
+    '', '', '', '',          -- positional params left empty, managed by Pipe automatically
+    'raw',                   -- key format (only 'raw' supported currently)
+    'raw',                   -- value format (only 'raw' supported currently)
     0,                       -- max_errors
-    MAP(<kafka_config>)      -- Kafka 配置参数
+    MAP(<kafka_config>)      -- Kafka configuration parameters
   )
 );
 ```
 
-**示例：**
+**Examples:**
 ```sql
--- 从 Kafka 持续导入 JSON 数据
+-- Continuously ingest JSON data from Kafka
 CREATE OR REPLACE PIPE kafka_orders_pipe
   VIRTUAL_CLUSTER = 'default'
   BATCH_INTERVAL_IN_SECONDS = '60'
@@ -62,7 +62,7 @@ COPY INTO ods.orders FROM (
   )
 );
 
--- SASL 认证
+-- SASL authentication
 CREATE PIPE kafka_secure_pipe
   VIRTUAL_CLUSTER = 'pipe_vc'
   BATCH_INTERVAL_IN_SECONDS = '60'
@@ -83,12 +83,12 @@ COPY INTO ods.secure_events FROM (
 );
 ```
 
-## 验证 Kafka 连接（创建 Pipe 前）
+## Verify Kafka Connection (Before Creating a Pipe)
 
-独立使用 `read_kafka` 探查数据时，可以在 MAP 中设置 `kafka.auto.offset.reset`：
+When using `read_kafka` standalone to explore data, you can set `kafka.auto.offset.reset` in the MAP:
 
 ```sql
--- 验证连接和数据格式
+-- Verify connection and data format
 SELECT value::string
 FROM read_kafka(
   'kafka.example.com:9092',
@@ -102,11 +102,11 @@ FROM read_kafka(
 LIMIT 10;
 ```
 
-> ⚠️ **独立探查 vs Pipe 中的区别**：
-> - 独立探查：可在 MAP 中设置 `kafka.auto.offset.reset` 为 `earliest` 读取历史数据
-> - Pipe 中：位置参数必须留空，消费位点由 Pipe 的 `RESET_KAFKA_GROUP_OFFSETS` 参数控制
+> ⚠️ **Standalone exploration vs inside a Pipe**:
+> - Standalone exploration: you can set `kafka.auto.offset.reset` to `earliest` in the MAP to read historical data
+> - Inside a Pipe: positional parameters must be left empty; the consumer offset is controlled by the Pipe's `RESET_KAFKA_GROUP_OFFSETS` parameter
 
-## CREATE PIPE — 从对象存储导入
+## CREATE PIPE — Ingest from Object Storage
 
 ```sql
 CREATE [ OR REPLACE ] PIPE [ IF NOT EXISTS ] <pipe_name>
@@ -120,17 +120,17 @@ FROM VOLUME <volume_name>
 USING <csv | parquet | orc | json> [OPTIONS ('<key>' = '<value>', ...)] PURGE=true;
 ```
 
-**关键参数：**
-- `VIRTUAL_CLUSTER`：指定虚拟集群名称（OSS Pipe 必填）
-- `INGEST_MODE = 'LIST_PURGE'`：通用模式，定期扫描文件列表，必须设置 `PURGE=true`
-- `INGEST_MODE = 'EVENT_NOTIFICATION'`：事件通知模式，低延迟（仅阿里云 OSS + AWS S3），不需要 `PURGE=true`
-- `COMMENT 'text'`：不带等号（`COMMENT = 'text'` 会报错）
-- `PURGE=true`：放在最后，OPTIONS 在其之前：`USING CSV OPTIONS (...) PURGE=true`
-- PIPE 中的 COPY 语句不支持 `files`、`regexp`、`subdirectory` 参数
+**Key parameters:**
+- `VIRTUAL_CLUSTER`: specifies the virtual cluster name (required for OSS Pipes)
+- `INGEST_MODE = 'LIST_PURGE'`: general mode, periodically scans the file list; `PURGE=true` must be set
+- `INGEST_MODE = 'EVENT_NOTIFICATION'`: event notification mode, low latency (Alibaba Cloud OSS + AWS S3 only); `PURGE=true` is not required
+- `COMMENT 'text'`: no equals sign (`COMMENT = 'text'` will cause an error)
+- `PURGE=true`: placed at the end, after OPTIONS: `USING CSV OPTIONS (...) PURGE=true`
+- COPY statements inside a PIPE do not support `files`, `regexp`, or `subdirectory` parameters
 
-**示例：**
+**Examples:**
 ```sql
--- LIST_PURGE 模式（带 OPTIONS）
+-- LIST_PURGE mode (with OPTIONS)
 CREATE OR REPLACE PIPE oss_events_pipe
   VIRTUAL_CLUSTER = 'default'
   INGEST_MODE = 'LIST_PURGE'
@@ -140,7 +140,7 @@ COPY INTO ods.events
 FROM VOLUME my_oss_volume
 USING PARQUET PURGE=true;
 
--- CSV 格式带 OPTIONS（OPTIONS 在 PURGE 之前）
+-- CSV format with OPTIONS (OPTIONS before PURGE)
 CREATE PIPE oss_csv_pipe
   VIRTUAL_CLUSTER = 'default'
   INGEST_MODE = 'LIST_PURGE'
@@ -149,7 +149,7 @@ COPY INTO ods.csv_data
 FROM VOLUME my_csv_volume
 USING CSV OPTIONS ('header' = 'true', 'sep' = ',') PURGE=true;
 
--- EVENT_NOTIFICATION 模式（不需要 PURGE）
+-- EVENT_NOTIFICATION mode (PURGE not required)
 CREATE PIPE oss_event_pipe
   VIRTUAL_CLUSTER = 'default'
   INGEST_MODE = 'EVENT_NOTIFICATION'
@@ -160,33 +160,33 @@ FROM VOLUME my_oss_event_volume
 USING PARQUET;
 ```
 
-## 启停 Pipe
+## Start / Stop a Pipe
 
 ```sql
--- 暂停 Pipe
+-- Pause Pipe
 ALTER PIPE <pipe_name> SET PIPE_EXECUTION_PAUSED = true;
 
--- 恢复 Pipe
+-- Resume Pipe
 ALTER PIPE <pipe_name> SET PIPE_EXECUTION_PAUSED = false;
 ```
 
-## 修改 Pipe 属性
+## Modify Pipe Properties
 
 ```sql
--- 每次只能修改一个属性
+-- Only one property can be modified at a time
 ALTER PIPE <pipe_name> SET VIRTUAL_CLUSTER = 'new_vc';
 ALTER PIPE <pipe_name> SET COPY_JOB_HINT = '{"cz.sql.split.kafka.strategy":"size","cz.mapper.kafka.message.size":"200000"}';
 ```
 
-> ⚠️ **ALTER PIPE 支持的属性**：
+> ⚠️ **Supported ALTER PIPE properties**:
 > - ✅ `PIPE_EXECUTION_PAUSED`
 > - ✅ `VIRTUAL_CLUSTER`
 > - ✅ `COPY_JOB_HINT`
-> - ❌ `BATCH_INTERVAL_IN_SECONDS`（不支持修改，需删除重建）
-> - ❌ `BATCH_SIZE_PER_KAFKA_PARTITION`（不支持修改，需删除重建）
+> - ❌ `BATCH_INTERVAL_IN_SECONDS` (not supported; must drop and recreate)
+> - ❌ `BATCH_SIZE_PER_KAFKA_PARTITION` (not supported; must drop and recreate)
 >
-> 不支持修改 COPY/INSERT 语句逻辑，需删除 Pipe 后重建。
-> `COPY_JOB_HINT` 修改会覆盖所有已有 hints，需一次性设置全部参数。
+> Modifying the COPY/INSERT statement logic is not supported; drop the Pipe and recreate it.
+> Modifying `COPY_JOB_HINT` overwrites all existing hints; all parameters must be set at once.
 
 ## DROP PIPE
 
@@ -197,26 +197,26 @@ DROP PIPE [ IF EXISTS ] <pipe_name>;
 ## SHOW PIPE
 
 ```sql
--- 列出当前 schema 下所有 Pipe
+-- List all Pipes in the current schema
 SHOW PIPES;
 
--- 查看 Pipe 详情（状态、延迟、定义）
+-- View Pipe details (status, latency, definition)
 DESC PIPE <pipe_name>;
 DESC PIPE EXTENDED <pipe_name>;
 ```
 
-## 注意事项
+## Notes
 
-- Pipe 创建后默认自动启动，无需手动 RESUME
-- Kafka Pipe 使用 consumer group 管理 offset，重建 Pipe 时保持相同 group_id 可从上次位点继续
-- 对象存储 Pipe 通过文件列表或事件通知检测新文件，`load_history` 去重记录保留 7 天
-- Pipe 不支持修改 AS 子句，需要删除后重建（不是 `CREATE OR REPLACE`）
-- Kafka Pipe 仅支持 PLAINTEXT 和 SASL_PLAINTEXT 安全协议，不支持 SSL
+- A Pipe starts automatically after creation; no manual RESUME is needed
+- Kafka Pipes use a consumer group to manage offsets; keeping the same group_id when recreating a Pipe allows resuming from the last offset
+- Object storage Pipes detect new files via file list scanning or event notifications; `load_history` deduplication records are retained for 7 days
+- Pipes do not support modifying the AS clause; drop and recreate (not `CREATE OR REPLACE`)
+- Kafka Pipes only support PLAINTEXT and SASL_PLAINTEXT security protocols; SSL is not supported
 
-## 参考文档
+## Reference Documentation
 
-- [Pipe 简介](https://www.yunqi.tech/documents/pipe-summary)
-- [借助 read_kafka 函数持续导入](https://www.yunqi.tech/documents/pipe-kafka)
-- [借助 Kafka 外表 Table Stream 持续导入](https://www.yunqi.tech/documents/pipe-kafka-table-stream)
-- [最佳实践：使用 Pipe 高效接入 Kafka 数据](https://www.yunqi.tech/documents/pipe-kafka-bestpractice-1)
-- [使用 Pipe 持续导入对象存储数据](https://www.yunqi.tech/documents/pipe-storage-object)
+- [Pipe Overview](https://www.yunqi.tech/documents/pipe-summary)
+- [Continuous Ingestion with read_kafka](https://www.yunqi.tech/documents/pipe-kafka)
+- [Continuous Ingestion with Kafka External Table Stream](https://www.yunqi.tech/documents/pipe-kafka-table-stream)
+- [Best Practices: Efficient Kafka Ingestion with Pipe](https://www.yunqi.tech/documents/pipe-kafka-bestpractice-1)
+- [Continuous Ingestion from Object Storage with Pipe](https://www.yunqi.tech/documents/pipe-storage-object)

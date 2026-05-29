@@ -1,248 +1,249 @@
 ---
 name: clickzetta-sql-pipeline-manager
 description: >
-  管理 ClickZetta Lakehouse 的 SQL 数据管道对象，包括动态表（Dynamic Table）、
-  物化视图（Materialized View）、表流（Table Stream）和 Pipe。
-  覆盖创建、修改、暂停/恢复、删除、查看状态等完整生命周期操作。
-  仅涉及 SQL 命令操作，不涉及 Lakehouse Studio 图形化界面。
+  Manage SQL data pipeline objects in ClickZetta Lakehouse, including Dynamic Tables,
+  Materialized Views, Table Streams, and Pipes.
+  Covers the full lifecycle: create, modify, suspend/resume, drop, and status inspection.
+  SQL command operations only — does not cover the Lakehouse Studio GUI.
 
-  当用户说"创建动态表"、"创建物化视图"、"创建 Pipe"、"创建表流"、
-  "暂停/恢复动态表"、"查看刷新历史"、"修改刷新频率"、"接入 Kafka"、
-  "从对象存储持续导入"、"CDC 变更捕获"、"增量计算"、"实时 ETL"、
-  "数据管道"、"pipeline"、"流式处理"、"动态表刷新失败"、
-  "帮我设计 ETL"、"构建数据管道"、"数据接入方案"、
-  "Medallion Architecture"、"Bronze Silver Gold"、"奖章架构"、
-  "湖仓分层"、"Bronze 层"、"Silver 层"、"Gold 层"时触发。
+  Trigger when the user says "create dynamic table", "create materialized view", "create Pipe",
+  "create table stream", "suspend/resume dynamic table", "view refresh history",
+  "change refresh interval", "ingest from Kafka", "continuous import from object storage",
+  "CDC change capture", "incremental computation", "real-time ETL",
+  "data pipeline", "pipeline", "stream processing", "dynamic table refresh failed",
+  "help me design ETL", "build a data pipeline", "data ingestion plan",
+  "Medallion Architecture", "Bronze Silver Gold", "lakehouse layering",
+  "Bronze layer", "Silver layer", "Gold layer".
   Keywords: SQL pipeline, dynamic table, materialized view, table stream, Pipe, data pipeline
 ---
 
-# ClickZetta SQL 数据管道管理
+# ClickZetta SQL Data Pipeline Management
 
-## ⚠️ ClickZetta 与标准 SQL / Snowflake 的关键语法差异
+## ⚠️ Key Syntax Differences: ClickZetta vs Standard SQL / Snowflake
 
-这些是最容易写错的地方，必须使用 ClickZetta 特有语法：
+These are the most common mistakes — always use ClickZetta-specific syntax:
 
-| 功能 | ❌ 错误写法（Snowflake/标准SQL） | ✅ ClickZetta 正确写法 |
+| Feature | ❌ Wrong (Snowflake/Standard SQL) | ✅ ClickZetta Correct |
 |---|---|---|
-| 动态表计算集群 | `WAREHOUSE = compute_wh` | `vcluster default`（直接跟名称，不带等号） |
-| 动态表刷新调度 | `TARGET_LAG = '1 minutes'` | `REFRESH INTERVAL 1 MINUTE vcluster default` |
-| Kafka 读取函数 | `TABLE(READ_KAFKA(KAFKA_BROKER => ...))` | `read_kafka('broker', 'topic', '', 'group', '', '', '', '', 'raw', 'raw', 0, MAP(...))` — 位置参数 |
-| 物化视图定时刷新 | `REFRESH EVERY 1 HOUR` | `REFRESH INTERVAL 60 MINUTE vcluster default`（与动态表语法相同） |
-| 物化视图手动刷新 | `REFRESH MATERIALIZED VIEW` 放在 CREATE 里 | 单独执行 `REFRESH MATERIALIZED VIEW <name>;` |
-| 修改动态表 SQL | `ALTER DYNAMIC TABLE ... AS ...` | `CREATE OR REPLACE DYNAMIC TABLE ...`（ALTER 不支持修改 AS 子句） |
-| JSON 字段访问 | `$1:field::TYPE` 或 `data:key` | `parse_json(value::string)['field']::TYPE` 或 `data['key']` |
-| COPY INTO 导入格式 | `FILE_FORMAT = (TYPE = CSV)` | `USING CSV OPTIONS(...)` |
-| COPY INTO 导出格式 | `USING CSV` | `FILE_FORMAT = (TYPE = CSV)` |
+| Dynamic Table compute cluster | `WAREHOUSE = compute_wh` | `vcluster default` (name directly, no equals sign) |
+| Dynamic Table refresh schedule | `TARGET_LAG = '1 minutes'` | `REFRESH INTERVAL 1 MINUTE vcluster default` |
+| Kafka read function | `TABLE(READ_KAFKA(KAFKA_BROKER => ...))` | `read_kafka('broker', 'topic', '', 'group', '', '', '', '', 'raw', 'raw', 0, MAP(...))` — positional args |
+| Materialized View scheduled refresh | `REFRESH EVERY 1 HOUR` | `REFRESH INTERVAL 60 MINUTE vcluster default` (same syntax as Dynamic Table) |
+| Materialized View manual refresh | `REFRESH MATERIALIZED VIEW` inside CREATE | Execute `REFRESH MATERIALIZED VIEW <name>;` separately |
+| Modify Dynamic Table SQL | `ALTER DYNAMIC TABLE ... AS ...` | `CREATE OR REPLACE DYNAMIC TABLE ...` (ALTER does not support modifying the AS clause) |
+| JSON field access | `$1:field::TYPE` or `data:key` | `parse_json(value::string)['field']::TYPE` or `data['key']` |
+| COPY INTO import format | `FILE_FORMAT = (TYPE = CSV)` | `USING CSV OPTIONS(...)` |
+| COPY INTO export format | `USING CSV` | `FILE_FORMAT = (TYPE = CSV)` |
 
 ---
 
-## 向导：明确操作意图
+## Guide: Clarify the User's Intent
 
-收到请求后，先判断用户意图，选择对应工作流：
+After receiving a request, determine the user's intent and choose the corresponding workflow:
 
-> 你想做什么？
+> What do you want to do?
 >
-> **A. 设计并创建新的数据管道**（从数据源到各层 DT 的完整 SQL）→ 进入 Pipeline Wizard
-> **B. 管理已有管道对象**（修改 DT 刷新间隔、暂停/恢复、查看刷新历史）→ 直接执行对应操作
-> **C. 排查管道问题**（DT 刷新失败、Pipe 停止摄入、Stream 积压）→ 进入故障排查流程
+> **A. Design and create a new data pipeline** (complete SQL from data source through all layers) → Enter Pipeline Wizard
+> **B. Manage existing pipeline objects** (modify DT refresh interval, suspend/resume, view refresh history) → Execute the corresponding operation directly
+> **C. Troubleshoot pipeline issues** (DT refresh failure, Pipe stopped ingesting, Stream backlog) → Enter troubleshooting flow
 
-**如果用户已经明确说了要做什么（如"帮我创建一个 Kafka 到 DWD 的管道"、"暂停这个动态表"），直接执行，不再询问。**
+**If the user has already stated clearly what they want (e.g., "create a pipeline from Kafka to DWD", "suspend this dynamic table"), proceed directly without asking again.**
 
 ---
 
-## Pipeline Wizard（管道设计向导）
+## Pipeline Wizard
 
-当用户想设计或构建一个完整的数据管道时，这是最高优先级的模式。触发词包括：
-"帮我设计/构建 ETL"、"完整的数据管道"、"从 Kafka/OSS 接入数据"、"ODS→DWD→DWS"、"端到端 pipeline"、
-"Medallion Architecture"、"Bronze/Silver/Gold"、"奖章架构"、"湖仓分层"。
+Use this mode when the user wants to design or build a complete data pipeline. Trigger phrases include:
+"help me design/build ETL", "complete data pipeline", "ingest data from Kafka/OSS", "ODS→DWD→DWS", "end-to-end pipeline",
+"Medallion Architecture", "Bronze/Silver/Gold", "lakehouse layering".
 
-### 层次命名约定
+### Layer Naming Conventions
 
-用户可能使用不同的分层命名，含义相同，按用户偏好保留原始命名：
+Users may use different layer naming schemes with the same meaning — preserve the user's preferred naming:
 
-| 用户说的 | 含义 | Schema 命名建议 |
+| User says | Meaning | Suggested Schema names |
 |---|---|---|
 | Bronze / Silver / Gold | Medallion Architecture | `bronze` / `silver` / `gold` |
-| ODS / DWD / DWS | 国内数仓分层惯例 | `ods` / `dwd` / `dws` |
-| Raw / Cleansed / Aggregated | 通用英文描述 | `raw` / `cleansed` / `agg` |
+| ODS / DWD / DWS | Chinese data warehouse convention | `ods` / `dwd` / `dws` |
+| Raw / Cleansed / Aggregated | Generic English description | `raw` / `cleansed` / `agg` |
 
-**不要把 Bronze 映射成 ODS、Silver 映射成 DWD 等——保留用户选择的命名，在 SQL 中直接使用对应的 schema 和表名前缀。**
+**Do not map Bronze to ODS, Silver to DWD, etc. — preserve the user's chosen naming and use the corresponding schema and table name prefixes in SQL.**
 
-**Schema 命名必须加业务/项目前缀，避免与其他项目冲突。** 如果用户未提供前缀，询问项目名称或业务域名称，然后生成带前缀的 Schema 名：
+**Schema names must include a business/project prefix to avoid conflicts with other projects.** If the user has not provided a prefix, ask for the project or business domain name, then generate prefixed schema names:
 
 ```sql
--- ❌ 容易重名，不要这样生成
+-- ❌ Prone to naming conflicts — avoid this
 CREATE SCHEMA IF NOT EXISTS bronze;
 
--- ✅ 加项目前缀
+-- ✅ Add a project prefix
 CREATE SCHEMA IF NOT EXISTS ecommerce_bronze;
 CREATE SCHEMA IF NOT EXISTS ecommerce_silver;
 CREATE SCHEMA IF NOT EXISTS ecommerce_gold;
 ```
 
-### 需求收集
+### Requirements Gathering
 
-**如果用户已经提供了足够信息（数据来源、字段、层次需求、项目前缀），直接生成完整 SQL，不要再问。**
+**If the user has already provided sufficient information (data source, fields, layer requirements, project prefix), generate the complete SQL directly without asking further questions.**
 
-如果信息不完整，优先使用交互式问答工具（如 `question`）收集以下信息并弹出选项菜单；若无此类工具，则用文字一次性列出所有问题：
+If information is incomplete, use an interactive Q&A tool (e.g., `question`) to collect the following and present option menus; if no such tool is available, list all questions in a single text response:
 
 ```
 question({
   questions: [
     {
-      question: "数据来源？",
+      question: "Data source?",
       options: [
-        { label: "Kafka", description: "提供 broker 地址和 topic 名称" },
-        { label: "对象存储（OSS/S3/COS）", description: "提供 Volume 路径和文件格式" },
-        { label: "已有 Lakehouse 表（仅 INSERT）", description: "Dynamic Table 直接读源表" },
-        { label: "已有 Lakehouse 表（含 UPDATE/DELETE）", description: "需要 Table Stream + Dynamic Table" }
+        { label: "Kafka", description: "Provide broker address and topic name" },
+        { label: "Object Storage (OSS/S3/COS)", description: "Provide Volume path and file format" },
+        { label: "Existing Lakehouse table (INSERT only)", description: "Dynamic Table reads directly from source table" },
+        { label: "Existing Lakehouse table (with UPDATE/DELETE)", description: "Requires Table Stream + Dynamic Table" }
       ]
     },
     {
-      question: "刷新频率？",
+      question: "Refresh frequency?",
       options: [
-        { label: "实时（秒级）", description: "REFRESH INTERVAL 10~60 SECOND" },
-        { label: "近实时（分钟级）", description: "REFRESH INTERVAL 1~10 MINUTE" },
-        { label: "低频（小时/天）", description: "REFRESH INTERVAL 1 HOUR 或 1 DAY" }
+        { label: "Real-time (seconds)", description: "REFRESH INTERVAL 10~60 SECOND" },
+        { label: "Near real-time (minutes)", description: "REFRESH INTERVAL 1~10 MINUTE" },
+        { label: "Low frequency (hourly/daily)", description: "REFRESH INTERVAL 1 HOUR or 1 DAY" }
       ]
     }
   ]
 })
 ```
 
-还需确认：项目/业务前缀（Schema 命名用）、层次需求（几层、每层做什么）、目标表字段结构。这些可在用户回答后追问，或从上下文推断。
+Also confirm: project/business prefix (for schema naming), layer requirements (how many layers, what each layer does), and target table field structure. These can be asked after the user responds, or inferred from context.
 
-### 生成完整 SQL
+### Generate Complete SQL
 
-收到回答后，生成完整的端到端 SQL，包含以下所有部分：
+After receiving answers, generate complete end-to-end SQL including all of the following:
 
 ```
-1. Schema 创建（CREATE SCHEMA IF NOT EXISTS，使用用户指定的层次名称）
-2. 入口层建表（如果是外部摄入）
-3. 数据入口（Pipe 或 Table Stream，根据来源选择）
-4. 中间层动态表（清洗/过滤，REFRESH interval N MINUTE VCLUSTER name）
-5. 服务层动态表（聚合/维度，REFRESH interval N MINUTE VCLUSTER name）
-6. 各动态表创建后立即执行 REFRESH DYNAMIC TABLE（重置刷新基准）
-7. 验证命令（SHOW + REFRESH HISTORY）
-8. 运维操作（SUSPEND/RESUME）
+1. Schema creation (CREATE SCHEMA IF NOT EXISTS, using the user's chosen layer names)
+2. Ingestion layer table creation (if external ingestion is involved)
+3. Data entry point (Pipe or Table Stream, based on source type)
+4. Intermediate layer Dynamic Tables (cleansing/filtering, REFRESH INTERVAL N MINUTE VCLUSTER name)
+5. Serving layer Dynamic Tables (aggregation/dimensions, REFRESH INTERVAL N MINUTE VCLUSTER name)
+6. Execute REFRESH DYNAMIC TABLE immediately after each Dynamic Table is created (reset refresh baseline)
+7. Verification commands (SHOW + REFRESH HISTORY)
+8. Operations commands (SUSPEND/RESUME)
 ```
 
-**SQL 生成后，将各段代码保存为 Studio 任务（代码资产化）：**
+**After generating SQL, save each segment as a Studio task (code as an asset):**
 
-数据管道开发场景下，所有 SQL 都应保存为 Studio 任务，作为可管理的代码资产：
+In data pipeline development, all SQL should be saved as Studio tasks as manageable code assets:
 
 ```bash
-# 建表 DDL → 保存为 DRAFT 任务（不配 Cron）
+# DDL SQL → save as DRAFT task (no Cron)
 cz-cli task save-content <ddl_task_name> --content "<ddl_sql>"
 
-# ETL/转换 SQL → 保存为调度任务（配 Cron + 依赖）
+# ETL/transformation SQL → save as scheduled task (with Cron + dependencies)
 cz-cli task save-content <etl_task_name> --content "<etl_sql>"
 cz-cli task save-cron <etl_task_name> --cron '0 30 2 * * ? *'
 cz-cli task deploy <etl_task_name>
 ```
 
-> Dynamic Table DDL 也应保存为 DRAFT 任务（`03_ddl_dws_ads`），方便后续查阅和多环境迁移。
+> Dynamic Table DDL should also be saved as a DRAFT task (`03_ddl_dws_ads`) for easy reference and multi-environment migration.
 
-**⚠️ DDL 任务 vs 数据流转任务的调度规则（硬性约束，不得违反）：**
+**⚠️ DDL tasks vs data flow tasks — scheduling rules (hard constraints, must not be violated):**
 
-| 任务类型 | 判断标准 | 调度配置 | Studio 状态 |
+| Task type | Criteria | Scheduling config | Studio status |
 |---|---|---|---|
-| DDL 任务 | 包含 `CREATE / DROP / ALTER TABLE/SCHEMA` | **禁止配置 Cron，禁止配置依赖** | DRAFT |
-| 数据流转任务 | 数据同步、ETL 转换、数据质量检查 | 配置 Cron + 上下游依赖 | PUBLISHED |
-| Dynamic Table | DWS/ADS 聚合层 | **不建 Studio 任务**，系统自动刷新 | — |
+| DDL task | Contains `CREATE / DROP / ALTER TABLE/SCHEMA` | **No Cron, no dependencies** | DRAFT |
+| Data flow task | Data sync, ETL transformation, data quality checks | Configure Cron + upstream/downstream dependencies | PUBLISHED |
+| Dynamic Table | DWS/ADS aggregation layer | **No Studio task needed** — system auto-refreshes | — |
 
-> AI 生成 SQL 管道时，如果涉及 Studio 任务编排，必须遵守以上规则。不得为 DDL 语句生成 Cron 调度配置。
+> When AI generates SQL pipelines involving Studio task orchestration, the above rules must be followed. Do not generate Cron scheduling for DDL statements.
 
-**来源 → 入口对象的选择规则：**
+**Source → entry object selection rules:**
 - Kafka → `CREATE PIPE ... AS COPY INTO ... FROM (SELECT ... FROM read_kafka('broker', 'topic', '', 'group', '', '', '', '', 'raw', 'raw', 0, MAP(...)))`
-- 对象存储（OSS/S3/COS）→ `CREATE PIPE ... VIRTUAL_CLUSTER = 'name' INGEST_MODE = 'LIST_PURGE' AS COPY INTO ... FROM VOLUME <volume_name> USING <format> PURGE=true`
-- 已有表 + 有 UPDATE/DELETE → `CREATE TABLE STREAM ... WITH PROPERTIES ('TABLE_STREAM_MODE' = 'STANDARD')`，中间层过滤 `__change_type IN ('INSERT', 'UPDATE_AFTER', 'DELETE')`
-- 已有表 + 仅 INSERT → Dynamic Table 直接 `FROM` 源表
+- Object storage (OSS/S3/COS) → `CREATE PIPE ... VIRTUAL_CLUSTER = 'name' INGEST_MODE = 'LIST_PURGE' AS COPY INTO ... FROM VOLUME <volume_name> USING <format> PURGE=true`
+- Existing table + has UPDATE/DELETE → `CREATE TABLE STREAM ... WITH PROPERTIES ('TABLE_STREAM_MODE' = 'STANDARD')`, intermediate layer filters `__change_type IN ('INSERT', 'UPDATE_AFTER', 'DELETE')`
+- Existing table + INSERT only → Dynamic Table reads directly `FROM` source table
 
-**刷新频率规则：**
-- 第一个转换层（Bronze→Silver 或 ODS→DWD）设置用户指定的刷新频率（如 `REFRESH INTERVAL 1 MINUTE vcluster default`）
-- 下游层根据业务需求设置各自的刷新频率（如 `REFRESH INTERVAL 5 MINUTE vcluster default`）
+**Refresh frequency rules:**
+- First transformation layer (Bronze→Silver or ODS→DWD): use the user-specified refresh frequency (e.g., `REFRESH INTERVAL 1 MINUTE vcluster default`)
+- Downstream layers: set their own refresh frequency based on business requirements (e.g., `REFRESH INTERVAL 5 MINUTE vcluster default`)
 
 ---
 
-## 对象类型速查
+## Object Type Quick Reference
 
-| 对象 | 适用场景 | 核心特点 |
+| Object | Use case | Key characteristics |
 |---|---|---|
-| **Dynamic Table** | 实时/近实时增量 ETL | SQL 定义，自动增量刷新，秒/分钟级延迟 |
-| **Materialized View** | 固定聚合加速查询 | 预计算存储，手动或定时全量刷新 |
-| **Table Stream** | CDC 变更数据捕获 | 捕获 INSERT/UPDATE/DELETE，配合 Dynamic Table 消费 |
-| **Pipe** | 持续数据摄入 | 从 Kafka 或对象存储自动持续导入，无需调度 |
+| **Dynamic Table** | Real-time / near real-time incremental ETL | SQL-defined, auto incremental refresh, second/minute-level latency |
+| **Materialized View** | Fixed aggregation to accelerate queries | Pre-computed storage, manual or scheduled full refresh |
+| **Table Stream** | CDC change data capture | Captures INSERT/UPDATE/DELETE, consumed by Dynamic Tables |
+| **Pipe** | Continuous data ingestion | Auto continuous import from Kafka or object storage, no scheduling needed |
 
-## 决策树
+## Decision Tree
 
 ```
-用户需求
-├── 持续从外部摄入数据（Kafka / OSS / S3）
+User requirement
+├── Continuously ingest from external source (Kafka / OSS / S3)
 │   └── → Pipe
-├── 对已有表做实时/增量转换
-│   ├── 需要感知 UPDATE/DELETE → Table Stream + Dynamic Table
-│   └── 只需 INSERT 追加 → Dynamic Table（直接查源表）
-├── 固定聚合，不要求实时
+├── Real-time / incremental transformation on existing tables
+│   ├── Need to detect UPDATE/DELETE → Table Stream + Dynamic Table
+│   └── INSERT append only → Dynamic Table (reads source table directly)
+├── Fixed aggregation, real-time not required
 │   └── → Materialized View
-└── 多层 ETL（ODS→DWD→DWS 或 Bronze→Silver→Gold）
-    └── → 多个 Dynamic Table 级联（各层设置独立 REFRESH interval）
+└── Multi-layer ETL (ODS→DWD→DWS or Bronze→Silver→Gold)
+    └── → Multiple cascaded Dynamic Tables (each layer with its own REFRESH INTERVAL)
 ```
 
-## 步骤 0：确认连接
+## Step 0: Confirm Connection
 
-操作前先确认已连接到 ClickZetta Lakehouse。参考 `clickzetta-lakehouse-connect` skill 获取连接参数。
+Before any operation, confirm you are connected to ClickZetta Lakehouse. Refer to the `clickzetta-lakehouse-connect` skill for connection parameters.
 
-## 步骤 1：选择对象类型
+## Step 1: Select Object Type
 
-根据决策树选择对象类型，阅读对应参考文件：
+Use the decision tree to select the object type, then read the corresponding reference file:
 
-| 对象 | 参考文件 |
+| Object | Reference file |
 |---|---|
 | Dynamic Table | [references/dynamic-table.md](references/dynamic-table.md) |
 | Materialized View | [references/materialized-view.md](references/materialized-view.md) |
 | Table Stream | [references/table-stream.md](references/table-stream.md) |
 | Pipe | [references/pipe.md](references/pipe.md) |
 
-## 步骤 2：生成并执行 SQL
+## Step 2: Generate and Execute SQL
 
-阅读对应参考文件后，根据用户提供的参数生成完整可运行 SQL。
+After reading the corresponding reference file, generate complete runnable SQL based on the user's parameters.
 
-**必填参数检查：**
-- Dynamic Table：`REFRESH INTERVAL N MINUTE vcluster name`、AS 查询
-- Table Stream：源表名、MODE（STANDARD 或 APPEND_ONLY）
-- Pipe（Kafka）：bootstrap_servers、topic、group_id、目标表（位置参数语法）
-- Pipe（对象存储）：Volume 路径、文件格式、目标表、`PURGE=true`（LIST_PURGE 模式）
+**Required parameter checklist:**
+- Dynamic Table: `REFRESH INTERVAL N MINUTE vcluster name`, AS query
+- Table Stream: source table name, MODE (STANDARD or APPEND_ONLY)
+- Pipe (Kafka): bootstrap_servers, topic, group_id, target table (positional parameter syntax)
+- Pipe (object storage): Volume path, file format, target table, `PURGE=true` (LIST_PURGE mode)
 
-若用户未提供 VCLUSTER，默认使用 `default`（GP 型集群）。
+If the user has not provided a VCLUSTER, default to `default` (GP-type cluster).
 
-## 步骤 3：验证
+## Step 3: Verify
 
 ```sql
--- 验证动态表
+-- Verify Dynamic Table
 SHOW TABLES WHERE is_dynamic = true;
 SHOW DYNAMIC TABLE REFRESH HISTORY <name> LIMIT 5;
 
--- 验证物化视图
+-- Verify Materialized View
 SHOW TABLES WHERE is_materialized_view = true;
 
--- 验证 Table Stream
+-- Verify Table Stream
 SHOW TABLE STREAMS;
-SELECT COUNT(*) FROM <stream_name>;  -- 查看待消费变更数
+SELECT COUNT(*) FROM <stream_name>;  -- check pending change count
 
--- 验证 Pipe
+-- Verify Pipe
 SHOW PIPES;
 ```
 
 ---
 
-## 典型场景示例
+## Typical Scenario Examples
 
-### 场景 A：Kafka → 动态表（实时 ETL）
+### Scenario A: Kafka → Dynamic Table (Real-time ETL)
 
 ```sql
--- Step 1: 创建 Pipe 持续摄入 Kafka 数据到 ODS 层
--- ⚠️ 注意：ClickZetta 不支持 CREATE OR REPLACE PIPE，需用 CREATE PIPE 或先 DROP 再 CREATE
+-- Step 1: Create Pipe to continuously ingest Kafka data into ODS layer
+-- ⚠️ Note: ClickZetta does not support CREATE OR REPLACE PIPE; use CREATE PIPE or DROP then CREATE
 CREATE PIPE kafka_orders_pipe
   VIRTUAL_CLUSTER = 'default'
   BATCH_INTERVAL_IN_SECONDS = '60'
@@ -261,14 +262,14 @@ COPY INTO ods.orders FROM (
       'orders',                   -- topic
       '',                         -- reserved
       'lakehouse_ingest',         -- group_id
-      '', '', '', '',             -- 位置参数留空，由 Pipe 管理
+      '', '', '', '',             -- positional params left empty, managed by Pipe
       'raw', 'raw', 0,
       MAP('kafka.security.protocol', 'PLAINTEXT')
     )
   )
 );
 
--- Step 2: 动态表做 DWD 层清洗（每分钟增量刷新）
+-- Step 2: Dynamic Table for DWD layer cleansing (incremental refresh every minute)
 CREATE OR REPLACE DYNAMIC TABLE dwd.orders_clean
   REFRESH INTERVAL 1 MINUTE vcluster default
 AS
@@ -282,7 +283,7 @@ SELECT
 FROM ods.orders
 WHERE amount > 0;
 
--- Step 3: 动态表做 DWS 层聚合（每 5 分钟刷新）
+-- Step 3: Dynamic Table for DWS layer aggregation (refresh every 5 minutes)
 CREATE OR REPLACE DYNAMIC TABLE dws.order_hourly
   REFRESH INTERVAL 5 MINUTE vcluster default
 AS
@@ -295,15 +296,15 @@ FROM dwd.orders_clean
 GROUP BY 1, 2;
 ```
 
-### 场景 B：Table Stream + Dynamic Table（CDC UPSERT）
+### Scenario B: Table Stream + Dynamic Table (CDC UPSERT)
 
 ```sql
--- Step 1: 在源表上创建 Stream 捕获变更
+-- Step 1: Create Stream on source table to capture changes
 CREATE TABLE STREAM ods.orders_stream
   ON TABLE ods.orders
   WITH PROPERTIES ('TABLE_STREAM_MODE' = 'STANDARD');
 
--- Step 2: 动态表消费 Stream，过滤出最新状态
+-- Step 2: Dynamic Table consumes Stream, filters for latest state
 CREATE OR REPLACE DYNAMIC TABLE dwd.orders_latest
   REFRESH INTERVAL 2 MINUTE vcluster default
 AS
@@ -312,15 +313,15 @@ FROM ods.orders_stream
 WHERE __change_type IN ('INSERT', 'UPDATE_AFTER');
 ```
 
-### 场景 C：物化视图加速 BI 查询
+### Scenario C: Materialized View to Accelerate BI Queries
 
 ```sql
--- 创建每小时刷新的物化视图
--- ⚠️ 注意：ClickZetta 不支持 CREATE OR REPLACE MATERIALIZED VIEW
--- 方法 1: 先 DROP 再 CREATE（推荐）
+-- Create a materialized view with hourly refresh
+-- ⚠️ Note: ClickZetta does not support CREATE OR REPLACE MATERIALIZED VIEW
+-- Method 1: DROP then CREATE (recommended)
 DROP MATERIALIZED VIEW IF EXISTS dws.mv_daily_revenue;
 CREATE MATERIALIZED VIEW dws.mv_daily_revenue
-  COMMENT '每日收入汇总，供 BI 工具查询'
+  COMMENT 'Daily revenue summary for BI tools'
   REFRESH INTERVAL 60 MINUTE vcluster default
 AS
 SELECT
@@ -331,41 +332,41 @@ SELECT
 FROM dwd.orders_clean
 GROUP BY 1, 2;
 
--- 方法 2: 使用 BUILD DEFERRED + DISABLE QUERY REWRITE（复杂，不推荐）
+-- Method 2: Use BUILD DEFERRED + DISABLE QUERY REWRITE (complex, not recommended)
 -- CREATE OR REPLACE MATERIALIZED VIEW ... BUILD DEFERRED DISABLE QUERY REWRITE AS ...
 
--- 手动触发刷新
+-- Manually trigger refresh
 REFRESH MATERIALIZED VIEW dws.mv_daily_revenue;
 
--- 删除物化视图（⚠️ 注意：必须用 DROP MATERIALIZED VIEW，不能用 DROP TABLE）
+-- Drop materialized view (⚠️ must use DROP MATERIALIZED VIEW, not DROP TABLE)
 DROP MATERIALIZED VIEW dws.mv_daily_revenue;
 ```
 
-### 场景 D：运维操作
+### Scenario D: Operations
 
 ```sql
--- 暂停动态表（如集群维护）
+-- Suspend Dynamic Table (e.g., during cluster maintenance)
 ALTER DYNAMIC TABLE dwd.orders_clean SUSPEND;
 
--- 恢复
+-- Resume
 ALTER DYNAMIC TABLE dwd.orders_clean RESUME;
 
--- 查看刷新历史排查失败
+-- View refresh history to troubleshoot failures
 SHOW DYNAMIC TABLE REFRESH HISTORY dwd.orders_clean LIMIT 10;
 
--- 暂停 Pipe
+-- Pause Pipe
 ALTER PIPE kafka_orders_pipe SET PIPE_EXECUTION_PAUSED = true;
 
--- 恢复 Pipe
+-- Resume Pipe
 ALTER PIPE kafka_orders_pipe SET PIPE_EXECUTION_PAUSED = false;
 ```
 
-### 场景 E：参数化动态表（按分区刷新）
+### Scenario E: Parameterized Dynamic Table (Partition-based Refresh)
 
-通过 `SESSION_CONFIGS()` 函数定义参数化查询，在刷新时传入分区值控制全量或增量刷新范围：
+Use the `SESSION_CONFIGS()` function to define parameterized queries, passing partition values at refresh time to control the refresh scope:
 
 ```sql
--- 创建参数化动态表（使用 SESSION_CONFIGS 定义参数）
+-- Create a parameterized Dynamic Table (using SESSION_CONFIGS to define parameters)
 CREATE OR REPLACE DYNAMIC TABLE dwd.orders_partitioned
   REFRESH INTERVAL 30 MINUTE vcluster default
 AS
@@ -373,27 +374,27 @@ SELECT order_id, user_id, amount, status, created_at, DATE(created_at) AS dt
 FROM ods.orders
 WHERE dt = SESSION_CONFIGS('target_date', CAST(CURRENT_DATE() AS STRING));
 
--- 手动触发刷新并传入参数
+-- Manually trigger refresh with parameters
 REFRESH DYNAMIC TABLE dwd.orders_partitioned
   WITH PROPERTIES ('target_date' = '2024-06-15');
 ```
 
-> **适用场景**：传统按天/按小时全量 ETL 任务改造为增量任务时，用 SESSION_CONFIGS 替换调度变量（如 `${bizdate}`），实现参数化分区刷新。
+> **Use case**: When migrating traditional daily/hourly full ETL jobs to incremental jobs, replace scheduling variables (e.g., `${bizdate}`) with SESSION_CONFIGS for parameterized partition refresh.
 
-### 场景 F：动态表 DML 操作（手动修正数据）
+### Scenario F: Dynamic Table DML Operations (Manual Data Correction)
 
-⚠️ **重要**：ClickZetta 动态表**不支持 DML 操作**（INSERT/UPDATE/DELETE）。如需修正数据，有以下方案：
+⚠️ **Important**: ClickZetta Dynamic Tables **do not support DML operations** (INSERT/UPDATE/DELETE) by default. For data correction, the following options are available:
 
-**方案 1：重建动态表（推荐）**
+**Option 1: Rebuild the Dynamic Table (recommended)**
 ```sql
--- 1. 在源表中修正数据
--- 2. 等待动态表自动刷新（下一次 REFRESH INTERVAL 会全量刷新）
+-- 1. Correct data in the source table
+-- 2. Wait for the Dynamic Table to auto-refresh (the next REFRESH INTERVAL will trigger a full refresh)
 ```
 
-**方案 2：使用普通表替代动态表**
+**Option 2: Use a regular table instead of a Dynamic Table**
 ```sql
--- 对于需要频繁手动修正的场景，建议使用普通表 + 定时调度任务
--- 而不是动态表
+-- For scenarios requiring frequent manual corrections, use a regular table + scheduled Studio task
+-- instead of a Dynamic Table
 CREATE TABLE dwd.orders_manual (
   order_id STRING,
   user_id STRING,
@@ -404,82 +405,82 @@ CREATE TABLE dwd.orders_manual (
 );
 ```
 
-> ⚠️ **动态表限制**：
-> - 动态表是只读的，不支持 INSERT/UPDATE/DELETE
-> - 数据修正应在源表进行，动态表会自动刷新
-> - 如需手动控制数据，使用普通表 + Studio 调度任务
+> ⚠️ **Dynamic Table limitations**:
+> - Dynamic Tables are read-only; INSERT/UPDATE/DELETE are not supported
+> - Data corrections should be made in the source table; the Dynamic Table will auto-refresh
+> - For manual data control, use a regular table + Studio scheduled task
 
 ---
 
-## 常见错误
+## Common Errors
 
-| 错误 | 原因 | 解决方案 |
+| Error | Cause | Solution |
 |---|---|---|
-| `VCluster not available` | 计算集群未启动或名称错误 | 确认 VCLUSTER 名称，检查集群状态 |
-| 动态表刷新失败 | SQL 查询报错或源表结构变更 | `SHOW DYNAMIC TABLE REFRESH HISTORY WHERE name = 'xxx'` 查看错误详情 |
-| Stream 数据为空 | 已被消费或超出保留周期 | 检查源表 `data_retention_days`，确认是否已消费 |
-| Pipe 停止摄入 | Kafka offset 问题或连接断开 | `DESC PIPE EXTENDED` 查看状态，检查 Kafka 连接 |
-| `Cannot ALTER AS clause` | 尝试用 ALTER 修改动态表 SQL | 改用 `CREATE OR REPLACE DYNAMIC TABLE` |
-| `CREATE OR REPLACE PIPE` 语法报错 | ClickZetta 不支持该语法 | 用 `CREATE PIPE` 或先 `DROP PIPE` 再 `CREATE` |
-| `CREATE OR REPLACE MATERIALIZED VIEW` 语法报错 | 仅支持 `REWRITE DISABLED + BUILD DEFER` 模式 | 推荐用 `DROP MATERIALIZED VIEW` + `CREATE MATERIALIZED VIEW` |
-| `DROP TABLE` 删除物化视图报错 | 对象类型不匹配 | 用 `DROP MATERIALIZED VIEW`（不是 `DROP TABLE`） |
-| 动态表 DML 报错 `not allowed` | 动态表不支持 DML | 在源表修正数据，或使用普通表 + 调度任务 |
-| `SET cz.sql.dt.allow.dml` 报错 | 不支持 session statement | 动态表不支持 DML 操作，改用其他方案 |
+| `VCluster not available` | Compute cluster not started or name is wrong | Verify VCLUSTER name, check cluster status |
+| Dynamic Table refresh failed | SQL query error or source table schema changed | Run `SHOW DYNAMIC TABLE REFRESH HISTORY WHERE name = 'xxx'` to view error details |
+| Stream data is empty | Already consumed or past retention period | Check source table `data_retention_days`, confirm whether data was consumed |
+| Pipe stopped ingesting | Kafka offset issue or connection dropped | Run `DESC PIPE EXTENDED` to check status, verify Kafka connection |
+| `Cannot ALTER AS clause` | Attempted to modify Dynamic Table SQL via ALTER | Use `CREATE OR REPLACE DYNAMIC TABLE` instead |
+| `CREATE OR REPLACE PIPE` syntax error | ClickZetta does not support this syntax | Use `CREATE PIPE` or `DROP PIPE` then `CREATE` |
+| `CREATE OR REPLACE MATERIALIZED VIEW` syntax error | Only supports `REWRITE DISABLED + BUILD DEFER` mode | Use `DROP MATERIALIZED VIEW` + `CREATE MATERIALIZED VIEW` |
+| `DROP TABLE` fails on materialized view | Object type mismatch | Use `DROP MATERIALIZED VIEW` (not `DROP TABLE`) |
+| Dynamic Table DML error `not allowed` | Dynamic Tables do not support DML | Correct data in source table, or use a regular table + scheduled task |
+| `SET cz.sql.dt.allow.dml` error | Session statement not supported | Dynamic Tables do not support DML; use an alternative approach |
 
 ---
 
-## 交付验收 Checklist
+## Delivery Acceptance Checklist
 
-管道创建完成后，**必须逐项验证**，不得跳过：
+After pipeline creation, **verify each item — do not skip**:
 
 ```sql
--- 1. 行数比对：各层行数与预期一致
-SELECT COUNT(*) FROM ods.<table>;   -- ODS 行数 ≈ 源端
-SELECT COUNT(*) FROM dwd.<table>;   -- DWD 行数 ≤ ODS（清洗后）
-SELECT COUNT(*) FROM dws.<table>;   -- DWS 行数符合聚合逻辑
+-- 1. Row count comparison: each layer's row count matches expectations
+SELECT COUNT(*) FROM ods.<table>;   -- ODS count ≈ source
+SELECT COUNT(*) FROM dwd.<table>;   -- DWD count ≤ ODS (after cleansing)
+SELECT COUNT(*) FROM dws.<table>;   -- DWS count matches aggregation logic
 
--- 2. Dynamic Table 刷新状态
+-- 2. Dynamic Table refresh status
 SHOW DYNAMIC TABLE REFRESH HISTORY <schema>.<table> LIMIT 5;
--- 确认最近一次 status = SUCCESS，refresh_mode = INCREMENTAL 或 FULL
+-- Confirm latest status = SUCCESS, refresh_mode = INCREMENTAL or FULL
 
--- 3. 关键字段非空率
+-- 3. Key field non-null rate
 SELECT
   COUNT(*) AS total,
   COUNT(key_field) AS non_null,
   ROUND(COUNT(key_field) * 100.0 / COUNT(*), 2) AS non_null_pct
 FROM <schema>.<table>;
--- 核心业务字段非空率应 > 99%
+-- Core business fields should have non-null rate > 99%
 
--- 4. 主键唯一性（DWD 层事实表）
+-- 4. Primary key uniqueness (DWD fact tables)
 SELECT key_col, COUNT(*) AS cnt
 FROM dwd.<table>
 GROUP BY key_col
 HAVING cnt > 1
 LIMIT 10;
--- 结果为空 = 无重复，符合预期
+-- Empty result = no duplicates, as expected
 
--- 5. Pipe 摄入状态（如有）
+-- 5. Pipe ingestion status (if applicable)
 SHOW PIPES;
--- status = RUNNING，last_ingested_timestamp 持续更新
+-- status = RUNNING, last_ingested_timestamp continuously updating
 ```
 
-**验收标准：**
-- [ ] 各层行数与预期一致
-- [ ] Dynamic Table 最近刷新状态为 SUCCESS
-- [ ] 关键字段非空率 > 99%
-- [ ] DWD 层主键无重复
-- [ ] Pipe 状态 RUNNING（如有）
-- [ ] 所有 DDL 任务为 DRAFT 状态（如涉及 Studio 任务）
-- [ ] DWS/ADS 层无冗余 Studio 调度任务
+**Acceptance criteria:**
+- [ ] Row counts at each layer match expectations
+- [ ] Dynamic Table latest refresh status is SUCCESS
+- [ ] Key field non-null rate > 99%
+- [ ] DWD layer primary keys have no duplicates
+- [ ] Pipe status is RUNNING (if applicable)
+- [ ] All DDL tasks are in DRAFT status (if Studio tasks are involved)
+- [ ] No redundant Studio scheduled tasks at DWS/ADS layer
 
 ---
 
-## 参考文档
+## Reference Documentation
 
-- [增量计算概述](https://www.yunqi.tech/documents/streaming_data_pipeline_overview)
+- [Incremental Computation Overview](https://www.yunqi.tech/documents/streaming_data_pipeline_overview)
 - [Dynamic Table](https://www.yunqi.tech/documents/dynamic-table)
-- [Table Stream 变化数据捕获](https://www.yunqi.tech/documents/table_stream)
-- [物化视图](https://www.yunqi.tech/documents/materialized_ddl)
-- [Pipe 简介](https://www.yunqi.tech/documents/pipe-summary)
-- [使用 Dynamic Table 开展实时 ETL](https://www.yunqi.tech/documents/tutorials-streaming-data-pipeline-with_dynamic-table)
-- [LLM 全量文档索引](https://yunqi.tech/llms-full.txt)
+- [Table Stream Change Data Capture](https://www.yunqi.tech/documents/table_stream)
+- [Materialized View](https://www.yunqi.tech/documents/materialized_ddl)
+- [Pipe Overview](https://www.yunqi.tech/documents/pipe-summary)
+- [Real-time ETL with Dynamic Table](https://www.yunqi.tech/documents/tutorials-streaming-data-pipeline-with_dynamic-table)
+- [LLM Full Documentation Index](https://yunqi.tech/llms-full.txt)

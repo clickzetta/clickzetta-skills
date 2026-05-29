@@ -1,109 +1,109 @@
-# SQL → Dynamic Table 完整转换工作流
+# SQL → Dynamic Table Complete Conversion Workflow
 
-当用户给你一组 CREATE TABLE DDL 和 INSERT OVERWRITE SQL，要求转换为 Dynamic Table 时，按以下步骤顺序执行。
+When the user gives you a set of CREATE TABLE DDL and INSERT OVERWRITE SQL and asks to convert them to a Dynamic Table, execute the following steps in order.
 
-每一步的详细规则在对应的 skill 文件中，你需要同时引用它们。
+The detailed rules for each step are in the corresponding skill files, which you need to reference simultaneously.
 
-## 工作流步骤
+## Workflow Steps
 
-### Step 1: 预处理输入
+### Step 1: Pre-process Input
 
-从 INSERT OVERWRITE 文件中移除：
-- 所有 `ALTER TABLE` 语句
-- `ANALYZE TABLE` 语句
-- SQL 注释（`--` 和 `/* */`）
+Remove from the INSERT OVERWRITE file:
+- All `ALTER TABLE` statements
+- `ANALYZE TABLE` statements
+- SQL comments (`--` and `/* */`)
 
-保留：CREATE TABLE、INSERT OVERWRITE、WITH、SET、CREATE TEMPORARY FUNCTION。
+Retain: CREATE TABLE, INSERT OVERWRITE, WITH, SET, CREATE TEMPORARY FUNCTION.
 
-### Step 2: 占位符替换
+### Step 2: Placeholder Replacement
 
-按 #[[file:sql2dt-placeholder-rules.md]] 中的规则：
-1. 统一占位符格式（`{{ }}` → `${ }`）
-2. 替换所有占位符为 `SESSION_CONFIGS()` 调用
-3. 处理 nodash 变量、日期运算、macros 函数
-4. 根据引号上下文决定处理方式（去引号 / CONCAT / 直接替换）
+Follow the rules in #[[file:sql2dt-placeholder-rules.md]]:
+1. Normalize placeholder format (`{{ }}` → `${ }`)
+2. Replace all placeholders with `SESSION_CONFIGS()` calls
+3. Handle nodash variables, date arithmetic, macros functions
+4. Decide handling based on quote context (remove quotes / CONCAT / direct replacement)
 
-### Step 3: 自引用检测
+### Step 3: Self-reference Detection
 
-按 #[[file:sql2dt-self-reference-rules.md]] 中的规则：
-1. 检查 INSERT OVERWRITE 目标表是否出现在 FROM/JOIN 中
-2. 如果是自引用表，标记并在后续步骤中添加注释、使用显式 schema
+Follow the rules in #[[file:sql2dt-self-reference-rules.md]]:
+1. Check whether the INSERT OVERWRITE target table appears in FROM/JOIN
+2. If it is a self-referencing table, mark it and add comments and use explicit schema in subsequent steps
 
-### Step 4: 核心转换
+### Step 4: Core Conversion
 
-按 #[[file:sql2dt-conversion-rules.md]] 中的规则：
-1. 解析 CREATE TABLE DDL（提取列、分区、属性等）
-2. 解析 INSERT OVERWRITE（提取查询、分区类型）
-3. 组装 `CREATE OR REPLACE DYNAMIC TABLE ... AS SELECT ...`
-4. 注入静态分区值到 SELECT（智能引号处理）
-5. 合并表属性模板（默认 `data_lifecycle=15`）
-6. 处理 UNION ALL（每个分支独立注入）
-7. 日期函数后处理：将所有 `DATE_SUB/DATE_ADD` 统一转为 `sub_days`
+Follow the rules in #[[file:sql2dt-conversion-rules.md]]:
+1. Parse CREATE TABLE DDL (extract columns, partitions, properties, etc.)
+2. Parse INSERT OVERWRITE (extract query, partition type)
+3. Assemble `CREATE OR REPLACE DYNAMIC TABLE ... AS SELECT ...`
+4. Inject static partition values into SELECT (smart quote handling)
+5. Merge table property template (default `data_lifecycle=15`)
+6. Handle UNION ALL (inject into each branch independently)
+7. Date function post-processing: convert all `DATE_SUB/DATE_ADD` to `sub_days`
 
-### Step 5: 列校验
+### Step 5: Column Validation
 
-按 #[[file:sql2dt-column-validation-rules.md]] 中的规则：
-1. 计算 schema 列数和 SELECT 列数
-2. 验证两者相等
-3. 检查重复别名和缺失分区列
-4. UNION ALL 分支列数一致性检查
+Follow the rules in #[[file:sql2dt-column-validation-rules.md]]:
+1. Count schema columns and SELECT columns
+2. Verify they are equal
+3. Check for duplicate aliases and missing partition columns
+4. UNION ALL branch column count consistency check
 
-### Step 6: 生成配套文件
+### Step 6: Generate Companion Files
 
-按 #[[file:sql2dt-refresh-rules.md]] 中的规则：
-1. 从 DDL 中提取所有 SESSION_CONFIGS 变量
-2. 生成当前周期 refresh 语句
-3. 生成上一周期 prev_refresh 语句
-4. 生成回填 backfill 语句
+Follow the rules in #[[file:sql2dt-refresh-rules.md]]:
+1. Extract all SESSION_CONFIGS variables from the DDL
+2. Generate current-cycle refresh statement
+3. Generate previous-cycle prev_refresh statement
+4. Generate backfill statement
 
-### Step 7: 转换后改进建议
+### Step 7: Post-conversion Improvement Suggestions
 
-DDL 生成完成后，对转换结果做以下检查，并主动向用户提出改进建议：
+After DDL generation is complete, check the conversion result and proactively offer improvement suggestions to the user:
 
-**检查 1：非分区表 + 持续写入风险**
+**Check 1: Non-partitioned table + continuous write risk**
 
-按 #[[file:../best-practices/non-partitioned-merge-into-warning.md]] 中的判断逻辑：
-- 生成的 DT 是非分区表（无 `PARTITIONED BY` 也无 `SESSION_CONFIGS()`）
-- 且 SQL 中包含 `ROW_NUMBER() OVER (PARTITION BY ... ORDER BY ... DESC) WHERE rn = 1` 去重模式
+Follow the judgment logic in #[[file:../best-practices/non-partitioned-merge-into-warning.md]]:
+- The generated DT is a non-partitioned table (no `PARTITIONED BY` and no `SESSION_CONFIGS()`)
+- And the SQL contains the `ROW_NUMBER() OVER (PARTITION BY ... ORDER BY ... DESC) WHERE rn = 1` deduplication pattern
 
-→ 满足条件时，使用该文档中的告警话术模板向用户发出风险提示，并建议改用 MERGE INTO + Table Stream 方案。
+→ When conditions are met, use the alert message template from that document to warn the user of the risk, and suggest switching to the MERGE INTO + Table Stream approach.
 
-**检查 2：SQL 性能优化机会**
+**Check 2: SQL performance optimization opportunities**
 
-按 #[[file:../best-practices/performance-optimization.md]] 中的规则，扫描生成的 DT SQL：
-- 存在 `LEFT/RIGHT/FULL OUTER JOIN` → 提示如果业务允许，改用 INNER JOIN 可提升增量效率
-- 存在无 `PARTITION BY` 的窗口函数 → 提示添加 PARTITION BY，否则每次增量都全量重算
-- `GROUP BY` 使用了复杂表达式（如 `DATE_TRUNC`、`SUBSTR`）→ 提示考虑在上游预计算或拆分为多级 DT
+Follow the rules in #[[file:../best-practices/performance-optimization.md]], scan the generated DT SQL:
+- Contains `LEFT/RIGHT/FULL OUTER JOIN` → suggest switching to INNER JOIN if business allows, to improve incremental efficiency
+- Contains window functions without `PARTITION BY` → suggest adding PARTITION BY; otherwise every incremental refresh will do a full recomputation
+- `GROUP BY` uses complex expressions (e.g., `DATE_TRUNC`, `SUBSTR`) → suggest pre-computing upstream or splitting into multi-level DTs
 
-**检查 3：JOIN 中是否有维度表**
+**Check 3: Whether there are dimension tables in JOINs**
 
-按 #[[file:../best-practices/dimension-table-join-guide.md]] 中的推荐场景：
-- SQL 中存在 JOIN → 询问用户右侧表是否为低频变更的维度表（码表、字典表、配置表等）
-- 如果是 → 建议在 TBLPROPERTIES 中添加 `mv_const_tables` 配置，并说明其行为和数据一致性权衡
+Follow the recommended scenarios in #[[file:../best-practices/dimension-table-join-guide.md]]:
+- SQL contains JOIN → ask the user whether the right-side table is a low-frequency-change dimension table (lookup table, dictionary table, config table, etc.)
+- If yes → suggest adding `mv_const_tables` configuration in TBLPROPERTIES, and explain its behavior and data consistency tradeoffs
 
-## 输出清单
+## Output Checklist
 
-对每个表，最终输出：
+For each table, the final output is:
 
-| 文件 | 内容 | 条件 |
+| File | Content | Condition |
 |------|------|------|
-| `表名.sql` | Dynamic Table DDL | 始终生成 |
-| `表名_refresh.sql` | 当前周期 REFRESH 语句 | 始终生成 |
-| `表名_prev_refresh.sql` | 上一周期 REFRESH 语句 | 仅有分区变量时 |
-| `表名_backfill.sql` | 回填语句 | 仅有分区变量时 |
+| `table_name.sql` | Dynamic Table DDL | Always generated |
+| `table_name_refresh.sql` | Current-cycle REFRESH statement | Always generated |
+| `table_name_prev_refresh.sql` | Previous-cycle REFRESH statement | Only when partition variables exist |
+| `table_name_backfill.sql` | Backfill statement | Only when partition variables exist |
 
-## 快速判断路径
+## Quick Decision Path
 
 ```
-输入 DDL + INSERT OVERWRITE
+Input DDL + INSERT OVERWRITE
   │
-  ├─ 有占位符？ → Step 2 占位符替换
+  ├─ Has placeholders? → Step 2 placeholder replacement
   │
-  ├─ 自引用？ → Step 3 特殊处理
+  ├─ Self-reference? → Step 3 special handling
   │
-  ├─ 有静态分区？ → Step 4 注入分区值到 SELECT
+  ├─ Has static partitions? → Step 4 inject partition values into SELECT
   │
-  ├─ 有 UNION ALL？ → Step 4 每个分支独立注入
+  ├─ Has UNION ALL? → Step 4 inject into each branch independently
   │
-  └─ 生成 DDL → Step 5 校验 → Step 6 生成配套文件 → Step 7 改进建议
+  └─ Generate DDL → Step 5 validate → Step 6 generate companion files → Step 7 improvement suggestions
 ```
