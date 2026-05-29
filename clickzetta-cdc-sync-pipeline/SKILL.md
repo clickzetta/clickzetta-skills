@@ -1,633 +1,637 @@
 ---
 name: clickzetta-cdc-sync-pipeline
 description: |
-  创建和管理 ClickZetta Lakehouse 多表实时同步任务（CDC），将 MySQL / PostgreSQL 数据库整库或多表实时同步到 Lakehouse。
-  支持三种同步模式：整库镜像、多表镜像、多表合并（分库分表合并）。
-  基于 Binlog（MySQL）或 WALs（PostgreSQL）实现秒级端到端时效性，包含全量 + 增量两阶段同步。
-  当用户说"多表实时同步"、"整库同步"、"整库镜像"、"CDC 整库"、"多表 CDC"、"分库分表合并"、
-  "多表合并同步"、"MySQL 整库同步到 Lakehouse"、"PostgreSQL 整库同步"、"multi-table realtime sync"、
-  "database migration"、"全量+增量同步"、"同步运维"、"同步 SOP"、"同步告警配置"、
-  "Binlog 位点过期"、"server-id 冲突"、"补充全量同步"、"新增同步表"时触发。
-  包含源端数据库准备（参数配置+权限）、三种同步模式选择、任务创建部署、运维 SOP（补全量/加表/数据修复）、
-  监控告警配置（5 种告警规则+IM webhook）、详细故障排除等 ClickZetta Studio 特有逻辑。
-  Keywords: CDC, real-time sync, MySQL, PostgreSQL, change data capture, mirror, merge
+  Create and manage ClickZetta Lakehouse multi-table real-time sync (CDC) tasks, syncing entire MySQL / PostgreSQL
+  databases or multiple tables to Lakehouse in real time.
+  Supports three sync modes: full database mirror, multi-table mirror, and sharded table merge.
+  Based on Binlog (MySQL) or WALs (PostgreSQL) for second-level end-to-end latency, with full load + incremental two-phase sync.
+  Triggered when the user says "multi-table real-time sync", "full database sync", "database mirror",
+  "CDC full database", "multi-table CDC", "sharded table merge", "MySQL full database sync to Lakehouse",
+  "PostgreSQL full database sync", "multi-table realtime sync", "database migration",
+  "full load + incremental sync", "sync operations", "sync SOP", "sync alert configuration",
+  "Binlog position expired", "server-id conflict", "full re-sync", "add sync table".
+  Covers source database preparation (parameter configuration + permissions), three sync mode selection,
+  task creation and deployment, operations SOP (full re-sync/add table/data repair),
+  monitoring and alerting (5 alert rules + IM webhook), and detailed troubleshooting —
+  all ClickZetta Studio specific logic.
+  Keywords: CDC, real-time sync, MySQL, PostgreSQL, change data capture, mirror, merge, multi-table
 ---
 
-# 多表实时同步 Pipeline 工作流
+# Multi-table Real-time Sync (CDC) Pipeline Workflow
 
-## 向导：收集必要信息
+## Wizard: Collect Required Information
 
-开始创建 CDC 同步任务前，优先使用交互式问答工具（如 `question`）收集以下信息并弹出选项菜单；若无此类工具，则用文字一次性列出所有问题：
+Before creating a CDC sync task, use an interactive question tool (e.g., `question`) to collect the following information via option menus. If no such tool is available, list all questions in text at once:
 
 ```
 question({
   questions: [
     {
-      question: "源端数据库类型？",
+      question: "Source database type?",
       options: [
-        { label: "MySQL", description: "含 Aurora MySQL、PolarDB MySQL，基于 Binlog" },
-        { label: "PostgreSQL", description: "含 Aurora PG、PolarDB PG，基于 WALs，需 14+" }
+        { label: "MySQL", description: "Including Aurora MySQL, PolarDB MySQL — based on Binlog" },
+        { label: "PostgreSQL", description: "Including Aurora PG, PolarDB PG — based on WALs, requires 14+" }
       ]
     },
     {
-      question: "同步模式？",
+      question: "Sync mode?",
       options: [
-        { label: "整库镜像", description: "同步整个数据库，自动适配新增表" },
-        { label: "多表镜像", description: "指定同步哪些表" },
-        { label: "多表合并", description: "分库分表合并到一张目标表" }
+        { label: "Full database mirror", description: "Sync entire database, auto-adapts to new tables" },
+        { label: "Multi-table mirror", description: "Specify which tables to sync" },
+        { label: "Sharded table merge", description: "Merge sharded tables into one target table" }
       ]
     },
     {
-      question: "源端是否已完成准备？",
+      question: "Is the source database already prepared?",
       options: [
-        { label: "已准备好", description: "MySQL: Binlog 已开启，账号有 REPLICATION 权限；PG: wal_level=logical" },
-        { label: "不确定，帮我检查", description: "我来帮你验证源端配置" }
+        { label: "Ready", description: "MySQL: Binlog enabled, account has REPLICATION permission; PG: wal_level=logical" },
+        { label: "Not sure, help me check", description: "I'll help verify source configuration" }
       ]
     }
   ]
 })
 ```
 
-收集到信息后，还需确认目标 schema（如 `ods`）。
+After collecting the above, also confirm the target schema (e.g., `ods`).
 
-**如果用户已经提供了足够信息，直接进入工作流，不再弹出菜单。**
+**If the user has already provided sufficient information, proceed directly to the workflow without showing the menu.**
 
-## 适用场景
+## Applicable Scenarios
 
-- 将 MySQL / PostgreSQL 数据库整库或多表实时同步到 Lakehouse（CDC 变更捕获）
-- 整库镜像：以数据库为粒度，自动适配新增表
-- 多表镜像：以表粒度选择，支持自动感知字段变更
-- 多表合并：将分库分表数据合并写入同一张目标表
-- 全量 + 增量两阶段同步，秒级端到端时效性
-- 关键词：多表实时同步、整库同步、CDC、分库分表合并、database migration
+- Sync entire MySQL / PostgreSQL databases or multiple tables to Lakehouse in real time (CDC change capture)
+- Full database mirror: database-level granularity, auto-adapts to new tables
+- Multi-table mirror: table-level selection, supports automatic schema change detection
+- Sharded table merge: merge sharded table data into a single target table
+- Full load + incremental two-phase sync, second-level end-to-end latency
+- Keywords: multi-table real-time sync, full database sync, CDC, sharded table merge, database migration
 
-## 与其他同步方式的区别
+## Comparison with Other Sync Methods
 
-| 维度 | 多表实时同步（本 Skill） | 单表实时同步 | 离线同步 |
-|------|------------------------|------------|---------|
-| 任务类型 ID | `281`（多表实时同步） | `28` | `10` / `291` |
-| 同步粒度 | 整库/多表/分库分表合并 | 单表/单 Topic | 单表/多表 |
-| 运行模式 | 持续运行（流式 CDC） | 持续运行（流式） | 周期调度（批量） |
-| 数据源 | MySQL / PostgreSQL | Kafka/MySQL/PG/SQLServer | 多种 |
-| 调度策略 | 无需配置，提交即运行 | 无需配置 | 需配置 Cron |
-| 适用 Skill | `clickzetta-cdc-sync-pipeline` | `clickzetta-realtime-sync-pipeline` | `clickzetta-batch-sync-pipeline` |
+| Dimension | Multi-table Real-time Sync (This Skill) | Single-table Real-time Sync | Batch Sync |
+|-----------|----------------------------------------|---------------------------|------------|
+| Task Type ID | `281` (multi-table real-time sync) | `28` | `10` / `291` |
+| Sync Granularity | Full database/multi-table/sharded merge | Single table/topic | Single/multi-table |
+| Run Mode | Continuously running (streaming CDC) | Continuously running (streaming) | Scheduled (batch) |
+| Data Sources | MySQL / PostgreSQL | Kafka/MySQL/PG/SQL Server | Multiple |
+| Scheduling | Not required, runs upon submission | Not required | Cron required |
+| Applicable Skill | `clickzetta-cdc-sync-pipeline` | `clickzetta-realtime-sync-pipeline` | `clickzetta-batch-sync-pipeline` |
 
-## 支持的数据源
+## Supported Data Sources
 
-### 来源端
+### Source
 
-| 数据源类型 | 增量读取模式 | 数据库版本 | ds_type |
-|-----------|------------|-----------|---------|
-| MySQL 类（含 Aurora MySQL、PolarDB MySQL） | Binlog | 5.6+、8.x | 5, 39, 19 |
-| PostgreSQL 类（含 Aurora PG、PolarDB PG） | WALs 日志 | 14+ | 7, 40, 48 |
+| Data Source Type | Incremental Read Mode | Database Version | ds_type |
+|-----------------|----------------------|-----------------|---------|
+| MySQL (including Aurora MySQL, PolarDB MySQL) | Binlog | 5.6+, 8.x | 5, 39, 19 |
+| PostgreSQL (including Aurora PG, PolarDB PG) | WALs | 14+ | 7, 40, 48 |
 | SQL Server | CDC | - | 8 |
 | TiDB | - | - | 17 |
 
-### 目标端
+### Target
 
-| 数据源 | ds_type |
-|--------|---------|
+| Data Source | ds_type |
+|------------|---------|
 | Lakehouse | 1 |
 | Kafka | 2 |
 
-## 前置依赖
+## Prerequisites
 
-- ClickZetta Lakehouse Studio 账户，具备创建同步任务权限
-- 源端数据源已在 Studio 中配置（通过 Studio UI 添加数据源，不是 SQL Storage Connection），且账号具备 CDC 所需权限
-- Sync VCluster 可用（多表实时同步任务 task_type=281 必须使用 Sync VCluster）
-- **执行环境（满足其一即可，优先使用 cz-cli）**：
-  - **cz-cli 路径**：已安装 cz-cli（`brew install cz-cli 或参考官方文档安装`），并完成 `cz-cli setup` 配置
-  - **MCP 路径**：clickzetta-studio-mcp 工具可用（`create_task`、`save_cdc_realtime_task`、`publish_task`、`list_data_sources`、`LH_show_object_list` 等）
+- ClickZetta Lakehouse Studio account with permissions to create sync tasks
+- Source data source already configured in Studio (via Studio UI, not SQL Storage Connection), with CDC-required permissions
+- Sync VCluster available (multi-table real-time sync task_type=281 must use a Sync VCluster)
+- **Execution environment (one of the following, cz-cli preferred)**:
+  - **cz-cli path**: cz-cli installed (`brew install cz-cli or refer to official docs`) and `cz-cli setup` completed
+  - **MCP path**: clickzetta-studio-mcp tools available (`create_task`, `save_cdc_realtime_task`, `publish_task`, `list_data_sources`, `LH_show_object_list`, etc.)
 
-## 环境探测（执行前必读）
+## Environment Detection (Read Before Execution)
 
-在开始任何操作前，先判断当前执行环境：
+Before starting any operation, determine the current execution environment:
 
-**第一步：检测 cz-cli 是否可用**
+**Step 1: Check if cz-cli is available**
 ```bash
 cz-cli --version
 ```
-- 若命令存在 → **走 cz-cli 路径**（见本文档末尾"cz-cli 替代路径"章节）
-- 若命令不存在 → 继续检测 MCP
+- If command exists → **use cz-cli path** (see "cz-cli Alternative Path" section at the end of this document)
+- If command not found → continue to check MCP
 
-**第二步：检测 MCP 是否可用（仅在 cz-cli 不可用时）**
+**Step 2: Check if MCP is available (only when cz-cli is unavailable)**
 
-尝试调用 `list_data_sources` 工具查询数据源列表。
-- 若工具存在于 tool list → **走 MCP 路径**（本文档默认路径）
-- 若工具不存在 → 停止执行，提示用户：
-  > "当前环境既无 cz-cli 也无 MCP 工具，请安装其中之一后重试。
-  > cz-cli 安装：`brew install cz-cli 或参考官方文档安装`，然后运行 `cz-cli setup`
-  > MCP 安装：参考 clickzetta-studio-mcp 配置文档"
+Try calling the `list_data_sources` tool to query the data source list.
+- If tool exists in tool list → **use MCP path** (default path in this document)
+- If tool not found → stop execution and prompt the user:
+  > "Neither cz-cli nor MCP tools are available in the current environment. Please install one of them before retrying.
+  > cz-cli installation: `brew install cz-cli or refer to official docs`, then run `cz-cli setup`
+  > MCP installation: refer to clickzetta-studio-mcp configuration docs"
 
-> ⚠️ **重要区分**：CDC 多表同步使用 **Studio 数据源**（通过 Studio UI 或 API 配置），不是 SQL 的 `CREATE STORAGE CONNECTION`。
-> - `CREATE STORAGE CONNECTION` 仅支持对象存储类型（OSS/COS/S3）和 Kafka
-> - MySQL / PostgreSQL 等关系数据库的连接通过 **Studio 数据源管理** 配置
-> - 使用 `list_data_sources` API 查看已配置的数据源
+> ⚠️ **Important distinction**: CDC multi-table sync uses **Studio data sources** (configured via Studio UI or API), not SQL `CREATE STORAGE CONNECTION`.
+> - `CREATE STORAGE CONNECTION` only supports object storage types (OSS/COS/S3) and Kafka
+> - MySQL / PostgreSQL relational database connections are configured via **Studio Data Source Management**
+> - Use `list_data_sources` API to view configured data sources
 
-## 源端数据库准备
+## Source Database Preparation
 
-### MySQL 参数要求
+### MySQL Parameter Requirements
 
-在源端 MySQL 数据库上确认以下参数：
+Verify the following parameters on the source MySQL database:
 
-| 参数 | 要求值 | 查询方法 |
-|------|--------|---------|
+| Parameter | Required Value | Query Method |
+|-----------|---------------|--------------|
 | `log_bin` | ON | `SHOW GLOBAL VARIABLES LIKE 'log_bin'` |
 | `binlog_format` | ROW | `SHOW GLOBAL VARIABLES LIKE 'binlog_format'` |
 | `binlog_row_image` | FULL | `SHOW GLOBAL VARIABLES LIKE 'binlog_row_image'` |
-| `binlog_expire_logs_seconds` | ≥86400（建议） | - |
+| `binlog_expire_logs_seconds` | ≥86400 (recommended) | - |
 
-MySQL 权限要求（建议用 root 执行）：
-- 元数据读取：`SELECT` on information_schema + 目标库表
-- Binlog 同步：`REPLICATION SLAVE`, `REPLICATION CLIENT`
-- 全量同步：`SELECT` on 目标表
+MySQL permission requirements (recommend executing as root):
+- Metadata read: `SELECT` on information_schema + target database tables
+- Binlog sync: `REPLICATION SLAVE`, `REPLICATION CLIENT`
+- Full load: `SELECT` on target tables
 
-### PostgreSQL 参数要求
+### PostgreSQL Parameter Requirements
 
-以下参数修改后需重启 PostgreSQL Server：
+The following parameters require a PostgreSQL Server restart after modification:
 
-| 参数 | 要求值 | 说明 |
-|------|--------|------|
-| `wal_level` | logical | 支持逻辑解码 |
-| `max_replication_slots` | ≥10 | 允许创建的 slot 数量 |
-| `max_wal_senders` | ≥10 | 最多同时运行的 WAL sender 进程数 |
+| Parameter | Required Value | Description |
+|-----------|---------------|-------------|
+| `wal_level` | logical | Enables logical decoding |
+| `max_replication_slots` | ≥10 | Maximum number of slots allowed |
+| `max_wal_senders` | ≥10 | Maximum concurrent WAL sender processes |
 
-PostgreSQL 权限要求（建议用管理员账号执行）：
-- 元数据读取：`SELECT` on information_schema
-- WAL 日志同步：`REPLICATION` 权限
-- 全量同步：`SELECT` on 目标表
-- 创建 publication：`CREATE` 权限
+PostgreSQL permission requirements (recommend executing as admin):
+- Metadata read: `SELECT` on information_schema
+- WAL sync: `REPLICATION` permission
+- Full load: `SELECT` on target tables
+- Create publication: `CREATE` permission
 
-> **PostgreSQL 特别注意**：需要配置 replication slot，不同任务不要复用同一个 slot。任务启动时如 slot 被占用会启动失败。
+> **PostgreSQL special note**: A replication slot must be configured. Different tasks should not reuse the same slot. If a slot is occupied when the task starts, it will fail to start.
 
-## 工作流
+## Workflow
 
-### 步骤 1：确认 Sync VCluster 可用
-
-```
-使用 LH_show_object_list（object_type='VCLUSTERS'）查看可用虚拟集群。
-筛选 vcluster_type 包含 SYNC 的集群。
-如无可用 Sync VCluster，提示用户先创建后再继续。
-```
-
-### 步骤 2：查找源端数据源
+### Step 1: Confirm Sync VCluster Availability
 
 ```
-使用 list_data_sources 查看已配置的数据源。
-按类型过滤：
+Use LH_show_object_list (object_type='VCLUSTERS') to view available virtual clusters.
+Filter for clusters where vcluster_type contains SYNC.
+If no Sync VCluster is available, prompt the user to create one before proceeding.
+```
+
+### Step 2: Find Source Data Source
+
+```
+Use list_data_sources to view configured data sources.
+Filter by type:
 - MySQL: ds_type=5
 - PostgreSQL: ds_type=7
-记录源端 datasource_id 和 datasource_type。
+Record the source datasource_id and datasource_type.
 ```
 
-### 步骤 3：探查源端数据结构
+### Step 3: Explore Source Data Structure
 
 ```
-使用 list_namespaces 查看源端数据库列表。
-使用 list_metadata_objects 查看库下的表列表。
-确认需要同步的范围（整库 / 指定表 / 分库分表）。
+Use list_namespaces to view the source database list.
+Use list_metadata_objects to view tables under a database.
+Confirm the sync scope (full database / specific tables / sharded tables).
 ```
 
-### 步骤 4：选择同步模式
+### Step 4: Select Sync Mode
 
-根据用户需求选择三种模式之一：
+Choose one of three modes based on user requirements:
 
-| 模式 | pipeline_type | 适用场景 |
-|------|--------------|---------|
-| 整库镜像 | 3 | 同步整个数据库所有表，自动适配新增表 |
-| 多表镜像 | 1 | 选定指定表同步，支持自动感知字段变更 |
-| 多表合并 | 2 | 分库分表数据合并写入同一张目标表 |
+| Mode | pipeline_type | Use Case |
+|------|--------------|----------|
+| Full database mirror | 3 | Sync all tables in a database, auto-adapts to new tables |
+| Multi-table mirror | 1 | Sync selected specific tables, supports automatic schema change detection |
+| Sharded table merge | 2 | Merge sharded table data into a single target table |
 
-### 步骤 5：创建多表实时同步任务
-
-```
-使用 create_task 创建任务：
-- task_type: 281（多表实时同步）
-- task_name: 自定义名称（如 "cdc_sync_mysql_orders_db"）
-- data_folder_id: 目标文件夹 ID（通过 list_folders 获取）
-
-记录返回的 task_id（即 data_file_id）。
-```
-
-### 步骤 6：配置同步内容
+### Step 5: Create Multi-table Real-time Sync Task
 
 ```
-使用 save_cdc_realtime_task 配置同步：
-- data_file_id: 步骤 5 返回的 task_id
-- pipeline_type: 步骤 4 选择的模式（1=多表镜像, 2=多表合并, 3=整库镜像）
+Use create_task to create the task:
+- task_type: 281 (multi-table real-time sync)
+- task_name: custom name (e.g., "cdc_sync_mysql_orders_db")
+- data_folder_id: target folder ID (obtainable via list_folders)
+
+Record the returned task_id (i.e., data_file_id).
+```
+
+### Step 6: Configure Sync Content
+
+```
+Use save_cdc_realtime_task to configure sync:
+- data_file_id: task_id returned in Step 5
+- pipeline_type: mode selected in Step 4 (1=multi-table mirror, 2=sharded table merge, 3=full database mirror)
 - source_datasource_list: [{"datasourceId": <id>, "datasourceType": <type>}]
 - sync_object_list:
-  - 整库镜像：[{"schemaName": "<数据库名>"}]（仅指定库名）
-  - 多表镜像：[{"schemaName": "<库名>", "tableName": "<表名>"}, ...]
-  - 多表合并：通过正则或文件批量配置
+  - Full database mirror: [{"schemaName": "<database_name>"}] (specify database name only)
+  - Multi-table mirror: [{"schemaName": "<db>", "tableName": "<table>"}, ...]
+  - Sharded table merge: configure via regex or batch file
 - target_datasource: {"datasourceId": <lakehouse_id>, "datasourceType": 1}
-- sync_mode: 1（全量+增量，推荐）或 2（仅增量）
-- save_mode: 2（追加，推荐新任务使用）
+- sync_mode: 1 (full load + incremental, recommended) or 2 (incremental only)
+- save_mode: 2 (append, recommended for new tasks)
 ```
 
-> **sync_mode 说明**：
-> - `1`（全量+增量）：先全量同步历史数据，再启动增量 CDC，推荐首次使用
-> - `2`（仅增量）：仅从当前位点开始捕获变更，适合已有历史数据的场景
+> **sync_mode explanation**:
+> - `1` (full load + incremental): full load of historical data first, then starts incremental CDC — recommended for first use
+> - `2` (incremental only): captures changes from current position only — suitable when historical data already exists
 
-### 步骤 7：提交部署
-
-```
-使用 publish_task 提交任务：
-- task_id: 任务 ID
-- task_version: 当前版本号（通过 get_task_detail 获取）
-
-提交后任务不会自动启动，需要手动启动。
-```
-
-> **重要**：多表实时同步任务是持续运行的流式任务，不需要配置调度策略（不要调用 save_task_configuration）。提交后在 Studio UI 中手动启动。
-
-### 步骤 8：启动任务
-
-在 Studio UI 中启动任务，选择启动方式：
-
-| 启动方式 | 说明 | 适用场景 |
-|---------|------|---------|
-| 无状态启动 | 完整同步所有数据（全量→增量） | 首次启动 |
-| 从上次保存状态恢复 | 从停止位点断点续传 | 停止后重启 |
-| 自定义起始位置 | MySQL: 指定 binlog 文件/时间；PG: 指定 LSN | 数据回刷 |
-
-全量同步阶段可配置最大并发数，控制对源端数据库的压力。
-
-### 步骤 9：运维监控
+### Step 7: Submit and Deploy
 
 ```
-任务启动后经历三个阶段：初始化 → 全量同步 → 增量同步。
+Use publish_task to submit the task:
+- task_id: task ID
+- task_version: current version number (obtainable via get_task_detail)
 
-监控指标：
-- 读取数据 / 写入数据（记录数）
-- 平均读取速率 / 平均写入速率
-- Failover 次数
-- 单表级别：最新读取位置、最新更新时间、数据延迟
-
-单表运维操作：
-- 优先执行：提高全量同步优先级
-- 取消运行 / 强制停止：停止单表同步
-- 重新同步：对该表重新全量+增量
-- 补数同步：按条件过滤部分数据重新全量同步
-- 查看异常：查看 Schema Evolution 异常等
+The task does not start automatically after submission — manual start is required.
 ```
 
-## 三种同步模式详解
+> **Important**: Multi-table real-time sync tasks are continuously running streaming tasks. No scheduling configuration is needed (do not call save_task_configuration). Start manually in Studio UI after submission.
 
-### 整库镜像
+### Step 8: Start the Task
 
-- 以数据库为粒度配置，只选库不选表
-- 自动适配库中新增表
-- 适合需要完整镜像整个数据库的场景
+Start the task in Studio UI, selecting the start method:
 
-### 多表镜像
+| Start Method | Description | Use Case |
+|-------------|-------------|----------|
+| Stateless start | Full sync of all data (full load → incremental) | First start |
+| Resume from last saved state | Resume from the stop position | Restart after stop |
+| Custom start position | MySQL: specify binlog file/time; PG: specify LSN | Data re-sync |
 
-- 以表粒度选择需要同步的表
-- 支持自动感知字段个数的新增和删除
-- 支持批量配置（上传配置文件）
-- PostgreSQL 需要配置 replication slot（decoderbufs 或 pgoutput 插件）
+During the full load phase, you can configure maximum concurrency to control pressure on the source database.
 
-### 多表合并
+### Step 9: Operations and Monitoring
 
-- 将分库分表数据合并写入同一张目标表
-- 使用"虚拟表"作为中间承接：新建虚拟表时，基于数据源/Schema/Table 名称给定筛选条件，将匹配的源端表定义为写入同一张虚拟表
-- 两种配置方式：
-  - 基于规则：正则匹配筛选表（如以 `abc` 开头的所有表）
-  - 基于文件：上传配置文件批量指定
-- 扩展字段功能：可在目标表中额外新增字段记录来源信息（server/database/schema/table 名称）
-- 分库分表主键冲突解决：开启扩展字段并将其设为联合主键，避免不同分库分表中主键相同记录的写入冲突
-- 异构字段合并：当分库分表字段结构不完全一致时，系统自动校验并提示差异，可选择异构字段合并功能处理
+```
+After starting, the task goes through three phases: Initialization → Full Load → Incremental Sync.
 
-## 高阶参数
+Monitoring metrics:
+- Data read / data written (record count)
+- Average read rate / average write rate
+- Failover count
+- Per-table level: latest read position, latest update time, data latency
 
-在任务「参数」区域可设定以下高阶参数（默认不建议调整，调整前请联系技术支持）：
+Per-table operations:
+- Priority execution: increase full load priority for a table
+- Cancel run / force stop: stop sync for a single table
+- Re-sync: perform full load + incremental again for that table
+- Backfill sync: re-sync partial data based on filter conditions
+- View exceptions: view Schema Evolution exceptions, etc.
+```
 
-| 参数 | 含义 | 默认值 | 调优建议 |
-|------|------|--------|---------|
-| `step1.taskmanager.memory.process.size` | 增量同步进程总内存 | 1600m | 全量数据特别大时可调至 4000m |
-| `step2.taskmanager.memory.process.size` | 全量同步进程总内存 | 2000m | - |
-| `step1.taskmanager.memory.task.off-heap.size` | 增量同步堆外内存 | 256m | 全量数据特别大时可调至 500M |
-| `lh.table.cz.common.output.file.max.size` | 全量同步单文件切分大小 | 33554432 | - |
-| `pod.limit.memory` | 提交客户端内存上限 | 1Gi | - |
+## Three Sync Modes in Detail
 
-## 停止与下线
+### Full Database Mirror
 
-### 停止任务
+- Configured at database granularity — select database only, not individual tables
+- Auto-adapts to new tables added to the database
+- Suitable for scenarios requiring a complete mirror of an entire database
 
-- 停止会自动保存增量同步位点
-- 全量阶段停止：重启后未完成的表会重新全量同步
-- 增量阶段停止：重启后从停止位点继续
-- 恢复方式：点击"启动"，选择"从上次保存状态恢复"即可断点续传
-- 如需回溯数据：选择"自定义起始位置"，指定 binlog 文件/位点（MySQL）或 LSN（PostgreSQL），确保指定位点未过期
+### Multi-table Mirror
 
-### 下线任务（高危）
+- Select specific tables to sync at table granularity
+- Supports automatic detection of column additions and deletions
+- Supports batch configuration (upload configuration file)
+- PostgreSQL requires replication slot configuration (decoderbufs or pgoutput plugin)
 
-- 不保存同步位点，再次上线需重新同步
-- 不清理已同步到目标端的数据，不删除目标表
-- 重新同步不会重建表：全量覆盖写入（insert overwrite），增量 merge into 更新
-- 仅在以下情况使用：任务确定不再需要、任务状态异常需修复
+### Sharded Table Merge
 
-## 运维 SOP
+- Merges sharded table data into a single target table
+- Uses "virtual tables" as an intermediate layer: when creating a virtual table, define filter conditions based on data source/schema/table names to map matching source tables to the same virtual table
+- Two configuration methods:
+  - Rule-based: regex matching to filter tables (e.g., all tables starting with `abc`)
+  - File-based: upload configuration file for batch specification
+- Extended fields feature: add extra columns to the target table to record source information (server/database/schema/table names)
+- Sharded table primary key conflict resolution: enable extended fields and set them as composite primary key to avoid write conflicts from records with the same primary key across different shards
+- Heterogeneous column merge: when sharded tables have inconsistent column structures, the system automatically validates and reports differences — use the heterogeneous column merge feature to handle this
 
-### 后续补充全量同步
+## Advanced Parameters
 
-首次启动未选择全量同步，后续需要补充全量数据的 3 种方案：
+The following advanced parameters can be set in the task "Parameters" area (not recommended to adjust by default — contact technical support before adjusting):
 
-| 方案 | 操作 | 影响 |
-|------|------|------|
-| 方案一：单表重新同步 | 对指定表执行"重新同步" | 源端数据同步到临时表，insert overwrite 写入目标表，不影响查询 |
-| 方案二：单表补数同步 | 对指定表执行"补数同步"，过滤条件设为 `where 1=1` | 按条件从源端拉取数据到临时表，delete + merge into 写入目标表 |
-| 方案三：下线重上线 | 停止→下线→上线→启动（选择全量同步） | 清空位点信息，重新全量+增量同步，不删除目标表 |
+| Parameter | Description | Default | Tuning Advice |
+|-----------|-------------|---------|---------------|
+| `step1.taskmanager.memory.process.size` | Incremental sync process total memory | 1600m | Increase to 4000m for very large full loads |
+| `step2.taskmanager.memory.process.size` | Full load process total memory | 2000m | - |
+| `step1.taskmanager.memory.task.off-heap.size` | Incremental sync off-heap memory | 256m | Increase to 500M for very large full loads |
+| `lh.table.cz.common.output.file.max.size` | Full load single file split size | 33554432 | - |
+| `pod.limit.memory` | Submit client memory limit | 1Gi | - |
 
-### 新增同步表
+## Stop and Undeploy
 
-1. 编辑任务，添加需要新增的表，保存
-2. 提交任务发布
-3. 在运维中心停止任务，再启动任务
-4. 重启后自动同步新增表数据（如设定全量同步则执行全量，否则仅增量）
-5. 不影响存量表的同步进度
+### Stop Task
 
-### 分库分表加减数据源/Schema/Table
+- Stopping automatically saves the incremental sync position
+- Stop during full load phase: incomplete tables will re-sync from full load on restart
+- Stop during incremental phase: resumes from stop position on restart
+- Recovery: click "Start", select "Resume from last saved state" for checkpoint recovery
+- To backtrack data: select "Custom start position", specify binlog file/position (MySQL) or LSN (PostgreSQL) — ensure the specified position has not expired
 
-- 在任务开发界面直接编辑
-- 保存→提交→重启任务后生效
-- 新增对象如设定全量同步会自动执行全量
-- 不影响存量表同步进度
+### Undeploy Task (High Risk)
 
-### 优先同步重要表
+- Does not save sync position — re-deployment requires full re-sync
+- Does not clean up data already synced to target, does not delete target tables
+- Re-sync does not recreate tables: full load uses insert overwrite, incremental uses merge into
+- Use only when: the task is definitively no longer needed, or task state is abnormal and needs repair
 
-- 全量同步阶段，对重要表使用"优先执行"操作
-- 在资源队列中插队，优先处理该表的全量同步
+## Operations SOP
 
-### 暂停/恢复单表增量同步
+### Supplementary Full Load After Initial Start
 
-- 暂停：对单表执行"停止增量同步"，暂停该表变更消息消费
-- 恢复：执行"恢复增量同步"，为保证数据连续性会从源端重新拉取一次全量数据
-- 适用场景：源端突发大流量时，暂停不重要表为重要表让出处理资源
+Three approaches when full load was not selected at first start but historical data is needed later:
 
-### 单表数据修复
+| Approach | Operation | Impact |
+|----------|-----------|--------|
+| Approach 1: Single-table re-sync | Execute "Re-sync" for the specified table | Source data synced to temp table, insert overwrite to target table, no query impact |
+| Approach 2: Single-table backfill | Execute "Backfill sync" for the specified table, filter condition set to `where 1=1` | Data pulled from source to temp table based on condition, delete + merge into target table |
+| Approach 3: Undeploy and redeploy | Stop → Undeploy → Deploy → Start (select full load) | Clears position info, full load + incremental re-sync, does not delete target tables |
 
-| 操作 | 说明 | 写入方式 |
-|------|------|---------|
-| 重新同步 | 重新同步源端表全量数据 | 同步到临时表 → insert overwrite 写入目标表 |
-| 补数同步 | 按过滤条件从源端拉取部分/全部数据 | 同步到临时表 → delete 目标表相关数据 → merge into 写入 |
+### Add Sync Tables
 
-## 监控告警配置
+1. Edit the task, add the tables to sync, save
+2. Submit task for deployment
+3. Stop the task in Operations Center, then restart
+4. After restart, new tables are automatically synced (full load if configured, otherwise incremental only)
+5. Does not affect sync progress of existing tables
 
-### 推荐告警规则
+### Add/Remove Data Sources/Schemas/Tables for Sharded Tables
 
-建议配置以下 5 种告警规则，全方位监控任务健康度：
+- Edit directly in the task development interface
+- Save → Submit → Restart task to take effect
+- New objects will automatically execute full load if configured
+- Does not affect sync progress of existing tables
 
-| 告警类型 | 监控事项 | 说明 |
-|---------|---------|------|
-| 任务 Failover | 多表实时同步作业 failover | 监控任务运行稳定性 |
-| 任务停止 | 多表实时同步任务运行失败 | 任务异常停止告警 |
-| 单表异常 | 多表实时同步任务目标表变更失败 | Schema Evolution 失败、单字段超 10M 限制等 |
-| 端到端延迟 | 多表实时同步延迟 | 数据从源端到目标端的时间间隔 |
-| 读取位点延迟 | 多表实时同步读取点位延迟 | 读取位点与源端最新位点的差距 |
+### Priority Sync for Important Tables
 
-每种告警可额外增加过滤属性（工作空间、任务名称等），不增加过滤则默认监控实例下所有多表实时任务。
+- During full load phase, use "Priority execution" for important tables
+- Jumps the queue in the resource pool to prioritize full load for that table
 
-### IM 告警机器人配置
+### Pause/Resume Single-table Incremental Sync
 
-1. 在飞书/企业微信中配置群机器人，获取 webhook 地址
-2. 在产品中新增 webhook 配置，渠道选择飞书/企业微信，填写 webhook 地址
-3. 在通知策略中启用 webhook
-4. 在监控规则中选择启用了 webhook 的通知策略
+- Pause: execute "Stop incremental sync" for a table to pause change message consumption
+- Resume: execute "Resume incremental sync" — to ensure data continuity, a full load from source is performed
+- Use case: during sudden high traffic from source, pause less important tables to free processing resources for important ones
 
-## 示例
+### Single-table Data Repair
 
-### 示例 1：MySQL 整库实时同步到 Lakehouse
+| Operation | Description | Write Method |
+|-----------|-------------|--------------|
+| Re-sync | Re-sync full source table data | Sync to temp table → insert overwrite to target table |
+| Backfill sync | Pull partial/full data from source based on filter conditions | Sync to temp table → delete related data from target → merge into target |
 
-用户说："把 MySQL 的 ecommerce 数据库整库实时同步到 Lakehouse"
+## Monitoring and Alerting Configuration
 
-操作：
-1. 源端准备：确认 MySQL 已开启 Binlog（`binlog_format=ROW`），创建同步账号并授权 REPLICATION SLAVE、SELECT
-2. `list_data_sources` 找到 MySQL 数据源（ds_type=5）和 Lakehouse 数据源
-3. `create_task(task_type=281, task_name="realtime_sync_ecommerce")` → 获取 studio_url
-4. 在 Studio UI 中：选择整库镜像 → 选择 ecommerce 数据库 → 配置目标 workspace → sync_mode 选全量+增量
-5. `publish_task(...)` 提交，任务立即开始全量初始化，完成后自动切换增量 CDC
+### Recommended Alert Rules
 
-### 示例 2：分库分表合并同步
+Configure the following 5 alert rules for comprehensive task health monitoring:
 
-用户说："我有 order_0、order_1、order_2 三张分表，要合并同步到一张 orders 表"
+| Alert Type | Monitored Item | Description |
+|-----------|---------------|-------------|
+| Task Failover | Multi-table real-time sync job failover | Monitors task runtime stability |
+| Task Stopped | Multi-table real-time sync task run failure | Alerts on unexpected task stop |
+| Single-table Exception | Multi-table real-time sync target table change failure | Schema Evolution failure, single field exceeding 10M limit, etc. |
+| End-to-end Latency | Multi-table real-time sync latency | Time interval from source to target |
+| Read Position Lag | Multi-table real-time sync read position lag | Gap between read position and source latest position |
 
-操作：
+Each alert can have additional filter attributes (workspace, task name, etc.). Without filters, all multi-table real-time tasks under the instance are monitored by default.
+
+### IM Alert Bot Configuration
+
+1. Configure a group bot in Feishu/WeCom, obtain the webhook URL
+2. Add a webhook configuration in the product, select Feishu/WeCom as channel, enter the webhook URL
+3. Enable webhook in the notification policy
+4. Select the notification policy with webhook enabled in the monitoring rule
+
+## Examples
+
+### Example 1: MySQL Full Database Real-time Sync to Lakehouse
+
+User says: "Sync the MySQL ecommerce database to Lakehouse in real time"
+
+Steps:
+1. Source preparation: confirm MySQL has Binlog enabled (`binlog_format=ROW`), create sync account with REPLICATION SLAVE and SELECT permissions
+2. `list_data_sources` to find MySQL data source (ds_type=5) and Lakehouse data source
+3. `create_task(task_type=281, task_name="realtime_sync_ecommerce")` → get studio_url
+4. In Studio UI: select full database mirror → select ecommerce database → configure target workspace → sync_mode select full load + incremental
+5. `publish_task(...)` to submit — task immediately begins full load initialization, then automatically switches to incremental CDC
+
+### Example 2: Sharded Table Merge Sync
+
+User says: "I have three sharded tables order_0, order_1, order_2 that need to be merged into one orders table"
+
+Steps:
 1. `create_task(task_type=281, task_name="sync_sharding_orders")`
-2. 在 Studio UI 中：选择多表合并 → 选择 order_0/order_1/order_2 → 目标表设为 orders → 配置扩展字段（如 `__source_table__`）区分来源
-3. `publish_task(...)` 提交
+2. In Studio UI: select sharded table merge → select order_0/order_1/order_2 → set target table as orders → configure extended fields (e.g., `__source_table__`) to identify source
+3. `publish_task(...)` to submit
 
-## 故障排除
+## Troubleshooting
 
-### 快速排查表
+### Quick Reference Table
 
-| 问题 | 排查方向 |
-|------|---------|
-| `CREATE STORAGE CONNECTION TYPE MYSQL` 报错 | ❌ ClickZetta 不支持 MySQL/PostgreSQL 类型的 Storage Connection。CDC 数据源通过 **Studio UI 数据源管理** 配置，不是 SQL 命令 |
-| 任务创建失败 | 检查是否有可用 Sync VCluster |
-| 源端连接失败 | 检查 Studio 中数据源配置、网络可达性、账号权限 |
-| Binlog 读取失败 | 确认 MySQL `log_bin=ON`、`binlog_format=ROW`、`binlog_row_image=FULL` |
-| WAL 读取失败 | 确认 PostgreSQL `wal_level=logical`，slot 未被其他任务占用 |
-| Slot 启动冲突 | 不同任务不要复用同一个 slot，检查是否有其他运行中任务占用 |
-| 全量同步慢 | 调整最大并发数，检查源端数据库负载，调大内存参数 |
-| 增量延迟增大 | 检查 Sync VCluster 资源、源端数据量是否突增 |
-| Schema Evolution 异常 | 通过"查看异常"操作查看详情，注意不支持变更字段类型 |
-| 分库分表主键冲突 | 开启扩展字段并设为联合主键 |
+| Issue | Investigation |
+|-------|--------------|
+| `CREATE STORAGE CONNECTION TYPE MYSQL` error | ❌ ClickZetta does not support MySQL/PostgreSQL type Storage Connections. CDC data sources are configured via **Studio UI Data Source Management**, not SQL commands |
+| Task creation failed | Check if a Sync VCluster is available |
+| Source connection failed | Check Studio data source configuration, network reachability, account permissions |
+| Binlog read failed | Confirm MySQL `log_bin=ON`, `binlog_format=ROW`, `binlog_row_image=FULL` |
+| WAL read failed | Confirm PostgreSQL `wal_level=logical`, slot not occupied by another task |
+| Slot startup conflict | Different tasks should not reuse the same slot — check if another running task is occupying it |
+| Slow full load | Adjust maximum concurrency, check source database load, increase memory parameters |
+| Increasing incremental latency | Check Sync VCluster resources, whether source data volume has spiked |
+| Schema Evolution exception | Use "View exceptions" to see details — note that column type changes are not supported |
+| Sharded table primary key conflict | Enable extended fields and set as composite primary key |
 
-### 增量同步失败
+### Incremental Sync Failures
 
-#### Binlog 位点过期
+#### Binlog Position Expired
 
-- 现象：报错 `The connector is trying to read binlog starting at ... but this is no longer available on the server`
-- 原因：指定的 binlog 文件已被 MySQL 定期回收清理，或任务停止时间过长导致位点过期
-- 解决：
-  1. 在源端执行 `SHOW MASTER STATUS` 查询当前最新 binlog 文件和位点
-  2. 使用最新的 file 和 position 重启同步任务（选择"自定义起始位置"）
-  3. 如需补回丢失数据，对相应表执行"重新同步"
+- Symptom: error `The connector is trying to read binlog starting at ... but this is no longer available on the server`
+- Cause: the specified binlog file has been purged by MySQL periodic cleanup, or the task was stopped too long causing position expiration
+- Resolution:
+  1. Execute `SHOW MASTER STATUS` on source to query current latest binlog file and position
+  2. Restart sync task with the latest file and position (select "Custom start position")
+  3. If lost data needs recovery, execute "Re-sync" for the affected tables
 
-#### Server-id 冲突
+#### Server-id Conflict
 
-- 现象：报错 `A slave with the same server_uuid/server_id as this slave has connected to the master`
-- 原因：任务分配的 server-id（范围 5400-6400）与同一数据库上的其他同步工具/任务冲突
-- 解决：检查同一数据库实例下是否有其他同步任务或工具正在同步 binlog，重启同步任务
+- Symptom: error `A slave with the same server_uuid/server_id as this slave has connected to the master`
+- Cause: the task's assigned server-id (range 5400-6400) conflicts with another sync tool/task on the same database
+- Resolution: check if other sync tasks or tools are syncing binlog on the same database instance, restart the sync task
 
-#### 数据源时区配置错误
+#### Data Source Timezone Configuration Error
 
-- 现象：报错 `The MySQL server has a timezone offset ... which does not match the configured timezone`
-- 原因：数据源中配置的时区（默认 Asia/Shanghai）与数据库实际时区不一致
-- 解决：确认数据库配置的时区，修改数据源中的时区配置
+- Symptom: error `The MySQL server has a timezone offset ... which does not match the configured timezone`
+- Cause: the timezone configured in the data source (default Asia/Shanghai) does not match the actual database timezone
+- Resolution: confirm the database's configured timezone, modify the timezone in the data source configuration
 
-#### Binlog 事件 size 超限
+#### Binlog Event Size Exceeded
 
-- 现象：报错 `log event entry exceeded max_allowed_packet`
-- 原因：数据库 `max_allowed_packet` 小于 Binlog 中某个事件的 size，或 binlog 文件损坏
-- 解决：
-  1. 联系 DBA 调大 `max_allowed_packet`（上限 1G），生效后重新同步
-  2. 如调整后仍失败（binlog 可能损坏），重启任务选择更新的位点跳过问题位点
-  3. 对可能缺少数据的表执行"重新同步"补全
+- Symptom: error `log event entry exceeded max_allowed_packet`
+- Cause: database `max_allowed_packet` is smaller than a binlog event size, or binlog file is corrupted
+- Resolution:
+  1. Contact DBA to increase `max_allowed_packet` (max 1G), re-sync after it takes effect
+  2. If still failing after adjustment (binlog may be corrupted), restart task with a newer position to skip the problematic position
+  3. Execute "Re-sync" for tables that may have missing data
 
-### 全量同步失败
+### Full Load Failures
 
-#### PK 长度超限
+#### PK Length Exceeded
 
-- 现象：报错 `Encoded key size 191 exceeds max size 128`
-- 原因：源表主键字段总长度超过 128 字节，或多表合并场景中扩展字段联合主键过长
-- 解决：在同步任务配置中增加参数调大 PK 长度限制
+- Symptom: error `Encoded key size 191 exceeds max size 128`
+- Cause: source table primary key total field length exceeds 128 bytes, or extended field composite primary key is too long in sharded table merge scenarios
+- Resolution: add a parameter in the sync task configuration to increase the PK length limit
 
-### 同步任务 Failover
+### Sync Task Failover
 
-#### 与 Lakehouse Ingestion Service 断连
+#### Disconnected from Lakehouse Ingestion Service
 
-- 现象：Failover 详情中包含 `Async commit for instance ... failed. rpcProxy call hit final failed after max retry reached`
-- 原因：通常发生在 Lakehouse 服务端升级期间，连接中断
-- 解决：
-  1. 服务升级完成后任务通常自动恢复
-  2. 如持续 Failover，手动重启任务
-  3. 如仍无法恢复，检查 Lakehouse Ingestion Service 健康状态
+- Symptom: failover details contain `Async commit for instance ... failed. rpcProxy call hit final failed after max retry reached`
+- Cause: typically occurs during Lakehouse service upgrades, connection interrupted
+- Resolution:
+  1. Task usually auto-recovers after service upgrade completes
+  2. If failover persists, manually restart the task
+  3. If still unrecoverable, check Lakehouse Ingestion Service health status
 
-#### Binlog 事件反序列化失败
+#### Binlog Event Deserialization Failed
 
-- 现象：Failover 详情中包含 `Failed to deserialize data of EventHeaderV4`
-- 原因：源端 binlog 突发大量事件（大量更新/批量删除），写入端反压导致读取端停止消费，binlog client 连接超时中断
-- 解决：
-  1. 短时间流量增长：任务通常在有限 Failover 次数内自动恢复
-  2. 持续出现：调大 MySQL 参数 `slave_net_timeout` 和 `thread_pool_idle_timeout`
-  3. 临时调整（重启失效）：`SET GLOBAL slave_net_timeout = 120; SET GLOBAL thread_pool_idle_timeout = 120;`
-  4. 永久调整：修改 MySQL 配置文件
+- Symptom: failover details contain `Failed to deserialize data of EventHeaderV4`
+- Cause: sudden burst of binlog events from source (mass updates/bulk deletes), write-side backpressure causes read-side to stop consuming, binlog client connection times out
+- Resolution:
+  1. Short-term traffic spike: task usually auto-recovers within limited failover attempts
+  2. Persistent occurrence: increase MySQL parameters `slave_net_timeout` and `thread_pool_idle_timeout`
+  3. Temporary adjustment (lost on restart): `SET GLOBAL slave_net_timeout = 120; SET GLOBAL thread_pool_idle_timeout = 120;`
+  4. Permanent adjustment: modify MySQL configuration file
 
-### 表进入黑名单
+### Table Enters Blocklist
 
-#### Schema Evolution 失败
+#### Schema Evolution Failed
 
-- 现象：表状态自动变为停止同步，提示 `pk column different`、`pk column type mismatch`、`invalid modify column`
-- 原因：源端表结构发生 Lakehouse 不支持的变更（PK 字段列表变更、PK 字段类型变更、字段类型不兼容修改）
-- 解决：
-  1. 检查源端表结构，修改为正确的结构
-  2. 对停止同步的表执行"重新同步"，全量同步完成后增量数据会继续同步
+- Symptom: table status automatically changes to sync stopped, with messages like `pk column different`, `pk column type mismatch`, `invalid modify column`
+- Cause: source table structure changed in a way not supported by Lakehouse (PK column list change, PK column type change, incompatible column type modification)
+- Resolution:
+  1. Check source table structure, correct it to the proper structure
+  2. Execute "Re-sync" for the stopped table — after full load completes, incremental data will continue syncing
 
-## 已知局限
+## Known Limitations
 
-- **不支持 SQL 创建 MySQL/PostgreSQL Connection**：`CREATE STORAGE CONNECTION TYPE MYSQL/POSTGRESQL` 会报错 `no connection info factory for connection kind 'STORAGE', type 'mysql'`。CDC 数据源必须通过 Studio UI 数据源管理配置
-- Schema Evolution 暂不支持变更字段类型、不支持自动新增表
-- 仅支持带主键（PK）字段的表，非 PK 表不支持同步
-- 源端不同库表中若存在主键相同的数据，同步结果会异常
-- 无特别必要不要手动创建/修改/删除目标表（系统自动管理目标表结构）
-- MySQL 不支持的字段类型：`year`（取值不对应）
-- PostgreSQL 不支持的字段类型：`varbit`、`bytea`、`TIMETZ`、`interval`、`NAME`（取值不对应），`NUMERIC`、`decimal`（精度不对应，目标端精度更高）
+- **Cannot create MySQL/PostgreSQL Connection via SQL**: `CREATE STORAGE CONNECTION TYPE MYSQL/POSTGRESQL` will error with `no connection info factory for connection kind 'STORAGE', type 'mysql'`. CDC data sources must be configured via Studio UI Data Source Management
+- Schema Evolution does not support column type changes or automatic new table detection
+- Only tables with primary key (PK) fields are supported — non-PK tables cannot be synced
+- If different source databases/tables contain records with the same primary key, sync results will be abnormal
+- Do not manually create/modify/delete target tables unless necessary (the system auto-manages target table structure)
+- MySQL unsupported column types: `year` (value mismatch)
+- PostgreSQL unsupported column types: `varbit`, `bytea`, `TIMETZ`, `interval`, `NAME` (value mismatch), `NUMERIC`, `decimal` (precision mismatch — target has higher precision)
 
 ---
 
-## cz-cli 替代路径
+## cz-cli Alternative Path
 
-> 仅在 cz-cli 可用且 MCP 不可用时使用本节。步骤编号与上方 MCP 路径对应。
-> 所有操作通过 `cz-cli agent run` 委托给内置 agent 完成，agent 内置完整的 Studio MCP 工具访问能力。
+> Use this section only when cz-cli is available and MCP is not. Step numbers correspond to the MCP path above.
+> All operations are delegated to the built-in agent via `cz-cli agent run`, which has full Studio MCP tool access.
 
-### 快速路径：直接创建任务 + Studio UI 配置
+### Quick Path: Create Task + Studio UI Configuration
 
 ```bash
-# 创建 CDC 多表实时同步任务（task_type=281，即 MULTI_REALTIME）
+# Create CDC multi-table real-time sync task (task_type=281, i.e., MULTI_REALTIME)
 cz-cli task create "cdc_<database>" --type MULTI_REALTIME --folder <folder_name>
-# 返回 task_id 和 studio_url，在 studio_url 中完成数据源选择、表映射等配置
+# Returns task_id and studio_url — complete data source selection, table mapping, etc. at studio_url
 
-# 配置完成后发布（CDC 任务无需调度，提交即持续运行）
+# After configuration, deploy (CDC tasks need no scheduling, runs continuously upon submission)
 cz-cli task deploy "cdc_<database>" -y
 ```
 
-### 模式一：整库镜像同步（cz-cli agent 版）
+### Mode 1: Full Database Mirror Sync (cz-cli agent version)
 
 ```bash
-# 步骤 1-9 合并：让 agent 完成完整的 CDC 整库同步任务创建
-cz-cli agent run "创建 CDC 多表实时同步任务，将 MySQL 数据源 <source_ds_name> 的 <database> 库整库镜像同步到 Lakehouse，使用 Sync VCluster，任务名 cdc_<database>，放在 <folder_name> 文件夹下" \
+# Steps 1-9 combined: let the agent complete the full CDC database sync task creation
+cz-cli agent run "Create a CDC multi-table real-time sync task, mirror the entire <database> database from MySQL data source <source_ds_name> to Lakehouse, use Sync VCluster, task name cdc_<database>, place in <folder_name> folder" \
   --format a2a --dangerously-skip-permissions
 ```
 
-对于需要精细控制的场景，可拆分步骤：
+For scenarios requiring fine-grained control, split into steps:
 
 ```bash
-# 步骤 1：确认 Sync VCluster 可用
-cz-cli agent run "列出所有可用的 VCluster，筛选 vcluster_type 包含 SYNC 的集群，确认有可用的 Sync VCluster" \
+# Step 1: Confirm Sync VCluster availability
+cz-cli agent run "List all available VClusters, filter for clusters where vcluster_type contains SYNC, confirm a Sync VCluster is available" \
   --format a2a --dangerously-skip-permissions
 
-# 步骤 2：查找数据源
-cz-cli agent run "列出所有已配置的数据源，包括 MySQL 类型（ds_type=5）的，记录源端和目标端 Lakehouse 数据源名称" \
+# Step 2: Find data sources
+cz-cli agent run "List all configured data sources, including MySQL type (ds_type=5), record source and target Lakehouse data source names" \
   --format a2a --dangerously-skip-permissions
 
-# 步骤 3-4：创建并配置 CDC 任务（整库镜像）
-cz-cli agent run "创建 CDC 多表实时同步任务（task_type=281），pipeline_type 为整库镜像（3），源端 datasource=<source_ds_name>，同步 <database> 库的所有表，目标 Lakehouse，任务名 cdc_<database>" \
+# Steps 3-4: Create and configure CDC task (full database mirror)
+cz-cli agent run "Create a CDC multi-table real-time sync task (task_type=281), pipeline_type full database mirror (3), source datasource=<source_ds_name>, sync all tables in <database>, target Lakehouse, task name cdc_<database>" \
   --format a2a --dangerously-skip-permissions
 
-# 步骤 5：提交部署
-cz-cli agent run "提交 CDC 任务 cdc_<database>，使其开始持续运行" \
-  --format a2a --dangerously-skip-permissions
-```
-
----
-
-### 模式二：多表镜像同步（cz-cli agent 版）
-
-```bash
-# 创建多表镜像 CDC 任务（指定具体表）
-cz-cli agent run "创建 CDC 多表实时同步任务（task_type=281），pipeline_type 为多表镜像（1），源端 datasource=<source_ds_name>，同步 <database> 库中的表 <table1>, <table2>, <table3>，目标 Lakehouse，任务名 cdc_<database>_selected" \
+# Step 5: Submit and deploy
+cz-cli agent run "Submit CDC task cdc_<database> to start continuous running" \
   --format a2a --dangerously-skip-permissions
 ```
 
 ---
 
-### 模式三：多表合并同步（cz-cli agent 版）
+### Mode 2: Multi-table Mirror Sync (cz-cli agent version)
 
 ```bash
-# 创建多表合并 CDC 任务（多源表合并到单目标表）
-cz-cli agent run "创建 CDC 多表实时同步任务（task_type=281），pipeline_type 为多表合并（2），源端 datasource=<source_ds_name>，将 <database> 库中的多张表合并同步到 Lakehouse 目标表，任务名 cdc_<database>_merged" \
+# Create multi-table mirror CDC task (specify specific tables)
+cz-cli agent run "Create a CDC multi-table real-time sync task (task_type=281), pipeline_type multi-table mirror (1), source datasource=<source_ds_name>, sync tables <table1>, <table2>, <table3> from <database>, target Lakehouse, task name cdc_<database>_selected" \
   --format a2a --dangerously-skip-permissions
 ```
 
 ---
 
-### 运维监控（cz-cli 版）
+### Mode 3: Sharded Table Merge Sync (cz-cli agent version)
 
 ```bash
-# 查看最近运行记录
+# Create sharded table merge CDC task (multiple source tables merged to single target)
+cz-cli agent run "Create a CDC multi-table real-time sync task (task_type=281), pipeline_type sharded table merge (2), source datasource=<source_ds_name>, merge multiple tables from <database> to Lakehouse target table, task name cdc_<database>_merged" \
+  --format a2a --dangerously-skip-permissions
+```
+
+---
+
+### Operations and Monitoring (cz-cli version)
+
+```bash
+# View recent run history
 cz-cli runs list --task <task_name>
 
-# 查看运行详情
+# View run details
 cz-cli runs detail <run_id>
 
-# 查看执行日志
+# View execution logs
 cz-cli attempts log <run_id>
 
-# 下线任务（停止持续运行）
+# Undeploy task (stop continuous running)
 cz-cli task undeploy <task_name> -y
 ```
 
 ---
 
-## 交付验收 Checklist
+## Delivery Acceptance Checklist
 
-CDC 同步任务发布运行后，**必须逐项验证**：
+After the CDC sync task is deployed and running, **verify each item**:
 
 ```sql
--- 1. 行数比对：全量阶段完成后，ODS 层行数与源端一致
+-- 1. Row count comparison: after full load phase, ODS layer row count matches source
 SELECT COUNT(*) FROM <ods_schema>.<table>;
 
--- 2. 增量验证：写入一条测试数据到源端，确认 Lakehouse 侧同步到位
--- 在源端 MySQL 执行 INSERT，等待 10~30 秒后在 Lakehouse 查询
+-- 2. Incremental verification: insert a test record to source, confirm it syncs to Lakehouse
+-- Execute INSERT on source MySQL, wait 10-30 seconds, then query in Lakehouse
 
--- 3. 关键字段非空率
+-- 3. Key field non-null rate
 SELECT
   COUNT(*) AS total,
   COUNT(key_field) AS non_null,
   ROUND(COUNT(key_field) * 100.0 / COUNT(*), 2) AS non_null_pct
 FROM <ods_schema>.<table>;
 
--- 4. 检查 _op 字段分布（CDC 接入时）
+-- 4. Check _op field distribution (for CDC ingestion)
 SELECT _op, COUNT(*) FROM <ods_schema>.<table> GROUP BY _op;
--- 正常应有 I（INSERT）记录，UPDATE/DELETE 场景下有 U/D
+-- Normal should have I (INSERT) records; UPDATE/DELETE scenarios will have U/D
 ```
 
-**验收标准：**
-- [ ] 全量阶段完成，ODS 层行数与源端一致
-- [ ] 增量写入测试数据，Lakehouse 侧 30 秒内同步到位
-- [ ] 关键字段非空率符合预期
-- [ ] _op 字段分布合理（无异常大量 D 记录）
-- [ ] 任务状态为持续运行（RUNNING），无频繁重启
-- [ ] 字段类型映射正确（重点检查 BIT/ENUM/TEXT 等异构类型）
+**Acceptance Criteria:**
+- [ ] Full load phase complete, ODS layer row count matches source
+- [ ] Incremental test data written, synced to Lakehouse within 30 seconds
+- [ ] Key field non-null rate meets expectations
+- [ ] _op field distribution is reasonable (no abnormally large number of D records)
+- [ ] Task status is continuously running (RUNNING), no frequent restarts
+- [ ] Column type mapping is correct (pay attention to BIT/ENUM/TEXT and other heterogeneous types)
