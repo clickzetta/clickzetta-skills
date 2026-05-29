@@ -1,10 +1,10 @@
--- 根据过去 {N} 天的作业运行情况，构建作业涉及的表的产出血缘关系图
+-- Build table production lineage graph based on job execution over the past {N} days
 with raw as (
     select split(input_objects, ',') as input, split(output_objects, ',') as output
     from information_schema.job_history
     where start_time>=now() - interval {N} day
         and output_objects is not null
-        and job_type != 'COMPACTION_JOB' -- 去掉 compaction 作业，对构建血缘关系是干扰项
+        and job_type != 'COMPACTION_JOB' -- exclude compaction jobs as they add noise to lineage
 ),
 normalized as (
     select public.__normalize_objects(input) as input,

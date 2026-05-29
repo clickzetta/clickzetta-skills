@@ -137,7 +137,7 @@
     },
     {
       "name": "clickzetta-java-sdk",
-      "description": "使用 ClickZetta Java SDK 将数据批量或实时写入 Lakehouse 表。",
+      "description": "Use the ClickZetta Java SDK to write data to Lakehouse tables in batch or in real time.",
       "files": [
         "SKILL.md",
         "references/bulkload.md",
@@ -263,18 +263,21 @@
       ]
     },
     {
-      "name": "clickzetta-sql-syntax-guide",
-      "description": "ClickZetta Lakehouse SQL 语法完整参考，以及从 Snowflake、Databricks、Spark SQL 迁移的",
+      "name": "clickzetta-sql-migration",
+      "description": "Migration guide for SQL workloads moving to ClickZetta Lakehouse from Snowflake, Databricks, or Spark SQL.",
       "files": [
         "SKILL.md",
+        "references/migration-snowflake.md",
+        "references/migration-databricks.md",
+        "references/vs-snowflake.md",
+        "references/vs-spark.md",
+        "references/dml-differences.md",
+        "references/implicit-type-conversion.md",
+        "references/function-mapping.md",
         "references/ddl-reference.md",
         "references/dml-reference.md",
         "references/dql-reference.md",
-        "references/functions-reference.md",
-        "references/migration-databricks.md",
-        "references/migration-snowflake.md",
-        "references/vs-snowflake.md",
-        "references/vs-spark.md"
+        "references/functions-reference.md"
       ]
     },
     {

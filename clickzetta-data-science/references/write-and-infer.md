@@ -1,26 +1,26 @@
-# 数据写入、特征工程、模型推理示例
+# Data Write, Feature Engineering, and Model Inference Examples
 
-## 数据写入
+## Data Write
 
-| 场景 | 方式 |
+| Scenario | Method |
 |------|------|
-| ZettaPark 可用（Python 3.10+） | `save_as_table()` 或 `create_dataframe().write` |
-| 本地 CSV/pandas 写入 | `session.create_dataframe(df).write.save_as_table()` |
-| Python 3.9 / ZettaPark 不可用 | cursor 批量 INSERT（见下方） |
-| **禁止** | `df.to_sql()`、SQLAlchemy `clickzetta://...` |
+| ZettaPark available (Python 3.10+) | `save_as_table()` or `create_dataframe().write` |
+| Local CSV/pandas write | `session.create_dataframe(df).write.save_as_table()` |
+| Python 3.9 / ZettaPark unavailable | cursor batch INSERT (see below) |
+| **Forbidden** | `df.to_sql()`, SQLAlchemy `clickzetta://...` |
 
 ```python
-# 方式 A：ZettaPark（推荐）
+# Option A: ZettaPark (recommended)
 session.sql("""
     SELECT o.*, u.age_group FROM my_schema.orders_raw o
     LEFT JOIN my_schema.users u ON o.user_id = u.user_id
     WHERE o.amount > 0
 """).write.mode("overwrite").save_as_table("ds_workspace.orders_clean")
 
-# 方式 B：pandas → Lakehouse
+# Option B: pandas → Lakehouse
 session.create_dataframe(local_df).write.mode("append").save_as_table("ds_workspace.features_v1")
 
-# 方式 C：cursor 批量 INSERT（fallback）
+# Option C: cursor batch INSERT (fallback)
 import clickzetta, os
 conn = clickzetta.connect(
     service=os.environ["CLICKZETTA_SERVICE"], instance=os.environ["CLICKZETTA_INSTANCE"],
@@ -40,16 +40,16 @@ conn.close()
 ```
 
 ```sql
--- 设置中间表生命周期（30 天自动清理）
+-- Set intermediate table lifecycle (auto-cleanup after 30 days)
 ALTER TABLE ds_workspace.orders_clean SET PROPERTIES ('data_lifecycle' = '30');
 ```
 
 ---
 
-## 特征工程
+## Feature Engineering
 
 ```sql
--- SQL 侧（利用 Lakehouse 算力，推荐）
+-- SQL side (leverages Lakehouse compute, recommended)
 SELECT
     user_id,
     COUNT(*)                                                    AS order_cnt_30d,
@@ -65,7 +65,7 @@ GROUP BY user_id;
 ```
 
 ```python
-# ZettaPark 侧（Python 逻辑）
+# ZettaPark side (Python logic)
 from clickzetta.zettapark.functions import col, when
 
 features = session.table("ds_workspace.orders_clean") \
@@ -81,26 +81,26 @@ session.create_dataframe(df).write.mode("overwrite").save_as_table("ds_workspace
 
 ---
 
-## 模型推理上线
+## Model Inference Deployment
 
-### BITMAP 用户画像
+### BITMAP User Profiling
 
 ```sql
 CREATE TABLE ds_workspace.user_tags AS
 SELECT tag_name, group_bitmap_state(user_id) AS user_bitmap
 FROM my_schema.user_behavior GROUP BY tag_name;
 
--- 人群交集
+-- Audience intersection
 SELECT bitmap_count(bitmap_and(
-    (SELECT user_bitmap FROM ds_workspace.user_tags WHERE tag_name = '高消费'),
-    (SELECT user_bitmap FROM ds_workspace.user_tags WHERE tag_name = '近30天活跃')
+    (SELECT user_bitmap FROM ds_workspace.user_tags WHERE tag_name = 'high_value'),
+    (SELECT user_bitmap FROM ds_workspace.user_tags WHERE tag_name = 'active_30d')
 )) AS target_user_count;
 ```
 
-### SQL UDF 批量推理
+### SQL UDF Batch Inference
 
 ```sql
--- 调用已部署的模型 UDF（必须用完整 schema 路径）
+-- Call a deployed model UDF (must use full schema path)
 INSERT INTO ds_workspace.predictions
 SELECT user_id,
        ds_workspace.credit_score_model(total_amount_30d, order_cnt_30d, active_days, avg_amount_30d) AS score,
@@ -108,7 +108,7 @@ SELECT user_id,
 FROM ds_workspace.features_final;
 ```
 
-### 向量检索
+### Vector Search
 
 ```sql
 SELECT candidate_id,

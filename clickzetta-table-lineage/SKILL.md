@@ -1,90 +1,92 @@
 ---
 name: clickzetta-table-lineage
 description: |
-  表血缘可视化工具。从 ClickZetta information_schema.job_history 获取表依赖关系和成本数据，
-  导出 CSV 后嵌入 HTML 模板生成交互式血缘图。
-  当用户说"表血缘"、"table lineage"、"依赖关系图"、"数据流向"、"上下游分析"、
-  "血缘可视化"、"pipeline 可视化"时触发。
+  Table lineage visualization tool for Clickzetta lakehouse only.
+  Retrieves table dependency relationships and cost data by analyzing actual jobs in lakehouse(information_schema.job_history),
+  exports CSV and embeds into an HTML template to generate an interactive lineage graph.
+  Trigger when user says "table lineage", "dependency graph", "data flow", "upstream/downstream analysis",
+  "lineage visualization", or "pipeline visualization".
 ---
 
-# 表血缘可视化工作流
+# Table Lineage Visualization Workflow
 
-## 参考文件
+## Reference Files
 
-| 文件 | 说明 |
-|------|------|
-| `references/normalize_func.sql` | 归一化 UDF 定义（`__normalize_table` 和 `__normalize_objects`） |
-| `references/table_relation.sql` | 表关系查询 SQL（依赖 UDF，`{N}` 为天数占位符） |
-| `references/table_cost.sql` | 表成本查询 SQL（依赖 UDF，`{N}` 为天数占位符） |
-| `references/table_lineage_standalone.html` | 可视化 HTML 模板 |
+| File | Description |
+|------|-------------|
+| `references/normalize_func.sql` | Normalization UDF definitions (`__normalize_table` and `__normalize_objects`) |
+| `references/table_relation.sql` | Table relationship query SQL (depends on UDF, `{N}` is a day-count placeholder) |
+| `references/table_cost.sql` | Table cost query SQL (depends on UDF, `{N}` is a day-count placeholder) |
+| `references/table_lineage_standalone.html` | Visualization HTML template |
 
-## 指令
+## Instructions
 
-### 步骤 0：确定时间范围
+### Step 0: Determine Time Range
 
-询问用户需要分析多长时间的血缘数据。默认 1 天。用户可指定天数如 1、7、30 等。
-SQL 中的 `{N}` 占位符将替换为用户指定的天数。
+Ask the user how many days of lineage data to analyze. Default is 1 day. User can specify days such as 1, 7, 30, etc.
+The `{N}` placeholder in SQL will be replaced with the user-specified number of days.
 
-### 步骤 1：创建归一化 UDF
+### Step 1: Create and Validate Normalization UDFs
 
-通过 cz-cli sql -f 执行 `references/normalize_func.sql`（已存在则跳过）。
+Create UDFs using `references/normalize_func.sql` (skip if already exists).
+Validate UDF using sql `select public.__normalize_table('foo.bar.ods_rt_$kafka$_a9f5be53aeacae016431332a528d11bd')` should return 'KAFKA.foo.bar.ods_t'.
 
-### 步骤 2：导出表关系数据
+### Step 2: Export Table Relationship Data
 
-读取 `references/table_relation.sql`，将 `{N}` 替换为用户指定的天数，通过 cz-cli sql --no-limit 执行，将结果保存为 `table_relation.csv`。
+Read `references/table_relation.sql`, replace `{N}` with the user-specified number of days, execute via cz-cli sql --no-limit, and save the result as `table_relation.csv`.
 
-### 步骤 3：导出表成本数据
+### Step 3: Export Table Cost Data
 
-读取 `references/table_cost.sql`，将 `{N}` 替换为用户指定的天数，通过 cz-cli sql --no-limit 执行，将结果保存为 `table_cost.csv`。
+Read `references/table_cost.sql`, replace `{N}` with the user-specified number of days, execute via cz-cli sql --no-limit, and save the result as `table_cost.csv`.
 
-### 步骤 4：生成可视化页面
+### Step 4: Generate Visualization Page
 
-1. 读取 `references/table_lineage_standalone.html` 作为模板
-2. 找到注释 `<!-- Data injection point` 所在行，在其**后面**插入：
+1. Read `references/table_lineage_standalone.html` as the template
+2. Find the line containing the comment `<!-- Data injection point`, and insert **after** it:
 
 ```html
 <script>
 window.LINEAGE_DATA = {
-  relation: `...table_relation.csv 原始文本...`,
-  cost: `...table_cost.csv 原始文本...`
+  relation: `...table_relation.csv raw text...`,
+  cost: `...table_cost.csv raw text...`
 };
 </script>
 ```
 
-3. 将结果写入目标文件（如 `table_lineage.html`），用浏览器打开。
+3. Write the result to the target file (e.g., `table_lineage.html`) and open it in a browser.
 
-页面检测到 `window.LINEAGE_DATA` 后自动渲染，跳过文件选择。
+The page detects `window.LINEAGE_DATA` and renders automatically, skipping the file picker.
 
-### 步骤 5：引导用户使用可视化功能
+### Step 5: Guide User Through Visualization Features
 
-- **点击节点**：高亮上游（橙色）和下游（青色）完整依赖路径
-- **搜索**：顶部搜索框过滤表名（快捷键 `/` 或 `Cmd+K`）
-- **缩放/平移**：鼠标滚轮缩放，拖拽平移，`F` 键适配屏幕
-- **右下角小地图**：点击或拖拽快速导航
-- **主题切换**：支持亮色/暗色主题
-- **悬停查看详情**：DML CRU/day、累计成本、查询成本等指标
+- **Click a node**: Highlights the full upstream (orange) and downstream (cyan) dependency paths
+- **Search**: Top search box filters table names (shortcut `/` or `Cmd+K`)
+- **Zoom/Pan**: Mouse wheel to zoom, drag to pan, `F` key to fit screen
+- **Minimap (bottom-right)**: Click or drag for quick navigation
+- **Theme toggle**: Supports light/dark themes
+- **Hover for details**: DML CRU/day, cumulative cost, query cost metrics
 
-## 平台特有知识
+## Platform-Specific Knowledge
 
-- `information_schema.job_history` 的 `input_objects` 和 `output_objects` 是逗号分隔的表名列表
-- 归一化通过 UDF `public.__normalize_table` 和 `public.__normalize_objects` 完成，首次使用需创建
-- Kafka 源表名格式：`xxx_$kafka$_yyy`，归一化为 `KAFKA.xxx`
-- Volume 源表名格式：`xxx_t_<32位hash>`，归一化为 `VOLUME.xxx`
-- `__delta__`、`__incr__`、`__DIRECTORY__EXTERNAL__` 中间表/目录被过滤
-- `COMPACTION_JOB` 类型作业不参与血缘构建
-- 有 output 的作业视为产出作业（DML），无 output 的视为查询作业
-- 成本数据为日均值：总量除以查询天数
+- `information_schema.job_history`'s `input_objects` and `output_objects` are comma-separated table name lists
+- Normalization is done via UDFs `public.__normalize_table` and `public.__normalize_objects`; must be created before first use
+- Kafka source table name format: `xxx_$kafka$_yyy`, normalized to `KAFKA.xxx`
+- Volume source table name format: `xxx_t_<32-char hash>`, normalized to `VOLUME.xxx`
+- Intermediate tables/directories `__delta__`, `__incr__`, `__DIRECTORY__EXTERNAL__` are filtered out
+- `COMPACTION_JOB` type jobs are excluded from lineage construction
+- Jobs with output are treated as production jobs (DML); jobs without output are treated as query jobs
+- Cost data is a daily average: total divided by the number of queried days
 
-## 故障排除
+## Troubleshooting
 
-可视化为空
-原因：缺少作业运行历史
-解决方案：首先确认表关系和表成本 sql 正确运行，若结果为空，是正常现象。
+Visualization is empty
+Cause: No job execution history available
+Solution: First confirm that the table relationship and table cost SQL queries run correctly. If results are empty, this is expected behavior.
 
-节点过多导致卡顿
-原因：浏览器渲染大量 DOM 节点
-解决方案：在 SQL 查询中添加 schema 过滤条件，缩小分析范围
+Too many nodes causing lag
+Cause: Browser rendering too many DOM nodes
+Solution: Add schema filter conditions to the SQL queries to narrow the analysis scope
 
-查询 job_history 超时
-原因：数据量过大
-解决方案：缩短时间窗口，如 `interval 30 day` 改为 `interval 1 day`
+job_history query timeout
+Cause: Data volume too large
+Solution: Shorten the time window, e.g., change `interval 30 day` to `interval 1 day`

@@ -1,5 +1,5 @@
-{"case_id":"001","type":"should_call","user_input":"怎么用 Studio 创建单表实时同步任务？","expected_skill":"clickzetta-realtime-sync-pipeline","expected_output_contains":["实时同步","task_type","28"]}
-{"case_id":"002","type":"should_call","user_input":"Kafka 单个 topic 实时同步到 Lakehouse 表怎么配置？","expected_skill":"clickzetta-realtime-sync-pipeline","expected_output_contains":["Kafka","实时同步"]}
-{"case_id":"003","type":"should_call","user_input":"单表实时同步和多表实时同步有什么区别？","expected_skill":"clickzetta-realtime-sync-pipeline","expected_output_contains":["单表","多表","28","281"]}
-{"case_id":"004","type":"should_call","user_input":"MySQL 单表 CDC 实时同步到 Lakehouse 怎么做？","expected_skill":"clickzetta-realtime-sync-pipeline","expected_output_contains":["MySQL","实时同步","CDC"]}
-{"case_id":"005","type":"should_call","user_input":"实时同步任务需要配置调度策略吗？","expected_skill":"clickzetta-realtime-sync-pipeline","expected_output_contains":["无需配置","持续运行"]}
+{"case_id":"001","type":"should_call","user_input":"How do I create a single-table real-time sync task in Studio?","expected_skill":"clickzetta-realtime-sync-pipeline","expected_output_contains":["real-time sync","task_type","14"]}
+{"case_id":"002","type":"should_call","user_input":"How do I configure a single Kafka topic to sync to a Lakehouse table in real time?","expected_skill":"clickzetta-realtime-sync-pipeline","expected_output_contains":["Kafka","real-time sync"]}
+{"case_id":"003","type":"should_call","user_input":"What is the difference between single-table real-time sync and multi-table real-time sync?","expected_skill":"clickzetta-realtime-sync-pipeline","expected_output_contains":["single","multi","14","281"]}
+{"case_id":"004","type":"should_call","user_input":"How do I do MySQL single-table CDC real-time sync to Lakehouse?","expected_skill":"clickzetta-realtime-sync-pipeline","expected_output_contains":["MySQL","real-time sync","CDC"]}
+{"case_id":"005","type":"should_call","user_input":"Does a real-time sync task need scheduling configuration?","expected_skill":"clickzetta-realtime-sync-pipeline","expected_output_contains":["no scheduling","continuously running"]}

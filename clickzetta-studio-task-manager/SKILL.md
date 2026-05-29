@@ -1,370 +1,367 @@
 ---
 name: clickzetta-studio-task-manager
 description: |
-  管理 ClickZetta Lakehouse Studio 任务，覆盖任务类型说明（离线同步/多表离线同步/实时同步/
-  多表实时同步/数据开发）、任务目录组织、任务类型区分、cz-cli task 命令族、
-  调度配置、依赖管理和常见问题排查。实现"建管分离"工程规范：DDL 任务草稿化、ETL 任务调度化、
-  Dynamic Table 自动刷新化。
-  当用户说"创建 Studio 任务"、"任务目录"、"任务调度"、"cz-cli task"、"任务依赖"、
-  "任务失败"、"任务状态"、"整库同步任务"、"ETL 任务编排"、"任务管理"、
-  "建管分离"、"DDL 任务"、"调度 DAG"、"任务文件夹"、"Studio 任务"、
-  "离线同步"、"实时同步"、"多表实时同步"、"数据开发任务"、"任务类型"、
-  "选哪种同步"、"同步任务区别"时触发。
+  Manage ClickZetta Lakehouse Studio tasks, covering task type descriptions (batch sync/multi-table batch sync/
+  real-time sync/multi-table real-time sync/data development), task folder organization, task type differentiation,
+  cz-cli task command family, scheduling configuration, dependency management, and common issue troubleshooting.
+  Implements the "separation of DDL and pipeline management" engineering standard: DDL tasks as drafts,
+  ETL tasks with scheduling, Dynamic Tables with auto-refresh.
+  Triggered when the user says "create Studio task", "task folder", "task scheduling", "cz-cli task",
+  "task dependency", "task failed", "task status", "full database sync task", "ETL task orchestration",
+  "task management", "separation of DDL and pipeline", "DDL task", "scheduling DAG", "task folder",
+  "Studio task", "batch sync", "real-time sync", "multi-table real-time sync", "data development task",
+  "task types", "which sync to choose", "sync task differences".
   Keywords: Studio task, task management, cz-cli task, scheduling, DAG, DDL draft, ETL pipeline, task folder, offline sync, realtime sync, CDC, task types
 ---
 
-# ClickZetta Studio 任务管理
+# ClickZetta Studio Task Management
 
-## 向导：明确操作意图
+## Wizard: Clarify Intent
 
-收到任务管理请求后，优先使用交互式问答工具（如 `question`）收集意图；若无此类工具，则用文字列出选项：
+Upon receiving a task management request, use an interactive question tool (e.g., `question`) to collect intent. If no such tool is available, list options in text:
 
 ```
 question({
   questions: [{
-    question: "你想做什么？",
+    question: "What would you like to do?",
     options: [
-      { label: "从零搭建新管道", description: "创建目录、DDL 任务、同步任务、ETL 任务" },
-      { label: "管理现有任务", description: "查看状态、修改配置、配置依赖、重跑、补数" },
-      { label: "排查任务问题", description: "失败诊断、依赖检查、日志分析 → 加载 clickzetta-pipeline-review" },
-      { label: "规范检查", description: "检查现有任务是否符合建管分离规范" }
+      { label: "Build a new pipeline from scratch", description: "Create folders, DDL tasks, sync tasks, ETL tasks" },
+      { label: "Manage existing tasks", description: "View status, modify config, configure dependencies, rerun, backfill" },
+      { label: "Troubleshoot task issues", description: "Failure diagnosis, dependency check, log analysis → load clickzetta-pipeline-review" },
+      { label: "Standards compliance check", description: "Check if existing tasks follow separation of DDL and pipeline standards" }
     ]
   }]
 })
 ```
 
-**如果用户已经明确说了要做什么，直接执行，不再询问。**
+**If the user has clearly stated what they want to do, proceed directly without asking.**
 
-对于**从零搭建**，还需收集：业务域/项目名称、数据源类型、分层结构。
+For **building from scratch**, also collect: business domain/project name, data source type, layering structure.
 
-## 数据管道向导（从零搭建时使用）
+## Data Pipeline Wizard (Used When Building from Scratch)
 
-完整流程：**需求理解 → 数据探索 → 技术选型 → 方案确认 → 执行**
+Full process: **Requirements Understanding → Data Exploration → Technical Selection → Plan Confirmation → Execution**
 
 ---
 
-### Step 0：需求输入
+### Step 0: Requirements Input
 
-**优先询问用户是否有需求文档**（PRD、需求说明、数仓设计文档等）：
+**First ask if the user has a requirements document** (PRD, requirements spec, data warehouse design doc, etc.):
 
 ```
 question({
   questions: [{
-    question: "开始前，你有需求文档或背景说明吗？",
+    question: "Before we start, do you have a requirements document or background description?",
     options: [
-      { label: "有，我来提供", description: "请粘贴文档内容或上传文件，我来提取关键信息" },
-      { label: "没有，口头描述", description: "我来引导你回答几个关键问题" }
+      { label: "Yes, I'll provide it", description: "Paste document content or upload file, I'll extract key information" },
+      { label: "No, I'll describe verbally", description: "I'll guide you through a few key questions" }
     ]
   }]
 })
 ```
 
-**如果有文档**：读取文档，自动提取业务场景、数据源、目标产出、时效性要求，跳到 Step 1。
+**If document provided**: read the document, auto-extract business scenario, data sources, target outputs, freshness requirements, skip to Step 1.
 
-**如果没有文档**，收集以下业务需求（优先使用交互式工具；若无，一次性文字列出）：
+**If no document**, collect the following business requirements (prefer interactive tools; if unavailable, list all in text):
 
 ```
 question({
   questions: [
     {
-      question: "这个管道服务于什么业务场景？",
+      question: "What business scenario does this pipeline serve?",
       options: [
-        { label: "BI 报表 / 数据看板", description: "固定报表，指标体系明确，T+1 或小时级" },
-        { label: "实时监控 / 运营看板", description: "分钟级延迟，关注实时指标" },
-        { label: "数据科学 / 特征工程", description: "供模型训练或推理使用" },
-        { label: "数据共享 / 对外输出", description: "提供给其他系统或团队使用" }
+        { label: "BI reports / dashboards", description: "Fixed reports, clear metric system, T+1 or hourly" },
+        { label: "Real-time monitoring / ops dashboard", description: "Minute-level latency, focus on real-time metrics" },
+        { label: "Data science / feature engineering", description: "For model training or inference" },
+        { label: "Data sharing / external output", description: "Provided to other systems or teams" }
       ]
     },
     {
-      question: "数据消费方是谁？",
+      question: "Who are the data consumers?",
       options: [
-        { label: "BI 工具（Superset/Tableau 等）", description: "需要宽表或聚合表" },
-        { label: "数据分析师（SQL 查询）", description: "需要清洗后的明细表" },
-        { label: "下游系统 / API", description: "需要结构化输出" },
-        { label: "数据科学家（Python/ZettaPark）", description: "需要特征表或原始明细" }
+        { label: "BI tools (Superset/Tableau, etc.)", description: "Need wide tables or aggregation tables" },
+        { label: "Data analysts (SQL queries)", description: "Need cleaned detail tables" },
+        { label: "Downstream systems / APIs", description: "Need structured output" },
+        { label: "Data scientists (Python/ZettaPark)", description: "Need feature tables or raw detail" }
       ]
     },
     {
-      question: "数据时效性要求？",
+      question: "Data freshness requirements?",
       options: [
-        { label: "T+1（次日可用）", description: "每天凌晨跑批，早上数据就绪" },
-        { label: "小时级", description: "每小时更新一次" },
-        { label: "分钟级", description: "近实时，延迟 < 10 分钟" },
-        { label: "秒级实时", description: "CDC 持续同步，秒级延迟" }
+        { label: "T+1 (available next day)", description: "Batch run at midnight, data ready in the morning" },
+        { label: "Hourly", description: "Updated every hour" },
+        { label: "Minute-level", description: "Near real-time, latency < 10 minutes" },
+        { label: "Second-level real-time", description: "CDC continuous sync, second-level latency" }
       ]
     }
   ]
 })
 ```
 
-还需口头确认（文字追问，不用菜单）：
-- **核心指标口径**：如果涉及 GMV、活跃用户等业务指标，确认计算口径
-- **项目/业务域名称**：用于任务目录和 Schema 命名（如 `ecommerce_dw`）
+Also confirm verbally (text follow-up, no menu needed):
+- **Core metric definitions**: if involving GMV, active users, or other business metrics, confirm calculation logic
+- **Project/business domain name**: used for task folder and schema naming (e.g., `ecommerce_dw`)
 
 ---
 
-### Step 1：数据探索（AI 自主执行，不问用户）
+### Step 1: Data Exploration (AI executes autonomously, no user input needed)
 
-收集到需求后，立即探查数据现状：
+After collecting requirements, immediately explore the current data state:
 
 ```sql
--- 查看相关 schema 和表
+-- View related schemas and tables
 SHOW SCHEMAS;
-SHOW TABLES IN <相关schema>;
+SHOW TABLES IN <relevant_schema>;
 
--- 查表大小和行数
+-- Check table sizes and row counts
 SELECT table_schema, table_name,
        ROUND(bytes/1024.0/1024/1024, 2) AS size_gb, row_count
 FROM information_schema.tables
 WHERE table_type = 'MANAGED_TABLE'
 ORDER BY bytes DESC NULLS LAST LIMIT 20;
 
--- 抽样了解字段含义
+-- Sample to understand field meanings
 SELECT * FROM <schema>.<table> LIMIT 5;
 ```
 
-同时用 `cz-cli datasource list` 查看已配置的外部数据源。
+Also use `cz-cli datasource list` to view configured external data sources.
 
 ---
 
-### Step 2：技术选型（选数据源类型和接入方式）
+### Step 2: Technical Selection (Choose data source type and ingestion method)
 
-基于需求和数据探索结果，用交互式工具收集技术选型：
+Based on requirements and data exploration results, use interactive tools to collect technical choices:
 
-**选数据源类型：**
+**Select data source type:**
 ```
-question({ questions: [{ question: "数据来自哪里？", options: [
-  { label: "外部数据库", description: "MySQL / PostgreSQL / SQL Server / Oracle 等" },
-  { label: "Kafka 消息队列", description: "Kafka Topic → Lakehouse" },
-  { label: "对象存储", description: "OSS / S3 / COS 文件导入" },
-  { label: "Lakehouse 内部 ETL 分层", description: "ODS→DWD→DWS/ADS，SQL 任务 + Dynamic Table" },
-  { label: "端到端完整管道", description: "数据接入 + 分层建模 + 聚合" },
-  { label: "不确定，先探索数据", description: "先看现有数据再给方案建议" }
+question({ questions: [{ question: "Where does the data come from?", options: [
+  { label: "External database", description: "MySQL / PostgreSQL / SQL Server / Oracle, etc." },
+  { label: "Kafka message queue", description: "Kafka Topic → Lakehouse" },
+  { label: "Object storage", description: "OSS / S3 / COS file import" },
+  { label: "Lakehouse internal ETL layering", description: "ODS→DWD→DWS/ADS, SQL tasks + Dynamic Table" },
+  { label: "End-to-end complete pipeline", description: "Data ingestion + layered modeling + aggregation" },
+  { label: "Not sure, explore data first", description: "Look at existing data before recommending an approach" }
 ]}]})
 ```
 
-**追问（仅部分选项需要）：**
+**Follow-up (only needed for certain options):**
 
-选了"外部数据库"：
+Selected "External database":
 ```
-question({ questions: [{ question: "同步时效性？", options: [
-  { label: "实时同步（秒级）", description: "CDC，基于 Binlog/WALs，持续运行" },
-  { label: "离线批量（小时/天级）", description: "周期性全量同步，配置 Cron" }
+question({ questions: [{ question: "Sync freshness?", options: [
+  { label: "Real-time sync (second-level)", description: "CDC, based on Binlog/WALs, continuously running" },
+  { label: "Batch offline (hourly/daily)", description: "Periodic full sync, configure Cron" }
 ]}]})
 ```
 
-选了"对象存储"：
+Selected "Object storage":
 ```
-question({ questions: [{ question: "接入方式？", options: [
-  { label: "SQL Pipe（持续自动导入）", description: "LIST_PURGE 或 EVENT_NOTIFICATION 模式" },
-  { label: "Studio 离线同步任务", description: "周期性批量导入，配置 Cron" }
+question({ questions: [{ question: "Ingestion method?", options: [
+  { label: "SQL Pipe (continuous auto-import)", description: "LIST_PURGE or EVENT_NOTIFICATION mode" },
+  { label: "Studio batch sync task", description: "Periodic batch import, configure Cron" }
 ]}]})
 ```
 
-选了"Kafka"：
+Selected "Kafka":
 ```
-question({ questions: [{ question: "接入方式？", options: [
-  { label: "SQL Pipe（READ_KAFKA）", description: "纯 SQL，灵活，推荐工程师使用" },
-  { label: "Studio 实时同步任务", description: "图形化配置，支持 JSONPath 计算列" }
+question({ questions: [{ question: "Ingestion method?", options: [
+  { label: "SQL Pipe (READ_KAFKA)", description: "Pure SQL, flexible, recommended for engineers" },
+  { label: "Studio real-time sync task", description: "GUI configuration, supports JSONPath computed columns" }
 ]}]})
 ```
 
 ---
 
-### Step 3：方案确认（必须执行，不得跳过）
+### Step 3: Plan Confirmation (Must execute, cannot skip)
 
-综合需求和技术选型，向用户呈现完整方案摘要，请求确认：
+Combining requirements and technical selection, present a complete plan summary to the user for confirmation:
 
 ```
 question({
   questions: [{
-    question: "确认以下方案后开始构建：\n业务场景：<场景>\n数据源：<数据源名称>\n同步方式：<离线/实时/SQL Pipe>\n分层结构：<ODS/DWD/DWS 或 Bronze/Silver/Gold>\n目标 Schema：<schema>\n调度：<Cron 或持续运行>\n是否开始？",
+    question: "Confirm the following plan to start building:\nBusiness scenario: <scenario>\nData source: <source_name>\nSync method: <batch/real-time/SQL Pipe>\nLayering structure: <ODS/DWD/DWS or Bronze/Silver/Gold>\nTarget schema: <schema>\nScheduling: <Cron or continuous running>\nReady to start?",
     options: [
-      { label: "确认，开始构建", description: "加载对应 skill，开始创建任务" },
-      { label: "需要调整", description: "重新收集信息" }
+      { label: "Confirmed, start building", description: "Load corresponding skill, begin creating tasks" },
+      { label: "Need adjustments", description: "Re-collect information" }
     ]
   }]
 })
 ```
 
-用户确认后，按路由表加载对应 skill：
+After user confirmation, load the corresponding skill per routing table:
 
-**路由表**
+**Routing Table**
 
-| 数据源 | 时效性/方式 | 加载 skill |
-|---|---|---|
-| 外部数据库 | 实时单表 CDC | `clickzetta-realtime-sync-pipeline` |
-| 外部数据库 | 实时多表/整库 CDC | `clickzetta-cdc-sync-pipeline` |
-| 外部数据库 | 离线批量 | `clickzetta-batch-sync-pipeline` |
+| Data Source | Freshness/Method | Load Skill |
+|-------------|-----------------|------------|
+| External database | Real-time single-table CDC | `clickzetta-realtime-sync-pipeline` |
+| External database | Real-time multi-table/full database CDC | `clickzetta-cdc-sync-pipeline` |
+| External database | Batch offline | `clickzetta-batch-sync-pipeline` |
 | Kafka | SQL Pipe | `clickzetta-kafka-ingest-pipeline` |
-| Kafka | Studio 实时同步 | `clickzetta-realtime-sync-pipeline` |
-| 对象存储 | SQL Pipe | `clickzetta-oss-ingest-pipeline` |
-| 对象存储 | Studio 离线同步 | `clickzetta-batch-sync-pipeline` |
-| Lakehouse 内部 ETL 分层 | — | `clickzetta-sql-pipeline-manager` |
-| 端到端完整管道 / 不确定 | — | `clickzetta-dw-modeling` |
+| Kafka | Studio real-time sync | `clickzetta-realtime-sync-pipeline` |
+| Object storage | SQL Pipe | `clickzetta-oss-ingest-pipeline` |
+| Object storage | Studio batch sync | `clickzetta-batch-sync-pipeline` |
+| Lakehouse internal ETL layering | — | `clickzetta-sql-pipeline-manager` |
+| End-to-end complete pipeline / Not sure | — | `clickzetta-dw-modeling` |
 
-> 实时 CDC 单表 vs 多表：用户说"整库"或"多张表"→ `cdc-sync-pipeline`；"一张表"→ `realtime-sync-pipeline`；不确定时追问。
-
----
-
-## Studio 任务类型说明
-
-Studio 提供四大类任务，选错类型是最常见的工程错误：
-
-### 离线同步（单表）
-将单张源表周期性全量同步到 Lakehouse。
-
-- **适用场景**：单表定期覆盖更新、数据时效性要求不高（按天/小时批量）、资源优化（不需要实时）
-- **运行模式**：周期调度（需配置 Cron），每次全量覆盖或追加
-- **数据源**：MySQL、PostgreSQL、SQL Server 等关系型数据库
-- **对应 skill**：`clickzetta-batch-sync-pipeline`（单表模式）
-
-### 多表离线同步
-将多张源表或整库周期性批量同步到 Lakehouse。
-
-- **适用场景**：
-  - 整库迁移（批量同步所有表，减少逐表配置工作量）
-  - 分库分表合并（多个分库分表合并到统一目标表）
-  - 定期数据校准（周期性全量同步确保目标端与源端一致）
-- **运行模式**：周期调度（需配置 Cron），支持整库镜像、多表镜像、多表合并三种模式
-- **数据源**：MySQL、PostgreSQL、SQL Server 等
-- **对应 skill**：`clickzetta-batch-sync-pipeline`（多表模式）
-
-### 实时同步（单表）
-将单张 Kafka Topic 数据持续实时同步到 Lakehouse。
-
-- **适用场景**：Kafka 消息流实时入湖、秒级/分钟级延迟要求、单 Topic 精细化同步
-- **运行模式**：持续运行（无需配置 Cron，提交即运行）
-- **数据源**：**仅支持 Kafka**（JSON 消息解析，支持 JSONPath 计算列）
-- **对应 skill**：`clickzetta-realtime-sync-pipeline`
-
-### 多表实时同步（CDC）
-将 MySQL / PostgreSQL 整库或多表通过 CDC 实时同步到 Lakehouse，包含全量 + 增量两阶段。
-
-- **适用场景**：数据库整库实时镜像、秒级端到端时效性、分库分表实时合并
-- **运行模式**：持续运行（无需配置 Cron，提交即运行）
-- **数据源**：
-
-| 类型 | 增量读取模式 | 支持版本 |
-|---|---|---|
-| MySQL 类（含 Aurora MySQL、PolarDB MySQL） | Binlog | 5.6 及以上、8.x |
-| PostgreSQL 类（含 Aurora PG、PolarDB PG） | WALs 日志 | 14 及以上 |
-
-- **对应 skill**：`clickzetta-cdc-sync-pipeline`
-
-### 数据开发任务（SQL / Python / Shell）
-在 Studio 中编写和调度数据处理逻辑，是数仓 ETL 的核心载体。
-
-- **SQL 任务**：ODS→DWD 清洗转换、数据质量检查、临时数据修复
-- **Python 任务**：自定义数据处理脚本、调用外部 API、机器学习推理
-- **Shell 任务**：系统命令、文件操作、调用外部工具
-- **运行模式**：周期调度（配置 Cron）或手动触发
-- **对应 skill**：`clickzetta-studio-task-manager`（本 skill）
-
-### 四类任务对比速查
-
-| 任务类型 | 数据源 | 同步粒度 | 运行模式 | 时效性 |
-|---|---|---|---|---|
-| 离线同步 | 关系型数据库 | 单表 | 周期调度 | 小时/天级 |
-| 多表离线同步 | 关系型数据库 | 多表/整库 | 周期调度 | 小时/天级 |
-| 实时同步 | **仅 Kafka** | 单 Topic | 持续运行 | 秒/分钟级 |
-| 多表实时同步 | MySQL / PostgreSQL | 多表/整库 | 持续运行 | 秒级 |
-| 数据开发 | 任意（SQL/Python/Shell） | 自定义逻辑 | 周期调度或手动 | 取决于调度频率 |
+> Real-time CDC single vs multi-table: user says "full database" or "multiple tables" → `cdc-sync-pipeline`; "one table" → `realtime-sync-pipeline`; if unclear, ask.
 
 ---
 
-## 核心原则：建管分离
+## Studio Task Types
 
-**不同类型的任务，调度策略完全不同。** 混淆任务类型是最常见的工程错误。
+Studio provides four major task categories. Choosing the wrong type is the most common engineering mistake:
 
-| 任务类型 | 典型内容 | Studio 任务类型 | 调度配置 | 状态 |
-|---|---|---|---|---|
-| **DDL 建表任务** | CREATE TABLE / CREATE SCHEMA | SQL 任务 | ❌ 禁止 Cron，禁止依赖 | DRAFT |
-| **数据同步任务** | 外部数据源（关系型数据库/对象存储）→ ODS | **SINGLE_DI / MULTI_DI / REALTIME**（不是 SQL 任务） | ✅ 配置 Cron（离线）或持续运行（实时） | PUBLISHED |
-| **ETL 转换任务** | ODS→DWD 清洗 SQL（Lakehouse 内部） | SQL 任务 | ✅ 配置 Cron + 依赖上游同步 | PUBLISHED |
-| **数据质量任务** | 行数检查、NULL 率验证 | SQL 任务 | ✅ 配置 Cron + 依赖 ETL | PUBLISHED |
-| **DWS/ADS 聚合层** | 指标汇总、报表宽表 | ❌ 使用 Dynamic Table，不建任务 | — | — |
+### Batch Sync (Single-table)
+Periodically full-sync a single source table to Lakehouse.
 
-**数据同步任务支持的数据源：**
-- 离线同步（SINGLE_DI/MULTI_DI）：MySQL、PostgreSQL、Oracle、SQL Server 等关系型数据库，以及 OSS/COS/S3 对象存储
-- 实时同步单表（REALTIME）：Kafka
-- 多表实时同步 CDC：MySQL（Binlog，5.6+/8.x）、PostgreSQL（WALs，14+）
+- **Use cases**: single-table periodic overwrite, low data freshness requirements (daily/hourly batch), resource optimization (no real-time needed)
+- **Run mode**: scheduled (Cron required), full overwrite or append each run
+- **Data sources**: MySQL, PostgreSQL, SQL Server, and other relational databases
+- **Corresponding skill**: `clickzetta-batch-sync-pipeline` (single-table mode)
 
-**其他数据访问方式（不是数据同步任务）：**
-- Kafka/OSS/S3/COS → 也可以用 SQL Pipe（`READ_KAFKA`/Volume Pipe），与 Studio 同步任务都合法，根据场景选择
-- Hive/Databricks/Snowflake Open Catalog → External Catalog 联邦只读查询，不做数据同步
+### Multi-table Batch Sync
+Periodically batch-sync multiple tables or an entire database to Lakehouse.
 
-> ⚠️ **DDL 任务绝对不能配 Cron**：建表语句重复执行会引发 `SCHEDULE_TASK_HAD_CHILDREN_NODES_EXCEPTION` 等调度冲突。DDL 任务执行完成后立即降级为 DRAFT。
+- **Use cases**:
+  - Full database migration (batch sync all tables, reducing per-table configuration effort)
+  - Sharded table merge (merge multiple sharded tables into a unified target table)
+  - Periodic data calibration (periodic full sync to ensure target matches source)
+- **Run mode**: scheduled (Cron required), supports full database mirror, multi-table mirror, and sharded table merge modes
+- **Data sources**: MySQL, PostgreSQL, SQL Server, etc.
+- **Corresponding skill**: `clickzetta-batch-sync-pipeline` (multi-table mode)
 
-> ⚠️ **DWS/ADS 层不要建调度任务**：Dynamic Table 系统自动刷新，额外建任务是冗余计算，浪费资源。
+### Real-time Sync (Single-table)
+Continuously sync a single Kafka topic to Lakehouse in real time.
 
-> ⚠️ **严禁用 SQL 任务替代数据同步任务**：不能用 SQL 任务写 `SELECT FROM EXTERNAL` 模拟同步（语法不支持），也不能用 JDBC 任务（JDBC 只能在外部数据库执行 SQL，不支持将数据同步到 Lakehouse）。
+- **Use cases**: Kafka message stream real-time ingestion, second/minute-level latency requirements, single-topic fine-grained sync
+- **Run mode**: continuously running (no Cron needed, runs upon submission)
+- **Data sources**: **Kafka only** (JSON message parsing, supports JSONPath computed columns)
+- **Corresponding skill**: `clickzetta-realtime-sync-pipeline`
+
+### Multi-table Real-time Sync (CDC)
+Sync entire MySQL / PostgreSQL databases or multiple tables to Lakehouse via CDC in real time, with full load + incremental two-phase sync.
+
+- **Use cases**: full database real-time mirror, second-level end-to-end latency, sharded table real-time merge
+- **Run mode**: continuously running (no Cron needed, runs upon submission)
+- **Data sources**:
+
+| Type | Incremental Read Mode | Supported Versions |
+|------|----------------------|-------------------|
+| MySQL (including Aurora MySQL, PolarDB MySQL) | Binlog | 5.6+, 8.x |
+| PostgreSQL (including Aurora PG, PolarDB PG) | WALs | 14+ |
+
+- **Corresponding skill**: `clickzetta-cdc-sync-pipeline`
+
+### Data Development Tasks (SQL / Python / Shell)
+Write and schedule data processing logic in Studio — the core vehicle for data warehouse ETL.
+
+- **SQL tasks**: ODS→DWD cleaning/transformation, data quality checks, ad-hoc data repairs
+- **Python tasks**: custom data processing scripts, external API calls, ML inference
+- **Shell tasks**: system commands, file operations, external tool invocations
+- **Run mode**: scheduled (Cron) or manual trigger
+- **Corresponding skill**: `clickzetta-studio-task-manager` (this skill)
+
+### Four Task Types Quick Comparison
+
+| Task Type | Data Source | Sync Granularity | Run Mode | Freshness |
+|-----------|------------|-----------------|----------|-----------|
+| Batch Sync | Relational DB | Single table | Scheduled | Hourly/daily |
+| Multi-table Batch Sync | Relational DB | Multi-table/full DB | Scheduled | Hourly/daily |
+| Real-time Sync | **Kafka only** | Single topic | Continuously running | Seconds/minutes |
+| Multi-table Real-time Sync | MySQL / PostgreSQL | Multi-table/full DB | Continuously running | Seconds |
+| Data Development | Any (SQL/Python/Shell) | Custom logic | Scheduled or manual | Depends on schedule frequency |
 
 ---
 
-## 任务目录组织规范
+## Core Principle: Separation of DDL and Pipeline Management
 
-每个数仓项目在 Studio 中创建独立任务目录，统一管理所有任务资产：
+**Different task types have completely different scheduling strategies.** Confusing task types is the most common engineering mistake.
+
+| Task Type | Typical Content | Studio Task Type | Scheduling | Status |
+|-----------|----------------|-----------------|------------|--------|
+| **DDL table creation** | CREATE TABLE / CREATE SCHEMA | SQL task | ❌ No Cron, no dependencies | DRAFT |
+| **Data sync tasks** | External source (relational DB/object storage) → ODS | **SINGLE_DI / MULTI_DI / REALTIME** (not SQL tasks) | ✅ Configure Cron (batch) or continuous (real-time) | PUBLISHED |
+| **ETL transformation** | ODS→DWD cleaning SQL (Lakehouse internal) | SQL task | ✅ Configure Cron + depend on upstream sync | PUBLISHED |
+| **Data quality tasks** | Row count checks, NULL rate validation | SQL task | ✅ Configure Cron + depend on ETL | PUBLISHED |
+| **DWS/ADS aggregation** | Metric summaries, report wide tables | ❌ Use Dynamic Table, no task needed | — | — |
+
+**Data sync task supported data sources:**
+- Batch sync (SINGLE_DI/MULTI_DI): MySQL, PostgreSQL, Oracle, SQL Server and other relational databases, plus OSS/COS/S3 object storage
+- Single-table real-time sync (REALTIME): Kafka
+- Multi-table real-time sync CDC: MySQL (Binlog, 5.6+/8.x), PostgreSQL (WALs, 14+)
+
+**Other data access methods (not data sync tasks):**
+- Kafka/OSS/S3/COS → can also use SQL Pipe (`READ_KAFKA`/Volume Pipe), both Studio sync tasks and SQL Pipes are valid — choose based on scenario
+- Hive/Databricks/Snowflake Open Catalog → External Catalog federated read-only queries, not data sync
+
+> ⚠️ **DDL tasks must never have Cron**: repeated execution of CREATE TABLE statements causes `SCHEDULE_TASK_HAD_CHILDREN_NODES_EXCEPTION` and other scheduling conflicts. DDL tasks should be demoted to DRAFT immediately after execution.
+
+> ⚠️ **Do not create scheduled tasks for DWS/ADS layer**: Dynamic Tables auto-refresh by the system. Creating additional tasks is redundant computation and wastes resources.
+
+> ⚠️ **Never use SQL tasks as a substitute for data sync tasks**: you cannot use SQL tasks to write `SELECT FROM EXTERNAL` to simulate sync (syntax not supported), nor use JDBC tasks (JDBC can only execute SQL on external databases, cannot sync data to Lakehouse).
+
+---
+
+## Task Folder Organization Standards
+
+Each data warehouse project creates an independent task folder in Studio to manage all task assets uniformly:
 
 ```
-<业务域>_dw/                              ← 项目任务目录（如 shenyu_gateway_dw、ecommerce_dw）
-├── 00_sync_<source>_to_ods               ← 数据同步（Cron，最早执行）
-├── 01_ddl_ods                            ← ODS 建表（DRAFT，不调度，手动执行一次）
-├── 02_ddl_dwd                            ← DWD 建表（DRAFT，不调度，手动执行一次）
-├── 03_ddl_dws_ads                        ← DWS/ADS 动态表建表（DRAFT，不调度）
-├── 04_transform_ods_to_dwd               ← ODS→DWD 清洗（Cron，依赖 00）
-└── 05_dqc_check                          ← 数据质量检查（Cron，依赖 04，可选）
+<business_domain>_dw/                     ← Project task folder (e.g., shenyu_gateway_dw, ecommerce_dw)
+├── 00_sync_<source>_to_ods               ← Data sync (Cron, runs earliest)
+├── 01_ddl_ods                            ← ODS table creation (DRAFT, no scheduling, run once manually)
+├── 02_ddl_dwd                            ← DWD table creation (DRAFT, no scheduling, run once manually)
+├── 03_ddl_dws_ads                        ← DWS/ADS Dynamic Table creation (DRAFT, no scheduling)
+├── 04_transform_ods_to_dwd               ← ODS→DWD transformation (Cron, depends on 00)
+└── 05_dqc_check                          ← Data quality check (Cron, depends on 04, optional)
 ```
 
-> DWS/ADS 层由 Dynamic Table 自动刷新，**无需创建任务**。
+> DWS/ADS layer is auto-refreshed by Dynamic Tables — **no task creation needed**.
 
 ---
 
-## cz-cli task 命令族
+## cz-cli task Command Family
 
-### 任务目录管理
+### Task Folder Management
 
 ```bash
-# 创建任务目录
+# Create task folder
 cz-cli task folder create <folder_name>
 
-# 列出所有任务目录
+# List all task folders
 cz-cli task folder list
 ```
 
-### 任务查询
+### Task Queries
 
 ```bash
-# 列出所有任务
+# List all tasks
 cz-cli task list
 
-# 按目录过滤
+# Filter by folder
 cz-cli task list --folder <folder_name>
 
-# 查看任务详情
+# View task details
 cz-cli task get <task_id>
 
-# 查看任务状态
-cz-cli task status <task_id>
 ```
 
-### 任务执行
+### Task Execution
 
 ```bash
-# 手动触发任务运行
+# Manually trigger task run
 cz-cli task run <task_id>
 
-# 查看任务运行日志
+# View task run logs
 cz-cli task logs <task_id>
 
-# 查看最近一次运行实例
-cz-cli task instances <task_id> --limit 5
 ```
 
-### 任务创建
+### Task Creation
 
 ```bash
-# 创建 SQL 任务（ETL/DDL）
+# Create SQL task (ETL/DDL)
 cz-cli task create \
   --name "04_transform_ods_to_dwd" \
   --type SQL \
@@ -372,281 +369,281 @@ cz-cli task create \
   --vcluster default \
   --sql-file ./transform.sql
 
-# 创建数据同步任务（单表）
+# Create data sync task (single-table)
 cz-cli task create \
   --name "00_sync_mysql_to_ods" \
   --type SINGLE_DI \
   --folder <folder_name>
 ```
 
-> ⚠️ **整库同步任务（MULTI_DI）的能力边界**：`cz-cli` 可以创建任务框架，但源端/目标端字段映射配置**必须在 Studio UI 中手动完成**。推荐 SOP：
-> 1. `cz-cli task create --type MULTI_DI` 创建任务框架
-> 2. 复制输出的任务链接，在浏览器中打开
-> 3. 在 Studio UI 中配置源端数据库、目标端 Schema、字段映射
-> 4. 点击发布运行
+> ⚠️ **Full database sync task (MULTI_DI) capability boundary**: `cz-cli` can create the task framework, but source/target column mapping configuration **must be completed manually in Studio UI**. Recommended SOP:
+> 1. `cz-cli task create --type MULTI_DI` to create task framework
+> 2. Copy the output task link, open in browser
+> 3. Configure source database, target schema, column mapping in Studio UI
+> 4. Click publish to run
 
 ---
 
-## 调度配置最佳实践
+## Scheduling Configuration Best Practices
 
-### Cron 表达式参考
+### Cron Expression Reference
 
 ```
-# 每天 02:00 执行（数据同步）
+# Daily at 02:00 (data sync)
 0 2 * * *
 
-# 每天 02:30 执行（ETL 转换，同步完成后 30 分钟）
+# Daily at 02:30 (ETL transformation, 30 minutes after sync completes)
 30 2 * * *
 
-# 每天 03:00 执行（数据质量检查）
+# Daily at 03:00 (data quality check)
 0 3 * * *
 
-# 每小时执行
+# Every hour
 0 * * * *
 ```
 
-### 依赖配置原则
+### Dependency Configuration Principles
 
 ```
-正确的依赖链：
-00_sync（Cron 02:00）
-    ↓ 依赖
-04_transform（Cron 02:30）
-    ↓ 依赖
-05_dqc（Cron 03:00）
+Correct dependency chain:
+00_sync (Cron 02:00)
+    ↓ depends on
+04_transform (Cron 02:30)
+    ↓ depends on
+05_dqc (Cron 03:00)
 
-错误的依赖：
-❌ DDL 任务（01/02/03）不应出现在依赖链中
-❌ Dynamic Table 不应出现在依赖链中
+Incorrect dependencies:
+❌ DDL tasks (01/02/03) should not appear in the dependency chain
+❌ Dynamic Tables should not appear in the dependency chain
 ```
 
 ---
 
-## 数据同步任务类型选择
+## Data Sync Task Type Selection
 
-| 场景 | 任务类型 | 说明 |
-|---|---|---|
-| MySQL/PG 单表同步到 Lakehouse | `SINGLE_DI` | 简单，CLI 可完全配置 |
-| MySQL/PG 整库同步（多表镜像） | `MULTI_DI` | CLI 创建框架，UI 配置映射 |
-| Kafka 实时接入 | `REALTIME_SYNC` | 持续运行，无需 Cron |
-| 文件批量导入（OSS/S3） | SQL 任务（COPY INTO） | 用 SQL 任务执行 COPY INTO |
+| Scenario | Task Type | Notes |
+|----------|-----------|-------|
+| MySQL/PG single-table sync to Lakehouse | `SINGLE_DI` | Simple, CLI can fully configure |
+| MySQL/PG full database sync (multi-table mirror) | `MULTI_DI` | CLI creates framework, UI configures mapping |
+| Kafka real-time ingestion | `REALTIME_SYNC` | Continuously running, no Cron needed |
+| File batch import (OSS/S3) | SQL task (COPY INTO) | Use SQL task to execute COPY INTO |
 
 ---
 
-## 常见问题排查
+## Common Issue Troubleshooting
 
-| 问题 | 原因 | 解决方案 |
-|---|---|---|
-| `SCHEDULE_TASK_HAD_CHILDREN_NODES_EXCEPTION` | DDL 任务被配置了 Cron 或依赖 | 清除 DDL 任务的调度配置，降级为 DRAFT |
-| 任务发布失败，提示循环依赖 | 任务 A 依赖 B，B 又依赖 A | 检查依赖链，去除环形依赖 |
-| 同步任务一直失败，无明确报错 | 字段类型不兼容（如 MySQL BIT(1) vs Lakehouse BOOLEAN） | 检查字段类型映射，参考下方类型映射表 |
-| 整库同步任务创建后无法运行 | MULTI_DI 任务缺少字段映射配置 | 进入 Studio UI 配置源端/目标端映射后重新发布 |
-| ETL 任务未按时触发 | 上游同步任务失败，依赖未满足 | 先修复上游同步任务，再手动触发 ETL |
-| DWS 层数据未更新 | 误建了调度任务但 Dynamic Table 未刷新 | 删除冗余调度任务，确认 Dynamic Table 状态为 RUNNING |
-| 任务运行成功但数据为空 | SQL 逻辑问题（如 LEFT JOIN 过滤条件位置错误） | 检查 SQL，LEFT JOIN 右表过滤条件必须在 ON 子句 |
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| `SCHEDULE_TASK_HAD_CHILDREN_NODES_EXCEPTION` | DDL task was configured with Cron or dependencies | Clear DDL task scheduling config, demote to DRAFT |
+| Task publish failed, circular dependency | Task A depends on B, B depends on A | Check dependency chain, remove circular dependencies |
+| Sync task keeps failing, no clear error | Column type incompatibility (e.g., MySQL BIT(1) vs Lakehouse BOOLEAN) | Check column type mapping, refer to type mapping table below |
+| Full database sync task cannot run after creation | MULTI_DI task missing column mapping config | Enter Studio UI to configure source/target mapping, then republish |
+| ETL task not triggered on time | Upstream sync task failed, dependency not satisfied | Fix upstream sync task first, then manually trigger ETL |
+| DWS layer data not updated | Mistakenly created scheduled task but Dynamic Table not refreshing | Delete redundant scheduled task, confirm Dynamic Table status is RUNNING |
+| Task run succeeded but data is empty | SQL logic issue (e.g., LEFT JOIN filter condition in wrong position) | Check SQL — LEFT JOIN right-table filter conditions must be in the ON clause |
 
-### MySQL → Lakehouse 字段类型映射（同步任务常见踩坑）
+### MySQL → Lakehouse Column Type Mapping (Common Sync Pitfalls)
 
-| MySQL 类型 | ❌ 不要用 | ✅ ODS 层用 | DWD 层转换 |
-|---|---|---|---|
+| MySQL Type | ❌ Don't Use | ✅ ODS Layer Use | DWD Layer Conversion |
+|-----------|-------------|-----------------|---------------------|
 | `BIT(1)` | `BOOLEAN` | `TINYINT` | `CAST(col AS BOOLEAN)` |
-| `DATETIME` | `DATETIME` | `TIMESTAMP` | 直接用 |
-| `ENUM('a','b')` | `ENUM` | `STRING` | 直接用 |
-| `TEXT` / `LONGTEXT` | `TEXT` | `STRING` | 直接用 |
-| `DECIMAL(p,s)` | `FLOAT` | `DECIMAL(p,s)` | 直接用 |
+| `DATETIME` | `DATETIME` | `TIMESTAMP` | Use directly |
+| `ENUM('a','b')` | `ENUM` | `STRING` | Use directly |
+| `TEXT` / `LONGTEXT` | `TEXT` | `STRING` | Use directly |
+| `DECIMAL(p,s)` | `FLOAT` | `DECIMAL(p,s)` | Use directly |
 | `TINYINT(1)` | `BOOLEAN` | `TINYINT` | `CAST(col AS BOOLEAN)` |
 
-> **ODS 层原则：宽泛类型优先**，同步成功后在 DWD 层做精确类型转换，避免同步阶段因类型不兼容失败。
+> **ODS layer principle: prefer broad types** — sync successfully first, then do precise type conversion in the DWD layer to avoid sync failures due to type incompatibility.
 
 ---
 
-## 完整工程化 SOP
+## Complete Engineering SOP
 
-### 代码资产化原则
+### Code-as-Asset Principle
 
-**数据管道开发 / 数仓建模场景下，所有 SQL 代码都应保存为 Studio 任务，作为可管理的代码资产。**
+**In data pipeline development / data warehouse modeling scenarios, all SQL code should be saved as Studio tasks as manageable code assets.**
 
-- 任务是代码的载体，不只是调度配置
-- 即使是一次性执行的 DDL，也应保存为 DRAFT 任务，方便查阅、复用和多环境迁移
-- 不需要保存为任务的场景：SELECT 查询、临时修复 SQL、一次性验证查询
+- Tasks are the vehicle for code, not just scheduling configurations
+- Even one-time DDL executions should be saved as DRAFT tasks for easy reference, reuse, and multi-environment migration
+- Scenarios that don't need to be saved as tasks: SELECT queries, ad-hoc fix SQL, one-time validation queries
 
-### 新项目启动流程（含快速验证节点）
+### New Project Launch Process (with Quick Verification Checkpoints)
 
-敏捷原则：**每步完成后立即验证，30 秒内知道是否成功，不等全链路跑完再发现问题。**
+Agile principle: **verify immediately after each step, know within 30 seconds if it succeeded — don't wait until the full pipeline runs to discover issues.**
 
 ```
-1. 创建任务目录
-   cz-cli task folder create <业务域>_dw
+1. Create task folder
+   cz-cli task folder create <business_domain>_dw
 
-2. 建 ODS 层表，立即验证
+2. Create ODS layer tables, verify immediately
    cz-cli task save-content 01_ddl_ods --content "<ods_ddl_sql>"
    cz-cli task run 01_ddl_ods
-   ✅ 验证：SHOW TABLES IN <ods_schema>  → 确认表已创建
+   ✅ Verify: SHOW TABLES IN <ods_schema>  → confirm tables created
 
-3. 创建数据同步任务，手动触发一次，立即验证
-   - 00_sync：整库或单表同步到 ODS（MULTI_DI 需进 UI 配置映射）
+3. Create data sync task, trigger once manually, verify immediately
+   - 00_sync: full database or single-table sync to ODS (MULTI_DI requires UI mapping config)
    cz-cli task execute 00_sync
-   ✅ 验证：SELECT COUNT(*) FROM <ods_schema>.<table>  → 与源端行数对比
-            SELECT * FROM <ods_schema>.<table> LIMIT 5  → 抽样检查字段
+   ✅ Verify: SELECT COUNT(*) FROM <ods_schema>.<table>  → compare with source row count
+            SELECT * FROM <ods_schema>.<table> LIMIT 5  → sample check fields
 
-4. 建 DWD 层表，立即验证
+4. Create DWD layer tables, verify immediately
    cz-cli task save-content 02_ddl_dwd --content "<dwd_ddl_sql>"
    cz-cli task run 02_ddl_dwd
-   ✅ 验证：SHOW TABLES IN <dwd_schema>  → 确认表已创建
+   ✅ Verify: SHOW TABLES IN <dwd_schema>  → confirm tables created
 
-5. 生成 ETL 转换 SQL，先手动执行一次验证逻辑，再配调度
+5. Generate ETL transformation SQL, manually execute once to verify logic, then configure scheduling
    cz-cli task save-content 04_transform_ods_to_dwd --content "<etl_sql>"
-   cz-cli task execute 04_transform_ods_to_dwd   ← 先手动跑一次
-   ✅ 验证：SELECT COUNT(*) FROM <dwd_schema>.<table>  → 行数符合预期
-            检查关键字段非空率、LEFT JOIN 结果行数 ≥ 左表行数
-   确认无误后再配调度：
+   cz-cli task execute 04_transform_ods_to_dwd   ← run manually first
+   ✅ Verify: SELECT COUNT(*) FROM <dwd_schema>.<table>  → row count meets expectations
+            Check key field non-null rate, LEFT JOIN result rows ≥ left table rows
+   After confirmation, configure scheduling:
    cz-cli task save-cron 04_transform_ods_to_dwd --cron '0 30 2 * * ? *'
    cz-cli task deploy 04_transform_ods_to_dwd
 
-6. 建 DWS/ADS Dynamic Table，立即触发首次刷新验证
+6. Create DWS/ADS Dynamic Tables, trigger first refresh for verification
    cz-cli task save-content 03_ddl_dws_ads --content "<dws_ads_ddl_sql>"
    cz-cli task run 03_ddl_dws_ads
    REFRESH DYNAMIC TABLE <dws_schema>.<table>
-   ✅ 验证：SHOW DYNAMIC TABLE REFRESH HISTORY <schema>.<table> LIMIT 3
-            → status = SUCCESS，行数符合聚合逻辑
+   ✅ Verify: SHOW DYNAMIC TABLE REFRESH HISTORY <schema>.<table> LIMIT 3
+            → status = SUCCESS, row count matches aggregation logic
 
-7. 可选：数据质量检查任务（配 Cron + 依赖 04）
+7. Optional: data quality check task (Cron + depends on 04)
    cz-cli task save-content 05_dqc_check --content "<dqc_sql>"
    cz-cli task save-cron 05_dqc_check --cron '0 0 3 * * ? *'
    cz-cli task deploy 05_dqc_check
 ```
 
-> **快速失败原则**：任何一步验证失败，立即停下来修复，不要继续往下走。ODS 数据不对，DWD 一定也不对。
+> **Fail-fast principle**: if any step's verification fails, stop immediately and fix — don't continue. If ODS data is wrong, DWD will definitely be wrong too.
 
 ---
 
-## 增量迭代向导
+## Incremental Iteration Guide
 
-**已有管道需要修改时，走增量流程，不要重走完整建管道流程。**
+**When modifying an existing pipeline, follow the incremental process — don't re-run the full pipeline build process.**
 
-当用户说"加一张表"、"加一个字段"、"加一个指标"、"改 ETL 逻辑"时，优先使用交互式工具收集迭代类型：
+When the user says "add a table", "add a field", "add a metric", "change ETL logic", use interactive tools to collect the iteration type:
 
 ```
 question({
   questions: [{
-    question: "你想对现有管道做什么修改？",
+    question: "What modification do you want to make to the existing pipeline?",
     options: [
-      { label: "新增同步表", description: "在现有同步任务里增加一张源表" },
-      { label: "新增字段", description: "源表加了字段，ODS/DWD 需要跟进" },
-      { label: "新增指标/DWS 层", description: "新增聚合逻辑或 Dynamic Table" },
-      { label: "修改 ETL 逻辑", description: "清洗规则、过滤条件、JOIN 关系变更" }
+      { label: "Add sync table", description: "Add a source table to an existing sync task" },
+      { label: "Add field", description: "Source table added a field, ODS/DWD need to follow" },
+      { label: "Add metric/DWS layer", description: "Add aggregation logic or Dynamic Table" },
+      { label: "Modify ETL logic", description: "Cleaning rules, filter conditions, JOIN relationship changes" }
     ]
   }]
 })
 ```
 
-### 新增同步表
+### Add Sync Table
 
 ```
-1. 查血缘，确认影响范围
-   加载 clickzetta-table-lineage，确认新表是否与现有表有关联
+1. Check lineage, confirm impact scope
+   Load clickzetta-table-lineage, confirm if new table has relationships with existing tables
 
-2. 在现有同步任务里增加表（或新建单表同步任务）
-   cz-cli task content 00_sync  → 查看现有配置
-   按需修改后重新部署
+2. Add table to existing sync task (or create new single-table sync task)
+   cz-cli task content 00_sync  → view existing config
+   Modify as needed and redeploy
 
-3. 手动触发同步，立即验证
+3. Manually trigger sync, verify immediately
    cz-cli task execute 00_sync
    ✅ SELECT COUNT(*) FROM <ods_schema>.<new_table>
 
-4. 如需 DWD 层处理，新增 ETL SQL 并追加到 04_transform 任务
-   cz-cli task content 04_transform_ods_to_dwd  → 查看现有 SQL
-   追加新表的清洗逻辑，手动执行验证后重新部署
+4. If DWD layer processing needed, add ETL SQL to 04_transform task
+   cz-cli task content 04_transform_ods_to_dwd  → view existing SQL
+   Append new table cleaning logic, manually execute to verify, then redeploy
 ```
 
-### 新增字段（Schema Evolution）
+### Add Field (Schema Evolution)
 
 ```
-1. 查血缘，识别所有受影响的下游任务/DT
-   加载 clickzetta-table-lineage
+1. Check lineage, identify all affected downstream tasks/DTs
+   Load clickzetta-table-lineage
 
-2. 逐层更新（从上游到下游，不能跳层）
-   ODS 层：ALTER TABLE <ods_schema>.<table> ADD COLUMN <col> <type>
-   ✅ 验证：DESC TABLE <ods_schema>.<table>  → 确认字段已加
+2. Update layer by layer (upstream to downstream, cannot skip layers)
+   ODS layer: ALTER TABLE <ods_schema>.<table> ADD COLUMN <col> <type>
+   ✅ Verify: DESC TABLE <ods_schema>.<table>  → confirm field added
 
-   DWD 层：更新 ETL SQL，加入新字段的清洗逻辑
-   手动执行 04_transform 验证后重新部署
-   ✅ 验证：SELECT <new_col>, COUNT(*) FROM <dwd_schema>.<table> GROUP BY 1 LIMIT 5
+   DWD layer: update ETL SQL, add cleaning logic for new field
+   Manually execute 04_transform to verify, then redeploy
+   ✅ Verify: SELECT <new_col>, COUNT(*) FROM <dwd_schema>.<table> GROUP BY 1 LIMIT 5
 
-   DWS/ADS 层（如需）：Dynamic Table 不支持 ALTER，用 CREATE OR REPLACE 重建
-   重建后立即 REFRESH DYNAMIC TABLE
-   ✅ 验证：SHOW DYNAMIC TABLE REFRESH HISTORY LIMIT 3  → status = SUCCESS
+   DWS/ADS layer (if needed): Dynamic Table doesn't support ALTER, use CREATE OR REPLACE to rebuild
+   Immediately REFRESH DYNAMIC TABLE after rebuild
+   ✅ Verify: SHOW DYNAMIC TABLE REFRESH HISTORY LIMIT 3  → status = SUCCESS
 
-3. 更新 Studio 任务脚本（保持代码资产同步）
+3. Update Studio task scripts (keep code assets in sync)
    cz-cli task save-content <task_name> --content "<updated_sql>"
 ```
 
-### 新增指标/DWS 层
+### Add Metric/DWS Layer
 
 ```
-1. 确认指标口径（与用户确认计算逻辑，避免后期返工）
+1. Confirm metric definition (confirm calculation logic with user to avoid rework)
 
-2. 检查 DWD 层是否有所需字段，没有先走"新增字段"流程
+2. Check if DWD layer has required fields — if not, follow "Add Field" process first
 
-3. 创建新的 Dynamic Table
+3. Create new Dynamic Table
    CREATE OR REPLACE DYNAMIC TABLE <dws_schema>.<new_metric_table>
      REFRESH INTERVAL <n> <unit> vcluster <gp_cluster>
    AS SELECT ...;
    REFRESH DYNAMIC TABLE <dws_schema>.<new_metric_table>
-   ✅ 验证：SELECT COUNT(*), SUM(<metric>) FROM <dws_schema>.<new_metric_table>
-            与已知基准值对比
+   ✅ Verify: SELECT COUNT(*), SUM(<metric>) FROM <dws_schema>.<new_metric_table>
+            Compare with known baseline values
 
-4. 保存 DDL 到 Studio 任务
+4. Save DDL to Studio task
    cz-cli task save-content 03_ddl_dws_ads --content "<updated_ddl>"
 ```
 
-### 修改 ETL 逻辑
+### Modify ETL Logic
 
 ```
-1. 查血缘，确认下游影响范围
-   加载 clickzetta-table-lineage
+1. Check lineage, confirm downstream impact scope
+   Load clickzetta-table-lineage
 
-2. 在 dev/测试环境先验证新逻辑（如有）
+2. Verify new logic in dev/test environment first (if available)
 
-3. 更新 ETL SQL
-   cz-cli task content 04_transform_ods_to_dwd  → 查看现有逻辑
-   修改后先手动执行验证：
+3. Update ETL SQL
+   cz-cli task content 04_transform_ods_to_dwd  → view existing logic
+   After modification, manually execute to verify:
    cz-cli task execute 04_transform_ods_to_dwd
-   ✅ 验证：行数对比、关键字段抽样、与修改前结果对比
+   ✅ Verify: row count comparison, key field sampling, compare with pre-modification results
 
-4. 验证通过后重新部署
+4. After verification passes, redeploy
    cz-cli task save-content 04_transform_ods_to_dwd --content "<new_sql>"
    cz-cli task deploy 04_transform_ods_to_dwd
 
-5. 下游 Dynamic Table 如受影响，触发全量刷新
+5. If downstream Dynamic Tables are affected, trigger full refresh
    SET cz.optimizer.incremental.force.full.refresh = true;
    REFRESH DYNAMIC TABLE <dws_schema>.<table>;
    SET cz.optimizer.incremental.force.full.refresh = false;
 ```
 
-### 交付验证 Checklist
+### Delivery Verification Checklist
 
-- [ ] 各层行数与预期一致
-- [ ] Dynamic Table 使用的 VCluster 存在且 `status = RUNNING`（`SHOW VCLUSTERS`）
-- [ ] Dynamic Table 刷新历史显示 SUCCESS
-- [ ] 关键字段 NULL 率在可接受范围
-- [ ] LEFT JOIN 结果行数 ≥ 左表行数
-- [ ] 所有 DDL 任务为 DRAFT 状态
-- [ ] DWS/ADS 层无冗余调度任务
-- [ ] 调度 DAG 无循环依赖
-- [ ] **ETL 任务依赖链完整**（`cz-cli task deps <task>` 验证，`task_dependencies` 不为空）
-- [ ] 关键表和字段已加注释（加载 `clickzetta-manage-comments`）
+- [ ] Row counts at each layer match expectations
+- [ ] Dynamic Table's VCluster exists and `status = RUNNING` (`SHOW VCLUSTERS`)
+- [ ] Dynamic Table refresh history shows SUCCESS
+- [ ] Key field NULL rate within acceptable range
+- [ ] LEFT JOIN result row count ≥ left table row count
+- [ ] All DDL tasks are in DRAFT status
+- [ ] No redundant scheduled tasks for DWS/ADS layer
+- [ ] Scheduling DAG has no circular dependencies
+- [ ] **ETL task dependency chain is complete** (`cz-cli task deps <task>` to verify, `task_dependencies` is not empty)
+- [ ] Key tables and fields have comments (load `clickzetta-manage-comments`)
 
 ---
 
-## 多环境管理（dev → prod）
+## Multi-environment Management (dev → prod)
 
-ClickZetta 通过 **Workspace** 隔离环境（dev/staging/prod 对应不同 Workspace）。跨 Workspace 的管道迁移当前自动化程度有限，主要依赖手动操作。
+ClickZetta isolates environments via **Workspace** (dev/staging/prod correspond to different Workspaces). Cross-Workspace pipeline migration currently has limited automation and mainly relies on manual operations.
 
-**当用户提出多环境迁移需求时**，告知以下限制并引导：
+**When the user raises multi-environment migration needs**, inform them of the following limitations and guide accordingly:
 
-- 不同 Workspace 的数据源配置、Schema、VCluster 名称各自独立，迁移时需逐一确认和替换
-- 目前没有一键迁移工具，建议联系**数据运维（lh-dba 角色）**协助规划多环境策略
-- 可以用 `cz-cli task content <task_id>` 导出任务脚本，手动调整后在目标 Workspace 重建
+- Data source configurations, schemas, and VCluster names are independent across different Workspaces — each must be confirmed and replaced during migration
+- There is currently no one-click migration tool — recommend contacting **data operations (lh-dba role)** for help planning multi-environment strategy
+- You can use `cz-cli task content <task_id>` to export task scripts, manually adjust, then recreate in the target Workspace
 
-> 多环境管理是平台能力演进方向，当前阶段建议在单 Workspace 内用 Schema 命名区分（如 `ecommerce_ods_dev` vs `ecommerce_ods`），降低迁移复杂度。
+> Multi-environment management is a platform capability evolution direction. At the current stage, it's recommended to use schema naming within a single Workspace to differentiate (e.g., `ecommerce_ods_dev` vs `ecommerce_ods`) to reduce migration complexity.

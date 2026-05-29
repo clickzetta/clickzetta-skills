@@ -1,61 +1,61 @@
-# 语义视图完整语法参考
+# Semantic View Complete Syntax Reference
 
-> 来源：https://www.yunqi.tech/documents/semantic_view
-> 功能状态：邀测（1.3 版本起）
+> Source: https://www.yunqi.tech/documents/semantic_view
+> Feature status: Invite-only preview (since version 1.3)
 
 ---
 
-## CREATE SEMANTIC VIEW 完整语法
+## CREATE SEMANTIC VIEW Full Syntax
 
 ```sql
-CREATE SEMANTIC VIEW <视图名称>
+CREATE SEMANTIC VIEW <view_name>
 TABLES (
-    <逻辑表定义> [ , ... ]
+    <logical_table_definition> [ , ... ]
 )
 [ FILTERS (
-    <过滤器定义> [ , ... ]
+    <filter_definition> [ , ... ]
 ) ]
 DIMENSIONS (
-    <维度定义> [ , ... ]
+    <dimension_definition> [ , ... ]
 )
 METRICS (
-    <指标定义> [ , ... ]
+    <metric_definition> [ , ... ]
 )
-[ COMMENT = '<视图说明>' ];
+[ COMMENT = '<view_description>' ];
 ```
 
-**约束**：`DIMENSIONS` 和 `METRICS` 至少包含其中一个。
+**Constraint**: At least one of `DIMENSIONS` or `METRICS` must be included.
 
 ---
 
-## 逻辑表定义语法
+## Logical Table Definition Syntax
 
 ```sql
-<表别名> AS <schema>.<物理表名>
-    PRIMARY KEY ( <列名> [ , ... ] )
-    [ FOREIGN KEY ( <列名> ) REFERENCES <其他逻辑表别名> ]
-    [ WITH SYNONYMS ( '<同义词>' [ , ... ] ) ]
-    [ COMMENT = '<说明>' ]
+<table_alias> AS <schema>.<physical_table_name>
+    PRIMARY KEY ( <column_name> [ , ... ] )
+    [ FOREIGN KEY ( <column_name> ) REFERENCES <other_logical_table_alias> ]
+    [ WITH SYNONYMS ( '<synonym>' [ , ... ] ) ]
+    [ COMMENT = '<description>' ]
 ```
 
-| 参数 | 说明 |
+| Parameter | Description |
 |---|---|
-| `<表别名> AS <schema>.<物理表>` | 为物理表指定逻辑别名，后续维度/指标/外键均用此别名引用 |
-| `PRIMARY KEY` | 主键列，用于确定表间关系类型（一对多/一对一） |
-| `FOREIGN KEY ... REFERENCES` | 外键关系，引擎据此自动处理 JOIN；引用目标必须是逻辑表别名 |
-| `WITH SYNONYMS` | 逻辑表同义词，增强可发现性 |
+| `<table_alias> AS <schema>.<physical_table>` | Assigns a logical alias to a physical table; dimensions/metrics/foreign keys reference this alias |
+| `PRIMARY KEY` | Primary key columns, used to determine relationship types between tables (one-to-many/one-to-one) |
+| `FOREIGN KEY ... REFERENCES` | Foreign key relationship; the engine uses this to handle JOINs automatically; target must be a logical table alias |
+| `WITH SYNONYMS` | Logical table synonyms to enhance discoverability |
 
-**注意**：被外键引用的表必须在 TABLES 子句中先定义。
+**Note**: Tables referenced by foreign keys must be defined first in the TABLES clause.
 
 ---
 
-## 过滤器定义语法
+## Filter Definition Syntax
 
 ```sql
-<逻辑表别名>.<过滤器名> AS <布尔表达式>
+<logical_table_alias>.<filter_name> AS <boolean_expression>
 ```
 
-示例：
+Example:
 ```sql
 FILTERS (
     customers.is_building AS customers.c_mktsegment = 'BUILDING',
@@ -63,105 +63,105 @@ FILTERS (
 )
 ```
 
-**重要**：FILTERS 是面向 AI/元数据层的语义注解，**不能**作为 `semantic_view()` 函数参数直接传入。若要在查询中过滤，需将对应列定义为 DIMENSION，再用外层 WHERE 子句。
+**Important**: FILTERS are semantic annotations for AI/metadata layers and **cannot** be passed directly as parameters to the `semantic_view()` function. To filter in queries, define the corresponding column as a DIMENSION and use an outer WHERE clause.
 
 ---
 
-## 维度定义语法
+## Dimension Definition Syntax
 
 ```sql
-{ <逻辑表别名>.<维度名> | <维度名> } AS <表达式>
-    [ WITH SYNONYMS = ( '<同义词>' [ , ... ] ) ]
+{ <logical_table_alias>.<dimension_name> | <dimension_name> } AS <expression>
+    [ WITH SYNONYMS = ( '<synonym>' [ , ... ] ) ]
     [ is_unique = { true | false } ]
     [ is_time = { true | false } ]
-    [ enum_values = [ <值1>, <值2>, ... ] ]
-    [ COMMENT = '<说明>' ]
+    [ enum_values = [ <value1>, <value2>, ... ] ]
+    [ COMMENT = '<description>' ]
 ```
 
-| 参数 | 说明 |
+| Parameter | Description |
 |---|---|
-| `AS <表达式>` | 可以是列名，也可以是计算表达式（如 `YEAR(o_orderdate)`） |
-| `WITH SYNONYMS` | 维度同义词，用户可用不同业务术语引用同一维度 |
-| `is_unique = true` | 标识该维度值唯一（如客户名称），帮助引擎优化 |
-| `is_time = true` | 标识为时间类型维度（如订单日期） |
-| `enum_values` | 限定允许的枚举值，提升查询准确性 |
+| `AS <expression>` | Can be a column name or a computed expression (e.g., `YEAR(o_orderdate)`) |
+| `WITH SYNONYMS` | Dimension synonyms allowing users to reference the same dimension with different business terms |
+| `is_unique = true` | Indicates the dimension values are unique (e.g., customer name), helps the engine optimize |
+| `is_time = true` | Identifies as a time-type dimension (e.g., order date) |
+| `enum_values` | Restricts allowed enumeration values, improves query accuracy |
 
 ---
 
-## 指标定义语法
+## Metric Definition Syntax
 
 ```sql
-<逻辑表别名>.<指标名> AS <聚合表达式>
-    [ COMMENT = '<说明>' ]
+<logical_table_alias>.<metric_name> AS <aggregate_expression>
+    [ COMMENT = '<description>' ]
 ```
 
-支持的聚合函数：`COUNT`、`AVG`、`SUM`、`MIN`、`MAX`
+Supported aggregate functions: `COUNT`, `AVG`, `SUM`, `MIN`, `MAX`
 
-示例：
+Example:
 ```sql
 METRICS (
     orders.total_revenue AS SUM(o_totalprice)
-        COMMENT = '总收入',
+        COMMENT = 'Total revenue',
     orders.avg_order_value AS AVG(o_totalprice)
-        COMMENT = '平均订单金额',
+        COMMENT = 'Average order value',
     customers.customer_count AS COUNT(c_custkey)
-        COMMENT = '客户总数'
+        COMMENT = 'Total customer count'
 )
 ```
 
 ---
 
-## semantic_view() 查询函数语法
+## semantic_view() Query Function Syntax
 
 ```sql
 SELECT *
 FROM semantic_view(
-    <视图名称>,
-    DIMENSIONS <维度名> [ , DIMENSIONS <维度名> ... ],
-    METRICS <指标名> [ , METRICS <指标名> ... ]
+    <view_name>,
+    DIMENSIONS <dimension_name> [ , DIMENSIONS <dimension_name> ... ],
+    METRICS <metric_name> [ , METRICS <metric_name> ... ]
 )
-[ WHERE <过滤条件> ];
+[ WHERE <filter_condition> ];
 ```
 
-- 维度名可用限定名（`表别名.维度名`）或短名（名称唯一时）
-- 结果自动按指定维度分组，无需写 GROUP BY
-- WHERE 子句中的列名使用短名（不含表别名前缀）
+- Dimension names can use qualified names (`table_alias.dimension_name`) or short names (when unique)
+- Results are automatically grouped by specified dimensions — no GROUP BY needed
+- Column names in WHERE clauses use short names (without table alias prefix)
 
 ---
 
-## 管理命令
+## Management Commands
 
-| 命令 | 说明 |
+| Command | Description |
 |---|---|
-| `CREATE SEMANTIC VIEW` | 创建语义视图 |
-| `DROP SEMANTIC VIEW IF EXISTS <名称>` | 删除语义视图 |
-| `SHOW SEMANTIC VIEWS` | 列出当前 Schema 所有语义视图 |
-| `SHOW SEMANTIC VIEWS IN <schema>` | 列出指定 Schema 的语义视图 |
-| `DESC EXTENDED <名称>` | 查看详细定义（逻辑表/维度/指标/外键/索引） |
+| `CREATE SEMANTIC VIEW` | Create a semantic view |
+| `DROP SEMANTIC VIEW IF EXISTS <name>` | Drop a semantic view |
+| `SHOW SEMANTIC VIEWS` | List all semantic views in the current schema |
+| `SHOW SEMANTIC VIEWS IN <schema>` | List semantic views in a specified schema |
+| `DESC EXTENDED <name>` | View detailed definition (logical tables/dimensions/metrics/foreign keys/indexes) |
 
 ---
 
-## 最佳实践
+## Best Practices
 
 ```sql
--- 1. 幂等创建（始终先删再建）
+-- 1. Idempotent creation (always drop before create)
 DROP SEMANTIC VIEW IF EXISTS my_view;
 CREATE SEMANTIC VIEW my_view ...;
 
--- 2. 使用有意义的业务术语命名
--- 好：customer_name, total_revenue, order_date
--- 差：c_name, sum_totalprice, o_orderdate
+-- 2. Use meaningful business terminology for naming
+-- Good: customer_name, total_revenue, order_date
+-- Bad: c_name, sum_totalprice, o_orderdate
 
--- 3. 合理设置维度元数据
--- is_time=true 用于日期/时间维度
--- is_unique=true 用于主键类维度（如客户ID、订单号）
--- enum_values 用于状态类维度（如订单状态）
+-- 3. Set dimension metadata appropriately
+-- is_time=true for date/time dimensions
+-- is_unique=true for primary-key-like dimensions (e.g., customer ID, order number)
+-- enum_values for status-type dimensions (e.g., order status)
 
--- 4. 计算维度示例
+-- 4. Computed dimension examples
 DIMENSIONS (
-    orders.order_year AS YEAR(o_orderdate)   -- 从日期提取年份
-        COMMENT = '下单年份',
-    orders.order_month AS MONTH(o_orderdate) -- 从日期提取月份
-        COMMENT = '下单月份'
+    orders.order_year AS YEAR(o_orderdate)   -- Extract year from date
+        COMMENT = 'Order year',
+    orders.order_month AS MONTH(o_orderdate) -- Extract month from date
+        COMMENT = 'Order month'
 )
 ```

@@ -1,58 +1,59 @@
 ---
 name: clickzetta-bi-connect
 description: |
-  将 BI 工具和数据库客户端连接到 ClickZetta Lakehouse。覆盖 Apache Superset、
-  Tableau、Metabase、DBeaver、DataGrip、帆软 FineBI 等主流工具的完整连接配置，
-  包括 JDBC 连接字符串格式、SQLAlchemy URL 格式、驱动安装步骤。
-  当用户说"连接 Superset"、"Tableau 连接 Lakehouse"、"Metabase"、"DBeaver"、
-  "DataGrip"、"BI 工具"、"JDBC 连接"、"SQLAlchemy 连接"、"帆软"、"FineBI"、
-  "数据库客户端"、"可视化工具连接"、"BI 报表"、"PowerBI"、"Navicat"、
-  "MySQL 协议连接"时触发。
+  Connect BI tools and database clients to ClickZetta Lakehouse. Covers complete
+  connection setup for Apache Superset, Tableau, Metabase, DBeaver, DataGrip,
+  FineBI, and more — including JDBC connection string format, SQLAlchemy URL
+  format, and driver installation steps.
+  Trigger when user mentions: "connect Superset", "Tableau connect Lakehouse",
+  "Metabase", "DBeaver", "DataGrip", "BI tool", "JDBC connection",
+  "SQLAlchemy connection", "FineBI", "database client", "visualization tool",
+  "BI report", "PowerBI", "Navicat", "MySQL protocol connection".
   Keywords: BI, Superset, Tableau, Metabase, DBeaver, DataGrip, FineBI, JDBC, connection
 ---
 
-# ClickZetta BI 工具连接
+# ClickZetta BI Tool Connections
 
-阅读 [references/bi-tools.md](references/bi-tools.md) 了解各工具详细配置。
+See [references/bi-tools.md](references/bi-tools.md) for detailed configuration per tool.
 
-## 连接方式速查
+## Connection Method Quick Reference
 
-| 工具 | 连接方式 |
+| Tool | Connection Method |
 |---|---|
 | Apache Superset | SQLAlchemy URL |
-| Tableau | JDBC + .taco 插件 |
-| Metabase | 专用 .jar 驱动 |
+| Tableau | JDBC + .taco plugin |
+| Metabase | Dedicated .jar driver |
 | DBeaver / DataGrip | JDBC |
-| 帆软 FineBI | JDBC 或 MySQL 协议 |
-| PowerBI | MySQL 协议 |
-| Navicat | MySQL 协议 |
+| FineBI | JDBC or MySQL protocol |
+| PowerBI | MySQL protocol |
+| Navicat | MySQL protocol |
 | Python / ORM | SQLAlchemy |
 
 ---
 
-## JDBC 连接字符串
+## JDBC Connection String
 
 ```
 jdbc:clickzetta://<instance>.<region_id>.api.clickzetta.com/<workspace>?username=<user>&password=<pwd>&schema=<schema>&virtualCluster=<vc_name>
 ```
 
-**示例：**
+**Example:**
 ```
 jdbc:clickzetta://f8866243.cn-shanghai-alicloud.api.clickzetta.com/quick_start?username=alice&password=xxxx&schema=public&virtualCluster=default_ap
 ```
 
-- 驱动类：`com.clickzetta.client.jdbc.ClickZettaDriver`
-- 驱动下载：Maven `com.clickzetta:clickzetta-java` 或 [sonatype](https://central.sonatype.com/artifact/com.clickzetta/clickzetta-java/versions)
+- Driver class: `com.clickzetta.client.jdbc.ClickZettaDriver`
+- Driver download: Maven `com.clickzetta:clickzetta-java` or [sonatype](https://central.sonatype.com/artifact/com.clickzetta/clickzetta-java/versions)
 
 ---
 
-## SQLAlchemy URL（Superset / Python ORM）
+## SQLAlchemy URL (Superset / Python ORM)
 
 ```
 clickzetta://<username>:<password>@<instance>.<region_id>.api.clickzetta.com/<workspace>?schema=<schema>&vcluster=<vc_name>
 ```
 
-安装：
+Install:
 ```bash
 pip uninstall -y clickzetta-sqlalchemy clickzetta-connector
 pip install clickzetta-connector -U
@@ -62,16 +63,16 @@ pip install clickzetta-connector -U
 
 ## Apache Superset
 
-**Docker 快速启动：**
+**Quick start with Docker:**
 ```bash
 docker pull clickzetta/superset:2.1.0-1
 docker run -p 8088:8088 clickzetta/superset:2.1.0-1
-# 访问 http://localhost:8088，账号 admin/clickzetta
+# Visit http://localhost:8088, credentials: admin/clickzetta
 ```
 
-**配置数据库连接：**
-1. Settings → Database Connections → + Database → 选择 **Other**
-2. 填写 SQLAlchemy URI：
+**Configure database connection:**
+1. Settings → Database Connections → + Database → select **Other**
+2. Enter SQLAlchemy URI:
    ```
    clickzetta://username:password@instance.cn-shanghai-alicloud.api.clickzetta.com/workspace?vcluster=default_ap
    ```
@@ -81,10 +82,10 @@ docker run -p 8088:8088 clickzetta/superset:2.1.0-1
 
 ## Tableau
 
-1. 将 JDBC JAR 放入 Tableau Drivers 目录
-2. 将 `.taco` 插件放入 Connectors 目录
-3. 启动时加 `-DDisableVerifyConnectorPluginSignature=true`
-4. 连接：到服务器 → 更多 → **Lakehouse x 云器科技**
+1. Place the JDBC JAR in the Tableau Drivers directory
+2. Place the `.taco` plugin in the Connectors directory
+3. Launch with `-DDisableVerifyConnectorPluginSignature=true`
+4. Connect: To Server → More → **Lakehouse x ClickZetta**
 
 ---
 
@@ -96,81 +97,81 @@ docker cp clickzetta.metabase-driver.jar metabase:/plugins/
 docker restart metabase
 ```
 
-访问 `http://localhost:3000` → Admin Settings → Databases → Add a database → 选择 ClickZetta
+Visit `http://localhost:3000` → Admin Settings → Databases → Add a database → select ClickZetta
 
 ---
 
 ## DBeaver
 
-1. 驱动管理器 → 新建驱动
-2. 类名：`com.clickzetta.client.jdbc.ClickZettaDriver`
-3. 添加 JDBC JAR 包
-4. 新建连接 → 粘贴 JDBC 连接字符串
+1. Driver Manager → New Driver
+2. Class name: `com.clickzetta.client.jdbc.ClickZettaDriver`
+3. Add the JDBC JAR
+4. New Connection → paste the JDBC connection string
 
 ---
 
-## MySQL 协议连接（PowerBI / Navicat / 帆软）
+## MySQL Protocol (PowerBI / Navicat / FineBI)
 
-Lakehouse 支持通过 MySQL 协议连接，适用于不支持自定义 JDBC 驱动的工具。
+Lakehouse supports MySQL protocol connections for tools that don't support custom JDBC drivers.
 
-**前置准备：**
-1. 在管理中心为用户重置 MySQL 协议专用密码
-2. 为用户设置默认计算集群（`ALTER USER username SET DEFAULT_VCLUSTER = default_ap`）
+**Prerequisites:**
+1. Reset the MySQL protocol password for the user in the admin console
+2. Set the user's default virtual cluster (`ALTER USER username SET DEFAULT_VCLUSTER = default_ap`)
 
-**用户名格式：** `<instance_name>.<workspace_name>.<username>`
+**Username format:** `<instance_name>.<workspace_name>.<username>`
 
-**连接参数：**
-- 主机：`<instance>.<region_id>.mysql.clickzetta.com`
-- 端口：`3306`
-- 用户名：`instance.workspace.username`（三段式拼接）
-- 密码：MySQL 协议专用密码（非 Lakehouse 登录密码）
+**Connection parameters:**
+- Host: `<instance>.<region_id>.mysql.clickzetta.com`
+- Port: `3306`
+- Username: `instance.workspace.username` (three-part format)
+- Password: MySQL protocol password (not the Lakehouse login password)
 
 ### PowerBI
 
-1. 获取数据 → MySQL 数据库
-2. 服务器：`instance.cn-shanghai-alicloud.mysql.clickzetta.com`
-3. 用户名：`instance.workspace.username`
-4. 密码：MySQL 协议专用密码
-5. 数据连接模式选择 DirectQuery
+1. Get Data → MySQL database
+2. Server: `instance.cn-shanghai-alicloud.mysql.clickzetta.com`
+3. Username: `instance.workspace.username`
+4. Password: MySQL protocol password
+5. Data connectivity mode: DirectQuery
 
 ### Navicat
 
-1. 新建连接 → MySQL
-2. 主机：`instance.cn-shanghai-alicloud.mysql.clickzetta.com`
-3. 端口：`3306`
-4. 用户名：`instance.workspace.username`
-5. 密码：MySQL 协议专用密码
+1. New Connection → MySQL
+2. Host: `instance.cn-shanghai-alicloud.mysql.clickzetta.com`
+3. Port: `3306`
+4. Username: `instance.workspace.username`
+5. Password: MySQL protocol password
 
-### 帆软 FineBI（MySQL 协议方式）
+### FineBI (MySQL protocol)
 
-1. 管理系统 → 数据连接 → 新建数据连接 → MySQL
-2. URL：`jdbc:mysql://instance.cn-shanghai-alicloud.mysql.clickzetta.com:3306/workspace`
-3. 用户名：`instance.workspace.username`
-4. 密码：MySQL 协议专用密码
+1. Admin → Data Connection → New Connection → MySQL
+2. URL: `jdbc:mysql://instance.cn-shanghai-alicloud.mysql.clickzetta.com:3306/workspace`
+3. Username: `instance.workspace.username`
+4. Password: MySQL protocol password
 
-> ⚠️ MySQL 协议连接有部分 SQL 语法限制，详见 [使用MySQL协议连接](https://www.yunqi.tech/documents/use-mysql-client)
-
----
-
-## 常用地域代码
-
-| 地域 | region_id |
-|---|---|
-| 阿里云上海 | `cn-shanghai-alicloud` |
-| 腾讯云上海 | `ap-shanghai-tencentcloud` |
-| 腾讯云北京 | `ap-beijing-tencentcloud` |
-| AWS 新加坡 | `ap-southeast-1-aws` |
+> ⚠️ MySQL protocol connections have some SQL syntax limitations. See the [MySQL client connection guide](https://www.yunqi.tech/documents/use-mysql-client) for details.
 
 ---
 
-## 常见问题
+## Common Region Codes
 
-| 问题 | 解决方案 |
+| Region | region_id |
 |---|---|
-| Superset 连接失败 | 确认已安装 `clickzetta-connector`，URL 格式正确 |
-| Tableau 找不到 Lakehouse 连接器 | 确认 .taco 文件在正确目录，且启动时禁用签名校验 |
-| DBeaver 驱动加载失败 | 确认 JAR 包版本与 Lakehouse 版本匹配 |
-| 连接超时 | 检查网络，确认 instance/region_id 正确 |
-| 无权限查询 | 确认用户已被 `CREATE USER` 添加到工作空间，且有 `USE VCLUSTER` 权限 |
-| MySQL 协议连接失败 | 确认用户名为三段式格式（instance.workspace.username），密码为 MySQL 协议专用密码 |
-| PowerBI DirectQuery 报错 | 确认已设置用户默认计算集群（`ALTER USER ... SET DEFAULT_VCLUSTER`） |
+| Alibaba Cloud Shanghai | `cn-shanghai-alicloud` |
+| Tencent Cloud Shanghai | `ap-shanghai-tencentcloud` |
+| Tencent Cloud Beijing | `ap-beijing-tencentcloud` |
+| AWS Singapore | `ap-southeast-1-aws` |
+
+---
+
+## Troubleshooting
+
+| Issue | Solution |
+|---|---|
+| Superset connection fails | Verify `clickzetta-connector` is installed and the URL format is correct |
+| Tableau can't find the Lakehouse connector | Confirm the .taco file is in the correct directory and signature verification is disabled at launch |
+| DBeaver driver fails to load | Verify the JAR version matches the Lakehouse version |
+| Connection timeout | Check network; confirm instance and region_id are correct |
+| Permission denied on query | Confirm the user was added via `CREATE USER` and has `USE VCLUSTER` permission |
+| MySQL protocol connection fails | Confirm username is in three-part format (instance.workspace.username) and the MySQL protocol password is used |
+| PowerBI DirectQuery error | Confirm the user's default virtual cluster is set (`ALTER USER ... SET DEFAULT_VCLUSTER`) |

@@ -12,7 +12,7 @@
 |---|---|---|
 | 基础与连接 | [clickzetta-overview](./clickzetta-overview/) | ClickZetta 产品全貌、对象模型、架构、Studio 模块、品牌与服务地址 |
 | 基础与连接 | [clickzetta-lakehouse-connect](./clickzetta-lakehouse-connect/) | Python SDK、ZettaPark、SQLAlchemy、JDBC 等连接配置 |
-| 基础与连接 | [clickzetta-sql-syntax-guide](./clickzetta-sql-syntax-guide/) | SQL 语法参考、函数、数据类型、Snowflake/Databricks/Spark 迁移差异 |
+| 基础与连接 | [clickzetta-sql-migration](./clickzetta-sql-migration/) | 从 Snowflake / Databricks / Spark SQL 迁移到 ClickZetta 的语法差异、函数对照、隐式转换规则 |
 | 基础与连接 | [clickzetta-metadata](./clickzetta-metadata/) | SHOW/DESC 命令族、INFORMATION_SCHEMA 元数据、费用和用量统计 |
 | 基础与连接 | [clickzetta-manage-comments](./clickzetta-manage-comments/) | Schema、表、字段、动态表、物化视图、VCluster、Workspace 注释管理 |
 | 数据导入与管道 | [clickzetta-data-ingest-pipeline](./clickzetta-data-ingest-pipeline/) | 数据导入方案路由，根据数据源、实时性、范围选择最佳导入方式 |
@@ -34,7 +34,7 @@
 | 建模与计算 | [clickzetta-semantic-view](./clickzetta-semantic-view/) | Semantic View 语义层、逻辑表、维度、指标、过滤器和查询 |
 | SDK 与外部集成 | [clickzetta-app-python-sdk](./clickzetta-app-python-sdk/) | Python 应用 SDK：connector、BulkLoad、IGS 实时写入、SQLAlchemy |
 | SDK 与外部集成 | [clickzetta-zettapark](./clickzetta-zettapark/) | ZettaPark DataFrame API、Session、表读写、文件操作、SQL 执行 |
-| SDK 与外部集成 | [clickzetta-java-sdk](./clickzetta-java-sdk/) | Java SDK BulkloadStream 批量写入、RealtimeStream Kafka 实时写入 |
+| SDK 与外部集成 | [clickzetta-java-sdk](./clickzetta-java-sdk/) | Java SDK BulkloadStream batch writes and RealtimeStream Kafka real-time writes |
 | SDK 与外部集成 | [clickzetta-spark-flink-connector](./clickzetta-spark-flink-connector/) | Spark Connector 读写、Flink CDC/append-only 写入 |
 | SDK 与外部集成 | [clickzetta-bi-connect](./clickzetta-bi-connect/) | Superset、Tableau、Metabase、DBeaver、DataGrip、FineBI、PowerBI 连接 |
 | SDK 与外部集成 | [clickzetta-external-function](./clickzetta-external-function/) | External Function、Python/Java UDF、AI_COMPLETE、AI_EMBEDDING |
@@ -62,7 +62,7 @@
 | 管理 Studio 任务、调度、依赖、补数、任务目录 | `clickzetta-studio-task-manager` |
 | 设计数据管道、动态表、流式增量 ETL | `clickzetta-sql-pipeline-manager` / `clickzetta-dynamic-table` / `clickzetta-table-stream-pipeline` |
 | 诊断管道质量、任务失败、链路缺陷 | `clickzetta-pipeline-review` |
-| 写 SQL、迁移 SQL、查函数或语法差异 | `clickzetta-sql-syntax-guide` |
+| 写 SQL、迁移 SQL、查函数或语法差异 | `clickzetta-sql-migration`（迁移/对比时）+ ClickZetta 官方文档（写 ClickZetta 原生 SQL 时） |
 | 查询元数据、表结构、作业历史、成本归因 | `clickzetta-metadata` / `clickzetta-monitoring` |
 | 查询慢、作业慢、小文件、缓存、执行计划 | `clickzetta-query-optimizer` |
 | 用户、角色、授权、脱敏、网络策略 | `clickzetta-access-control` |
@@ -85,9 +85,9 @@ ClickZetta Lakehouse 产品全貌入口，帮助新用户建立对象模型和�
 
 Skill 内包含本地配置文件读取、连接参数说明、国内版与国际版服务地址差异、常见连接报错排查，以及 JDBC/SQLAlchemy/Python/ZettaPark 的参考示例。
 
-#### [clickzetta-sql-syntax-guide](./clickzetta-sql-syntax-guide/)
+#### [clickzetta-sql-migration](./clickzetta-sql-migration/)
 
-ClickZetta Lakehouse SQL 语法参考和迁移指南。覆盖 DDL、DML、DQL、函数、数据类型、隐式类型转换，以及从 Snowflake、Databricks、Spark SQL 迁移时最容易写错的语法差异。
+ClickZetta Lakehouse SQL 迁移指南，专注于从 Snowflake、Databricks、Spark SQL 迁移到 ClickZetta 时的语法差异、函数对照、隐式类型转换规则。原生 ClickZetta SQL 语法请参考 ClickZetta Lakehouse 官方文档。
 
 适用于查询“ClickZetta 怎么写某个 SQL”“Snowflake/Databricks 语法怎么迁移”“日期/JSON/BOOLEAN/集合运算怎么写”“某个函数是否支持”等问题。
 
@@ -225,9 +225,9 @@ ZettaPark Python DataFrame API 使用指南。ZettaPark 提供类 pandas 的开�
 
 #### [clickzetta-java-sdk](./clickzetta-java-sdk/)
 
-ClickZetta Java SDK 数据写入指南，覆盖 BulkloadStream 和 RealtimeStream 两种接口。BulkloadStream 适合本地文件或数据库批量上传，RealtimeStream 适合 Kafka 实时消费写入。
+ClickZetta Java SDK data write guide covering the BulkloadStream and RealtimeStream interfaces. BulkloadStream is best for local file or database batch uploads, while RealtimeStream is best for Kafka real-time consumption and writes.
 
-包含 Maven 依赖、JDBC URL 参数、行写入 API、状态监控、Options 调优和常见错误处理。
+Includes Maven dependencies, JDBC URL parameters, row write APIs, status monitoring, Options tuning, and common error handling.
 
 #### [clickzetta-spark-flink-connector](./clickzetta-spark-flink-connector/)
 

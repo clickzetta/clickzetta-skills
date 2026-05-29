@@ -1,11 +1,11 @@
-# ZettaPark API 数据科学常用操作
+# ZettaPark API — Common Data Science Operations
 
-> 来源：https://www.yunqi.tech/documents/ZettaparkQuickStart
-> **Python 版本**：推荐 3.12（最低 3.10）。安装：`python3.12 -m venv .venv && pip install clickzetta_zettapark_python`
+> Source: https://www.yunqi.tech/documents/ZettaparkQuickStart
+> **Python version**: 3.12 recommended (3.10 minimum). Install: `python3.12 -m venv .venv && pip install clickzetta_zettapark_python`
 
 ---
 
-## Session 创建
+## Creating a Session
 
 ```python
 from clickzetta.zettapark.session import Session
@@ -31,47 +31,47 @@ session = Session.builder.configs({
 
 ---
 
-## 数据读取
+## Reading Data
 
 ```python
-# 读取整张表
+# Read an entire table
 df = session.table("my_schema.orders")
 
-# 执行 SQL 查询
+# Execute a SQL query
 df = session.sql("SELECT * FROM my_schema.orders WHERE amount > 100")
 
-# 转为 pandas（小数据集）
+# Convert to pandas (small datasets)
 pandas_df = df.to_pandas()
 
-# 分批读取大表（避免 OOM）
+# Read large tables in batches (avoid OOM)
 pandas_df = session.sql("""
     SELECT * FROM my_schema.events
-    TABLESAMPLE ROW (1)   -- 1% 精确采样
+    TABLESAMPLE ROW (1)   -- exact 1% sample
 """).to_pandas()
 
-# 只获取前 N 行
+# Get first N rows only
 pandas_df = df.limit(10000).to_pandas()
 ```
 
 ---
 
-## DataFrame 变换
+## DataFrame Transformations
 
 ```python
 from clickzetta.zettapark.functions import col, when, lit, sum as F_sum, count as F_count, avg as F_avg
 
-# 过滤
+# Filter
 df_filtered = df.filter(col("amount") > 0)
 df_filtered = df.filter((col("status") == "COMPLETED") & (col("amount") > 100))
 
-# 选择列
+# Select columns
 df_selected = df.select("user_id", "amount", "order_date")
 
-# 新增列
+# Add columns
 df = df.with_column("log_amount", col("amount").cast("double"))
 df = df.with_column("is_high_value", when(col("amount") > 1000, 1).otherwise(0))
 
-# 聚合
+# Aggregate
 agg_df = df.group_by("user_id").agg(
     F_sum("amount").as_("total_amount"),
     F_count("order_id").as_("order_cnt"),
@@ -81,22 +81,22 @@ agg_df = df.group_by("user_id").agg(
 # JOIN
 result = orders.join(users, orders["user_id"] == users["user_id"], "left")
 
-# 排序
+# Sort
 df_sorted = df.sort(col("amount").desc())
 ```
 
 ---
 
-## 数据写回
+## Writing Data Back
 
 ```python
-# 覆盖写入（常用于特征表更新）
+# Overwrite (common for feature table updates)
 df.write.mode("overwrite").save_as_table("ds_workspace.features_v1")
 
-# 追加写入（常用于预测结果）
+# Append (common for prediction results)
 df.write.mode("append").save_as_table("ds_workspace.predictions")
 
-# pandas DataFrame 写回
+# Write a pandas DataFrame back
 import pandas as pd
 local_df = pd.DataFrame({"user_id": [1, 2], "score": [0.8, 0.6]})
 session.create_dataframe(local_df).write.mode("overwrite") \
@@ -105,7 +105,7 @@ session.create_dataframe(local_df).write.mode("overwrite") \
 
 ---
 
-## 与 pandas/scikit-learn 集成
+## Integration with pandas / scikit-learn
 
 ```python
 import pandas as pd
@@ -114,14 +114,14 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import GradientBoostingClassifier
 
-# 1. 从 Lakehouse 拉特征
+# 1. Pull features from Lakehouse
 features_df = session.sql("""
     SELECT user_id, total_amount_30d, order_cnt_30d,
            active_days, avg_amount_30d, label
     FROM ds_workspace.features_final
 """).to_pandas()
 
-# 2. 本地处理
+# 2. Local processing
 X = features_df.drop(["user_id", "label"], axis=1)
 y = features_df["label"]
 
@@ -130,17 +130,17 @@ X_scaled = scaler.fit_transform(X)
 
 X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2)
 
-# 3. 训练模型
+# 3. Train model
 model = GradientBoostingClassifier(n_estimators=100)
 model.fit(X_train, y_train)
 
-# 4. 预测并写回
+# 4. Predict and write back
 features_df["predicted_score"] = model.predict_proba(X_scaled)[:, 1]
 session.create_dataframe(
     features_df[["user_id", "predicted_score"]]
 ).write.mode("overwrite").save_as_table("ds_workspace.predictions")
 
-# 5. 保存模型
+# 5. Save model
 import joblib
 joblib.dump(model, "models/gbm_model.pkl")
 joblib.dump(scaler, "models/scaler.pkl")
@@ -148,9 +148,9 @@ joblib.dump(scaler, "models/scaler.pkl")
 
 ---
 
-## 注意事项
+## Notes
 
-- `to_pandas()` 会把数据全部拉到本地内存，大表必须先 `TABLESAMPLE` 或 `LIMIT`
-- `collect()` 返回 Row 对象列表，`to_pandas()` 返回 DataFrame，数据科学场景用后者
-- ZettaPark 的 DataFrame 操作是懒执行，只有 `to_pandas()`/`collect()`/`show()`/`save_as_table()` 才真正触发计算
-- 写回时推荐用 `ds_workspace` 这样的专属 Schema，与生产数据隔离
+- `to_pandas()` pulls all data into local memory — always `TABLESAMPLE` or `LIMIT` large tables first
+- `collect()` returns a list of Row objects; `to_pandas()` returns a DataFrame — use the latter for data science
+- ZettaPark DataFrame operations are lazy — computation only triggers on `to_pandas()` / `collect()` / `show()` / `save_as_table()`
+- Write results to a dedicated schema like `ds_workspace` to keep them isolated from production data
