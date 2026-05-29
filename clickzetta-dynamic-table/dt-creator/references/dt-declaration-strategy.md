@@ -1,12 +1,12 @@
-# Dynamic Table 声明策略
+# Dynamic Table Declaration Strategy
 
-DT 有两种创建语法：静态分区 DT 和动态分区 DT（非分区 DT 可视为动态分区的特例）。两者在创建语法、刷新方式、增量行为上有本质区别。
+DT has two creation syntaxes: static partition DT and dynamic partition DT (non-partitioned DT can be viewed as a special case of dynamic partition). The two differ fundamentally in creation syntax, refresh behavior, and incremental behavior.
 
-## 核心概念
+## Core Concepts
 
-### 静态分区 DT（Partitioned DT with SESSION_CONFIGS args）
+### Static Partition DT (Partitioned DT with SESSION_CONFIGS args)
 
-SQL 中通过 `SESSION_CONFIGS()` 引用分区参数，每次 REFRESH 时指定具体的分区值。每个分区独立刷新，可以视为每个分区刷新单元都是一个彼此独立的 DT。
+The SQL references partition parameters via `SESSION_CONFIGS()`, and a specific partition value is specified at each REFRESH. Each partition refreshes independently — each partition refresh unit can be viewed as an independent DT.
 
 ```sql
 CREATE DYNAMIC TABLE order_daily (
@@ -18,24 +18,24 @@ SELECT id, amount, SESSION_CONFIGS()['dt.args.ds'] AS ds
 FROM orders
 WHERE ds = SESSION_CONFIGS()['dt.args.ds'];
 
--- 刷新时指定分区
+-- Specify partition at refresh time
 set dt.args.ds=2025-01-01
 REFRESH DYNAMIC TABLE order_daily PARTITION(ds = '2025-01-01');
 ```
 
-### 动态分区 DT（Non-partitioned DT / DT without args）
+### Dynamic Partition DT (Non-partitioned DT / DT without args)
 
-SQL 中不引用 `SESSION_CONFIGS()`，或者虽然有分区但分区值由查询逻辑动态产生。每次 REFRESH 处理所有源表的增量数据。
+The SQL does not reference `SESSION_CONFIGS()`, or although partitioned, the partition values are dynamically produced by the query logic. Each REFRESH processes all incremental data from all source tables.
 
-动态分区 DT 不允许除 REFRESH 以外的任何命令修改数据（INSERT/UPDATE/DELETE/MERGE 均不可用），数据完全由 REFRESH 驱动。
+Dynamic partition DTs do not allow any command other than REFRESH to modify data (INSERT/UPDATE/DELETE/MERGE are all unavailable); data is driven entirely by REFRESH.
 
-因此以下 ETL 场景不适合使用动态分区 DT：
-- 需要手动修补数据（如发现某几行数据有误，需要直接 UPDATE 修正）
-- 需要按条件删除部分数据（如清理脏数据、删除过期记录）
-- 需要 MERGE INTO 做 upsert（如 CDC 场景中消费 stream 合并到目标表）
-- 需要 INSERT INTO 追加外部数据（如手动导入一批补录数据）
-- 需要按分区独立回填或重刷（动态分区 DT 只能整表全量刷新，无法单独刷某个分区）
-- 下游有其他任务需要往同一张表写入数据（DT 独占写入权）
+Therefore, the following ETL scenarios are not suitable for dynamic partition DT:
+- Need to manually patch data (e.g., a few rows are found to be incorrect and need to be directly UPDATEd)
+- Need to delete data by condition (e.g., cleaning dirty data, deleting expired records)
+- Need MERGE INTO for upsert (e.g., consuming a stream and merging into a target table in a CDC scenario)
+- Need INSERT INTO to append external data (e.g., manually importing a batch of supplementary data)
+- Need to backfill or re-refresh partitions independently (dynamic partition DT can only do a full table refresh; individual partitions cannot be refreshed separately)
+- Downstream tasks need to write to the same table (DT has exclusive write ownership)
 
 ```sql
 CREATE DYNAMIC TABLE order_summary (
@@ -46,140 +46,140 @@ SELECT category, SUM(amount) AS total_amount
 FROM orders
 GROUP BY category;
 
--- 刷新时不指定分区
+-- No partition specified at refresh time
 REFRESH DYNAMIC TABLE order_summary;
 ```
 
-## 两者的关键区别
+## Key Differences
 
-| 维度 | 静态分区 DT | 动态分区 DT |
+| Dimension | Static Partition DT | Dynamic Partition DT |
 |------|-----------|-----------|
-| SQL 中是否有 `SESSION_CONFIGS()` | 有，用于引用分区参数 | 无 |
-| REFRESH 语法 | `REFRESH ... PARTITION(ds='xxx')` | `REFRESH ...`（无 PARTITION） |
-| 增量范围 | 只处理指定分区的增量数据 | 处理所有源表的全部增量数据 |
-| 调度方式 | 外部调度器按分区值逐个触发 | 外部调度器定时触发即可 |
-| 数据生命周期 | 按分区管理，可独立回填/删除 | 整表管理 |
-| 状态表 | 按分区独立维护 | 全局维护 |
-| 适合的数据模式 | T+1 批处理、按时间分区的 ETL | 实时流、全局聚合、无明确分区键 |
+| Does SQL contain `SESSION_CONFIGS()`? | Yes, used to reference partition parameters | No |
+| REFRESH syntax | `REFRESH ... PARTITION(ds='xxx')` | `REFRESH ...` (no PARTITION) |
+| Incremental scope | Only processes incremental data for the specified partition | Processes all incremental data from all source tables |
+| Scheduling method | External scheduler triggers one partition at a time | External scheduler triggers on a timer |
+| Data lifecycle | Managed per partition; can backfill/delete independently | Managed as a whole table |
+| State tables | Maintained independently per partition | Maintained globally |
+| Suitable data patterns | T+1 batch processing, time-partitioned ETL | Real-time streams, global aggregation, no clear partition key |
 
-## 选择决策树
+## Selection Decision Tree
 
 ```
-你的数据有明确的时间/业务分区键吗？
+Does your data have a clear time/business partition key?
 │
-├─ 是 → 原始 ETL 是按分区 INSERT OVERWRITE 的吗？
+├─ Yes → Was the original ETL doing INSERT OVERWRITE by partition?
 │       │
-│       ├─ 是 → 使用静态分区 DT
-│       │       （保持原有的分区粒度，每个分区独立刷新）
+│       ├─ Yes → Use static partition DT
+│       │       (maintain the original partition granularity; each partition refreshes independently)
 │       │
-│       └─ 否 → 数据量大吗？需要按分区管理生命周期吗？
+│       └─ No → Is the data volume large? Do you need per-partition lifecycle management?
 │               │
-│               ├─ 是 → 使用静态分区 DT
-│               │       （即使原来不是分区表，也建议加分区以便管理）
+│               ├─ Yes → Use static partition DT
+│               │       (even if the original was not partitioned, adding partitions is recommended for manageability)
 │               │
-│               └─ 否 → 使用动态分区 DT
-│                       （简单场景，不需要分区管理）
+│               └─ No → Use dynamic partition DT
+│                       (simple scenario; no partition management needed)
 │
-└─ 否 → 使用动态分区 DT
-        （全局聚合、实时汇总等场景）
+└─ No → Use dynamic partition DT
+        (global aggregation, real-time summary, etc.)
 ```
 
-## 静态分区 DT 详解
+## Static Partition DT — Details
 
-### 适用场景
+### Applicable Scenarios
 
-1. **T+1 批处理 ETL 迁移**
-   - 原始 SQL 是 `INSERT OVERWRITE TABLE t PARTITION(ds='${ds}')` 模式
-   - 每天/每小时按分区刷新一次
-   - 需要支持历史分区回填
+1. **T+1 batch ETL migration**
+   - Original SQL follows the `INSERT OVERWRITE TABLE t PARTITION(ds='${ds}')` pattern
+   - Refreshes once per day/hour by partition
+   - Needs to support historical partition backfill
 
-2. **滑动窗口计算**
-   - 如：最近 7 天的聚合、环比计算
-   - SQL 中引用 `SESSION_CONFIGS()['dt.args.ds']` 和 `sub_days(...)` 做窗口范围
+2. **Sliding window computation**
+   - E.g., aggregation over the last 7 days, period-over-period comparison
+   - SQL references `SESSION_CONFIGS()['dt.args.ds']` and `sub_days(...)` for window range
 
-3. **需要按分区管理数据生命周期**
-   - 通过 `data_lifecycle` 自动清理过期分区
-   - 可以单独回填某个分区而不影响其他分区
+3. **Per-partition data lifecycle management**
+   - Automatically clean up expired partitions via `data_lifecycle`
+   - Can backfill a single partition without affecting others
 
-4. **自引用 DT（日环比、SCD）**
-   - 当前分区依赖上一个分区的结果
-   - 必须用静态分区，因为需要明确指定"当前分区"和"上一分区"
+4. **Self-referencing DT (daily comparison, SCD)**
+   - Current partition depends on the result of the previous partition
+   - Must use static partition, because "current partition" and "previous partition" need to be explicitly specified
 
-### 刷新方式
+### Refresh Method
 
 ```sql
--- 每次刷新一个分区
+-- Refresh one partition at a time
 set dt.args.ds=2025-01-15
 REFRESH DYNAMIC TABLE my_dt PARTITION(ds = '2025-01-15');
 
--- 多级分区
+-- Multi-level partition
 set dt.args.pt=20250411
 set dt.args.pt_hour=01
 REFRESH DYNAMIC TABLE my_dt PARTITION(pt = '20250411', pt_hour = '01');
 ```
 
-### 注意事项
+### Notes
 
-- 回填时使用 `cz.optimizer.incremental.backfill.enabled=TRUE`，会自动走全量刷新
-- 分区参数通过 `set dt.args.xxx=value` 传入，REFRESH 语句中的 PARTITION 子句指定分区值
+- Use `cz.optimizer.incremental.backfill.enabled=TRUE` for backfill; it will automatically use full refresh
+- Partition parameters are passed via `set dt.args.xxx=value`; the PARTITION clause in the REFRESH statement specifies the partition value
 
-## 动态分区 DT 详解
+## Dynamic Partition DT — Details
 
-### 适用场景
+### Applicable Scenarios
 
-1. **实时流数据聚合**
-   - 源表持续写入，DT 定时刷新
-   - 不需要按分区管理，每次处理所有新增数据
+1. **Real-time stream data aggregation**
+   - Source table continuously writes; DT refreshes on a schedule
+   - No partition management needed; each refresh processes all new data
 
-2. **全局汇总表**
-   - 如：全局 TopN、全局计数、全局去重
-   - 没有明确的分区键
+2. **Global summary tables**
+   - E.g., global TopN, global count, global deduplication
+   - No clear partition key
 
-3. **简单的 JOIN + 过滤**
-   - 不涉及分区参数的简单转换
-   - 如：事实表 JOIN 维度表，输出宽表
+3. **Simple JOIN + filter**
+   - Simple transformations without partition parameters
+   - E.g., fact table JOIN dimension table, output wide table
 
-4. **多源表合并（UNION ALL）**
-   - 多个源表的数据合并到一张表
-   - 不需要按分区管理
+4. **Multi-source merge (UNION ALL)**
+   - Data from multiple source tables merged into one table
+   - No partition management needed
 
-### 刷新方式
+### Refresh Method
 
 ```sql
--- 直接刷新，处理所有源表的增量
+-- Refresh directly; processes all incremental data from all source tables
 REFRESH DYNAMIC TABLE my_dt;
 ```
 
-### 注意事项
+### Notes
 
-- 每次刷新处理所有源表的全部增量，如果源表变更量大，刷新可能较慢
-- 状态表全局维护，随着数据量增长可能膨胀
-- 不支持按分区回填，只能全量刷新整表
-- 适合变更量占比小的场景（< 5%）
+- Each refresh processes all incremental data from all source tables; if source table change volume is large, refresh may be slow
+- State tables are maintained globally and may grow as data volume increases
+- Per-partition backfill is not supported; only full table refresh is possible
+- Suitable for scenarios where the change ratio is small (< 5%)
 
-## 分区粒度选择
+## Partition Granularity Selection
 
-当选择静态分区 DT 时，还需要决定分区粒度：
+When choosing a static partition DT, you also need to decide on partition granularity:
 
-| 数据模式 | 推荐分区粒度 | 说明 |
+| Data pattern | Recommended granularity | Notes |
 |---------|------------|------|
-| 严格有序的时间序列（如日志） | 分钟级 (`dt_min`) | 数据量大、写入频繁 |
-| 大致有序、少量迟到数据 | 小时级 (`dt_hour`) | 平衡粒度和管理复杂度 |
-| T+1 批量导入 | 天级 (`ds`) | 最常见的 ETL 场景 |
-| 按业务周期 | 周/月级 | 报表类场景 |
-| 多级分区 | 天 + 小时 (`ds`, `hour`) | 需要更细粒度的生命周期管理 |
+| Strictly ordered time series (e.g., logs) | Minute-level (`dt_min`) | High data volume, frequent writes |
+| Roughly ordered, small amount of late data | Hour-level (`dt_hour`) | Balance between granularity and management complexity |
+| T+1 batch import | Day-level (`ds`) | Most common ETL scenario |
+| By business cycle | Weekly/monthly | Reporting scenarios |
+| Multi-level partition | Day + hour (`ds`, `hour`) | Finer-grained lifecycle management needed |
 
-选择原则：
-- 粒度越细，每次刷新处理的数据量越小，增量效率越高
-- 粒度越细，分区数越多，管理和调度越复杂
-- 粒度应与数据写入频率匹配：如果数据每小时写入一次，分区粒度不应细于小时
+Selection principles:
+- Finer granularity → smaller data volume per refresh → higher incremental efficiency
+- Finer granularity → more partitions → more complex management and scheduling
+- Granularity should match the data write frequency: if data is written hourly, partition granularity should not be finer than hourly
 
-## 从原始 ETL 判断分区策略
+## Determining Partition Strategy from Original ETL
 
-| 原始 ETL 模式 | 推荐 DT 分区策略 |
+| Original ETL pattern | Recommended DT partition strategy |
 |--------------|----------------|
-| `INSERT OVERWRITE TABLE t PARTITION(ds='${ds}')` | 静态分区 DT，天级 |
-| `INSERT OVERWRITE TABLE t PARTITION(ds='${ds}', hour='${hour}')` | 静态分区 DT，天+小时级 |
-| `INSERT OVERWRITE TABLE t PARTITION(ds)` （动态分区写入） | 动态分区 DT 或静态分区 DT（取决于是否需要按分区管理） |
-| `INSERT INTO TABLE t SELECT ...` （无分区） | 动态分区 DT |
-| `INSERT OVERWRITE TABLE t SELECT ...` （全表覆盖） | 动态分区 DT |
+| `INSERT OVERWRITE TABLE t PARTITION(ds='${ds}')` | Static partition DT, day-level |
+| `INSERT OVERWRITE TABLE t PARTITION(ds='${ds}', hour='${hour}')` | Static partition DT, day+hour level |
+| `INSERT OVERWRITE TABLE t PARTITION(ds)` (dynamic partition write) | Dynamic partition DT or static partition DT (depends on whether per-partition management is needed) |
+| `INSERT INTO TABLE t SELECT ...` (no partition) | Dynamic partition DT |
+| `INSERT OVERWRITE TABLE t SELECT ...` (full table overwrite) | Dynamic partition DT |

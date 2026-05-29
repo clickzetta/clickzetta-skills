@@ -1,34 +1,34 @@
-# Dynamic Table 自引用表转换规则
+# Dynamic Table Self-referencing Table Conversion Rules
 
-你是一个 SQL 转换专家。当 INSERT OVERWRITE 的目标表同时出现在查询的 FROM/JOIN 中时，这是一个自引用（self-reference）场景，需要特殊处理。
+You are a SQL conversion expert. When the target table of INSERT OVERWRITE also appears in the FROM/JOIN of the query, this is a self-reference scenario that requires special handling.
 
-## 自引用检测
+## Self-reference Detection
 
-### 判断条件
+### Detection Criteria
 
-1. 从 INSERT OVERWRITE 语句中提取目标表名（含 schema）
-2. 在 SELECT 查询的 FROM 和 JOIN 子句中搜索该表名
-3. 排除 PARTITION 子句中的表名引用（不算自引用）
-4. 如果在 FROM/JOIN 中找到目标表名 → 判定为自引用
+1. Extract the target table name (including schema) from the INSERT OVERWRITE statement
+2. Search for that table name in the FROM and JOIN clauses of the SELECT query
+3. Exclude table name references in the PARTITION clause (these do not count as self-references)
+4. If the target table name is found in FROM/JOIN → classify as self-reference
 
-### 示例
+### Example
 
 ```sql
--- 目标表: kscdm.daily_sales
+-- Target table: kscdm.daily_sales
 INSERT OVERWRITE TABLE kscdm.daily_sales PARTITION(ds='${ds}')
 SELECT current.id, current.amount
 FROM source_sales current
-LEFT JOIN kscdm.daily_sales prev ON current.id = prev.id  -- ← 自引用
+LEFT JOIN kscdm.daily_sales prev ON current.id = prev.id  -- ← self-reference
 WHERE prev.ds = '${ds - 1}';
 ```
 
-## 转换规则
+## Conversion Rules
 
-自引用表的转换与普通表基本相同，但有以下区别：
+Self-referencing table conversion is essentially the same as regular tables, with the following differences:
 
-### 1. 显式 Schema 声明
+### 1. Explicit Schema Declaration
 
-自引用表必须在 CREATE DYNAMIC TABLE 中显式声明完整的列定义（含类型），因为 SQL 引擎需要这些信息来推理自依赖列的类型：
+Self-referencing tables must explicitly declare complete column definitions (including types) in CREATE DYNAMIC TABLE, because the SQL engine needs this information to infer the types of self-dependent columns:
 
 ```sql
 CREATE OR REPLACE DYNAMIC TABLE kscdm.daily_sales (
@@ -45,23 +45,23 @@ LEFT JOIN kscdm.daily_sales prev ON current.id = prev.id
 WHERE prev.ds = DATE_FORMAT(sub_days(SESSION_CONFIGS()['dt.args.ds'], 1), 'yyyy-MM-dd')::STRING;
 ```
 
-### 2. 查询中保留自引用
+### 2. Retain Self-reference in Query
 
-转换后的 AS 子句中，自引用表名保持不变，不做任何替换。SQL 引擎会自动处理自引用的版本管理。
+In the converted AS clause, the self-referencing table name remains unchanged without any substitution. The SQL engine automatically handles version management for self-references.
 
-## 常见自引用场景
+## Common Self-reference Scenarios
 
-### 日环比计算
+### Day-over-day Comparison
 
 ```sql
--- 输入
+-- Input
 INSERT OVERWRITE TABLE metrics PARTITION(ds='${ds}')
 SELECT t.id, t.value,
     t.value - prev.value AS daily_change
 FROM source t
 LEFT JOIN metrics prev ON t.id = prev.id AND prev.ds = '${ds - 1}';
 
--- 输出
+-- Output
 CREATE OR REPLACE DYNAMIC TABLE metrics (
     id BIGINT, value DECIMAL(10,2), daily_change DECIMAL(10,2), ds STRING
 )

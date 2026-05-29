@@ -1,79 +1,79 @@
-# 维度表 JOIN 场景详解
+# Dimension Table JOIN Scenarios — Detailed Guide
 
-## 核心机制
+## Core Mechanism
 
-将某张表标记为维度表（dimension table）后，增量引擎会将该表的变更数据视为**空**。即：
-- 维度表的任何数据变更（INSERT/UPDATE/DELETE）都**不会触发增量计算**
-- 增量计算时，维度表始终读取**最新全量数据**
-- 只有非维度表（事实表）的变更才会驱动增量刷新
+After marking a table as a dimension table, the incremental engine treats that table's change data as **empty**. That is:
+- Any data changes (INSERT/UPDATE/DELETE) to the dimension table **do not trigger incremental computation**
+- During incremental computation, the dimension table always reads its **latest full data**
+- Only changes in non-dimension tables (fact tables) drive incremental refresh
 
-## 配置方式
+## Configuration
 
 ```sql
--- 方式1：DT 表属性（推荐，跟随 DT 定义）
+-- Method 1: DT table properties (recommended; follows DT definition)
 CREATE DYNAMIC TABLE my_dt
 TBLPROPERTIES('mv_const_tables'='dim_table1,dim_table2')
 AS SELECT ...;
 
--- 方式2：Session 配置（在 REFRESH 前设置，灵活可动态调整）
+-- Method 2: Session configuration (set before REFRESH; flexible and dynamically adjustable)
 set CZ_OPTIMIZER_INCREMENTAL_DIMENSION_TABLES=dim_table1:dim_table2
 ```
 
-## 各 JOIN 类型下的增量行为
+## Incremental Behavior Under Each JOIN Type
 
-### A LEFT JOIN B（B 为维度表）
+### A LEFT JOIN B (B is dimension table)
 
-这是最常见的维度表 JOIN 场景。
+This is the most common dimension table JOIN scenario.
 
-**Case 1：A 有增量数据，B 无变化**
+**Case 1: A has incremental data, B has no changes**
 ```
-增量计划：A 的变更数据 LEFT JOIN B 的全量数据
+Incremental plan: A's change data LEFT JOIN B's full data
 ```
-- 新增的 A 行与 B 的最新数据做 LEFT JOIN
-- 如果 JOIN 上 → 输出完整行
-- 如果没 JOIN 上 → B 侧输出 NULL
-- ✅ 结果正确
+- New A rows LEFT JOIN with B's latest data
+- If JOIN matches → output complete row
+- If no match → B side outputs NULL
+- ✅ Result is correct
 
-**Case 2：B 有数据变更，A 无变化**
+**Case 2: B has data changes, A has no changes**
 ```
-增量计划：不触发计算（变更数据为空）
+Incremental plan: no computation triggered (change data is empty)
 ```
-- B 的变更被完全忽略
-- 之前 A 行没 JOIN 上 B 输出的 `(xxx, NULL)` 不会被修正为 `(xxx, yyy)`
-- 之前 A 行 JOIN 上的旧 B 数据不会被更新为新值
-- ⚠️ 结果与全量重算不一致，但这是**预期行为**
+- B's changes are completely ignored
+- Previously output `(xxx, NULL)` rows (where A didn't match B) will not be corrected to `(xxx, yyy)`
+- Previously output rows with old B data will not be updated to new values
+- ⚠️ Result differs from full recomputation, but this is **expected behavior**
 
-**Case 3：A 和 B 同时有变化**
+**Case 3: Both A and B have changes**
 ```
-增量计划：A 的变更数据 LEFT JOIN B 的全量数据
+Incremental plan: A's change data LEFT JOIN B's full data
 ```
-- 只处理 A 的增量，B 的变更被忽略
-- 新增的 A 行会 JOIN 到 B 的最新数据
-- 但已有的 A 行不会因 B 的变更而更新
-- ⚠️ 新旧数据可能存在不一致
+- Only A's incremental data is processed; B's changes are ignored
+- New A rows will JOIN to B's latest data
+- But existing A rows will not be updated due to B's changes
+- ⚠️ New and old data may be inconsistent
 
-### A INNER JOIN B（B 为维度表）
+### A INNER JOIN B (B is dimension table)
 
-**Case 1：A 有增量数据，B 无变化**
+**Case 1: A has incremental data, B has no changes**
 ```
-增量计划：A 的变更数据 INNER JOIN B 的全量数据
+Incremental plan: A's change data INNER JOIN B's full data
 ```
-- 新增的 A 行与 B 做 INNER JOIN
-- JOIN 不上的 A 行被丢弃
-- ✅ 结果正确
+- New A rows INNER JOIN with B
+- A rows that don't match are discarded
+- ✅ Result is correct
 
-**Case 2：B 有数据变更，A 无变化**
+**Case 2: B has data changes, A has no changes**
 ```
-增量计划：不触发计算
+Incremental plan: no computation triggered
 ```
-- B 新增了能匹配已有 A 行的数据 → 不会产出新结果
-- B 删除了匹配已有 A 行的数据 → 已输出的结果不会被撤回
-- ⚠️ 结果与全量重算不一致
+- B adds data that can match existing A rows → no new results are produced
+- B deletes data that matched existing A rows → already-output results are not retracted
+- ⚠️ Result differs from full recomputation
 
-### 多表 JOIN 中的维度表
+### Dimension Tables in Multi-table JOINs
 
 ```sql
--- t2, t3 都是维度表
+-- t2, t3 are both dimension tables
 CREATE DYNAMIC TABLE dt
 TBLPROPERTIES('mv_const_tables'='t2,t3')
 AS
@@ -83,171 +83,171 @@ LEFT JOIN t2 ON t1.id = t2.id
 LEFT JOIN t3 ON t1.id = t3.id;
 ```
 
-- 只有 t1 的变更会触发增量计算
-- t2、t3 的变更都被忽略
-- 增量计划：t1 的变更数据 LEFT JOIN t2 的全量数据 LEFT JOIN t3 的全量数据
+- Only t1's changes trigger incremental computation
+- Changes to t2 and t3 are both ignored
+- Incremental plan: t1's change data LEFT JOIN t2's full data LEFT JOIN t3's full data
 
-## 适合使用维度表的场景
+## Scenarios Suitable for Dimension Tables
 
-### ✅ 推荐场景
+### ✅ Recommended Scenarios
 
-1. **码表/字典表 JOIN**
-   - 如：地区码表、产品分类表、状态码映射表
-   - 特点：数据量小、极少变更、即使变更也不影响历史分析
+1. **Lookup/dictionary table JOINs**
+   - E.g., region code tables, product category tables, status code mapping tables
+   - Characteristics: small data volume, rarely changes, even if it changes it doesn't affect historical analysis
    ```sql
-   -- 地区码表几乎不变
+   -- Region code table almost never changes
    TBLPROPERTIES('mv_const_tables'='dim_region')
    ```
 
-2. **T+1 维度表 + 实时事实表**
-   - 维度表每天批量更新一次，事实表持续写入
-   - 在两次维度表更新之间，维度表可视为不变
+2. **T+1 dimension table + real-time fact table**
+   - Dimension table updates in batch once per day; fact table writes continuously
+   - Between two dimension table updates, the dimension table can be treated as unchanged
    ```sql
-   -- 用户画像表每天更新，订单表实时写入
+   -- User profile table updates daily; order table writes in real-time
    TBLPROPERTIES('mv_const_tables'='dim_user_profile')
    ```
 
-3. **配置表 JOIN**
-   - 如：业务规则配置、阈值配置、权重配置
-   - 变更频率极低，且变更后可以手动触发全量刷新
+3. **Configuration table JOINs**
+   - E.g., business rule configs, threshold configs, weight configs
+   - Very low change frequency; after changes, a manual full refresh can correct data
    ```sql
    TBLPROPERTIES('mv_const_tables'='config_rules')
    ```
 
-4. **大事实表 JOIN 小维度表，且对维度表变更的实时性要求低**
-   - 核心诉求是事实表的增量计算性能
-   - 维度表偶尔变更后，可以接受短暂的数据不一致
+4. **Large fact table JOIN small dimension table, with low real-time requirements for dimension table changes**
+   - Core goal is incremental performance on the fact table
+   - Brief inconsistency after occasional dimension table changes is acceptable
    ```sql
-   -- 商品信息表偶尔更新，订单表持续写入
+   -- Product info table occasionally updates; order table writes continuously
    TBLPROPERTIES('mv_const_tables'='dim_product')
    ```
 
-5. **不支持 time travel 的外部表作为 JOIN 右表**
-   - 外部表无法提供变更数据，标记为维度表后可以正常进行增量计算
-   - 增量引擎会读取外部表的最新快照
+5. **External tables that don't support time travel as the right side of a JOIN**
+   - External tables cannot provide change data; marking as dimension table enables normal incremental computation
+   - The incremental engine reads the latest snapshot of the external table
    ```sql
-   -- 外部 MySQL 表不支持 time travel
+   -- External MySQL table doesn't support time travel
    TBLPROPERTIES('mv_const_tables'='external_mysql_table')
    ```
 
-### ❌ 不推荐场景
+### ❌ Not Recommended Scenarios
 
-1. **维度表频繁更新且要求结果实时一致**
-   - 如：用户状态表每分钟更新，且下游报表要求实时反映最新状态
-   - 此时不应标记为维度表，应让两侧都参与增量计算
+1. **Dimension table updates frequently and real-time consistency is required**
+   - E.g., user status table updates every minute, and downstream reports require real-time reflection of the latest status
+   - In this case, do not mark as dimension table; let both sides participate in incremental computation
 
-2. **维度表变更会影响聚合结果的正确性**
-   - 如：价格表更新后，历史订单的金额计算应该用旧价格
-   - 但维度表标记后，新的事实行会 JOIN 到新价格，旧事实行保持旧价格
-   - 如果业务要求所有行统一使用最新价格，不应使用维度表
+2. **Dimension table changes affect the correctness of aggregation results**
+   - E.g., after a price table update, historical order amounts should use the old price
+   - But with dimension table marking, new fact rows will JOIN to the new price, while old fact rows keep the old price
+   - If business requires all rows to use the latest price uniformly, do not use dimension table
 
-3. **维度表数据量大且变更频繁**
-   - 维度表标记的优化收益来自跳过变更数据的计算
-   - 如果维度表本身很大且频繁变更，应该考虑让它正常参与增量
+3. **Dimension table has large data volume and changes frequently**
+   - The optimization benefit of dimension table marking comes from skipping change data computation
+   - If the dimension table itself is large and changes frequently, consider letting it participate in incremental normally
 
-## 维度表变更后的数据订正
+## Data Correction After Dimension Table Changes
 
-由于维度表的变更不会触发增量计算，当维度表发生了重要变更（如修正了错误数据、更新了映射关系），DT 中已有的结果不会自动更新。**如果需要订正数据，必须执行全量刷新。**
+Since dimension table changes do not trigger incremental computation, when a dimension table undergoes an important change (e.g., incorrect data was corrected, mapping relationships were updated), existing results in the DT will not be automatically updated. **If data correction is needed, a full refresh must be executed.**
 
 ```sql
--- 强制全量刷新（推荐）
+-- Force full refresh (recommended)
 set cz.optimizer.incremental.force.full.refresh=true
 REFRESH DYNAMIC TABLE my_dt;
--- 刷新完成后记得关闭，否则后续每次都是全量
+-- Remember to turn it off after refresh; otherwise every subsequent refresh will be full
 set cz.optimizer.incremental.force.full.refresh=false
 
--- 如果是分区表，也可以只全量刷新指定分区
+-- For partitioned tables, you can also do a full refresh of only a specific partition
 set cz.optimizer.incremental.force.full.refresh=true
 set dt.args.ds=2025-01-01
 REFRESH DYNAMIC TABLE my_dt PARTITION(ds = '2025-01-01');
 set cz.optimizer.incremental.force.full.refresh=false
 ```
 
-配置说明：
-- `cz.optimizer.incremental.force.full.refresh`：默认 `false`。设为 `true` 后，下一次 REFRESH 会忽略增量逻辑，对所有源表做全量扫描重算
-- 该配置是 session 级别的，刷新完成后需要手动设回 `false`，否则后续所有 REFRESH 都会走全量
-- backfill 模式（`cz.optimizer.incremental.backfill.enabled=TRUE`）也会自动开启全量刷新
+Configuration notes:
+- `cz.optimizer.incremental.force.full.refresh`: default `false`. When set to `true`, the next REFRESH ignores incremental logic and does a full scan and recomputation of all source tables.
+- This config is Session-level; after the refresh completes, it must be manually reset to `false`; otherwise all subsequent REFRESHes will use full mode.
+- Backfill mode (`cz.optimizer.incremental.backfill.enabled=TRUE`) also automatically enables full refresh.
 
-## 性能收益
+## Performance Benefits
 
-标记维度表后的优化效果：
-- **跳过维度表的变更数据扫描**：不需要读取维度表的变更日志
-- **简化增量计划**：只需要用事实表的变更数据 JOIN 维度表的全量数据，不需要反向计算
+Optimization effects after marking dimension tables:
+- **Skip dimension table change data scanning**: no need to read dimension table change logs
+- **Simplify incremental plan**: only need to JOIN fact table change data with dimension table full data; no reverse computation needed
 
-## ⚠️ 开启维度表后可能出现的数据不一致与重复
+## ⚠️ Potential Data Inconsistency and Duplication After Enabling Dimension Tables
 
-标记维度表是一种**用一致性换性能**的权衡。以下是具体会出现问题的场景，使用前务必评估业务是否可以接受。
+Marking dimension tables is a **tradeoff of consistency for performance**. The following are specific scenarios where problems will occur — evaluate whether the business can accept these before using.
 
-### 场景 1：LEFT JOIN 维度表更新导致 NULL 不被修正
+### Scenario 1: LEFT JOIN — Dimension Table Update Causes NULL Not to Be Corrected
 
 ```sql
--- DT 定义
+-- DT definition
 SELECT order.*, product.name
 FROM order LEFT JOIN product ON order.pid = product.id;
--- product 标记为维度表
+-- product marked as dimension table
 ```
 
-| 时间 | 事件 | DT 中的结果 | 全量重算应有的结果 |
+| Time | Event | Result in DT | Expected result from full recomputation |
 |------|------|------------|------------------|
-| T1 | order 插入 (pid=100)，product 中无 id=100 | (pid=100, name=NULL) | (pid=100, name=NULL) |
-| T2 | product 插入 id=100, name='手机' | (pid=100, name=NULL) **不变** | (pid=100, name='手机') |
+| T1 | order inserts (pid=100); product has no id=100 | (pid=100, name=NULL) | (pid=100, name=NULL) |
+| T2 | product inserts id=100, name='Phone' | (pid=100, name=NULL) **unchanged** | (pid=100, name='Phone') |
 
-**原因**：product 的变更不触发增量计算，T1 输出的 NULL 行永远不会被修正。
+**Reason**: product's changes don't trigger incremental computation; the NULL row output at T1 will never be corrected.
 
-### 场景 2：INNER JOIN 维度表新增数据导致结果缺失
+### Scenario 2: INNER JOIN — Dimension Table New Data Causes Missing Results
 
 ```sql
 SELECT order.*, product.name
 FROM order INNER JOIN product ON order.pid = product.id;
--- product 标记为维度表
+-- product marked as dimension table
 ```
 
-| 时间 | 事件 | DT 中的结果 | 全量重算应有的结果 |
+| Time | Event | Result in DT | Expected result from full recomputation |
 |------|------|------------|------------------|
-| T1 | order 插入 (pid=200)，product 中无 id=200 | 无输出（INNER JOIN 不匹配） | 无输出 |
-| T2 | product 插入 id=200, name='电脑' | **仍然无输出** | (pid=200, name='电脑') |
+| T1 | order inserts (pid=200); product has no id=200 | No output (INNER JOIN no match) | No output |
+| T2 | product inserts id=200, name='Computer' | **Still no output** | (pid=200, name='Computer') |
 
-**原因**：product 的新增不触发增量，已有的 order 行不会被重新 JOIN。
+**Reason**: product's new data doesn't trigger incremental; existing order rows are not re-JOINed.
 
-### 场景 3：维度表删除/更新导致过期数据残留
+### Scenario 3: Dimension Table Delete/Update Causes Stale Data to Remain
 
 ```sql
 SELECT order.*, product.name, product.price
 FROM order LEFT JOIN product ON order.pid = product.id;
--- product 标记为维度表
+-- product marked as dimension table
 ```
 
-| 时间 | 事件 | DT 中的结果 | 全量重算应有的结果 |
+| Time | Event | Result in DT | Expected result from full recomputation |
 |------|------|------------|------------------|
-| T1 | order 插入 (pid=100)，product id=100 price=99 | (pid=100, price=99) | (pid=100, price=99) |
-| T2 | product 更新 id=100 price=**199** | (pid=100, price=**99**) 旧值残留 | (pid=100, price=199) |
-| T3 | product 删除 id=100 | (pid=100, price=**99**) 仍然残留 | (pid=100, name=NULL) |
+| T1 | order inserts (pid=100); product id=100 price=99 | (pid=100, price=99) | (pid=100, price=99) |
+| T2 | product updates id=100 price=**199** | (pid=100, price=**99**) old value remains | (pid=100, price=199) |
+| T3 | product deletes id=100 | (pid=100, price=**99**) still remains | (pid=100, name=NULL) |
 
-**原因**：维度表的 UPDATE/DELETE 都被忽略，已输出的行保持旧值。
+**Reason**: dimension table UPDATE/DELETE are both ignored; already-output rows keep old values.
 
-### 场景 4：维度表 + 聚合导致聚合结果不一致
+### Scenario 4: Dimension Table + Aggregation Causes Inconsistent Aggregation Results
 
 ```sql
 SELECT product.category, SUM(order.amount) as total
 FROM order LEFT JOIN product ON order.pid = product.id
 GROUP BY product.category;
--- product 标记为维度表
+-- product marked as dimension table
 ```
 
-| 时间 | 事件 | DT 中的结果 | 全量重算应有的结果 |
+| Time | Event | Result in DT | Expected result from full recomputation |
 |------|------|------------|------------------|
-| T1 | order (pid=1, amount=100)，product (id=1, category='A') | category='A', total=100 | 同左 |
-| T2 | product 更新 id=1 的 category 从 'A' 改为 'B' | category='A', total=100 **不变** | category='B', total=100 |
-| T3 | order 新增 (pid=1, amount=200) | category='B', total=200（新行 JOIN 到新 category）| category='B', total=300 |
+| T1 | order (pid=1, amount=100); product (id=1, category='A') | category='A', total=100 | Same |
+| T2 | product updates id=1 category from 'A' to 'B' | category='A', total=100 **unchanged** | category='B', total=100 |
+| T3 | order adds (pid=1, amount=200) | category='B', total=200 (new row JOINs to new category) | category='B', total=300 |
 
-**原因**：T2 的 category 变更不触发重算，T1 的旧数据仍按旧 category 聚合。T3 的新数据按新 category 聚合。最终结果中同一个 pid 的数据被分到了不同 category，聚合结果错乱。
+**Reason**: T2's category change doesn't trigger recomputation; T1's old data is still aggregated under the old category. T3's new data is aggregated under the new category. The final result has data for the same pid split across different categories, causing incorrect aggregation.
 
-### 总结：什么时候结果会不一致
+### Summary: When Results Will Be Inconsistent
 
-| 维度表变更类型 | LEFT JOIN | INNER JOIN |
+| Dimension table change type | LEFT JOIN | INNER JOIN |
 |--------------|-----------|------------|
-| 新增匹配行 | 旧 fact 行的 NULL 不被修正 | 旧 fact 行不会产出新结果 |
-| 更新已有行 | 旧 fact 行保持旧值 | 旧 fact 行保持旧值 |
-| 删除已有行 | 旧 fact 行保持旧值（不会变 NULL） | 旧 fact 行不会被撤回 |
+| New matching row added | Old fact rows' NULL is not corrected | Old fact rows don't produce new results |
+| Existing row updated | Old fact rows keep old values | Old fact rows keep old values |
+| Existing row deleted | Old fact rows keep old values (won't become NULL) | Old fact rows are not retracted |
 
-**核心原则**：维度表的任何变更都不会影响已经输出的结果行。只有新的事实表增量才会 JOIN 到维度表的最新快照。
+**Core principle**: any change to a dimension table does not affect already-output result rows. Only new fact table increments will JOIN to the dimension table's latest snapshot.

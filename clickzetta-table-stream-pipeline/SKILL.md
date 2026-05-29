@@ -1,89 +1,91 @@
 ---
 name: clickzetta-table-stream-pipeline
 description: |
-  搭建和管理 ClickZetta Table Stream 变更数据捕获管道，覆盖从源表配置、Stream 创建、
-  数据消费到增量 ETL 的端到端工作流。当用户说"创建 Table Stream"、"Table Stream CDC"、
-  "Table Stream 管道"、"Table Stream 增量消费"、"Stream 消费"时触发。
-  包含变更跟踪开启、模式选择、offset 管理、元数据字段使用、幂等消费等 ClickZetta 特有逻辑。
+  Build and manage ClickZetta Table Stream change data capture pipelines, covering the
+  end-to-end workflow from source table configuration, Stream creation, and data consumption
+  to incremental ETL. Trigger when the user says "create Table Stream", "Table Stream CDC",
+  "Table Stream pipeline", "Table Stream incremental consumption", or "Stream consumption".
+  Includes change tracking enablement, mode selection, offset management, metadata field usage,
+  and idempotent consumption — all ClickZetta-specific logic.
   Keywords: table stream, CDC, change capture, incremental ETL, stream
 ---
 
-# Table Stream 变更数据捕获工作流
+# Table Stream Change Data Capture Workflow
 
-## 指令
+## Instructions
 
-### 步骤 1：开启源表变更跟踪（必需前置）
-执行 SQL 开启源表的 change_tracking：
+### Step 1: Enable Change Tracking on the Source Table (Required Prerequisite)
+Execute SQL to enable `change_tracking` on the source table:
 ```sql
 ALTER TABLE <source_table> SET PROPERTIES ('change_tracking' = 'true');
 ```
-- 这是强制性前置步骤，不执行则 Stream 无法正确捕获变更
-- 验证属性是否生效（两种方法）：
+- This is a mandatory prerequisite. Without it, the Stream cannot correctly capture changes.
+- Verify the property took effect (two methods):
 ```sql
--- 方法 1：DESC EXTENDED 查看 properties
+-- Method 1: DESC EXTENDED to view properties
 DESC EXTENDED <source_table>;
 
--- 方法 2：查询 information_schema
+-- Method 2: Query information_schema
 SELECT table_name, properties FROM information_schema.tables WHERE table_name = '<source_table>';
 ```
 
-### 步骤 2：创建 Table Stream
-执行 SQL 创建 Stream：
+### Step 2: Create a Table Stream
+Execute SQL to create the Stream:
 ```sql
 CREATE [ OR REPLACE ] TABLE STREAM <stream_name>
   ON TABLE <source_table>
   [ TIMESTAMP AS OF '<timestamp>' ]
-  [ COMMENT '<描述>' ]
+  [ COMMENT '<description>' ]
   WITH PROPERTIES (
     'TABLE_STREAM_MODE' = 'STANDARD | APPEND_ONLY',
     'SHOW_INITIAL_ROWS' = 'TRUE | FALSE'
   );
 ```
-关键参数选择：
-- **STANDARD 模式**：捕获 INSERT/UPDATE/DELETE，反映表当前状态（delta 变化） → 适用于数据同步、增量 ETL
-  - delta 变化指两个事务时间点之间的净变化。例如：先 INSERT 再 DELETE 同一行 → delta 为空；先 INSERT 再 UPDATE → delta 为一条新行（最终状态）
-- **APPEND_ONLY 模式**：仅捕获 INSERT，保留所有历史插入记录 → 适用于审计、历史记录保留
-  - 即使后续 DELETE 了某行，APPEND_ONLY 模式仍保留该行的 INSERT 记录
-- **SHOW_INITIAL_ROWS = TRUE**：首次消费返回建 Stream 时表中已有行
-- **SHOW_INITIAL_ROWS = FALSE**（默认）：首次消费仅返回建 Stream 后的新变更
-- 可选：指定起始时间点
+Key parameter selection:
+- **STANDARD mode**: captures INSERT/UPDATE/DELETE, reflecting the current state of the table (delta changes) → suitable for data sync, incremental ETL
+  - Delta changes refer to the net change between two transaction timestamps. For example: INSERT then DELETE the same row → delta is empty; INSERT then UPDATE → delta is one new row (final state)
+- **APPEND_ONLY mode**: captures INSERT only, retaining all historical insert records → suitable for auditing, historical record retention
+  - Even if a row is later DELETEd, APPEND_ONLY mode retains the INSERT record for that row
+- **SHOW_INITIAL_ROWS = TRUE**: first consumption returns rows already in the table when the Stream was created
+- **SHOW_INITIAL_ROWS = FALSE** (default): first consumption returns only new changes after Stream creation
+- Optional: specify a starting timestamp
 ```sql
--- TIMESTAMP AS OF 用于指定 Stream 的起始读取位点
--- 注意：此功能在某些场景下可能不稳定，建议优先使用默认行为（从创建时刻开始）
+-- TIMESTAMP AS OF specifies the starting read offset for the Stream
+-- Note: this feature may be unstable in some scenarios; prefer the default behavior (start from creation time)
 CREATE TABLE STREAM <stream_name>
   ON TABLE <source_table>
   TIMESTAMP AS OF '<timestamp>'
   WITH PROPERTIES ('TABLE_STREAM_MODE' = 'STANDARD');
 ```
 
-### 步骤 3：准备目标表
-创建与源表结构兼容的目标表：
-- 目标表列定义需包含源表的业务列
-- 建议额外添加元数据列（如 sync_version、sync_timestamp）用于追踪
+### Step 3: Prepare the Target Table
+Create a target table with a structure compatible with the source table:
+- The target table column definitions must include the business columns from the source table
+- Recommended: add extra metadata columns (e.g., sync_version, sync_timestamp) for tracking
 
-### 步骤 4：查询 Stream 数据（预览，不移动 offset）
-执行 SELECT 预览 Stream 中的变更数据：
+### Step 4: Query Stream Data (Preview — Does Not Advance Offset)
+Execute SELECT to preview change data in the Stream:
 ```sql
 SELECT *, __change_type, __commit_version, __commit_timestamp
 FROM <stream_name>;
 ```
-- 仅 SELECT 不会移动 offset
-- 元数据字段：`__change_type`（值：`INSERT` / `UPDATE_BEFORE` / `UPDATE_AFTER` / `DELETE`）、`__commit_version`、`__commit_timestamp`
-- **UPDATE 处理要点**：UPDATE 操作产生两条记录：
-  - `UPDATE_BEFORE`：更新前的旧值（通常在消费时忽略）
-  - `UPDATE_AFTER`：更新后的新值（用于写入目标表）
-  - 消费时务必过滤 `__change_type`，避免将 `UPDATE_BEFORE` 旧值误写入目标表
+- SELECT alone does not advance the offset
+- Metadata fields: `__change_type` (values: `INSERT` / `UPDATE_BEFORE` / `UPDATE_AFTER` / `DELETE`), `__commit_version`, `__commit_timestamp`
+- **UPDATE handling**: an UPDATE operation produces two records:
+  - `UPDATE_BEFORE`: the old value before the update (typically ignored during consumption)
+  - `UPDATE_AFTER`: the new value after the update (used when writing to the target table)
+  - Always filter on `__change_type` during consumption to avoid writing `UPDATE_BEFORE` old values into the target table
 
-### 步骤 5：消费 Stream 数据（移动 offset）
-执行 DML 操作消费数据：
+### Step 5: Consume Stream Data (Advances Offset)
+Execute a DML operation to consume data:
 
-#### 方式 A：全量消费（INSERT INTO）
+#### Method A: Full Consumption (INSERT INTO)
 ```sql
 INSERT INTO <target_table>
 SELECT <columns> FROM <stream_name>;
 ```
 
-#### 方式 B：幂等消费（MERGE，推荐）
+#### Method B: Idempotent Consumption (MERGE — recommended)
 ```sql
 MERGE INTO <target_table> t
 USING (SELECT * FROM <stream_name> WHERE __change_type != 'UPDATE_BEFORE') s
@@ -92,68 +94,68 @@ WHEN MATCHED AND s.__change_type IN ('INSERT', 'UPDATE_AFTER') THEN UPDATE SET t
 WHEN MATCHED AND s.__change_type = 'DELETE' THEN DELETE
 WHEN NOT MATCHED AND s.__change_type = 'INSERT' THEN INSERT (<columns>) VALUES (s.<columns>);
 ```
-- DML 操作（INSERT/UPDATE/MERGE）会移动 offset
-- ⚠️ 即使使用 WHERE 条件过滤，**所有数据的 offset 仍会移动**（不仅是匹配的行）
-- 推荐使用 MERGE 实现幂等性，避免重复消费导致数据重复
-- 在 USING 子查询中过滤掉 `UPDATE_BEFORE`，避免旧值干扰 MERGE 逻辑
-- ⚠️ **MERGE 语法顺序要求**：多个 `WHEN MATCHED` 子句时，**UPDATE 必须在 DELETE 之前**，否则报错（错误信息：`update statement must be before delete statement`）
+- DML operations (INSERT/UPDATE/MERGE) advance the offset
+- ⚠️ Even with a WHERE clause that filters some rows, **the offset advances for all rows** (not just the matched ones)
+- Use MERGE for idempotency to avoid duplicate data from repeated consumption
+- Filter out `UPDATE_BEFORE` in the USING subquery to prevent old values from interfering with MERGE logic
+- ⚠️ **MERGE clause ordering requirement**: when multiple `WHEN MATCHED` clauses are present, **UPDATE must come before DELETE**, otherwise an error occurs (error message: `update statement must be before delete statement`)
 
-### 步骤 6：验证消费状态
-执行查询确认消费完成：
+### Step 6: Verify Consumption Status
+Execute a query to confirm consumption is complete:
 ```sql
 SELECT COUNT(*) FROM <stream_name>;
 ```
-- 消费成功后 COUNT 应为 0 或仅包含新变更
-- 记录最后消费的 `__commit_version` 用于故障恢复
+- After successful consumption, COUNT should be 0 or contain only new changes
+- Record the last consumed `__commit_version` for failure recovery
 
-## Offset 移动规则
+## Offset Advancement Rules
 
-| 操作 | 是否移动 offset | 说明 |
+| Operation | Advances offset? | Notes |
 |------|----------------|------|
-| `SELECT * FROM stream` | ❌ 不移动 | 仅预览，可反复查询 |
-| `INSERT INTO target SELECT ... FROM stream` | ✅ 移动 | 消费数据 |
-| `MERGE INTO target USING stream ...` | ✅ 移动 | 消费数据（推荐） |
-| `UPDATE target SET ... FROM stream` | ✅ 移动 | 消费数据 |
-| `DELETE FROM target USING stream` | ✅ 移动 | 消费数据 |
-| 带 WHERE 的 DML | ✅ 全部移动 | 即使 WHERE 过滤了部分行，所有行的 offset 都会移动 |
+| `SELECT * FROM stream` | No | Preview only; can be queried repeatedly |
+| `INSERT INTO target SELECT ... FROM stream` | Yes | Consumes data |
+| `MERGE INTO target USING stream ...` | Yes | Consumes data (recommended) |
+| `UPDATE target SET ... FROM stream` | Yes | Consumes data |
+| `DELETE FROM target USING stream` | Yes | Consumes data |
+| DML with WHERE clause | Yes (all rows) | Even if WHERE filters some rows, offset advances for all rows |
 
-> ⚠️ **关键注意**：offset 移动是全量的。一旦执行 DML 消费 Stream，所有变更记录的 offset 都会前进，无法部分消费。如果 DML 执行失败（如目标表不存在），offset 不会移动。
+> ⚠️ **Key note**: offset advancement is all-or-nothing. Once a DML consumes the Stream, the offset advances for all change records — partial consumption is not possible. If the DML fails (e.g., target table does not exist), the offset does not advance.
 
-## 模式选择速查
+## Mode Selection Quick Reference
 
-| 需求 | 推荐模式 |
+| Requirement | Recommended mode |
 |------|---------|
-| 数据同步（保持目标与源一致） | STANDARD |
-| 增量 ETL 流程 | STANDARD |
-| 审计所有插入记录 | APPEND_ONLY |
-| 历史记录保留 | APPEND_ONLY |
+| Data sync (keep target consistent with source) | STANDARD |
+| Incremental ETL pipeline | STANDARD |
+| Audit all insert records | APPEND_ONLY |
+| Historical record retention | APPEND_ONLY |
 
-## 性能优化要点
+## Performance Optimization Tips
 
-- 只 SELECT 必要列，避免 `SELECT *`
-- 定期消费 Stream，避免数据累积
-- 高变更率表：更频繁消费；低变更率表：降低频率
-- 大型 Stream 可按主键范围拆分并行处理
-- 在源表上设置适当的数据保留期
+- Select only necessary columns; avoid `SELECT *`
+- Consume the Stream regularly to prevent data accumulation
+- High-change-rate tables: consume more frequently; low-change-rate tables: reduce frequency
+- Large Streams can be split by primary key range for parallel processing
+- Set an appropriate data retention period on the source table
 
-## 示例
+## Examples
 
-### 示例 1：订单表实时同步
+### Example 1: Real-time Order Table Sync
 ```sql
--- 1. 开启源表变更跟踪
+-- 1. Enable change tracking on source table
 ALTER TABLE orders SET PROPERTIES ('change_tracking' = 'true');
 
--- 2. 创建 Table Stream
+-- 2. Create Table Stream
 CREATE TABLE STREAM orders_stream ON TABLE orders 
 WITH PROPERTIES ('TABLE_STREAM_MODE' = 'STANDARD', 'SHOW_INITIAL_ROWS' = 'FALSE');
 
--- 3. 创建目标表（与源表结构兼容）
+-- 3. Create target table (compatible structure with source)
 CREATE TABLE orders_sync (order_id INT, status STRING, amount DOUBLE);
 
--- 4. 预览 Stream 数据（不移动 offset）
+-- 4. Preview Stream data (does not advance offset)
 SELECT *, __commit_version, __commit_timestamp FROM orders_stream;
 
--- 5. 消费 Stream 数据（移动 offset）
+-- 5. Consume Stream data (advances offset)
 MERGE INTO orders_sync t 
 USING (SELECT * FROM orders_stream WHERE __change_type != 'UPDATE_BEFORE') s 
 ON t.order_id = s.order_id 
@@ -161,46 +163,46 @@ WHEN MATCHED AND s.__change_type IN ('INSERT', 'UPDATE_AFTER') THEN UPDATE SET t
 WHEN MATCHED AND s.__change_type = 'DELETE' THEN DELETE 
 WHEN NOT MATCHED AND s.__change_type = 'INSERT' THEN INSERT (order_id, status, amount) VALUES (s.order_id, s.status, s.amount);
 
--- 6. 验证消费完成
+-- 6. Verify consumption is complete
 SELECT COUNT(*) FROM orders_stream;
 ```
 
-### 示例 2：用户行为审计（保留全部插入历史）
+### Example 2: User Behavior Audit (Retain Full Insert History)
 ```sql
--- 1. 开启源表变更跟踪
+-- 1. Enable change tracking on source table
 ALTER TABLE user_actions SET PROPERTIES ('change_tracking' = 'true');
 
--- 2. 创建 Table Stream（APPEND_ONLY 模式）
+-- 2. Create Table Stream (APPEND_ONLY mode)
 CREATE TABLE STREAM user_actions_audit_stream ON TABLE user_actions 
 WITH PROPERTIES ('TABLE_STREAM_MODE' = 'APPEND_ONLY', 'SHOW_INITIAL_ROWS' = 'TRUE');
 
--- 3. 预览 Stream 数据
+-- 3. Preview Stream data
 SELECT *, __commit_version, __commit_timestamp FROM user_actions_audit_stream;
 
--- 4. 消费 Stream 数据（INSERT INTO 移动 offset）
+-- 4. Consume Stream data (INSERT INTO advances offset)
 INSERT INTO user_actions_audit 
 SELECT *, __commit_version AS audit_version, __commit_timestamp AS audit_time 
 FROM user_actions_audit_stream;
 ```
 
-## 故障排除
+## Troubleshooting
 
-Stream 不捕获变更：
-原因：源表未开启 change_tracking
-解决方案：执行 `ALTER TABLE <table> SET PROPERTIES ('change_tracking' = 'true')`，确认 DML 在 Stream 创建后执行
+Stream not capturing changes:
+Cause: `change_tracking` not enabled on the source table
+Solution: Execute `ALTER TABLE <table> SET PROPERTIES ('change_tracking' = 'true')`; confirm that DML was executed after the Stream was created
 
-无法区分变更类型：
-原因：未在 MERGE/INSERT 中过滤 `__change_type`，导致 `UPDATE_BEFORE` 旧值也被写入目标表
-解决方案：MERGE 时过滤 `__change_type IN ('UPDATE_AFTER', 'DELETE')`，忽略 `UPDATE_BEFORE` 记录
+Cannot distinguish change types:
+Cause: `__change_type` not filtered in MERGE/INSERT, causing `UPDATE_BEFORE` old values to be written to the target table
+Solution: Filter `__change_type IN ('UPDATE_AFTER', 'DELETE')` in MERGE; ignore `UPDATE_BEFORE` records
 
-消费后 offset 未移动：
-原因：仅使用 SELECT 查询，未执行 DML
-解决方案：必须通过 INSERT INTO / MERGE INTO / UPDATE 等 DML 操作消费数据
+Offset not advancing after consumption:
+Cause: Only SELECT was used; no DML was executed
+Solution: Data must be consumed via DML operations such as INSERT INTO / MERGE INTO / UPDATE
 
-重复消费导致目标表数据重复：
-原因：使用 INSERT INTO 而非 MERGE，或消费逻辑非幂等
-解决方案：改用 MERGE 语句；记录最后消费的 `__commit_version` 和 `__commit_timestamp` 用于断点恢复
+Duplicate data in target table from repeated consumption:
+Cause: Using INSERT INTO instead of MERGE, or non-idempotent consumption logic
+Solution: Switch to MERGE statements; record the last consumed `__commit_version` and `__commit_timestamp` for checkpoint recovery
 
-COMMENT 语法错误：
-原因：使用了 `COMMENT = '...'`（带等号）而非 `COMMENT '...'`
-解决方案：正确语法为 `COMMENT '注释内容'`，不带等号
+COMMENT syntax error:
+Cause: Used `COMMENT = '...'` (with equals sign) instead of `COMMENT '...'`
+Solution: Correct syntax is `COMMENT 'description'` — no equals sign

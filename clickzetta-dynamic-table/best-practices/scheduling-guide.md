@@ -1,19 +1,19 @@
-# Dynamic Table 调度方式选择指南
+# Dynamic Table Scheduling Method Selection Guide
 
-## 两种调度方式对比
+## Comparison of Two Scheduling Methods
 
-| 方式 | 做法 | 优点 | 缺点 |
+| Method | Approach | Advantages | Disadvantages |
 |------|------|------|------|
-| **DDL 内置调度**（REFRESH INTERVAL） | 在 CREATE DYNAMIC TABLE 时写 `REFRESH INTERVAL` 子句，由 Lakehouse 自动触发 | 简单，无需额外配置 | 无告警、无依赖编排、刷新状态只能手动 SQL 查询 |
-| **Studio Task 调度**（推荐） | 在 Studio 创建定时任务，任务内容为 `REFRESH DYNAMIC TABLE` 命令 | 支持上下游依赖、统一告警、可视化监控 | 需要额外创建 Task |
+| **DDL built-in scheduling** (REFRESH INTERVAL) | Write a `REFRESH INTERVAL` clause in CREATE DYNAMIC TABLE; Lakehouse triggers automatically | Simple; no additional configuration needed | No alerts, no dependency orchestration; refresh status can only be checked via manual SQL |
+| **Studio Task scheduling** (recommended) | Create a scheduled task in Studio; task content is the `REFRESH DYNAMIC TABLE` command | Supports upstream/downstream dependencies, unified alerts, visual monitoring | Requires creating an additional Task |
 
-**生产环境推荐使用 Studio Task 调度。** DDL 内置调度适合快速验证和开发测试阶段。
+**Studio Task scheduling is recommended for production environments.** DDL built-in scheduling is suitable for quick validation and development/testing phases.
 
 ---
 
-## DDL 内置调度
+## DDL Built-in Scheduling
 
-在 CREATE 语句中通过 `REFRESH INTERVAL` 子句定义刷新频率，Lakehouse 自动周期性触发：
+Define the refresh frequency via the `REFRESH INTERVAL` clause in the CREATE statement; Lakehouse triggers periodically:
 
 ```sql
 CREATE DYNAMIC TABLE sales_daily
@@ -25,111 +25,111 @@ FROM orders
 GROUP BY 1;
 ```
 
-### 弊端
+### Drawbacks
 
-- **无告警**：刷新失败不会主动通知，只能手动执行 SQL 查询状态
-- **无依赖编排**：无法声明"等上游任务完成后再刷新"，只能靠时间间隔错开
-- **监控成本高**：需要定期手动执行以下命令检查刷新是否正常
+- **No alerts**: refresh failures are not proactively notified; status can only be checked by manually executing SQL
+- **No dependency orchestration**: cannot declare "refresh only after upstream task completes"; can only stagger by time interval
+- **High monitoring cost**: need to periodically manually execute the following command to check whether refresh is normal
 
 ```sql
--- 查看刷新历史，确认 state 是否为 SUCCEED
+-- View refresh history; confirm state is SUCCEED
 SHOW DYNAMIC TABLE REFRESH HISTORY WHERE name = 'your_dt_name';
 ```
 
-关键字段说明：
+Key field descriptions:
 
-| 字段 | 含义 |
+| Field | Meaning |
 |------|------|
 | `state` | SUCCEED / FAILED / RUNNING / QUEUED |
 | `refresh_mode` | INCREMENTAL / FULL / NO_DATA |
-| `error_message` | 失败时的错误信息 |
-| `duration` | 本次刷新耗时 |
-| `stats` | 增量行数（rows_inserted / rows_deleted） |
+| `error_message` | Error message on failure |
+| `duration` | Duration of this refresh |
+| `stats` | Incremental row count (rows_inserted / rows_deleted) |
 
 ---
 
-## Studio Task 调度（生产推荐）
+## Studio Task Scheduling (Recommended for Production)
 
-在 Studio 中创建 SQL 任务，任务内容为 REFRESH 命令，通过 Studio 的调度系统管理执行。
+Create a SQL task in Studio; task content is the REFRESH command; managed by Studio's scheduling system.
 
-### Task 内容
+### Task Content
 
-**非分区 DT：**
+**Non-partitioned DT:**
 
 ```sql
 REFRESH DYNAMIC TABLE schema_name.dt_name;
 ```
 
-**分区 DT（带参数）：**
+**Partitioned DT (with parameters):**
 
 ```sql
 SET dt.args.ds = '${bizdate}';
 REFRESH DYNAMIC TABLE schema_name.dt_name PARTITION (ds = '${bizdate}');
 ```
 
-`${bizdate}` 由 Studio 调度引擎在每次执行时自动替换为业务日期。
+`${bizdate}` is automatically replaced with the business date by the Studio scheduling engine at each execution.
 
-### 必须配置自依赖
+### Must Configure Self-dependency
 
-同一张 DT 禁止并发 REFRESH（会导致写冲突或数据不一致）。Task 必须开启**自依赖**，确保上一个实例完成后才启动下一个实例。
+Concurrent REFRESH on the same DT is prohibited (causes write conflicts or data inconsistency). The Task must enable **self-dependency** to ensure the next instance starts only after the previous one completes.
 
-### 上游依赖配置
+### Upstream Dependency Configuration
 
-- 如果 DT 的源表数据需要等上游任务产出后才能刷新 → 配置上游依赖
-- 如果源表数据不要求同步就绪（如实时写入表）→ 可以不配置上游依赖
+- If the DT's source table data needs to wait for an upstream task to produce before refreshing → configure upstream dependency
+- If source table data does not require synchronized readiness (e.g., real-time write table) → upstream dependency is optional
 
-### 告警配置
+### Alert Configuration
 
-Studio Task 支持以下告警规则，生产环境建议全部配置：
+Studio Tasks support the following alert rules; all are recommended for production environments:
 
-- **失败告警**：任务执行失败时通知
-- **超时告警**：刷新耗时超过阈值时通知（用于发现性能回退）
-- **未运行告警**：任务在预期时间内未启动时通知
+- **Failure alert**: notify when task execution fails
+- **Timeout alert**: notify when refresh duration exceeds a threshold (used to detect performance regression)
+- **Not-run alert**: notify when the task has not started within the expected time
 
 ---
 
-## 多级 DT 管道的调度编排
+## Scheduling Orchestration for Multi-level DT Pipelines
 
-当存在多张 DT 形成上下游依赖时（如 DT_A → DT_B → DT_C），每张 DT 对应一个 Studio Task，通过任务依赖关系保证执行顺序：
+When multiple DTs form upstream/downstream dependencies (e.g., DT_A → DT_B → DT_C), each DT corresponds to one Studio Task; task dependency relationships ensure execution order:
 
 ```
 Task_A (REFRESH DT_A)
-    └─ Task_B (REFRESH DT_B，依赖 Task_A)
-        └─ Task_C (REFRESH DT_C，依赖 Task_B)
+    └─ Task_B (REFRESH DT_B, depends on Task_A)
+        └─ Task_C (REFRESH DT_C, depends on Task_B)
 ```
 
-不同分区的 REFRESH 可以并行执行（分配到不同 Task 实例），同一分区/非分区 DT 禁止并发。
+REFRESHes for different partitions can run in parallel (assigned to different Task instances); concurrent refresh of the same partition/non-partitioned DT is prohibited.
 
 ---
 
-## 判断逻辑：向用户推荐调度方式
+## Decision Logic: Recommend Scheduling Method to Users
 
-在帮助用户创建或配置 DT 时，按以下逻辑推荐：
+When helping users create or configure a DT, recommend based on the following logic:
 
-1. **是否有 Studio？**
-   - 有 → 始终推荐 Studio Task 调度，无论是开发还是生产环境
-   - 无 → 使用 DDL 内置调度或第三方调度引擎
+1. **Is Studio available?**
+   - Yes → always recommend Studio Task scheduling, regardless of development or production environment
+   - No → use DDL built-in scheduling or a third-party scheduling engine
 
-2. **是否有上下游依赖？**
-   - 有（如源表由另一个任务产出）→ 必须用 Studio Task，配置上游依赖
-   - 无 → 仍推荐 Studio Task，获得告警能力
+2. **Are there upstream/downstream dependencies?**
+   - Yes (e.g., source table is produced by another task) → must use Studio Task; configure upstream dependency
+   - No → still recommend Studio Task to gain alert capability
 
-3. **用户已经写了 REFRESH INTERVAL 子句？**
-   - 提示：可以去掉 REFRESH INTERVAL 子句，改用 Studio Task 调度，获得告警和依赖管理能力
-   - REFRESH INTERVAL 和 Studio Task 可以共存，但会导致双重触发，建议二选一
+3. **User has already written a REFRESH INTERVAL clause?**
+   - Suggest: the REFRESH INTERVAL clause can be removed and replaced with Studio Task scheduling to gain alert and dependency management capability
+   - REFRESH INTERVAL and Studio Task can coexist, but will cause double triggering; choosing one is recommended
 
 ---
 
-## 告警话术模板
+## Alert Message Template
 
-当用户使用 DDL 内置调度时，使用以下话术提示：
+When the user is using DDL built-in scheduling, use the following message:
 
-> 💡 **建议**：您当前使用的是 DDL 内置调度（REFRESH INTERVAL），这种方式存在以下局限：
+> 💡 **Suggestion**: You are currently using DDL built-in scheduling (REFRESH INTERVAL), which has the following limitations:
 >
-> 1. **无告警**：刷新失败不会主动通知，需要手动执行 `SHOW DYNAMIC TABLE REFRESH HISTORY` 查看状态
-> 2. **无依赖编排**：无法声明上下游任务依赖关系，只能靠时间间隔错开
+> 1. **No alerts**: refresh failures are not proactively notified; you need to manually execute `SHOW DYNAMIC TABLE REFRESH HISTORY` to check status
+> 2. **No dependency orchestration**: upstream/downstream task dependencies cannot be declared; can only stagger by time interval
 >
-> **推荐**：在 Studio 中创建定时调度任务，任务内容为 `REFRESH DYNAMIC TABLE schema.dt_name`，并配置：
-> - 自依赖（防止并发刷新）
-> - 失败告警 + 超时告警
-> - 上游依赖（如果源表由其他任务产出）
+> **Recommendation**: Create a scheduled task in Studio with content `REFRESH DYNAMIC TABLE schema.dt_name`, and configure:
+> - Self-dependency (prevent concurrent refresh)
+> - Failure alert + timeout alert
+> - Upstream dependency (if source table is produced by other tasks)
