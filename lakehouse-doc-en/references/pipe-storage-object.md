@@ -1,0 +1,263 @@
+# Continuous Data Import from Object Storage Using Pipe
+
+Pipe is a powerful data import feature in the Singdata Lakehouse platform. It allows you to read data directly from object storage at a fixed frequency and import it into the Lakehouse. By implementing a file detection mechanism, Pipe supports micro-batch file loading, enabling you to quickly access the latest data. It is particularly suitable for scenarios requiring real-time or near-real-time data processing.
+
+Think of an object storage Pipe as a program that continuously scans an inbox — you simply upload files to OSS/S3/COS, and it automatically detects and imports them without any manual trigger.
+
+## How Pipe Works
+
+1. **File Detection**:
+
+   1. **EVENT\_NOTIFICATION\_MODE**: Requires enabling a message service. It uses Alibaba Cloud Message Service to notify Lakehouse of new file uploads. Currently only Alibaba Cloud OSS and AWS S3 are supported.
+   2. **LIST\_PURGE mode**: Periodically scans directories, synchronizes unrecorded files, and deletes the source files after synchronization.
+
+2. **COPY Statement**: Defines the source location of data files and the target table, supporting multiple file formats.
+
+3. **Automated Loading**: Automatically detects new files and executes the COPY statement.
+
+4. **Duplicate Import Prevention**: To avoid duplicate imports, the `load_history` function records the copy import history for the current table. When Pipe executes, it deduplicates based on the `load_history` table name and import file name, ensuring already-imported files are not imported again. If you need to re-import a recorded file, you can manually execute the copy command. `load_history` records are currently retained for 7 days.
+
+5. **Pipe Import Job History**: Since each execution is a Pipe-issued copy, you can view all operations in the job history. Filter by `query_tag` in the job history — all copy jobs executed by a Pipe are tagged with the format `pipe.``workspace_name``.schema_name.pipe_name`, making it easy to track and manage.
+
+## Use Cases
+
+* **Real-time Data Synchronization**: When your data is stored in object storage and needs to be frequently synchronized to access the latest data in a timely manner.
+* **Cost Optimization**: Importing and exporting data via object storage avoids public network traffic costs. Within the same region, you can specify intranet transfer for object storage, further reducing costs.
+
+## Notes
+
+* When using EVENT\_NOTIFICATION\_MODE, you must use the role ARN authorization method to create the storage connection.
+* LIST\_PURGE mode supports both access key and role ARN authorization methods.
+* **Recommended File Size**: gzip compressed files should be around 50 MB. Uncompressed CSV and Parquet files should be between 128 MB and 256 MB.
+* **Data Loading Order**: **Data loading cannot guarantee strict ordering**.
+* **Pipe Latency**: Pipe loading time is affected by various factors, including file format, size, and the complexity of the COPY statement.
+* **Pipe and Volume Mapping**: Each Pipe must correspond to a dedicated Volume and cannot be shared.
+* Modifying the COPY statement logic is not supported. If you need to change it, delete the Pipe and recreate it.
+* When you modify a Pipe's `COPY_JOB_HINT`, the new setting overwrites the existing hints. If your Pipe already has hints such as `{"cz.sql.split.kafka.strategy":"size"}`, you must include all required hints together when setting new ones, otherwise the existing hints will be overwritten. Separate multiple parameters with commas.
+* The COPY statement inside a PIPE does not support the `files`, `regexp`, or `subdirectory` parameters.
+
+## Cost
+
+Charged based on the computing resources used when loading files.
+
+## PIPE Syntax
+
+```SQL
+-- Syntax for creating a Pipe from object storage
+CREATE PIPE [ IF NOT EXISTS ] <pipe_name>
+    VIRTUAL_CLUSTER = 'virtual_cluster_name'
+    INGEST_MODE='LIST_PURGE'|'EVENT_NOTIFICATION'
+    [COPY_JOB_HINT='']
+AS <copy_statement>;
+```
+
+* `<pipe_name>`: The name of the Pipe object you want to create.
+
+* `VIRTUAL_CLUSTER`: Specify the name of the virtual cluster.
+
+* `INGEST_MODE`: Determines the data import mode — choose one:
+  * `LIST_PURGE`: Periodically polls and scans the directory — simple to configure, suitable for most scenarios; **deletes source files after a successful import (irreversible**).
+
+  * `EVENT_NOTIFICATION`: Triggers immediately upon receiving an object storage event notification — suitable for near-real-time ingestion where source files must be retained; requires additional MNS queue configuration.
+  > ⚠️ **Note**: `LIST_PURGE` mode **permanently deletes** source files from object storage after a successful import. If you need to retain the original files, use `EVENT_NOTIFICATION` mode.
+
+* `COPY_JOB_HINT`: Optional, reserved parameter for Lakehouse.
+
+* `copy_statement`: `<copy_statement>` supports all file parameters. When the `ON_ERROR=CONTINUE|ABORT` parameter is set, it controls how errors are handled during data loading, and the list of imported files is returned:
+  * `CONTINUE`: Skips error rows and continues loading subsequent data. Suitable for scenarios that tolerate partial errors and require maximum data loading completion. Currently, ignorable errors are limited to file format mismatches — for example, the command specifies zip compression but the file uses zstd compression.
+  * `ABORT`: Immediately terminates the entire `COPY` operation. Suitable for scenarios with strict data quality requirements where any error requires manual inspection.
+
+## Supported File Formats
+
+Refer to [COPY INTO import](copy-into-table.md).
+
+## Using PIPE Load Examples
+
+### Using Scan File Mode (LIST\_PURGE)
+
+**Step-by-step instructions**
+
+Step 1: Create a connection and volume
+
+```SQL
+-- Create a connection to connect to object storage
+CREATE STORAGE CONNECTION if not exists my_connection_exnet
+    TYPE OSS
+    ENDPOINT = 'oss-cn-hangzhou.aliyuncs.com'
+    ACCESS_KEY = 'LTAI5tMmbq1Ty1xxxxxxxxx'
+    SECRET_KEY = '0d7Ap1VBuFTzNg7gxxxxxxxxxxxx'
+    COMMENT = 'OSS public endpoint';
+
+-- Create a volume to map the object storage directory
+CREATE EXTERNAL VOLUME pipe_volume
+    location 'oss://ossmy/autoloader/pipe/'
+    using connection my_connection_exnet
+    directory = (
+        enable=true,
+        auto_refresh=true
+    )
+    recursive=true;
+    
+```
+
+Step 2: Run the copy command standalone to verify it imports successfully
+
+```SQL
+copy into pipe_purge_mode from volume pipe_volume(id int,col string) 
+using csv OPTIONS(
+  'header'='false'
+) ;
+```
+
+Step 3: Use the above statement to build the Pipe object
+
+```SQL
+create pipe volume_pipe_list_purge
+  VIRTUAL_CLUSTER = 'default'
+  --Execute to get the latest file using scan file mode
+  INGEST_MODE = 'LIST_PURGE'
+  as
+copy into pipe_purge_mode from volume pipe_volume(id int,col string) 
+using csv OPTIONS(
+  'header'='false'
+)
+--Must add purge parameter to delete data after successful import 
+purge=true
+;
+```
+
+Step 4: View Pipe execution history and imported files
+
+* View the execution status of Pipe copy jobs
+
+Filter by `query_tag` in the job history. All copy jobs executed by the Pipe are tagged with the format: `pipe.workspace_name.schema_name.pipe_name`
+
+* View the history of files imported by copy jobs
+
+```SQL
+select * from load_history('schema_name.table_name');
+```
+
+### Using Event Notification Mode (Alibaba Cloud OSS and AWS S3 only)
+
+Step 1: Enable Alibaba Cloud Message Service (MNS)
+
+1. Enable Message Service MNS in the Alibaba Cloud console.
+2. Configure MNS to listen to the OSS folder you want to synchronize. [See the documentation for details](https://help.aliyun.com/zh/mns/user-guide/create-a-rule-to-generate-oss-event-notifications?spm=a2c4g.11186623.0.i14)
+
+Step 2: Authorize Lakehouse to read OSS
+
+Refer to the role ARN method in [Alibaba Cloud Storage Connection Creation](aliyun_storage_connection.md) to authorize Lakehouse to read the corresponding OSS bucket.
+
+Step 3: Grant MNS access to Lakehouse
+
+```
+In the Alibaba Cloud RAM console, grant the `AliyunMNSFullAccess` permission to the Role from Step 2 (in the example, this is CzUDFRole).
+```
+
+![](.topwrite/assets/image_1722602785678.png)
+
+Step 4: Create a Storage Connection
+
+```SQL
+CREATE STORAGE CONNECTION my_connection_exnet_role
+    TYPE oss
+    REGION = 'cn-hangzhou'  -- Select according to the region where OSS is located
+    ROLE_ARN = 'acs:ram::...:role/czudfrole'  -- Replace with your Role ARN
+    ENDPOINT = 'oss-cn-hangzhou.aliyuncs.com';  -- Select Endpoint according to the region where OSS is located
+```
+
+Step 5: Create a Volume
+
+```SQL
+CREATE EXTERNAL VOLUME my_volume_exnet_role
+    LOCATION 'oss://function-compute-my1/autoloader'  -- Replace with the path of the OSS Bucket
+    USING connection my_connection_exnet_role
+    DIRECTORY = (
+        enable = TRUE,
+        auto_refresh = TRUE
+    )
+    RECURSIVE = TRUE;
+```
+
+Step 6: Create a Pipe
+
+```SQL
+CREATE PIPE my_pipe
+VIRTUAL_CLUSTER='TEST_VC'
+ALICLOUD_MNS_QUEUE = 'lakehouse-oss-event-queue'  -- Use the created MNS queue
+AS
+COPY INTO pipe_log_json FROM (
+    SELECT parse_json(col) json_col
+    FROM volume my_volume_exnet_role(col string)
+    USING csv
+    OPTIONS ('header' = 'false', 'sep' = '\001', 'quote' = '\0')
+);
+```
+
+## Status Monitoring and Management
+
+### Viewing Pipe Status
+
+````
+DESC PIPE EXTENDED kafka_pipe_stream
++--------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|     info_name      |                                                                                                               info_value                                                            |
++--------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| name               | kafka_pipe_stream                                                                                                                                                                   |
+| creator            | UAT_TEST                                                                                                                                                                            |
+| created_time       | 2025-03-05 10:40:55.405                                                                                                                                                             |
+| last_modified_time | 2025-03-05 10:40:55.405                                                                                                                                                             |
+| comment            |                                                                                                                                                                                     |
+| properties         | ((virtual_cluster,test_alter))                                                                                                                                                      |
+| copy_statement     | COPY INTO TABLE qingyun.pipe_schema.kafka_sink_table_1 FROM (SELECT `current_timestamp`() AS ```current_timestamp``()`, CAST(kafka_table_stream_pipe1.`value` AS string) AS `value` |
+| pipe_status        | RUNNING                                                                                                                                                                             |
+| output_name        | xxxxxxx.pipe_schema.kafka_sink_table_1                                                                                                                                              |
+| input_name         | kafka_table_stream:xxxxxxx.pipe_schema.kafka_table_stream_pipe1                                                                                                                     |
+| invalid_reason     |                                                                                                                                                                                     |
+| pipe_latency       | {"kafka":{"lags":{"0":0,"1":0,"2":0,"3":0},"lastConsumeTimestamp":-1,"offsetLag":0,"timeLag":-1}}                                                                                   |
++--------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+````
+
+### Viewing Pipe Run History
+
+Since each execution is a Pipe-issued copy, you can view all operations in the job history. Filter by `query_tag` in the [job history](web-job-history.md) — all copy jobs executed by the Pipe are tagged with the format `pipe.``workspace_name``.schema_name.pipe_name`, making it easy to track and manage.
+
+### Stopping and Starting a Pipe
+
+* Pause a Pipe
+
+```
+ALTER PIPE pipe_name SET PIPE_EXECUTION_PAUSED = true;
+```
+
+* Resume a Pipe
+
+```
+ALTER PIPE pipe_name SET PIPE_EXECUTION_PAUSED = false
+```
+
+### Modifying Pipe Properties
+
+You can modify a Pipe's properties, but only one property at a time. If you need to modify multiple properties, run the `ALTER` command multiple times. The following properties can be modified:
+
+```SQL
+ALTER PIPE pipe_name SET 
+   [VIRTUAL_CLUSTER = 'virtual_cluster_name']
+   [BATCH_INTERVAL_IN_SECONDS='']
+   [BATCH_SIZE_PER_KAFKA_PARTITION='']
+   [MAX_SKIP_BATCH_COUNT_ON_ERROR='']
+   [RESET_KAFKA_GROUP_OFFSETS='']
+   [COPY_JOB_HINT='']
+```
+
+Examples:
+
+```
+-- Change the compute cluster
+ALTER PIPE pipe_name SET VIRTUAL_CLUSTER = 'default'
+-- Set COPY_JOB_HINT
+ALTER PIPE pipe_name SET COPY_JOB_HINT='{"cz.mapper.kafka.message.size": "2000000"}'
+```
+
+^

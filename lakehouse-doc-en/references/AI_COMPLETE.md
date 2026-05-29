@@ -1,0 +1,239 @@
+# AI_COMPLETE
+
+`AI_COMPLETE` is the core scalar function for generative AI tasks on the Singdata Lakehouse platform. It allows you to invoke large language models (LLMs) directly within the SQL environment, generating responses based on text prompts or multimodal inputs, enabling tasks such as text completion, translation, sentiment analysis, code generation, and complex reasoning.
+
+Singdata pushes AI computation down to the storage layer and execution engine, so data can be intelligently processed within the platform without being transferred to external environments — safeguarding data security while significantly reducing task latency.
+
+> When a task can be accomplished with a dedicated function (such as `AI_TRANSLATE`, `AI_SENTIMENT`, `AI_CLASSIFY`, etc.), prefer the dedicated function — it has built-in prompts optimized for that specific task, producing more stable results at lower cost. Use `AI_COMPLETE` for custom scenarios that dedicated functions cannot cover.
+
+---
+
+## Syntax
+
+`AI_COMPLETE` supports two calling forms:
+
+**Text mode**
+
+```sql
+ai_complete(<model>, <prompt> [, json '{}'])
+```
+
+**Image mode**
+
+```sql
+ai_complete(<model>, (<prompt> AS prompt, <image_url> AS image) [, json '{}'])
+```
+
+---
+
+## Parameter Description
+
+### model (required)
+
+Specifies the language model to invoke. Two sources are supported:
+
+**Source 1: API Gateway Endpoint (recommended)**
+
+The platform administrator pre-configures model services in the API Gateway (including provider, version, and authentication credentials). Regular users reference them using the `endpoint:` prefix without needing to know the underlying connection details.
+
+```sql
+'endpoint:<endpoint_name>'
+
+-- Examples
+'endpoint:qwen3-max-preview'
+'endpoint:qwen3.5-plus'
+'endpoint:doubao-seed-2-0-pro-260215'
+```
+
+**Source 2: API Connection object**
+
+Users create connection objects themselves via `CREATE API CONNECTION`, suitable for scenarios requiring custom service addresses, authentication keys, or connections to privately deployed models.
+
+```sql
+-- Create a connection object
+CREATE API CONNECTION conn_bailian
+    TYPE ai_function
+    PROVIDER = 'bailian'
+    BASE_URL = 'https://dashscope.aliyuncs.com/api/v1'
+    API_KEY = 'sk-xxxxxxxxxxxxxxxxxxxxxxxx';
+
+-- Reference using the connection: prefix
+SELECT ai_complete('conn_bailian:qwen3.5-plus', 'Briefly introduce the basic principles of quantum computing.');
+```
+
+`CREATE API CONNECTION` field descriptions:
+
+| Field | Description |
+|-------|-------------|
+| `TYPE` | Fixed as `ai_function` |
+| `PROVIDER` | Model provider identifier, e.g. `'bailian'`, `'openai'`, `'anthropic'` |
+| `BASE_URL` | API base address of the model service |
+| `API_KEY` | Authentication key required to call the service |
+
+---
+
+### prompt (required)
+
+The input content to send to the model, of type STRING.
+
+**Text mode**: pass a string directly:
+
+```sql
+SELECT ai_complete('endpoint:qwen3-max-preview', 'Explain what a vector database is in one sentence');
+```
+
+Dynamic content can be concatenated using `CONCAT` or `||`:
+
+```sql
+SELECT ai_complete(
+    'endpoint:qwen3-max-preview',
+    CONCAT('Summarize the following text in 20 words: ', content)
+) AS summary
+FROM articles;
+```
+
+**Image mode**: use named tuple syntax to pass both a text prompt and an image URL:
+
+```sql
+SELECT ai_complete(
+    'endpoint:doubao-seed-2-0-pro-260215',
+    ('What is in the image?' AS prompt,
+     GET_PRESIGNED_URL(USER VOLUME, 'images/product.jpg', 36000) AS image)
+);
+```
+
+> In image mode, the `image` field cannot be NULL; otherwise the error `invalid type of image field: void` is thrown.
+
+---
+
+### options (optional)
+
+Passed using the `json '{}'` literal syntax to control execution behavior and model parameters:
+
+| Parameter key | Type | Description |
+|---------------|------|-------------|
+| `model.params.temperature` | FLOAT | Output randomness, range [0, 2]; lower values produce more deterministic output |
+| `model.params.max_tokens` | INT | Maximum number of output tokens |
+| `model.params.top_p` | FLOAT | Nucleus sampling probability, range (0, 1] |
+| `model.params.enable_thinking` | BOOL | Whether to enable thinking mode; recommended to set to `false` for batch processing |
+| `response.timeout` | STRING | Timeout per request in seconds, e.g. `"60"` |
+| `task.concurrency` | STRING | Concurrency level for batch processing, e.g. `"5"` |
+
+```sql
+-- Disable thinking mode
+SELECT ai_complete(
+    'endpoint:qwen3-max-preview',
+    'What is artificial intelligence? Answer in one sentence',
+    json '{"model.params":{"enable_thinking":false}}'
+) AS result;
+
+-- Combine multiple parameters
+SELECT ai_complete(
+    'endpoint:qwen3-max-preview',
+    question,
+    json '{"model.params":{"enable_thinking":false},"task.concurrency":"5"}'
+) AS answer
+FROM questions;
+```
+
+---
+
+## Return Value
+
+Returns a STRING — the response text generated by the model.
+
+- When prompt is `NULL` or an empty string, returns `NULL`
+- When the endpoint does not exist, throws `CZLH-67000: No available endpoints found`
+- When the model format is invalid (missing `endpoint:` or `connection:` prefix), throws `CZLH-65000: Invalid model coordinates`
+
+---
+
+## Usage Examples
+
+### Basic Text Completion
+
+```sql
+SELECT ai_complete('endpoint:qwen3-max-preview', 'What is the capital of China?') AS result;
+```
+
+### Batch Processing Table Data
+
+```sql
+SELECT
+    id,
+    ai_complete(
+        'endpoint:qwen3-max-preview',
+        question,
+        json '{"model.params":{"enable_thinking":false},"task.concurrency":"5"}'
+    ) AS answer
+FROM questions;
+```
+
+### Dynamic Prompt with CONCAT
+
+```sql
+SELECT
+    product_id,
+    ai_complete(
+        'endpoint:qwen3-max-preview',
+        CONCAT('Write a selling point description of no more than 30 words for the following product: ', product_name)
+    ) AS selling_point
+FROM products;
+```
+
+### Image Description
+
+```sql
+SELECT ai_complete(
+    'endpoint:doubao-seed-2-0-pro-260215',
+    ('What is in the image?' AS prompt,
+     GET_PRESIGNED_URL(USER VOLUME, 'images/product.jpg', 36000) AS image)
+) AS result;
+```
+
+### Image with a Specific Question
+
+```sql
+SELECT ai_complete(
+    'endpoint:doubao-seed-2-0-pro-260215',
+    ('What is the price of this product? Answer in one sentence.' AS prompt,
+     GET_PRESIGNED_URL(USER VOLUME, 'images/product.jpg', 36000) AS image)
+) AS result;
+```
+
+### Batch Image Processing
+
+```sql
+SELECT
+    relative_path,
+    ai_complete(
+        'endpoint:doubao-seed-2-0-pro-260215',
+        ('Describe the product in the image in one sentence.' AS prompt,
+         GET_PRESIGNED_URL(USER VOLUME, relative_path, 36000) AS image),
+        json '{"model.params":{"enable_thinking":false},"task.concurrency":"3"}'
+    ) AS description
+FROM (SHOW USER VOLUME DIRECTORY SUBDIRECTORY 'images/products')
+LIMIT 10;
+```
+
+### Combining with Other AI Functions
+
+```sql
+-- AI_COMPLETE generates text → AI_CLASSIFY categorizes it
+SELECT ai_classify(
+    'endpoint:qwen3.5-plus',
+    ai_complete('endpoint:qwen3-max-preview', 'Write a technology news headline'),
+    ARRAY('Technology', 'Sports', 'Finance', 'Entertainment')
+) AS category;
+```
+
+---
+
+## Notes
+
+- **Model selection**: Image mode requires a model that supports multimodal input (e.g. `doubao-seed-2-0-pro-260215`). Text-only models such as `qwen3-max-preview` do not support image input — passing an image does not cause an error, but the image content is ignored and the response is generated from the text prompt only.
+- **Thinking mode**: The qwen3 model series enables thinking mode by default, which increases latency and token consumption. For batch processing scenarios, it is recommended to disable it via options: `json '{"model.params":{"enable_thinking":false}}'`.
+- **Image field cannot be NULL**: Passing NULL for the `image` field in image mode throws `invalid type of image field: void`. Ensure `GET_PRESIGNED_URL()` returns a valid URL.
+- **NULL and empty strings**: When prompt is `NULL` or an empty string, the function returns `NULL` without error.
+- **Error codes**: A missing endpoint throws `CZLH-67000`; an invalid model format (missing `endpoint:` prefix) throws `CZLH-65000`.
+- **Token limits**: Different models have different context window limits. Inputs exceeding the limit will be truncated or cause an error. Pay attention to input length when processing long text.

@@ -1,5 +1,6 @@
 # IDE / tool configs
 .claude/
+.idea/
 
 # macOS
 .DS_Store
@@ -12,3 +13,7 @@ tests/.env
 __pycache__/
 *.pyc
 .pytest_cache/
+
+# Skill eval artifacts (local-only)
+clickzetta-pipeline-review-workspace/
+clickzetta-pipeline-review/evals/

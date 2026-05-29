@@ -1,0 +1,1 @@
+Tables are units of data storage, with a logical structure consisting of collections of columns and rows. Each row represents a record, and each column represents a field of the same data type. A record can contain one or more columns.
