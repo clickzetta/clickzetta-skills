@@ -51,17 +51,36 @@ Users don't need to describe table schemas — you discover them, you infer the 
 
    **Do not proceed to inference or generate any model files when data is absent or unsuitable** — models built on empty or malformed tables will fail `dbt test`, and field inference will be completely wrong, creating more rework.
 
-2. **Infer**: Combine four dimensions to automatically infer materialization type and incremental strategy (rules in references/materialization-guide.md):
+2. **Infer**: Combine four dimensions to automatically infer materialization type and incremental strategy. Follow the Decision Tree in [references/materialization-guide.md](references/materialization-guide.md) — **do not rely on intuition or past experience**.
    - **Table name**: identify fact / dimension / aggregation naming patterns
    - **Columns**: presence of `updated_at` / `dt` / primary key fields
    - **Row count**: `SELECT COUNT(*)` to determine data volume
    - **Growth history**: check last 7 days new rows and modification patterns
 
-   **The key question**: can this model be expressed as a SELECT that should always reflect the current state of upstream tables?
-   - **Yes** → `dynamic_table` (declarative incremental — the system automatically handles inserts, updates, and deletes in the source; no merge logic needed)
-   - **No** → `incremental` or `table` — only when: (1) must process a specific time window (yesterday only, last hour only), (2) must run after a specific upstream Studio task, or (3) SCD Type 2 history tracking needed
+   **Default to `dynamic_table` unless there is a specific reason not to.** The key question is:
+   > Can this model be fully expressed as a SELECT that should always reflect the current state of its upstream tables?
+
+   - **Yes → `dynamic_table`**: ODS/staging, dimension tables, fact tables, DWS/ADS aggregations — all qualify. The system handles incremental refresh, row updates, and dependency propagation automatically. No merge logic, no Studio dependency config needed.
+     - ODS / staging layers: use `refresh_interval='5 minutes'` (or longer if low-frequency source)
+     - Dimension tables (small, infrequent changes): use `refresh_interval='30 minutes'` or longer
+     - Fact tables / DWS aggregations (high-frequency updates): use `refresh_interval='5 minutes'` or match business SLA
+     - ADS report tables: use `refresh_interval='5 minutes'` or a longer fixed interval
+   - **No → `incremental` or `table`**: only when ALL of the following apply: (1) must process only a specific time window (yesterday's data only, last hour only), (2) must run after a specific upstream Studio task completes, or (3) SCD Type 2 history tracking. If none of these apply, use `dynamic_table`.
+   - **Small reference tables with no incremental requirement** → `table` (full rebuild, simplest)
 
 3. **Single confirmation**: Summarize all model inference results in one table, let user choose A (confirm all) / B (adjust) / C (partial modeling)
+
+   The confirmation table must include a `refresh_interval` column for `dynamic_table` models so users can review and adjust refresh frequency before generation:
+
+   | Model | Materialization | refresh_interval | Notes |
+   |---|---|---|---|
+   | ods_orders | dynamic_table | 5 minutes | Source layer, frequent refresh |
+   | dwd_fct_orders | dynamic_table | 5 minutes | Fact table, system handles incremental |
+   | dws_order_daily | dynamic_table | 5 minutes | Aggregation layer, upstream changes propagate |
+   | dim_customers | dynamic_table | 30 minutes | Small dimension table, low-frequency refresh |
+   | ads_order_summary | dynamic_table | 5 minutes | Report layer, fixed interval |
+
+   For `incremental` models, show `incremental_strategy` and `incremental_field` instead of `refresh_interval`.
 
 4. **Generate**: After confirmation, generate sources.yml, staging models, marts models, schema.yml in one pass
 
@@ -73,66 +92,20 @@ Users don't need to describe table schemas — you discover them, you infer the 
 
 Present options via interactive question tool at every user decision point. If no such tool is available, list options in text. **Do not execute anything before receiving the user's answer.**
 
-**Expand scope question** (when no relevant tables in current schema):
-```
-question({
-  questions: [{
-    question: "No relevant tables found in the current schema. How would you like to proceed?",
-    options: [
-      { label: "Explore other schemas", description: "Search other schemas in the same workspace" },
-      { label: "Explore other workspaces", description: "Search across other workspaces" },
-      { label: "Specify tables directly", description: "I'll tell you the exact table name or schema to use" }
-    ]
-  }]
-})
-```
+**Expand scope** (when no relevant tables in current schema): Ask the user how to proceed — explore other schemas in the same workspace (list them), explore other workspaces, or let the user specify the exact table name or schema directly.
 
-**Data not suitable question** (when data exists but has issues):
-```
-question({
-  questions: [{
-    question: "Found data but it may not be ready for modeling. What would you like to do?",
-    options: [
-      { label: "Proceed anyway", description: "Model with what's available, fix data issues later" },
-      { label: "Ingest missing / better data first", description: "Set up an ingestion pipeline, then come back to model" },
-      { label: "Point me to the right data", description: "I'll specify a different schema or table" }
-    ]
-  }]
-})
-```
+**Data not suitable** (when data exists but has issues): Show what was found and why it's not suitable. Ask what the user wants to do — proceed anyway with available data and fix issues later, set up an ingestion pipeline first and come back to model after (stay in conversation), or point to a different schema or table.
 
-**No data question** (when Lakehouse has no raw data at all):
-```
-question({
-  questions: [{
-    question: "No raw data found in Lakehouse. What's your data source?",
-    options: [
-      { label: "Relational database (MySQL / PostgreSQL / SQL Server)", description: "Batch sync or CDC → clickzetta-data-ingest-pipeline" },
-      { label: "Kafka / message queue", description: "Real-time ingestion → clickzetta-kafka-ingest-pipeline" },
-      { label: "Files (OSS / S3 / local CSV)", description: "File import pipeline → clickzetta-data-ingest-pipeline" },
-      { label: "I'll prepare the data myself", description: "Come back when data is ready" }
-    ]
-  }]
-})
-```
+**No data** (when Lakehouse has no raw data at all): Ask about the data source — relational database (MySQL / PostgreSQL / SQL Server, batch sync or CDC → `clickzetta-data-ingest-pipeline`), Kafka / message queue (real-time ingestion → `clickzetta-kafka-ingest-pipeline`), files (OSS / S3 / local CSV → `clickzetta-data-ingest-pipeline`), or the user will prepare the data themselves.
 
-**Model confirmation question** (after inference, step 3):
-```
-question({
-  questions: [{
-    question: "Here's the proposed modeling plan. How would you like to proceed?",
-    options: [
-      { label: "Confirm all", description: "Generate all models as proposed" },
-      { label: "Adjust some models", description: "I want to change materialization type or strategy for specific models" },
-      { label: "Partial modeling", description: "Only model a subset of the tables" }
-    ]
-  }]
-})
+**Model confirmation** (after inference, step 3): Show the proposed modeling plan table. Ask how to proceed — confirm all and generate, adjust specific models (change materialization type or strategy), or do partial modeling (only a subset of tables).
 
 ## Key Constraints
 
 - `database: "{{ target.database }}"` in sources.yml — resolves to workspace name at runtime; never hardcode the workspace name
-- Incremental models published to Studio require Agent SQL rewriting (see `clickzetta-dbt-studio-pipeline`)
+- **`dynamic_table` models do NOT need Studio scheduling** — `refresh_interval` drives automatic refresh; creating a Studio cron task for them is redundant and wasteful
+- **`dynamic_table` models do NOT need Studio dependency config** — the system tracks upstream dependencies automatically through the DAG
+- Only `incremental` / `table` / `snapshot` models need Studio scheduling via `clickzetta-dbt-studio-pipeline`
 - Record incremental fields in each incremental model's schema.yml `meta` block:
   ```yaml
   meta:
@@ -156,6 +129,31 @@ models/
 │   └── schema.yml
 └── snapshots/                      # only create when SCD requirements exist
     └── {table}_snapshot.sql
+```
+
+**`dynamic_table` model template** (use for ODS, dim, fct, DWS, ADS by default):
+```sql
+{{ config(
+    materialized='dynamic_table',
+    refresh_interval='5 minutes',   -- or 'DOWNSTREAM' for ODS/ADS layers
+    refresh_vc='default'
+) }}
+select
+    ...
+from {{ ref('upstream_model') }}
+```
+
+**`incremental` model template** (only when time-window control or Studio dependency is required):
+```sql
+{{ config(
+    materialized='incremental',
+    incremental_strategy='insert_overwrite',  -- or 'merge'
+    partition_by='dt'
+) }}
+select ...
+{% if is_incremental() %}
+where dt = '${bizdate}'
+{% endif %}
 ```
 
 sources.yml goes inside `models/staging/schema.yml` (not a separate file):
@@ -214,14 +212,15 @@ models:
 ## Completion Criteria
 
 - `dbt test` 0 errors
-- Incremental fields recorded in schema.yml `meta` (for use by `clickzetta-dbt-studio-pipeline`)
+- `dynamic_table` models have `refresh_interval` and `refresh_vc` configured in schema.yml `meta`
+- `incremental` models have `incremental_field` and `incremental_strategy` recorded in schema.yml `meta` (for use by `clickzetta-dbt-studio-pipeline`)
 
 ## Next Steps After Modeling (proactively present to user)
 
 Present the following options after modeling is complete — let the user choose the direction:
 
-**A. Publish to Studio + configure scheduled execution** → `clickzetta-dbt-studio-pipeline`
-Publish all model code as assets to Studio; configure cron auto-scheduling for table/incremental/snapshot models.
+**A. Publish model code to Studio as assets** → `clickzetta-dbt-studio-pipeline`
+Publish SQL code to Studio for unified code management. Only `table` / `incremental` / `snapshot` models need scheduling — `dynamic_table` models self-refresh and do not need Studio cron tasks.
 
 **B. Connect BI tools and start reporting** → `clickzetta-bi-connect`
 Connect marts layer tables to Tableau / Metabase / FineReport or other BI tools for direct query and analysis.

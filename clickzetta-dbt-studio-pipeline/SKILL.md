@@ -127,7 +127,7 @@ Ask the user to confirm each decision before executing. **Do not execute anythin
 
 4. **Incremental SQL rewrite**: For each incremental model, show the before/after SQL diff and ask the user to confirm the rewrite. Options: confirm all, or adjust a specific model.
 
-5. **Scheduling configuration**: Ask two things — what schedule (daily at 03:00 for standard T+1, hourly for near real-time, or custom cron) and which VCluster to use (default_ap or specify another).
+5. **Scheduling configuration**: Ask two things — what schedule (daily at 03:00 for standard T+1, hourly for near real-time, or custom cron) and which VCluster to use (default or specify another).
 
 6. **Final confirmation**: Show the complete execution plan (total task count, directory structure, schedule times) and ask the user to confirm before deploying.
 

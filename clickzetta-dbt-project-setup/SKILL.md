@@ -66,14 +66,53 @@ Users don't need to understand dbt internals — they only need to answer a few 
        └── marts/                  # business layer (or adjusted per layering choice)
    ```
 
-   Enable comment persistence globally in `dbt_project.yml` so descriptions written during modeling are automatically written to Lakehouse metadata:
+   Generate `dbt_project.yml` with **`dynamic_table` as the default materialization for all layers** — this is the ClickZetta Lakehouse native approach. The system handles incremental refresh and dependency propagation automatically; no manual merge logic or Studio dependency config needed.
+
    ```yaml
    models:
      {project_name}:
        +persist_docs:
          relation: true    # table comments
          columns: true     # column comments
+
+       # Two-layer example (staging → marts):
+       staging:
+         +materialized: dynamic_table
+         +dynamic_table:
+           refresh_interval: "5 minutes"   # adjust to business SLA; DOWNSTREAM not supported in ClickZetta
+           refresh_vc: default
+       marts:
+         +materialized: dynamic_table
+         +dynamic_table:
+           refresh_interval: "5 minutes"  # adjust to business SLA
+           refresh_vc: default
+
+       # Four-layer example (ODS → DWD → DWS → ADS):
+       ods:
+         +materialized: dynamic_table
+         +dynamic_table:
+           refresh_interval: "5 minutes"
+           refresh_vc: default
+       dwd:
+         +materialized: dynamic_table
+         +dynamic_table:
+           refresh_interval: "5 minutes"
+           refresh_vc: default
+       dws:
+         +materialized: dynamic_table
+         +dynamic_table:
+           refresh_interval: "5 minutes"
+           refresh_vc: default
+       ads:
+         +materialized: dynamic_table
+         +dynamic_table:
+           refresh_interval: "5 minutes"
+           refresh_vc: default
    ```
+
+   Use the template matching the user's chosen layering mode. Individual models can override `refresh_interval` in their own `{{ config() }}` block — the layer default is just a fallback.
+
+   **Exception**: small static reference tables (e.g. lookup/config tables with no upstream changes) can use `+materialized: table` at the model level — full rebuild is simpler and cheaper for these.
 
    Connection parameters for profiles.yml — two options (prefer config file if available):
    - **User provides a config file**: ask user to upload or paste an existing profiles.yml / cz-cli config file, extract parameters directly — no need to ask one by one
@@ -87,35 +126,7 @@ Users don't need to understand dbt internals — they only need to answer a few 
 
 Use the interactive question tool for user decision points. If no such tool is available, list options in text. **Do not proceed before receiving the user's answer.**
 
-```
-question({
-  questions: [
-    {
-      question: "Where should the dbt project directory be created?",
-      options: [
-        { label: "Current directory", description: "Create project folder here" },
-        { label: "Specify a path", description: "I'll provide the full path" }
-      ]
-    },
-    {
-      question: "Which layering mode fits your project?",
-      options: [
-        { label: "Two-layer (staging → marts)", description: "Recommended for small/medium projects. staging views + marts tables." },
-        { label: "Two-layer + intermediate", description: "Add an intermediate layer for complex multi-table joins." },
-        { label: "Three-layer (ODS → DWD → ADS)", description: "For larger projects with multiple business domains." },
-        { label: "Four-layer (ODS → DWD → DWS → ADS)", description: "For large data warehouses with dedicated data teams." }
-      ]
-    },
-    {
-      question: "What naming prefix should be used for schemas and the project?",
-      options: [
-        { label: "Use business domain name", description: "e.g., retail, finance, marketing" },
-        { label: "Use company/team name", description: "e.g., acme, dataeng" },
-        { label: "I'll specify", description: "Enter a custom prefix" }
-      ]
-    }
-  ]
-})
+Ask the user to confirm three things: (1) **Project directory** — current directory, or a path they specify. (2) **Layering mode** — two-layer (staging → marts, recommended for small/medium projects), two-layer + intermediate (for complex multi-table joins), three-layer (ODS → DWD → ADS, for larger projects with multiple business domains), or four-layer (ODS → DWD → DWS → ADS, for large data warehouses with dedicated data teams). (3) **Naming prefix** — business domain name (e.g. retail, finance, marketing), company/team name (e.g. acme, dataeng), or a custom prefix they specify.
 
 ## Key Constraints
 
