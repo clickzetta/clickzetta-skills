@@ -53,15 +53,13 @@ Users don't need to describe table schemas — you discover them, you infer the 
 
 2. **Infer**: Combine four dimensions to automatically infer materialization type and incremental strategy (rules in references/materialization-guide.md):
    - **Table name**: identify fact / dimension / aggregation naming patterns
-   - **Columns**: presence of `updated_at` / `dt` / primary key fields — key question: are rows modified after insert, or append-only?
+   - **Columns**: presence of `updated_at` / `dt` / primary key fields
    - **Row count**: `SELECT COUNT(*)` to determine data volume
    - **Growth history**: check last 7 days new rows and modification patterns
 
-   **The single most important question**: does the output table need DML (merge/update/delete by primary key)?
-   - **YES** → `incremental` (dynamic_table is read-only, cannot merge)
-   - **NO** → `dynamic_table` is the default for everything else: ODS/staging, DWD dimensions, DWS/ADS aggregations, append-only facts
-
-   **Key inference rule for aggregation models** (DWS/ADS layer): customer stats, daily revenue, product performance, store rankings — default to `dynamic_table`. Only use `incremental` when the aggregation must include only a specific time window (e.g. "yesterday only").
+   **The key question**: can this model be expressed as a SELECT that should always reflect the current state of upstream tables?
+   - **Yes** → `dynamic_table` (declarative incremental — the system automatically handles inserts, updates, and deletes in the source; no merge logic needed)
+   - **No** → `incremental` or `table` — only when: (1) must process a specific time window (yesterday only, last hour only), (2) must run after a specific upstream Studio task, or (3) SCD Type 2 history tracking needed
 
 3. **Single confirmation**: Summarize all model inference results in one table, let user choose A (confirm all) / B (adjust) / C (partial modeling)
 

@@ -50,7 +50,8 @@ After the skill triggers, **the first thing is to explain to the user what will 
 >
 > **② Scheduling (only table/incremental/snapshot, M models total)**: Configure cron schedule, dependencies, and deploy as PUBLISHED so they run automatically.
 >
-> view and dynamic_table only get asset management, no scheduling — view is computed at query time, dynamic_table has its own refresh mechanism.
+> dynamic_table with `refresh_interval` set: **no Studio scheduling needed** — the system auto-refreshes on its own schedule. Only create a Studio task for a dynamic_table if it uses manual refresh mode (i.e. you want to trigger `REFRESH DYNAMIC TABLE` as part of a dependency chain).
+> view: no scheduling needed — computed at query time.
 
 Then proceed to the key decision points. **Don't skip this opening** — when users say "publish to Studio" they typically only have scheduling in mind and don't know about asset management; if not mentioned, it gets skipped.
 

@@ -1,85 +1,127 @@
 # Materialization Selection Guide
 
-## Core Principle: Dynamic Table as the Default for Declarative SQL Pipelines
+## Core Principle: Two Paradigms of Incremental Computation
 
-Dynamic tables are the **recommended approach for new multi-table SQL pipelines** — you write a SELECT statement, the system handles refresh timing, dependency ordering, and incremental processing automatically. This mirrors Snowflake's design philosophy and applies equally to ClickZetta Lakehouse.
+There are two fundamentally different ways to keep a table up to date:
 
-**Use dynamic_table by default** for any model that:
-- Is defined purely as a SELECT (no DML needed on the output)
-- Reads from upstream tables and transforms/joins/aggregates them
-- Does not need to run at a specific clock time (e.g. "after the sync task at 02:00")
+**Declarative (dynamic_table)**: You declare *what the table should contain* as a SELECT statement. The system automatically detects upstream changes and incrementally recomputes the result — inserts, updates, and deletes in the source are all reflected automatically. You never write incremental filter logic. The system handles it.
 
-**Use incremental or table** only when:
-- The output table needs DML (INSERT/UPDATE/DELETE) — e.g. merge by primary key for order status updates
-- The model must be triggered by an external event (upstream task completion, not just data change)
-- The aggregation is time-windowed and must only include "yesterday's data" (not all history)
+**Imperative (incremental)**: You write *how to process each batch* — which rows to pick up (`WHERE updated_at >= ...`), how to merge them (`merge`/`insert_overwrite`/`append`). You control the logic; the system just executes it on schedule.
 
-## Inference Criteria
+**The key question is not "does it need DML" — dynamic_table handles row-level changes automatically through declarative incremental refresh. The key question is: do you need to control the time window of data being processed?**
 
-When inferring the materialization type, consider the following four dimensions:
-
-| Dimension | How to Obtain | Key Signals |
-|---|---|---|
-| Table name | Read directly | `orders/events/logs` → fact-type; `customers/products/dim_` → dimension-type; `summary/daily/agg_` → aggregate-type |
-| Columns | `table describe` | Has `updated_at` → check if rows are modified (merge needed) or append-only; has `dt/date` → time-windowed aggregation; has primary key → merge/delete+insert |
-| Row count | `SELECT COUNT(*)` | < 1M → prefer dynamic_table or table; > 10M with DML needs → incremental |
-| Data growth history | `SHOW TABLE HISTORY` or query new rows added in the last 7 days | Rows modified (updated_at changing) → needs merge (incremental); only inserts → dynamic_table or append |
+- **No time window control needed** → `dynamic_table` (system keeps it fresh automatically)
+- **Must process only a specific window** (e.g. "yesterday's data only", "last hour only") → `incremental`
+- **Must run after a specific upstream task** (not just when data changes) → `incremental` + Studio scheduling
 
 ## Decision Tree
 
 ```
-Does the output table need DML (merge/update/delete by primary key)?
-├── YES → incremental (dynamic_table is read-only, cannot do merge)
-│   ├── Has unique primary key + rows modified → incremental + merge
-│   ├── Has date partition + daily recompute → incremental + insert_overwrite
-│   ├── No primary key but has partition → incremental + delete+insert
-│   └── Append-only, no modifications → incremental + append
+Can this model be fully expressed as a SELECT that should always reflect
+the current state of its upstream tables?
 │
-└── NO (pure SELECT, no DML needed) → prefer dynamic_table
-    ├── ODS / staging layer (rename, cast, filter from raw)
-    │   └── → dynamic_table with TARGET_LAG = DOWNSTREAM
-    │         (refreshes only when downstream needs it, zero scheduling overhead)
-    ├── DWD dimension tables (customers, products, stores — small, JOIN + clean)
-    │   └── → dynamic_table (auto-refreshes when source changes)
-    ├── DWD fact tables — append-only (events, logs, no status updates)
-    │   └── → dynamic_table (append-only facts work well as dynamic tables)
-    ├── DWS / ADS aggregation (customer stats, daily revenue, product performance)
-    │   ├── No strict time window → dynamic_table (most common case)
-    │   └── Must include only "yesterday" data → incremental + insert_overwrite
-    │         (dynamic_table would include all history, not just yesterday)
-    └── Single-table query acceleration (no joins)
-        └── → materialized_view (query optimizer rewrites automatically; dynamic_table not needed)
+├── YES → dynamic_table (declarative incremental, system handles everything)
+│   │
+│   ├── ODS / staging (rename, cast, filter from raw)
+│   │   └── refresh_interval='DOWNSTREAM' — refreshes only when downstream needs it
+│   │
+│   ├── DWD dimension tables (customers, products, stores)
+│   │   └── refresh_interval='5 minutes' or longer — auto-tracks source changes
+│   │
+│   ├── DWD fact tables (orders, events — including those with status updates)
+│   │   └── dynamic_table handles row updates automatically; no merge logic needed
+│   │
+│   ├── DWS / ADS aggregation (customer stats, daily revenue, product performance)
+│   │   └── dynamic_table — aggregates stay current as upstream facts change
+│   │
+│   └── Single-table query acceleration (no joins, no transforms)
+│       └── materialized_view is more efficient (query optimizer rewrites automatically)
+│
+└── NO → incremental or table
+    │
+    ├── Must process only a specific time window
+    │   ├── Daily partition recompute (dt field) → incremental + insert_overwrite
+    │   └── Hourly window (start_time / end_time) → incremental + insert_overwrite
+    │
+    ├── Must run after a specific upstream Studio task completes
+    │   └── incremental + Studio scheduling + dependency config
+    │
+    ├── SCD Type 2 (track historical versions of dimension rows)
+    │   └── snapshot
+    │
+    └── Small table, simplest possible rebuild
+        └── table (full rebuild each run)
 ```
 
-**Special case — DWD fact tables with status updates** (e.g. orders: pending → completed):
-- If `updated_at` exists and rows are modified → **incremental + merge** (dynamic_table cannot merge)
-- If rows are append-only (events, logs) → **dynamic_table**
+## Studio Scheduling and Dynamic Tables
 
-**TARGET_LAG = DOWNSTREAM pattern** for intermediate tables:
+**Dynamic table with `refresh_interval`**: auto-refreshes on schedule, **no Studio task needed**.
+The system manages the refresh independently. Creating a Studio task for it would be redundant.
+
+**Dynamic table with manual refresh** (if `refresh_interval` is disabled or set to manual):
+A Studio SQL task can trigger `REFRESH DYNAMIC TABLE {table}` on a schedule.
+Use this when you want the refresh to be part of a dependency chain in Studio.
+
+```sql
+-- Studio task SQL for manual dynamic table refresh
+REFRESH DYNAMIC TABLE {workspace}.{schema}.{model};
+```
+
+## Configuration Templates
+
+### dynamic_table — auto-refresh (most common)
 ```sql
 {{ config(
     materialized='dynamic_table',
-    target_lag='DOWNSTREAM',   -- only refresh when downstream tables need it
+    refresh_interval='5 minutes',  -- '1 minutes' / '5 minutes' / '1 hours'
     refresh_vc='default_ap'
 ) }}
+select
+    customer_id,
+    count(order_id)  as order_count,
+    sum(amount)      as total_amount,
+    max(updated_at)  as last_order_time
+from {{ ref('stg_orders') }}
+group by customer_id
 ```
-Use this for ODS/staging layers — they don't need their own refresh schedule, they just need to be ready when DWS/ADS tables refresh.
 
-**When NOT to use dynamic_table** (Snowflake/ClickZetta official guidance):
-- Output needs DML (INSERT/UPDATE/DELETE/TRUNCATE) → use incremental
-- Must run after a specific upstream task completes (not just when data changes) → use incremental + Studio scheduling
-- Simple single-table query with no joins → use materialized_view (more efficient)
-- SCD Type 2 (need to track historical versions of dimension rows) → use snapshot
-
-## Configuration Templates by Type
-
-### table
+### dynamic_table — downstream-triggered (for intermediate layers)
 ```sql
-{{ config(materialized='table') }}
-select ...
+{{ config(
+    materialized='dynamic_table',
+    refresh_interval='DOWNSTREAM',  -- only refreshes when downstream tables need it
+    refresh_vc='default_ap'
+) }}
+select
+    order_id,
+    customer_id,
+    amount,
+    status,
+    updated_at
+from {{ source('raw', 'orders') }}
+where order_id is not null
+```
+Use `DOWNSTREAM` for ODS/staging layers — they don't need their own schedule, they refresh in sync with their downstream dependents.
+
+### incremental + insert_overwrite (time-windowed daily batch)
+```sql
+{{ config(
+    materialized='incremental',
+    incremental_strategy='insert_overwrite',
+    partition_by='dt'
+) }}
+select
+    dt,
+    region,
+    count(*) as order_count,
+    sum(amount) as revenue
+from {{ source('raw', 'orders') }}
+where status = 'completed'
+group by dt, region
+-- No is_incremental() filter needed; overwrites the current partition each run
 ```
 
-### incremental + merge
+### incremental + merge (when you need explicit merge control)
 ```sql
 {{ config(
     materialized='incremental',
@@ -88,37 +130,18 @@ select ...
 ) }}
 select ...
 {% if is_incremental() %}
-where updated_at > (select max(updated_at) from {{ this }})
+where updated_at >= (select max(updated_at) from {{ this }}) - interval 3 days
 {% endif %}
 ```
+Use this when: you need a lookback window, or the merge logic is more complex than what dynamic_table's automatic incremental can express.
 
-### incremental + insert_overwrite
+### table (small tables, simplest rebuild)
 ```sql
-{{ config(
-    materialized='incremental',
-    incremental_strategy='insert_overwrite',
-    partition_by='dt'
-) }}
+{{ config(materialized='table') }}
 select ...
--- No is_incremental() filter needed; overwrites the entire partition each run
 ```
 
-### dynamic_table
-```sql
-{{ config(
-    materialized='dynamic_table',
-    refresh_interval='5 minutes',
-    refresh_vc='default_ap'
-) }}
-select
-    customer_id,
-    count(*) as order_count,
-    sum(amount) as total_amount
-from {{ ref('fct_orders') }}
-group by customer_id
-```
-
-### snapshot (timestamp strategy)
+### snapshot (SCD Type 2)
 ```sql
 {% snapshot customers_snapshot %}
 {{ config(
@@ -131,132 +154,63 @@ select * from {{ source('raw', 'customers') }}
 {% endsnapshot %}
 ```
 
-### snapshot (check strategy)
-```sql
-{% snapshot customers_snapshot %}
-{{ config(
-    target_schema='snapshots',
-    unique_key='customer_id',
-    strategy='check',
-    check_cols=['name', 'email', 'city']
-) }}
-select * from {{ source('raw', 'customers') }}
-{% endsnapshot %}
-```
-
 ### materialized_view (not recommended)
 ```sql
 {{ config(materialized='materialized_view') }}
 select ...
 ```
-> **Not recommended.** Prefer `dynamic_table` for the same use case — dynamic tables have explicit refresh intervals and VCluster configuration, making behavior more predictable and easier to monitor. Only consider `materialized_view` when there is a specific reason.
+> **Not recommended.** Use `dynamic_table` instead — it has explicit refresh configuration and is easier to monitor. Only use `materialized_view` for simple single-table query acceleration where the query optimizer can rewrite automatically.
 
 ### clone
 ```sql
 {{ config(
     materialized='clone',
     source='my_schema.fct_orders',
-    at_timestamp='2024-01-01 00:00:00'  -- optional, Time Travel to a specific point in time
-) }}
-```
-> Zero-copy clone, no data is copied. Suitable for creating test replicas or Time Travel snapshots.
-
-### partition + index
-```sql
-{{ config(
-    materialized='table',
-    partition_by='dt',
-    indexes=[
-        {'type': 'bloomfilter', 'columns': ['order_id']},
-        {'type': 'inverted', 'columns': ['status']}
-    ]
-) }}
-```
-
-### VCluster isolation (large models use large clusters)
-```sql
-{{ config(
-    materialized='table',
-    vcluster='large_ap'
+    at_timestamp='2024-01-01 00:00:00'  -- optional, Time Travel to a specific point
 ) }}
 ```
 
 ## Index Strategy
 
-Indexes are created automatically at table creation time — no extra steps needed. Selection principles:
+Indexes are created automatically at table creation time. Selection principles:
 
 | Index Type | Suitable Queries | Typical Columns |
 |---|---|---|
 | `bloomfilter` | Equality queries (`WHERE order_id = 'xxx'`, `JOIN ON id`) | Primary keys, foreign keys, high-cardinality ID columns |
-| `inverted` | Full-text search (`match_all`, `match_any`), low-cardinality enum filtering | status, region, category and other enum columns |
+| `inverted` | Full-text search (`match_all`, `match_any`), low-cardinality enum filtering | status, region, category |
 
 ```sql
 {{ config(
     materialized='table',
     indexes=[
-        {'type': 'bloomfilter', 'columns': ['order_id']},    -- primary key equality queries
-        {'type': 'bloomfilter', 'columns': ['customer_id']}, -- foreign key JOIN acceleration
-        {'type': 'inverted',    'columns': ['status']}       -- enum filtering
+        {'type': 'bloomfilter', 'columns': ['order_id']},
+        {'type': 'bloomfilter', 'columns': ['customer_id']},
+        {'type': 'inverted',    'columns': ['status']}
     ]
 ) }}
 ```
 
-**When to add indexes**:
-- Fact table primary key and foreign key columns: add bloomfilter by default
-- Enum columns that frequently appear in WHERE conditions: add inverted
-- Small tables (< 1M rows): no index needed, full table scan is faster
+**When to add indexes**: fact table primary/foreign keys → bloomfilter; enum columns in WHERE → inverted; small tables (< 1M rows) → skip.
 
 ## Partition Strategy
 
-Partitioning lets queries scan only relevant partitions, significantly reducing IO. Suitable for large tables with a clear date dimension:
-
-```sql
-{{ config(
-    materialized='table',
-    partition_by='dt'    -- partition by dt column; queries automatically prune partitions
-) }}
-select
-    order_id,
-    customer_id,
-    amount,
-    dt
-from {{ ref('stg_orders') }}
-```
-
-**Partition + incremental combination** (the most common pattern for large tables):
 ```sql
 {{ config(
     materialized='incremental',
     incremental_strategy='insert_overwrite',
-    partition_by='dt'    -- overwrites the current day's partition each run; no is_incremental() filter needed
+    partition_by='dt'
 ) }}
 ```
 
-**When to use partitioning**:
-- Table has a `dt` / `date` column and queries frequently filter by date
-- Row count > 5M, or > 100K new rows added per day
-- Not suitable for: dimension tables without a date column, small tables
+**When to use**: table has `dt`/`date` column, queries filter by date, row count > 5M or > 100K new rows/day. Not suitable for dimension tables or small tables.
 
-## Dynamic Table Configuration Details
+## refresh_interval Selection
 
-```sql
-{{ config(
-    materialized='dynamic_table',
-    refresh_interval='5 minutes',  -- refresh interval: '1 minutes' / '5 minutes' / '1 hours' etc.
-    refresh_vc='default_ap'        -- VCluster used for refresh; recommended to separate from query VCluster
-) }}
-select
-    customer_id,
-    count(order_id)  as order_count,
-    sum(amount)      as total_amount,
-    max(updated_at)  as last_order_time
-from {{ ref('stg_orders') }}
-group by customer_id
-```
+| Interval | Use Case | Cost |
+|---|---|---|
+| `1 minutes` | Near-real-time, latency-sensitive | High — VCluster runs continuously |
+| `5 minutes` | Most near-real-time scenarios | Moderate |
+| `1 hours` | Low-freshness aggregates | Low |
+| `DOWNSTREAM` | Intermediate layers (ODS/staging) | Minimal — only refreshes when needed |
 
-**Choosing refresh_interval**:
-- `1 minutes`: near-real-time scenarios; VCluster consumes resources continuously, higher cost
-- `5 minutes`: a reasonable default for most near-real-time scenarios
-- `1 hours`: aggregate metrics where freshness requirements are low
-
-**refresh_vc recommendation**: Use a dedicated small VCluster for refresh to avoid competing with the query VCluster for resources. If no dedicated VCluster is available, use `default_ap`.
+**refresh_vc**: Use a dedicated small VCluster for refresh to avoid competing with query workloads. If unavailable, use `default_ap`.
