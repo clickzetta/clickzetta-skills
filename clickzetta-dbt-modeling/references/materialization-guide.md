@@ -1,5 +1,19 @@
 # Materialization Selection Guide
 
+## Core Principle: Dynamic Table as the Default for Declarative SQL Pipelines
+
+Dynamic tables are the **recommended approach for new multi-table SQL pipelines** — you write a SELECT statement, the system handles refresh timing, dependency ordering, and incremental processing automatically. This mirrors Snowflake's design philosophy and applies equally to ClickZetta Lakehouse.
+
+**Use dynamic_table by default** for any model that:
+- Is defined purely as a SELECT (no DML needed on the output)
+- Reads from upstream tables and transforms/joins/aggregates them
+- Does not need to run at a specific clock time (e.g. "after the sync task at 02:00")
+
+**Use incremental or table** only when:
+- The output table needs DML (INSERT/UPDATE/DELETE) — e.g. merge by primary key for order status updates
+- The model must be triggered by an external event (upstream task completion, not just data change)
+- The aggregation is time-windowed and must only include "yesterday's data" (not all history)
+
 ## Inference Criteria
 
 When inferring the materialization type, consider the following four dimensions:
@@ -7,45 +21,55 @@ When inferring the materialization type, consider the following four dimensions:
 | Dimension | How to Obtain | Key Signals |
 |---|---|---|
 | Table name | Read directly | `orders/events/logs` → fact-type; `customers/products/dim_` → dimension-type; `summary/daily/agg_` → aggregate-type |
-| Columns | `table describe` | Has `updated_at` → merge incremental; has `dt/date` → insert_overwrite; has `created_at` but no `updated_at` → append; has primary key column → merge/delete+insert |
-| Row count | `SELECT COUNT(*)` | < 1M → prefer table; > 10M → must use incremental |
-| Data growth history | `SHOW TABLE HISTORY` or query new rows added in the last 7 days | Steady daily growth → incremental; very little or no growth → table; growth with backfill modifications → merge instead of append |
-
-**Growth history decision logic**:
-- Last 7 days: > 10K new rows per day → likely needs incremental, avoid costly full rebuilds
-- Last 7 days: historical rows modified (updated_at changing) → needs merge, cannot use append
-- Last 7 days: only inserts, no modifications → can use append, simpler and more efficient
-- Small data volume but daily modifications → still use table (full rebuild is simpler than merge, and small size has no performance impact)
+| Columns | `table describe` | Has `updated_at` → check if rows are modified (merge needed) or append-only; has `dt/date` → time-windowed aggregation; has primary key → merge/delete+insert |
+| Row count | `SELECT COUNT(*)` | < 1M → prefer dynamic_table or table; > 10M with DML needs → incremental |
+| Data growth history | `SHOW TABLE HISTORY` or query new rows added in the last 7 days | Rows modified (updated_at changing) → needs merge (incremental); only inserts → dynamic_table or append |
 
 ## Decision Tree
 
 ```
-Combine table name + columns + row count + growth history:
-├── Row count < 1M, or very slow growth (< 10K new rows/day)
-│   ├── Historical rows changing (updated_at is changing) → table (full rebuild, simple and reliable)
-│   └── No changes or append-only → table
-├── Row count > 1M, or steady daily growth
-│   ├── Has unique primary key + historical rows modified (updated_at changing) → incremental + merge
-│   ├── Has date partition column (dt/date) + daily recompute → incremental + insert_overwrite
-│   ├── No primary key but has partition, needs replacement → incremental + delete+insert
-│   └── Append-only, no modifications (logs/events) → incremental + append
-├── Aggregate / summary model (DWS/ADS layer: customer stats, daily revenue, product performance, etc.)
-│   ├── No strict scheduling time window needed → dynamic_table (preferred — auto-refresh, no Studio task needed)
-│   └── Must run at a specific time (e.g. after upstream sync completes) → incremental + insert_overwrite
-├── Columns have SCD characteristics (name/city/status and other changing dimension attributes)
-│   └── → snapshot (SCD Type 2)
-├── Pre-computed query acceleration (read-only, high-frequency queries)
-│   └── → dynamic_table (preferred, auto-refresh, no scheduling needed; materialized_view not recommended)
-├── Zero-copy clone or Time Travel snapshot
-│   └── → clone (source points to original table, at_timestamp specifies the point in time)
-└── Intermediate computation, no materialization needed
-    └── → ephemeral
+Does the output table need DML (merge/update/delete by primary key)?
+├── YES → incremental (dynamic_table is read-only, cannot do merge)
+│   ├── Has unique primary key + rows modified → incremental + merge
+│   ├── Has date partition + daily recompute → incremental + insert_overwrite
+│   ├── No primary key but has partition → incremental + delete+insert
+│   └── Append-only, no modifications → incremental + append
+│
+└── NO (pure SELECT, no DML needed) → prefer dynamic_table
+    ├── ODS / staging layer (rename, cast, filter from raw)
+    │   └── → dynamic_table with TARGET_LAG = DOWNSTREAM
+    │         (refreshes only when downstream needs it, zero scheduling overhead)
+    ├── DWD dimension tables (customers, products, stores — small, JOIN + clean)
+    │   └── → dynamic_table (auto-refreshes when source changes)
+    ├── DWD fact tables — append-only (events, logs, no status updates)
+    │   └── → dynamic_table (append-only facts work well as dynamic tables)
+    ├── DWS / ADS aggregation (customer stats, daily revenue, product performance)
+    │   ├── No strict time window → dynamic_table (most common case)
+    │   └── Must include only "yesterday" data → incremental + insert_overwrite
+    │         (dynamic_table would include all history, not just yesterday)
+    └── Single-table query acceleration (no joins)
+        └── → materialized_view (query optimizer rewrites automatically; dynamic_table not needed)
 ```
 
-**When to choose dynamic_table for aggregation models**:
-- Customer stats, product performance, store rankings, daily/weekly summaries — these are all good candidates
-- dynamic_table auto-refreshes when upstream data changes, no cron needed
-- Only use incremental/table for aggregation when: (1) the aggregation window is time-bounded (e.g. "yesterday only"), or (2) the model must run after a specific upstream task completes
+**Special case — DWD fact tables with status updates** (e.g. orders: pending → completed):
+- If `updated_at` exists and rows are modified → **incremental + merge** (dynamic_table cannot merge)
+- If rows are append-only (events, logs) → **dynamic_table**
+
+**TARGET_LAG = DOWNSTREAM pattern** for intermediate tables:
+```sql
+{{ config(
+    materialized='dynamic_table',
+    target_lag='DOWNSTREAM',   -- only refresh when downstream tables need it
+    refresh_vc='default_ap'
+) }}
+```
+Use this for ODS/staging layers — they don't need their own refresh schedule, they just need to be ready when DWS/ADS tables refresh.
+
+**When NOT to use dynamic_table** (Snowflake/ClickZetta official guidance):
+- Output needs DML (INSERT/UPDATE/DELETE/TRUNCATE) → use incremental
+- Must run after a specific upstream task completes (not just when data changes) → use incremental + Studio scheduling
+- Simple single-table query with no joins → use materialized_view (more efficient)
+- SCD Type 2 (need to track historical versions of dimension rows) → use snapshot
 
 ## Configuration Templates by Type
 
