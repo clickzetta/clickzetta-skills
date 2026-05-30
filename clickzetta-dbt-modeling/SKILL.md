@@ -68,7 +68,7 @@ Users don't need to describe table schemas — you discover them, you infer the 
    - **No → `incremental` or `table`**: only when ALL of the following apply: (1) must process only a specific time window (yesterday's data only, last hour only), (2) must run after a specific upstream Studio task completes, or (3) SCD Type 2 history tracking. If none of these apply, use `dynamic_table`.
    - **Small reference tables with no incremental requirement** → `table` (full rebuild, simplest)
 
-3. **Single confirmation**: Summarize all model inference results in one table, let user choose A (confirm all) / B (adjust) / C (partial modeling)
+3. **Single confirmation**: Present all inferred models in one table and **stop — do not write any files until the user responds**. The user must explicitly choose before generation begins. This is the most important gate in the workflow: writing files before confirmation creates rework and pollutes the project.
 
    The confirmation table must include a `refresh_interval` column for `dynamic_table` models so users can review and adjust refresh frequency before generation:
 
@@ -82,9 +82,11 @@ Users don't need to describe table schemas — you discover them, you infer the 
 
    For `incremental` models, show `incremental_strategy` and `incremental_field` instead of `refresh_interval`.
 
-4. **Generate**: After confirmation, generate sources.yml, staging models, marts models, schema.yml in one pass
+   Ask the user: confirm all and generate, adjust specific models, or do partial modeling. **Wait for the answer. Do not proceed to step 4.**
 
-5. **Execute**: Confirm before each step, in order — skip steps where no files exist:
+4. **Generate**: Only after the user has confirmed the plan in step 3 — generate sources.yml, staging models, marts models, schema.yml in one pass.
+
+5. **Execute**: Show the user which commands will run and ask for confirmation before each phase. Wait for the user's go-ahead before running each command — do not chain them automatically:
    - `dbt seed`: only when `seeds/` directory contains `.csv` files
    - `dbt run`: always
    - `dbt snapshot`: only when `snapshots/` directory contains `.sql` files
@@ -135,7 +137,7 @@ models/
 ```sql
 {{ config(
     materialized='dynamic_table',
-    refresh_interval='5 minutes',   -- or 'DOWNSTREAM' for ODS/ADS layers
+    refresh_interval='5 minutes',
     refresh_vc='default'
 ) }}
 select

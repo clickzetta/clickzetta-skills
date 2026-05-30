@@ -48,7 +48,7 @@ Users don't need to understand dbt internals — they only need to answer a few 
    - **Layering mode**: two-layer (staging → marts, recommended for small/medium), two-layer + intermediate (for complex joins), three-layer (ODS → DWD → ADS), or four-layer (ODS → DWD → DWS → ADS)
    - **Naming prefix**: business domain name (e.g. retail, finance), company/team name, or custom
 
-2. After user answers, generate the full scaffold.
+2. After the user answers all three questions, **confirm the plan before executing** — show a one-line summary ("Creating `retail_dw` in current directory, four-layer ODS→DWD→DWS→ADS, prefix `retail`") and wait for the user's go-ahead. Only then run `dbt init` and generate files.
 
    ```bash
    dbt init {project_name}          # generate project skeleton
@@ -120,7 +120,7 @@ Users don't need to understand dbt internals — they only need to answer a few 
      - `service`: API endpoint (e.g. `cn-shanghai-alicloud.api.clickzetta.com`)
      - `instance`: instance ID
      - `workspace`: workspace name (= dbt database)
-     - `schema`: default write schema
+     - `schema`: **the schema where dbt will write model outputs** — this is NOT the source data schema. Must be explicitly confirmed with the user. Do not infer from the current session schema or cz-cli connection context. Typical values: `{project}_dw`, `{project}_staging`, or a name the user specifies.
      - `vcluster`: compute cluster name
      - `username` / `password`: credentials
 

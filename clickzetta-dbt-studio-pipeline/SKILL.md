@@ -103,7 +103,7 @@ Each model corresponds to **two tasks** in Studio, placed in different directori
 
 ## Key Decision Points
 
-Ask the user to confirm each decision before executing. **Do not execute anything before receiving the user's answer** — acting early creates Studio tasks that need manual cleanup. Use AskUserQuestion if available, otherwise present options as a numbered list in text.
+Ask the user to confirm each decision before executing. **Do not execute anything before receiving the user's answer** — acting early creates Studio tasks that need manual cleanup. Work through these one at a time: ask, wait for the answer, then move to the next. Do not batch all questions at once and do not proceed to execution until all six are answered.
 
 1. **cz-cli profile**: Run `cz-cli profile list`, show the available profiles, and ask the user which one to use for deployment.
 
