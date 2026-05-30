@@ -73,35 +73,7 @@ User wants Kafka → Lakehouse ingestion
 
 Before building a Kafka pipeline, use an interactive Q&A tool (e.g., `question`) to collect the following. If no such tool is available, list all questions in text:
 
-```
-question({
-  questions: [
-    {
-      question: "Kafka message format?",
-      options: [
-        { label: "JSON (flat)", description: "Top-level fields map directly" },
-        { label: "JSON (nested)", description: "Requires layer-by-layer parse_json" },
-        { label: "CSV", description: "Comma-separated, use split()" },
-        { label: "Avro / Protobuf / Other", description: "Land as raw binary, decode downstream" }
-      ]
-    },
-    {
-      question: "Ingestion path?",
-      options: [
-        { label: "READ_KAFKA Pipe (recommended)", description: "General use case, fewer objects" },
-        { label: "Kafka External Table + Table Stream", description: "Retain raw messages or multi-consumer fan-out" }
-      ]
-    },
-    {
-      question: "Authentication?",
-      options: [
-        { label: "None (PLAINTEXT)", description: "No credentials needed" },
-        { label: "SASL_PLAINTEXT", description: "Username/password authentication" }
-      ]
-    }
-  ]
-})
-```
+Ask the user three questions: (1) What is the Kafka message format — JSON (flat, fields map directly), JSON (nested, requires layer-by-layer parse_json), CSV (comma-separated, use split()), or Avro/Protobuf/Other (land as raw binary, decode downstream)? (2) Which ingestion path — READ_KAFKA Pipe (recommended, general use, fewer objects) or Kafka External Table + Table Stream (retain raw messages or multi-consumer fan-out)? (3) What authentication method — None/PLAINTEXT (no credentials) or SASL_PLAINTEXT (username/password)?
 
 **If the user has already provided sufficient information, skip the wizard and proceed directly.**
 

@@ -20,19 +20,7 @@ description: |
 
 Upon receiving a task management request, use an interactive question tool (e.g., `question`) to collect intent. If no such tool is available, list options in text:
 
-```
-question({
-  questions: [{
-    question: "What would you like to do?",
-    options: [
-      { label: "Build a new pipeline from scratch", description: "Create folders, DDL tasks, sync tasks, ETL tasks" },
-      { label: "Manage existing tasks", description: "View status, modify config, configure dependencies, rerun, backfill" },
-      { label: "Troubleshoot task issues", description: "Failure diagnosis, dependency check, log analysis → load clickzetta-pipeline-review" },
-      { label: "Standards compliance check", description: "Check if existing tasks follow separation of DDL and pipeline standards" }
-    ]
-  }]
-})
-```
+Ask the user what they want to do: build a new pipeline from scratch (create folders, DDL tasks, sync tasks, ETL tasks), manage existing tasks (view status, modify config, configure dependencies, rerun, backfill), troubleshoot task issues (failure diagnosis, dependency check, log analysis), or run a standards compliance check on existing tasks.
 
 **If the user has clearly stated what they want to do, proceed directly without asking.**
 
@@ -48,55 +36,13 @@ Full process: **Requirements Understanding → Data Exploration → Technical Se
 
 **First ask if the user has a requirements document** (PRD, requirements spec, data warehouse design doc, etc.):
 
-```
-question({
-  questions: [{
-    question: "Before we start, do you have a requirements document or background description?",
-    options: [
-      { label: "Yes, I'll provide it", description: "Paste document content or upload file, I'll extract key information" },
-      { label: "No, I'll describe verbally", description: "I'll guide you through a few key questions" }
-    ]
-  }]
-})
-```
+Ask the user whether they have a requirements document to provide (PRD, requirements spec, data warehouse design doc — they can paste content or upload a file) or if they prefer to describe their needs verbally (the agent will guide them through a few key questions).
 
 **If document provided**: read the document, auto-extract business scenario, data sources, target outputs, freshness requirements, skip to Step 1.
 
 **If no document**, collect the following business requirements (prefer interactive tools; if unavailable, list all in text):
 
-```
-question({
-  questions: [
-    {
-      question: "What business scenario does this pipeline serve?",
-      options: [
-        { label: "BI reports / dashboards", description: "Fixed reports, clear metric system, T+1 or hourly" },
-        { label: "Real-time monitoring / ops dashboard", description: "Minute-level latency, focus on real-time metrics" },
-        { label: "Data science / feature engineering", description: "For model training or inference" },
-        { label: "Data sharing / external output", description: "Provided to other systems or teams" }
-      ]
-    },
-    {
-      question: "Who are the data consumers?",
-      options: [
-        { label: "BI tools (Superset/Tableau, etc.)", description: "Need wide tables or aggregation tables" },
-        { label: "Data analysts (SQL queries)", description: "Need cleaned detail tables" },
-        { label: "Downstream systems / APIs", description: "Need structured output" },
-        { label: "Data scientists (Python/ZettaPark)", description: "Need feature tables or raw detail" }
-      ]
-    },
-    {
-      question: "Data freshness requirements?",
-      options: [
-        { label: "T+1 (available next day)", description: "Batch run at midnight, data ready in the morning" },
-        { label: "Hourly", description: "Updated every hour" },
-        { label: "Minute-level", description: "Near real-time, latency < 10 minutes" },
-        { label: "Second-level real-time", description: "CDC continuous sync, second-level latency" }
-      ]
-    }
-  ]
-})
-```
+Ask the user three questions to collect business requirements: (1) What business scenario does this pipeline serve — BI reports/dashboards (T+1 or hourly), real-time monitoring/ops dashboard (minute-level latency), data science/feature engineering, or data sharing/external output? (2) Who are the data consumers — BI tools, data analysts (SQL queries), downstream systems/APIs, or data scientists (Python/ZettaPark)? (3) What are the data freshness requirements — T+1 (next day), hourly, minute-level (< 10 min latency), or second-level real-time (CDC continuous sync)?
 
 Also confirm verbally (text follow-up, no menu needed):
 - **Core metric definitions**: if involving GMV, active users, or other business metrics, confirm calculation logic
@@ -133,42 +79,18 @@ Also use `cz-cli datasource list` to view configured external data sources.
 Based on requirements and data exploration results, use interactive tools to collect technical choices:
 
 **Select data source type:**
-```
-question({ questions: [{ question: "Where does the data come from?", options: [
-  { label: "External database", description: "MySQL / PostgreSQL / SQL Server / Oracle, etc." },
-  { label: "Kafka message queue", description: "Kafka Topic → Lakehouse" },
-  { label: "Object storage", description: "OSS / S3 / COS file import" },
-  { label: "Lakehouse internal ETL layering", description: "ODS→DWD→DWS/ADS, SQL tasks + Dynamic Table" },
-  { label: "End-to-end complete pipeline", description: "Data ingestion + layered modeling + aggregation" },
-  { label: "Not sure, explore data first", description: "Look at existing data before recommending an approach" }
-]}]})
-```
+Ask the user where the data comes from: an external database (MySQL/PostgreSQL/SQL Server/Oracle, etc.), a Kafka message queue, object storage (OSS/S3/COS), Lakehouse internal ETL layering (ODS→DWD→DWS/ADS using SQL tasks and Dynamic Tables), an end-to-end complete pipeline (data ingestion + layered modeling + aggregation), or they're not sure and want to explore existing data first.
 
 **Follow-up (only needed for certain options):**
 
 Selected "External database":
-```
-question({ questions: [{ question: "Sync freshness?", options: [
-  { label: "Real-time sync (second-level)", description: "CDC, based on Binlog/WALs, continuously running" },
-  { label: "Batch offline (hourly/daily)", description: "Periodic full sync, configure Cron" }
-]}]})
-```
+Ask the user what sync freshness they need for the external database: real-time sync (second-level, CDC based on Binlog/WALs, continuously running) or batch offline (hourly/daily periodic full sync with Cron).
 
 Selected "Object storage":
-```
-question({ questions: [{ question: "Ingestion method?", options: [
-  { label: "SQL Pipe (continuous auto-import)", description: "LIST_PURGE or EVENT_NOTIFICATION mode" },
-  { label: "Studio batch sync task", description: "Periodic batch import, configure Cron" }
-]}]})
-```
+Ask the user which object storage ingestion method they prefer: SQL Pipe for continuous auto-import (LIST_PURGE or EVENT_NOTIFICATION mode) or a Studio batch sync task for periodic batch import with Cron scheduling.
 
 Selected "Kafka":
-```
-question({ questions: [{ question: "Ingestion method?", options: [
-  { label: "SQL Pipe (READ_KAFKA)", description: "Pure SQL, flexible, recommended for engineers" },
-  { label: "Studio real-time sync task", description: "GUI configuration, supports JSONPath computed columns" }
-]}]})
-```
+Ask the user which Kafka ingestion method they prefer: SQL Pipe (READ_KAFKA) for a pure SQL approach that's flexible and recommended for engineers, or a Studio real-time sync task for GUI-based configuration with JSONPath computed column support.
 
 ---
 
@@ -176,17 +98,7 @@ question({ questions: [{ question: "Ingestion method?", options: [
 
 Combining requirements and technical selection, present a complete plan summary to the user for confirmation:
 
-```
-question({
-  questions: [{
-    question: "Confirm the following plan to start building:\nBusiness scenario: <scenario>\nData source: <source_name>\nSync method: <batch/real-time/SQL Pipe>\nLayering structure: <ODS/DWD/DWS or Bronze/Silver/Gold>\nTarget schema: <schema>\nScheduling: <Cron or continuous running>\nReady to start?",
-    options: [
-      { label: "Confirmed, start building", description: "Load corresponding skill, begin creating tasks" },
-      { label: "Need adjustments", description: "Re-collect information" }
-    ]
-  }]
-})
-```
+Present the complete plan summary to the user for confirmation, including: business scenario, data source, sync method (batch/real-time/SQL Pipe), layering structure (ODS/DWD/DWS or Bronze/Silver/Gold), target schema, and scheduling (Cron or continuous running). Ask whether to confirm and start building, or make adjustments and re-collect information.
 
 After user confirmation, load the corresponding skill per routing table:
 
@@ -523,19 +435,7 @@ Agile principle: **verify immediately after each step, know within 30 seconds if
 
 When the user says "add a table", "add a field", "add a metric", "change ETL logic", use interactive tools to collect the iteration type:
 
-```
-question({
-  questions: [{
-    question: "What modification do you want to make to the existing pipeline?",
-    options: [
-      { label: "Add sync table", description: "Add a source table to an existing sync task" },
-      { label: "Add field", description: "Source table added a field, ODS/DWD need to follow" },
-      { label: "Add metric/DWS layer", description: "Add aggregation logic or Dynamic Table" },
-      { label: "Modify ETL logic", description: "Cleaning rules, filter conditions, JOIN relationship changes" }
-    ]
-  }]
-})
-```
+Ask the user what modification they want to make to the existing pipeline: add a sync table (add a source table to an existing sync task), add a field (source table added a field, ODS/DWD need to follow), add a metric or DWS layer (add aggregation logic or Dynamic Table), or modify ETL logic (cleaning rules, filter conditions, JOIN relationship changes).
 
 ### Add Sync Table
 

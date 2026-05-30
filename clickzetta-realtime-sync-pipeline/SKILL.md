@@ -19,28 +19,7 @@ description: |
 
 Before creating a real-time sync task, use an interactive question tool (e.g., `question`) to collect the following information via option menus. If no such tool is available, list all questions in text at once:
 
-```
-question({
-  questions: [
-    {
-      question: "Data source type?",
-      options: [
-        { label: "Kafka", description: "Kafka Topic real-time ingestion, supports JSON message parsing" },
-        { label: "MySQL / Aurora MySQL", description: "Single-table CDC real-time sync" },
-        { label: "PostgreSQL / Aurora PG", description: "Single-table CDC real-time sync" },
-        { label: "SQL Server", description: "Single-table CDC real-time sync" }
-      ]
-    },
-    {
-      question: "Sync granularity?",
-      options: [
-        { label: "Single table/topic", description: "Supported by this skill, fine-grained configuration" },
-        { label: "Full database/multi-table", description: "Use clickzetta-cdc-sync-pipeline instead" }
-      ]
-    }
-  ]
-})
-```
+Ask the user two questions: (1) What is the data source type — Kafka (topic real-time ingestion, supports JSON message parsing), MySQL/Aurora MySQL (single-table CDC), PostgreSQL/Aurora PG (single-table CDC), or SQL Server (single-table CDC)? (2) What is the sync granularity — single table/topic (supported by this skill, fine-grained configuration) or full database/multi-table (use clickzetta-cdc-sync-pipeline instead)?
 
 **If the user has already provided sufficient information, proceed directly to the workflow without showing the menu.**
 

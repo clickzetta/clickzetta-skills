@@ -1,126 +1,131 @@
 ---
 name: clickzetta-data-science
 description: |
-  End-to-end data science workflow guide for ClickZetta Lakehouse. Organized by
-  work stage: environment setup (Python 3.10+ check/install), Jupyter Notebook
-  configuration, project structure (Cookiecutter DS standard), data discovery,
-  data quality assessment, data cleaning and integration, dataset construction,
-  EDA, feature engineering (SQL + ZettaPark), and model inference deployment
-  (BITMAP user profiling / UDF batch inference / vector search).
-  Trigger when user mentions: "data science", "machine learning", "feature engineering",
-  "EDA", "data exploration", "ZettaPark ML", "Jupyter connect Lakehouse", "notebook",
-  "ipynb", "jupyter kernel", "%%sql", "magic command", "pandas read data",
-  "data quality check", "data sampling", "TABLESAMPLE", "approx_percentile",
-  "BITMAP user profile", "audience segmentation", "batch inference", "Python 3.10",
-  "scikit-learn", "project directory structure", "config.json", ".env".
-  Keywords: data science, Jupyter, EDA, feature engineering, ML, pandas, notebook
+  End-to-end data science workflow guide for ClickZetta Lakehouse. Covers
+  environment setup (Python 3.10+, Jupyter, ZettaPark), project structure,
+  data discovery and quality assessment, feature engineering (SQL + ZettaPark),
+  and model inference deployment (BITMAP profiling, UDF batch inference, vector search).
+
+  Trigger this skill whenever the user wants to do data science, ML, or analytical
+  work using ClickZetta Lakehouse as the data backend — even if they don't mention
+  ZettaPark or specific ML frameworks. Typical scenarios:
+  - Wants to connect Jupyter Notebook or a Python environment to Lakehouse
+  - Doing EDA, data exploration, or data quality checks on Lakehouse tables
+  - Building features or training datasets from Lakehouse data
+  - Running ML model inference and writing results back to Lakehouse
+  - Asks "how do I use pandas / scikit-learn with ClickZetta data"
+  - Wants to do user profiling, audience segmentation, or batch scoring
+  - Gets a SQL syntax error in a data science context (ZettaPark / %%sql magic)
 ---
 
-# ClickZetta Lakehouse Data Science Workflow
+# clickzetta-data-science
 
-## Workflow Overview
-
-```
-Environment Setup → Jupyter Config → Project Structure → Data Discovery → Data Quality → Data Cleaning
-                                                                                               ↓
-                                           Model Inference ← Feature Engineering ← EDA ← Dataset Build
-```
+See [references/setup.md](references/setup.md) for environment setup and Jupyter kernel configuration.
+See [references/zettapark-api.md](references/zettapark-api.md) for ZettaPark DataFrame API reference.
+See [references/data-patterns.md](references/data-patterns.md) for data discovery, quality, and feature engineering patterns.
+See [references/stats-functions.md](references/stats-functions.md) for statistical analysis SQL functions.
+See [references/write-and-infer.md](references/write-and-infer.md) for writing results back to Lakehouse and model inference patterns.
+See [references/bitmap-profile.md](references/bitmap-profile.md) for BITMAP-based user profiling and audience segmentation.
 
 ---
 
-## Hard Prerequisite
+## Goal
 
-**Python 3.10+** (required by ZettaPark). If the user's environment is 3.9 or lower, provide an upgrade path before continuing:
+Help the user complete their data science workflow end-to-end using ClickZetta Lakehouse as the data backend.
+Meet the user where they are — whether they're setting up for the first time or already mid-project.
+
+## Workflow
+
+**Assess state → Fill gaps → Execute work stage**
+
+### Step 0: Assess where the user is
+
+Before diving in, quickly determine:
+- **Environment ready?** Python 3.10+, ZettaPark installed, Jupyter kernel configured?
+- **Which stage?** Setup / data discovery / feature engineering / model inference?
+- **Experience level?** First time with ZettaPark, or already familiar?
+
+If environment is not ready, go to Setup first — ZettaPark requires Python 3.10+ and will silently fail on 3.9.
+
+### Step 1: Environment Setup (if needed)
+
+See [references/setup.md](references/setup.md) for full steps. Quick check:
 
 ```bash
-brew install pyenv && pyenv install 3.12.9 && pyenv local 3.12.9
-python -m venv .venv && source .venv/bin/activate
+python --version          # must be 3.10+
+pip show clickzetta-zettapark  # check if installed
 ```
 
-See [references/setup.md](references/setup.md) for detailed setup steps.
-
----
-
-## Project Structure
-
-```
-my-ds-project/
-├── notebooks/          # 00-env-check.ipynb must be first
-│   ├── 00-env-check.ipynb
-│   ├── 01-data-discovery.ipynb
-│   ├── 02-data-quality.ipynb
-│   ├── 03-eda.ipynb
-│   ├── 04-feature-engineering.ipynb
-│   └── 05-modeling.ipynb
-├── src/
-│   ├── config.py       # connection config, see references/setup.md
-│   ├── data/
-│   └── features/
-├── sql/
-├── data/               # all in .gitignore
-├── models/             # all in .gitignore
-├── .env                # never commit to git
-└── .env.example        # commit to git
+If not ready:
+```bash
+pip install clickzetta-zettapark jupyter
 ```
 
-Environment variable naming: `CLICKZETTA_SERVICE` / `CLICKZETTA_INSTANCE` / `CLICKZETTA_WORKSPACE` / `CLICKZETTA_USERNAME` / `CLICKZETTA_PASSWORD` / `CLICKZETTA_VCLUSTER` / `CLICKZETTA_SCHEMA`.
+Then configure the Jupyter kernel to connect to Lakehouse (connection params: instance, workspace, vcluster, username, password).
 
----
+### Step 2: Project Structure
+
+Use the Cookiecutter Data Science standard layout — keeps notebooks, data, and models organized:
+
+```
+{project}/
+├── notebooks/          # Jupyter notebooks (exploration, EDA)
+├── src/                # reusable Python modules
+├── data/
+│   ├── raw/            # original extracts (never modify)
+│   └── processed/      # cleaned / feature tables
+├── models/             # trained model artifacts
+├── config.json         # Lakehouse connection config (gitignored)
+└── .env                # secrets (gitignored)
+```
+
+### Step 3: Data Discovery & Quality
+
+Use ZettaPark or `%%sql` magic to explore tables. Key patterns in [references/data-patterns.md](references/data-patterns.md):
+- Schema and table discovery
+- Row count, null rate, cardinality checks
+- Distribution sampling with `TABLESAMPLE`
+- Approximate statistics with `approx_percentile`, `approx_count_distinct`
+
+### Step 4: Feature Engineering
+
+Two approaches — choose based on data volume:
+- **SQL-first** (recommended for large tables): write feature logic as SQL, materialize as Lakehouse table
+- **ZettaPark DataFrame** (for complex Python logic): use ZettaPark API, push computation to Lakehouse
+
+See [references/zettapark-api.md](references/zettapark-api.md) for DataFrame API patterns.
+
+### Step 5: Model Inference & Write-back
+
+After training, write predictions back to Lakehouse. Three patterns in [references/write-and-infer.md](references/write-and-infer.md):
+- **UDF batch inference**: register Python model as UDF, run inference in SQL
+- **BITMAP user profiling**: high-performance audience segmentation — see [references/bitmap-profile.md](references/bitmap-profile.md)
+- **Vector search**: store embeddings in Lakehouse, query with cosine similarity
 
 ## Data Write Rules
 
-| Method | Verdict |
-|------|------|
-| `session.create_dataframe(df).write.save_as_table()` | ✅ Recommended |
-| `cursor` batch INSERT (500 rows per batch) | ✅ Fallback when Python 3.9 / ZettaPark unavailable |
-| `df.to_sql(conn, ...)` | ❌ Forbidden — raises `'list' object has no attribute 'keys'` |
-| SQLAlchemy `clickzetta://...` | ❌ Forbidden — dialect is unreliable |
-
-See [references/write-and-infer.md](references/write-and-infer.md) for code templates.
-
----
-
-## Data Viewing Rules
-
-- Use `.show()` for quick inspection; avoid `.to_pandas()` when pandas is not needed
-- Always add `TABLESAMPLE ROW(10)` when working with large tables to prevent OOM
-
----
-
-## Data Validation Rules
-
-After loading data, **immediately validate statistics against known baseline values** before proceeding with analysis.
-
-Common pitfall: raw athlete/user-level data where each participant in a team event has one row — a direct `SUM` will double-count. Correct approach: `SELECT DISTINCT event, medal, ...` to deduplicate first, then aggregate.
-
----
+- Always use `CREATE TABLE IF NOT EXISTS` — ClickZetta regular tables don't support `CREATE OR REPLACE TABLE`
+- For incremental writes, use `INSERT INTO` or ZettaPark `df.write.mode("append")`
+- For full refresh, `TRUNCATE TABLE` then `INSERT INTO` (safer than DROP + CREATE)
 
 ## Unsupported ClickZetta SQL Syntax
 
 | Not Supported | Alternative |
-|--------|---------|
-| `CREATE OR REPLACE TABLE` | `CREATE TABLE IF NOT EXISTS` (regular tables don't support OR REPLACE) |
+|---|---|
+| `CREATE OR REPLACE TABLE` | `CREATE TABLE IF NOT EXISTS` |
 | `ARRAY_AGG(col IGNORE NULLS)` | `MAX(col)` or `COALESCE()` |
 | `QUALIFY` clause | Subquery + `WHERE rn = 1` |
 | `UNION` / `INTERSECT` / `EXCEPT` | JOIN + application-layer merge |
 | `BEGIN; COMMIT; ROLLBACK;` | Use MERGE for atomic operations |
 | `NOW()` | `CURRENT_TIMESTAMP()` |
 
-For other syntax errors, load the `clickzetta-sql-migration` skill to see Snowflake/Databricks/Spark vs. ClickZetta syntax differences.
+For other syntax errors, load `clickzetta-sql-migration` to see Snowflake/Databricks/Spark vs. ClickZetta differences.
 
----
+## Routing
 
-## Schema Context
-
-Always use fully qualified table names (`schema.table`) in SQL within Python code — do not rely on the current schema context.
-
----
-
-## References
-
-- [Environment Setup & Project Config](references/setup.md) — environment setup, config.py template, Jupyter configuration
-- [Data Discovery / Quality / Cleaning / EDA Examples](references/data-patterns.md)
-- [Data Write / Feature Engineering / Model Inference Examples](references/write-and-infer.md)
-- [ZettaPark API](references/zettapark-api.md)
-- [Statistical Analysis Functions](references/stats-functions.md)
-- [BITMAP User Profiling](references/bitmap-profile.md)
+| Scenario | Route to |
+|---|---|
+| Need to ingest raw data into Lakehouse first | `clickzetta-data-ingest-pipeline` |
+| Want to build dbt models from the feature tables | `clickzetta-dbt-modeling` |
+| Need to connect a BI tool to visualize results | `clickzetta-bi-connect` |
+| SQL syntax errors beyond the table above | `clickzetta-sql-migration` |

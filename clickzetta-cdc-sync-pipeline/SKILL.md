@@ -23,34 +23,7 @@ description: |
 
 Before creating a CDC sync task, use an interactive question tool (e.g., `question`) to collect the following information via option menus. If no such tool is available, list all questions in text at once:
 
-```
-question({
-  questions: [
-    {
-      question: "Source database type?",
-      options: [
-        { label: "MySQL", description: "Including Aurora MySQL, PolarDB MySQL — based on Binlog" },
-        { label: "PostgreSQL", description: "Including Aurora PG, PolarDB PG — based on WALs, requires 14+" }
-      ]
-    },
-    {
-      question: "Sync mode?",
-      options: [
-        { label: "Full database mirror", description: "Sync entire database, auto-adapts to new tables" },
-        { label: "Multi-table mirror", description: "Specify which tables to sync" },
-        { label: "Sharded table merge", description: "Merge sharded tables into one target table" }
-      ]
-    },
-    {
-      question: "Is the source database already prepared?",
-      options: [
-        { label: "Ready", description: "MySQL: Binlog enabled, account has REPLICATION permission; PG: wal_level=logical" },
-        { label: "Not sure, help me check", description: "I'll help verify source configuration" }
-      ]
-    }
-  ]
-})
-```
+Ask the user three questions: (1) What is the source database type — MySQL (including Aurora MySQL, PolarDB MySQL, Binlog-based) or PostgreSQL (including Aurora PG, PolarDB PG, WALs-based, requires version 14+)? (2) What sync mode — full database mirror (entire database, auto-adapts to new tables), multi-table mirror (specify which tables), or sharded table merge (merge sharded tables into one target)? (3) Is the source database already prepared — ready (MySQL: Binlog enabled with REPLICATION permission; PG: wal_level=logical), or not sure (needs verification)?
 
 After collecting the above, also confirm the target schema (e.g., `ods`).
 

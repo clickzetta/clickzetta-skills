@@ -18,36 +18,7 @@ description: |
 
 Before building an object storage pipeline, preferably use an interactive Q&A tool (e.g., `question`) to collect the following information via a selection menu; if no such tool is available, list all questions in text at once:
 
-```
-question({
-  questions: [
-    {
-      question: "Cloud platform?",
-      options: [
-        { label: "Alibaba Cloud OSS", description: "Supports both LIST_PURGE and EVENT_NOTIFICATION modes" },
-        { label: "AWS S3", description: "Supports both LIST_PURGE and EVENT_NOTIFICATION modes" },
-        { label: "Tencent Cloud COS", description: "Only supports LIST_PURGE mode" }
-      ]
-    },
-    {
-      question: "Import mode?",
-      options: [
-        { label: "Continuous ingestion (PIPE)", description: "New files automatically trigger import, near real-time" },
-        { label: "One-time batch import", description: "Manually or scheduled COPY INTO execution" }
-      ]
-    },
-    {
-      question: "File format?",
-      options: [
-        { label: "CSV", description: "Comma-separated text" },
-        { label: "JSON / JSONL", description: "JSON or newline-delimited JSON" },
-        { label: "Parquet", description: "Columnar storage format" },
-        { label: "ORC", description: "Columnar storage format" }
-      ]
-    }
-  ]
-})
-```
+Ask the user three questions: (1) Which cloud platform — Alibaba Cloud OSS (supports both LIST_PURGE and EVENT_NOTIFICATION modes), AWS S3 (supports both modes), or Tencent Cloud COS (LIST_PURGE only)? (2) What import mode — continuous ingestion via PIPE (new files auto-trigger import, near real-time) or one-time batch import (manual or scheduled COPY INTO)? (3) What file format — CSV, JSON/JSONL, Parquet, or ORC?
 
 **If the user has already provided sufficient information, proceed directly to the workflow without showing the menu.**
 

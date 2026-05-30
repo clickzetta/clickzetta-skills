@@ -3,175 +3,113 @@ name: clickzetta-bi-connect
 description: |
   Connect BI tools and database clients to ClickZetta Lakehouse. Covers complete
   connection setup for Apache Superset, Tableau, Metabase, DBeaver, DataGrip,
-  FineBI, and more — including JDBC connection string format, SQLAlchemy URL
-  format, and driver installation steps.
-  Trigger when user mentions: "connect Superset", "Tableau connect Lakehouse",
-  "Metabase", "DBeaver", "DataGrip", "BI tool", "JDBC connection",
-  "SQLAlchemy connection", "FineBI", "database client", "visualization tool",
-  "BI report", "PowerBI", "Navicat", "MySQL protocol connection".
-  Keywords: BI, Superset, Tableau, Metabase, DBeaver, DataGrip, FineBI, JDBC, connection
+  FineBI, PowerBI, Navicat, and more — including JDBC, SQLAlchemy URL, and
+  MySQL protocol connection methods, plus driver installation and troubleshooting.
+
+  Trigger this skill whenever the user wants to visualize, query, or report on
+  ClickZetta data from an external tool — even if they haven't chosen a tool yet.
+  Typical scenarios:
+  - Explicitly mentions a BI or client tool (Superset, Tableau, Metabase, DBeaver,
+    DataGrip, FineBI, PowerBI, Navicat, Grafana, Redash, Looker)
+  - Wants to connect any visualization or reporting tool to Lakehouse
+  - Asks about JDBC connection strings, SQLAlchemy URLs, or MySQL protocol connections
+  - Has dbt models or marts tables ready and wants to start building dashboards
+  - Asks "how do I query Lakehouse from Python / pandas / SQLAlchemy"
+  - Gets a connection error from a BI tool and needs help troubleshooting
 ---
 
-# ClickZetta BI Tool Connections
+# clickzetta-bi-connect
 
-See [references/bi-tools.md](references/bi-tools.md) for detailed configuration per tool.
+See [references/bi-tools.md](references/bi-tools.md) for complete connection strings, driver download links, and per-tool configuration details.
+
+---
+
+## Goal
+
+Get the user's chosen BI tool or database client connected to ClickZetta Lakehouse and running queries successfully.
+Users don't need to know which connection protocol to use — identify the right method based on their tool and guide them through it.
+
+## Workflow
+
+**Identify tool → Select protocol → Provide connection config → Verify → Troubleshoot if needed**
+
+1. **Identify the tool**: Ask which BI tool or client the user wants to connect (if not already stated). Present common options grouped by protocol:
+   - **JDBC**: DBeaver, DataGrip, Tableau (via JDBC driver)
+   - **SQLAlchemy**: Apache Superset, Python ORM, pandas
+   - **MySQL protocol**: PowerBI, Navicat, FineBI, Metabase, most MySQL-compatible clients
+   - **Native connector**: Tableau (via clickzetta connector plugin)
+
+2. **Collect connection parameters** — ask the user for:
+   - `instance`: instance ID (e.g. `f8866243`)
+   - `workspace`: workspace name
+   - `schema`: default schema
+   - `vcluster`: compute cluster name (default: `default_ap`)
+   - `username` / `password`
+   - `region`: cloud region code (see Common Region Codes below)
+
+3. **Provide the exact connection config** for their tool — connection string, URL, or step-by-step UI config. Use the templates in references/bi-tools.md.
+
+4. **Verify**: Ask the user to run a test query (`SELECT 1` or `SHOW TABLES`) and confirm it works.
+
+5. **Troubleshoot** if connection fails — see the Troubleshooting section below.
 
 ## Connection Method Quick Reference
 
-| Tool | Connection Method |
-|---|---|
-| Apache Superset | SQLAlchemy URL |
-| Tableau | JDBC + .taco plugin |
-| Metabase | Dedicated .jar driver |
-| DBeaver / DataGrip | JDBC |
-| FineBI | JDBC or MySQL protocol |
-| PowerBI | MySQL protocol |
-| Navicat | MySQL protocol |
-| Python / ORM | SQLAlchemy |
-
----
+| Tool | Protocol | Key config |
+|---|---|---|
+| Apache Superset | SQLAlchemy | `clickzettasql+clickzetta://...` |
+| Tableau | JDBC or native connector | Download clickzetta-connector |
+| Metabase | MySQL protocol | Host: `{region}.api.clickzetta.com`, Port: `3306` |
+| DBeaver | JDBC | Download `clickzetta-jdbc-*.jar` |
+| DataGrip | JDBC | Same as DBeaver |
+| PowerBI | MySQL protocol | Use MySQL connector |
+| Navicat | MySQL protocol | Host: `{region}.api.clickzetta.com`, Port: `3306` |
+| FineBI | MySQL protocol | Same as Navicat |
 
 ## JDBC Connection String
 
 ```
-jdbc:clickzetta://<instance>.<region_id>.api.clickzetta.com/<workspace>?username=<user>&password=<pwd>&schema=<schema>&virtualCluster=<vc_name>
+jdbc:clickzetta://{region}.api.clickzetta.com/{workspace}?instance={instance}&virtualCluster={vcluster}&schema={schema}
 ```
 
-**Example:**
-```
-jdbc:clickzetta://f8866243.cn-shanghai-alicloud.api.clickzetta.com/quick_start?username=alice&password=xxxx&schema=public&virtualCluster=default_ap
-```
-
-- Driver class: `com.clickzetta.client.jdbc.ClickZettaDriver`
-- Driver download: Maven `com.clickzetta:clickzetta-java` or [sonatype](https://central.sonatype.com/artifact/com.clickzetta/clickzetta-java/versions)
-
----
+Driver JAR: download from https://github.com/clickzetta/clickzetta-jdbc/releases
 
 ## SQLAlchemy URL (Superset / Python ORM)
 
 ```
-clickzetta://<username>:<password>@<instance>.<region_id>.api.clickzetta.com/<workspace>?schema=<schema>&vcluster=<vc_name>
+clickzettasql+clickzetta://{username}:{password}@{region}.api.clickzetta.com/{workspace}?instance={instance}&virtualCluster={vcluster}&schema={schema}
 ```
 
-Install:
-```bash
-pip uninstall -y clickzetta-sqlalchemy clickzetta-connector
-pip install clickzetta-connector -U
-```
-
----
-
-## Apache Superset
-
-**Quick start with Docker:**
-```bash
-docker pull clickzetta/superset:2.1.0-1
-docker run -p 8088:8088 clickzetta/superset:2.1.0-1
-# Visit http://localhost:8088, credentials: admin/clickzetta
-```
-
-**Configure database connection:**
-1. Settings → Database Connections → + Database → select **Other**
-2. Enter SQLAlchemy URI:
-   ```
-   clickzetta://username:password@instance.cn-shanghai-alicloud.api.clickzetta.com/workspace?vcluster=default_ap
-   ```
-3. TESTING CONNECTION → CONNECT
-
----
-
-## Tableau
-
-1. Place the JDBC JAR in the Tableau Drivers directory
-2. Place the `.taco` plugin in the Connectors directory
-3. Launch with `-DDisableVerifyConnectorPluginSignature=true`
-4. Connect: To Server → More → **Lakehouse x ClickZetta**
-
----
-
-## Metabase
-
-```bash
-docker run -d -p 3000:3000 --name metabase metabase/metabase:v0.54.6
-docker cp clickzetta.metabase-driver.jar metabase:/plugins/
-docker restart metabase
-```
-
-Visit `http://localhost:3000` → Admin Settings → Databases → Add a database → select ClickZetta
-
----
-
-## DBeaver
-
-1. Driver Manager → New Driver
-2. Class name: `com.clickzetta.client.jdbc.ClickZettaDriver`
-3. Add the JDBC JAR
-4. New Connection → paste the JDBC connection string
-
----
+Install: `pip install clickzetta-sqlalchemy`
 
 ## MySQL Protocol (PowerBI / Navicat / FineBI)
 
-Lakehouse supports MySQL protocol connections for tools that don't support custom JDBC drivers.
-
-**Prerequisites:**
-1. Reset the MySQL protocol password for the user in the admin console
-2. Set the user's default virtual cluster (`ALTER USER username SET DEFAULT_VCLUSTER = default_ap`)
-
-**Username format:** `<instance_name>.<workspace_name>.<username>`
-
-**Connection parameters:**
-- Host: `<instance>.<region_id>.mysql.clickzetta.com`
-- Port: `3306`
-- Username: `instance.workspace.username` (three-part format)
-- Password: MySQL protocol password (not the Lakehouse login password)
-
-### PowerBI
-
-1. Get Data → MySQL database
-2. Server: `instance.cn-shanghai-alicloud.mysql.clickzetta.com`
-3. Username: `instance.workspace.username`
-4. Password: MySQL protocol password
-5. Data connectivity mode: DirectQuery
-
-### Navicat
-
-1. New Connection → MySQL
-2. Host: `instance.cn-shanghai-alicloud.mysql.clickzetta.com`
-3. Port: `3306`
-4. Username: `instance.workspace.username`
-5. Password: MySQL protocol password
-
-### FineBI (MySQL protocol)
-
-1. Admin → Data Connection → New Connection → MySQL
-2. URL: `jdbc:mysql://instance.cn-shanghai-alicloud.mysql.clickzetta.com:3306/workspace`
-3. Username: `instance.workspace.username`
-4. Password: MySQL protocol password
-
-> ⚠️ MySQL protocol connections have some SQL syntax limitations. See the [MySQL client connection guide](https://www.yunqi.tech/documents/use-mysql-client) for details.
-
----
+| Field | Value |
+|---|---|
+| Host | `{region}.api.clickzetta.com` |
+| Port | `3306` |
+| Database | `{workspace}` |
+| Username | `{instance}/{username}` |
+| Password | user password |
 
 ## Common Region Codes
 
-| Region | region_id |
+| Region | Code |
 |---|---|
 | Alibaba Cloud Shanghai | `cn-shanghai-alicloud` |
-| Tencent Cloud Shanghai | `ap-shanghai-tencentcloud` |
-| Tencent Cloud Beijing | `ap-beijing-tencentcloud` |
+| Alibaba Cloud Hangzhou | `cn-hangzhou-alicloud` |
+| Tencent Cloud Shanghai | `cn-shanghai-tencent` |
 | AWS Singapore | `ap-southeast-1-aws` |
-
----
 
 ## Troubleshooting
 
-| Issue | Solution |
-|---|---|
-| Superset connection fails | Verify `clickzetta-connector` is installed and the URL format is correct |
-| Tableau can't find the Lakehouse connector | Confirm the .taco file is in the correct directory and signature verification is disabled at launch |
-| DBeaver driver fails to load | Verify the JAR version matches the Lakehouse version |
-| Connection timeout | Check network; confirm instance and region_id are correct |
-| Permission denied on query | Confirm the user was added via `CREATE USER` and has `USE VCLUSTER` permission |
-| MySQL protocol connection fails | Confirm username is in three-part format (instance.workspace.username) and the MySQL protocol password is used |
-| PowerBI DirectQuery error | Confirm the user's default virtual cluster is set (`ALTER USER ... SET DEFAULT_VCLUSTER`) |
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| Connection timeout | Wrong region code | Check instance region in ClickZetta console |
+| Authentication failed | Wrong username format | MySQL protocol requires `{instance}/{username}` format |
+| Driver not found | JDBC JAR not loaded | Add JAR path in DBeaver/DataGrip driver settings |
+| SSL error | SSL not configured | Add `useSSL=false` to JDBC URL, or enable SSL in console |
+| Schema not found | Wrong schema name | Run `SHOW SCHEMAS` to list available schemas |
+| DirectQuery slow (PowerBI) | Large table scan | Add partition filter or use Import mode |
+
+For persistent issues, check the ClickZetta console for connection logs, or run the test query directly in `cz-cli sql` to isolate whether the issue is the tool or the Lakehouse.
