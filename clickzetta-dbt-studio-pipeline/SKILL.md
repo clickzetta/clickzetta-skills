@@ -107,7 +107,21 @@ Ask the user to confirm each decision before executing. **Do not execute anythin
 
 1. **cz-cli profile**: Run `cz-cli profile list`, show the available profiles, and ask the user which one to use for deployment.
 
-2. **Studio directory structure**: Propose the recommended structure (00_ddl / 01_staging / 02_marts / 03_snapshots / 04_dqc) and ask the user to confirm or customize.
+2. **Studio directory structure**: Propose the recommended structure below and ask the user to confirm or customize.
+
+   ```
+   {project}_dw/
+   ├── 00_ddl/          ← ALL DDL statements (CREATE TABLE/VIEW/DYNAMIC TABLE), DRAFT, no scheduling
+   ├── 01_staging/      ← staging layer ETL (view DDL + SELECT), DRAFT, no scheduling
+   ├── 02_marts/        ← marts layer ETL (table/incremental), PUBLISHED, scheduled
+   ├── 03_snapshots/    ← snapshot layer, PUBLISHED, scheduled
+   └── 04_dqc/          ← data quality checks, optional
+   ```
+
+   **Naming conventions** (consistent with `clickzetta-studio-task-manager`):
+   - DDL tasks: `ddl_{layer}_{model}` (e.g. `ddl_staging_stg_orders`, `ddl_marts_fct_orders`)
+   - ETL tasks: `{layer}_{model}` with no prefix (e.g. `stg_orders`, `fct_orders`)
+   - dynamic_table models with `refresh_interval`: **no ETL task needed** — auto-refreshes; only add a Studio task if using manual refresh mode
 
 3. **Asset management scope**: Ask whether to publish all models or exclude specific ones. If excluding, ask which models to skip.
 

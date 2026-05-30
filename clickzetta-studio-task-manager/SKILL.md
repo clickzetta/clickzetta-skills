@@ -217,19 +217,62 @@ Write and schedule data processing logic in Studio — the core vehicle for data
 
 ## Task Folder Organization Standards
 
-Each data warehouse project creates an independent task folder in Studio to manage all task assets uniformly:
+Each data warehouse project creates an independent task folder in Studio to manage all task assets uniformly.
+
+### Standard Directory Structure
 
 ```
-<business_domain>_dw/                     ← Project task folder (e.g., shenyu_gateway_dw, ecommerce_dw)
-├── 00_sync_<source>_to_ods               ← Data sync (Cron, runs earliest)
-├── 01_ddl_ods                            ← ODS table creation (DRAFT, no scheduling, run once manually)
-├── 02_ddl_dwd                            ← DWD table creation (DRAFT, no scheduling, run once manually)
-├── 03_ddl_dws_ads                        ← DWS/ADS Dynamic Table creation (DRAFT, no scheduling)
-├── 04_transform_ods_to_dwd               ← ODS→DWD transformation (Cron, depends on 00)
-└── 05_dqc_check                          ← Data quality check (Cron, depends on 04, optional)
+<business_domain>_dw/
+├── 00_ddl/                    ← ALL DDL statements (CREATE TABLE/VIEW/DYNAMIC TABLE)
+│                                 DRAFT, no scheduling, run once manually to initialize
+├── 01_sync/                   ← Data sync tasks (INTEGRATION/MULTI_DI)
+│                                 Cron, runs earliest in the dependency chain
+├── 02_ods/                    ← ODS layer ETL (if ODS needs transformation beyond raw view)
+│                                 DRAFT if ODS is pure view; Cron if ODS needs processing
+├── 03_dwd/                    ← DWD layer ETL (ODS → DWD transformation)
+│                                 Cron, depends on 01_sync
+├── 04_dqc/                    ← Data quality checks (optional)
+│                                 Cron, depends on 03_dwd
 ```
 
-> DWS/ADS layer is auto-refreshed by Dynamic Tables — **no task creation needed**.
+> **DWS/ADS layer**: use Dynamic Tables with `refresh_interval` — **no ETL task needed**. Dynamic Tables auto-refresh when upstream data changes. Only create a Studio task for a Dynamic Table if using manual refresh mode (to trigger `REFRESH DYNAMIC TABLE` as part of a dependency chain).
+
+### Naming Conventions
+
+| Rule | Standard | Example |
+|---|---|---|
+| Folder name | `{domain}_dw` | `retail_dw`, `ecommerce_dw` |
+| Sub-folder | `{nn}_{purpose}` (numbered prefix) | `00_ddl`, `03_dwd` |
+| DDL task | `ddl_{layer}_{table}` | `ddl_ods_orders`, `ddl_dwd_fct_orders` |
+| ETL task | `{layer}_{table}` (no prefix) | `ods_orders`, `dwd_fct_orders` |
+| Sync task | `sync_{source}_to_{target}` | `sync_mysql_to_ods` |
+| DQC task | `dqc_{subject}` | `dqc_orders_completeness` |
+
+### Scheduling and State Rules
+
+| Directory | State | Scheduling |
+|---|---|---|
+| `00_ddl` | DRAFT | None — run once manually to initialize tables |
+| `01_sync` | PUBLISHED | Cron (e.g. `0 2 * * *`) |
+| `02_ods` | DRAFT (if view) / PUBLISHED (if ETL) | None / Cron |
+| `03_dwd` | PUBLISHED | Cron, depends on `01_sync` |
+| `04_dqc` | PUBLISHED | Cron, depends on `03_dwd` |
+| DWS/ADS | — | Dynamic Table with `refresh_interval`, no task |
+
+### Dependency Chain
+
+```
+01_sync (Cron 02:00)
+    ↓
+03_dwd (Cron 02:30, depends on 01_sync)
+    ↓
+04_dqc (Cron 03:00, depends on 03_dwd)
+
+DWS/ADS Dynamic Tables → auto-refresh, not in dependency chain
+DDL tasks (00_ddl) → never in dependency chain
+```
+
+
 
 ---
 
