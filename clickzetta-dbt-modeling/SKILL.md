@@ -57,6 +57,8 @@ Users don't need to describe table schemas — you discover them, you infer the 
    - **Row count**: `SELECT COUNT(*)` to determine data volume
    - **Growth history**: check last 7 days new rows and modification patterns, distinguish "append-only" from "has backfill updates"
 
+   **Key inference rule for aggregation models** (DWS/ADS layer): customer stats, daily revenue, product performance, store rankings — these should default to `dynamic_table`, not `table` or `incremental`. dynamic_table auto-refreshes when upstream data changes and requires no scheduling. Only use `incremental` for aggregation when the model must run at a specific time after an upstream task completes.
+
 3. **Single confirmation**: Summarize all model inference results in one table, let user choose A (confirm all) / B (adjust) / C (partial modeling)
 
 4. **Generate**: After confirmation, generate sources.yml, staging models, marts models, schema.yml in one pass

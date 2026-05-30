@@ -29,8 +29,9 @@ Combine table name + columns + row count + growth history:
 │   ├── Has date partition column (dt/date) + daily recompute → incremental + insert_overwrite
 │   ├── No primary key but has partition, needs replacement → incremental + delete+insert
 │   └── Append-only, no modifications (logs/events) → incremental + append
-├── Aggregate metrics, needs minute-level refresh
-│   └── → dynamic_table (no Studio task needed)
+├── Aggregate / summary model (DWS/ADS layer: customer stats, daily revenue, product performance, etc.)
+│   ├── No strict scheduling time window needed → dynamic_table (preferred — auto-refresh, no Studio task needed)
+│   └── Must run at a specific time (e.g. after upstream sync completes) → incremental + insert_overwrite
 ├── Columns have SCD characteristics (name/city/status and other changing dimension attributes)
 │   └── → snapshot (SCD Type 2)
 ├── Pre-computed query acceleration (read-only, high-frequency queries)
@@ -40,6 +41,11 @@ Combine table name + columns + row count + growth history:
 └── Intermediate computation, no materialization needed
     └── → ephemeral
 ```
+
+**When to choose dynamic_table for aggregation models**:
+- Customer stats, product performance, store rankings, daily/weekly summaries — these are all good candidates
+- dynamic_table auto-refreshes when upstream data changes, no cron needed
+- Only use incremental/table for aggregation when: (1) the aggregation window is time-bounded (e.g. "yesterday only"), or (2) the model must run after a specific upstream task completes
 
 ## Configuration Templates by Type
 
