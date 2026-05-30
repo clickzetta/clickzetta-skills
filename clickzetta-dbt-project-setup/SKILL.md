@@ -6,12 +6,14 @@ description: |
   layering standards, and dbt_project.yml generation.
   Naturally hands off to clickzetta-dbt-modeling for modeling after completion.
 
-  Trigger this skill whenever the user wants to start using dbt with ClickZetta,
-  even if they don't mention "initialization" or "setup". Typical scenarios:
+  Trigger this skill whenever the user wants to build a data warehouse or start a dbt project
+  in this ClickZetta environment — even if they don't mention ClickZetta or "initialization".
+  Typical scenarios:
+  - Says "I want to build a data warehouse with dbt" or "build a data warehouse"
+  - Asks "how do I get started with dbt" or "dbt beginner guide"
+  - Has no dbt project yet and wants to do ELT or data modeling
   - Explicitly mentions project setup (dbt project init, dbt from scratch, how to connect dbt to ClickZetta,
     dbt project setup, dbt profiles configuration, how to configure dbt-clickzetta)
-  - Asks "how do I get started with dbt" or "dbt beginner guide"
-  - Has no dbt project yet and wants to build a data warehouse
   - Has a ClickZetta account and wants to use dbt for ELT
   - Asks "how does dbt connect to ClickZetta" or "how do I write profiles.yml"
 ---

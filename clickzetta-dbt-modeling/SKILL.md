@@ -6,12 +6,13 @@ description: |
   Presents choices rather than blank forms — explores data first, then proposes a justified plan for user confirmation.
 
   Trigger this skill whenever the user wants to turn raw Lakehouse data into usable analytical tables,
-  even if they don't mention dbt. Typical scenarios:
+  even if they don't mention dbt or ClickZetta by name. Typical scenarios:
   - Explicitly mentions dbt (dbt modeling, dbt model, sources.yml, incremental, snapshot, dbt run, dbt test)
   - Wants to do ETL transformation, data cleansing, or layered modeling on Lakehouse data
   - Wants to build dimension tables, fact tables, or summary tables
   - Has raw data and wants to produce tables ready for reporting or analysis
   - Asks "how do I turn these tables into a queryable dataset"
+  - Already has a dbt project set up and wants to start building models
 ---
 
 # clickzetta-dbt-modeling
