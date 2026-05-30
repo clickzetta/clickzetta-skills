@@ -42,7 +42,7 @@ Users don't need to describe table schemas — you discover them, you infer the 
 
    **Step 1c — Branch decision** (must pass this gate before inferring):
 
-   - **Data found and suitable** → proceed to step 2
+   - **Data found and suitable** → before proceeding to inference, ask the user two things: (1) what is the business scenario (e.g. retail orders, user behavior, finance reporting — this helps name models correctly), and (2) which layers to build (staging only, staging + marts, full ODS→DWD→DWS→ADS, etc.). **Wait for the user's answer before running any COUNT or history queries.**
    - **No relevant tables in current schema** → ask the user whether to expand scope. Present three options: explore other schemas in the same workspace (list them), explore other workspaces, or let the user specify a table/schema directly.
    - **Data exists but not suitable for modeling** → show what was found and why it's not suitable, then ask what the user wants to do. Present options: proceed anyway with available data, ingest missing/better data first (stay in conversation and continue modeling after ingestion), or point to different data.
    - **No raw data anywhere in Lakehouse** → ask the user about their data source and route to the appropriate ingestion skill. Present options: relational database batch sync or CDC, Kafka/message queue, files (OSS/S3/CSV), or user will prepare data themselves.
@@ -51,7 +51,7 @@ Users don't need to describe table schemas — you discover them, you infer the 
 
    **Do not proceed to inference or generate any model files when data is absent or unsuitable** — models built on empty or malformed tables will fail `dbt test`, and field inference will be completely wrong, creating more rework.
 
-2. **Infer**: Combine four dimensions to automatically infer materialization type and incremental strategy. Follow the Decision Tree in [references/materialization-guide.md](references/materialization-guide.md) — **do not rely on intuition or past experience**.
+2. **Infer**: After the user confirms business scenario and target layers, run the four-dimension analysis. Tell the user "Analyzing table structures and data volumes..." so they know work is in progress — don't go silent.
    - **Table name**: identify fact / dimension / aggregation naming patterns
    - **Columns**: presence of `updated_at` / `dt` / primary key fields
    - **Row count**: `SELECT COUNT(*)` to determine data volume
@@ -70,7 +70,7 @@ Users don't need to describe table schemas — you discover them, you infer the 
 
 3. **Single confirmation**: Present all inferred models in one table and **stop — do not write any files until the user responds**. The user must explicitly choose before generation begins. This is the most important gate in the workflow: writing files before confirmation creates rework and pollutes the project.
 
-   The confirmation table must include a `refresh_interval` column for `dynamic_table` models so users can review and adjust refresh frequency before generation:
+   The confirmation table must include a `refresh_interval` column for `dynamic_table` models so users can review and adjust refresh frequency before generation. Use the **actual inferred values** from step 2 — do not copy the example below, it is only a format reference:
 
    | Model | Materialization | refresh_interval | Notes |
    |---|---|---|---|
@@ -99,8 +99,6 @@ Present options via interactive question tool at every user decision point. If n
 **Data not suitable** (when data exists but has issues): Show what was found and why it's not suitable. Ask what the user wants to do — proceed anyway with available data and fix issues later, set up an ingestion pipeline first and come back to model after (stay in conversation), or point to a different schema or table.
 
 **No data** (when Lakehouse has no raw data at all): Ask about the data source — relational database (MySQL / PostgreSQL / SQL Server, batch sync or CDC → `clickzetta-data-ingest-pipeline`), Kafka / message queue (real-time ingestion → `clickzetta-kafka-ingest-pipeline`), files (OSS / S3 / local CSV → `clickzetta-data-ingest-pipeline`), or the user will prepare the data themselves.
-
-**Model confirmation** (after inference, step 3): Show the proposed modeling plan table. Ask how to proceed — confirm all and generate, adjust specific models (change materialization type or strategy), or do partial modeling (only a subset of tables).
 
 ## Key Constraints
 
@@ -214,8 +212,24 @@ models:
 ## Completion Criteria
 
 - `dbt test` 0 errors
-- `dynamic_table` models have `refresh_interval` and `refresh_vc` configured in schema.yml `meta`
-- `incremental` models have `incremental_field` and `incremental_strategy` recorded in schema.yml `meta` (for use by `clickzetta-dbt-studio-pipeline`)
+- `dynamic_table` models have `refresh_interval` and `refresh_vc` set in `{{ config() }}` and recorded in schema.yml `meta`:
+  ```yaml
+  models:
+    - name: fct_orders
+      config:
+        meta:
+          refresh_interval: "5 minutes"
+          refresh_vc: default
+  ```
+- `incremental` models have `incremental_field` and `incremental_strategy` recorded in schema.yml `meta` (for use by `clickzetta-dbt-studio-pipeline`):
+  ```yaml
+  models:
+    - name: fct_orders_incremental
+      config:
+        meta:
+          incremental_field: updated_at
+          incremental_strategy: merge
+  ```
 
 ## Next Steps After Modeling (proactively present to user)
 

@@ -41,14 +41,15 @@ Users don't need to understand dbt internals — they only need to answer a few 
    ```
    Tell the user the result immediately ("dbt-clickzetta 1.7.x is installed ✓" or "Not installed — installing now...").
 
-1. **Quick Lakehouse scan** (~2 seconds): Run `cz-cli schema list` to see if there's existing data. Immediately tell the user what was found (greenfield or existing data), then **ask the three setup questions before doing anything else** — do not silently explore further:
+1. **Quick Lakehouse scan** (~2 seconds): Run `cz-cli schema list` to see if there's existing data. Immediately tell the user what was found (greenfield or existing data), then **ask the four setup questions before doing anything else** — do not silently explore further:
 
-   Ask the user to confirm three things (present as choices, not blank fields):
+   Ask the user to confirm four things (present as choices, not blank fields):
+   - **Connection config**: do you have an existing profiles.yml or cz-cli config file? (If yes, paste or upload it — no need to answer the individual connection questions below. If no, I'll ask for each parameter.)
    - **Project directory**: current directory, or a path they specify
    - **Layering mode**: two-layer (staging → marts, recommended for small/medium), two-layer + intermediate (for complex joins), three-layer (ODS → DWD → ADS), or four-layer (ODS → DWD → DWS → ADS)
    - **Naming prefix**: business domain name (e.g. retail, finance), company/team name, or custom
 
-2. After the user answers all three questions, **confirm the plan before executing** — show a one-line summary ("Creating `retail_dw` in current directory, four-layer ODS→DWD→DWS→ADS, prefix `retail`") and wait for the user's go-ahead. Only then run `dbt init` and generate files.
+2. After the user answers all questions, **confirm the plan before executing** — show a one-line summary ("Creating `retail_dw` in current directory, four-layer ODS→DWD→DWS→ADS, prefix `retail`") and wait for the user's go-ahead. Only then run `dbt init` and generate files.
 
    ```bash
    dbt init {project_name}          # generate project skeleton
@@ -68,6 +69,8 @@ Users don't need to understand dbt internals — they only need to answer a few 
 
    Generate `dbt_project.yml` with **`dynamic_table` as the default materialization for all layers** — this is the ClickZetta Lakehouse native approach. The system handles incremental refresh and dependency propagation automatically; no manual merge logic or Studio dependency config needed.
 
+   Note: `refresh_interval` and `refresh_vc` are set per-model in `{{ config() }}` blocks. The `dbt_project.yml` below sets the materialization default only; individual models should override `refresh_interval` in their own config to match their SLA.
+
    ```yaml
    models:
      {project_name}:
@@ -78,41 +81,21 @@ Users don't need to understand dbt internals — they only need to answer a few 
        # Two-layer example (staging → marts):
        staging:
          +materialized: dynamic_table
-         +dynamic_table:
-           refresh_interval: "5 minutes"   # adjust to business SLA; DOWNSTREAM not supported in ClickZetta
-           refresh_vc: default
        marts:
          +materialized: dynamic_table
-         +dynamic_table:
-           refresh_interval: "5 minutes"  # adjust to business SLA
-           refresh_vc: default
 
        # Four-layer example (ODS → DWD → DWS → ADS):
        ods:
          +materialized: dynamic_table
-         +dynamic_table:
-           refresh_interval: "5 minutes"
-           refresh_vc: default
        dwd:
          +materialized: dynamic_table
-         +dynamic_table:
-           refresh_interval: "5 minutes"
-           refresh_vc: default
        dws:
          +materialized: dynamic_table
-         +dynamic_table:
-           refresh_interval: "5 minutes"
-           refresh_vc: default
        ads:
          +materialized: dynamic_table
-         +dynamic_table:
-           refresh_interval: "5 minutes"
-           refresh_vc: default
    ```
 
-   Use the template matching the user's chosen layering mode. Individual models can override `refresh_interval` in their own `{{ config() }}` block — the layer default is just a fallback.
-
-   **Exception**: small static reference tables (e.g. lookup/config tables with no upstream changes) can use `+materialized: table` at the model level — full rebuild is simpler and cheaper for these.
+   Use the template matching the user's chosen layering mode. Each model sets its own `refresh_interval` and `refresh_vc` in `{{ config() }}` — see the model template in `clickzetta-dbt-modeling`.
 
    Connection parameters for profiles.yml — two options (prefer config file if available):
    - **User provides a config file**: ask user to upload or paste an existing profiles.yml / cz-cli config file, extract parameters directly — no need to ask one by one
@@ -126,7 +109,7 @@ Users don't need to understand dbt internals — they only need to answer a few 
 
 Use the interactive question tool for user decision points. If no such tool is available, list options in text. **Do not proceed before receiving the user's answer.**
 
-Ask the user to confirm three things: (1) **Project directory** — current directory, or a path they specify. (2) **Layering mode** — two-layer (staging → marts, recommended for small/medium projects), two-layer + intermediate (for complex multi-table joins), three-layer (ODS → DWD → ADS, for larger projects with multiple business domains), or four-layer (ODS → DWD → DWS → ADS, for large data warehouses with dedicated data teams). (3) **Naming prefix** — business domain name (e.g. retail, finance, marketing), company/team name (e.g. acme, dataeng), or a custom prefix they specify.
+Ask the user to confirm four things: (1) **Connection config** — do you have an existing profiles.yml or cz-cli config file? (2) **Project directory** — current directory, or a path they specify. (3) **Layering mode** — two-layer (staging → marts, recommended for small/medium projects), two-layer + intermediate (for complex multi-table joins), three-layer (ODS → DWD → ADS, for larger projects with multiple business domains), or four-layer (ODS → DWD → DWS → ADS, for large data warehouses with dedicated data teams). (4) **Naming prefix** — business domain name (e.g. retail, finance, marketing), company/team name (e.g. acme, dataeng), or a custom prefix they specify.
 
 ## Key Constraints
 
@@ -141,7 +124,7 @@ Ask the user to confirm three things: (1) **Project directory** — current dire
 | Already have a dbt project, want to model | `clickzetta-dbt-modeling` |
 | Already have a dbt project, want to publish and schedule | `clickzetta-dbt-studio-pipeline` |
 | Need to sync data to Lakehouse first | `clickzetta-data-ingest-pipeline` |
-| Don't want dbt, use Dynamic Table directly | `clickzetta-dw-modeling` |
+| Don't want dbt, use Dynamic Table directly | `clickzetta-sql-pipeline-manager` |
 
 ## Completion Criteria
 

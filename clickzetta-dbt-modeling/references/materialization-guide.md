@@ -23,7 +23,7 @@ the current state of its upstream tables?
 ├── YES → dynamic_table (declarative incremental, system handles everything)
 │   │
 │   ├── ODS / staging (rename, cast, filter from raw)
-│   │   └── refresh_interval='DOWNSTREAM' — refreshes only when downstream needs it
+│   │   └── refresh_interval='5 minutes' or longer — low-frequency source can use longer intervals
 │   │
 │   ├── DWD dimension tables (customers, products, stores)
 │   │   └── refresh_interval='5 minutes' or longer — auto-tracks source changes
@@ -74,7 +74,7 @@ REFRESH DYNAMIC TABLE {workspace}.{schema}.{model};
 {{ config(
     materialized='dynamic_table',
     refresh_interval='5 minutes',  -- '1 minutes' / '5 minutes' / '1 hours'
-    refresh_vc='default_ap'
+    refresh_vc='default'
 ) }}
 select
     customer_id,
@@ -85,12 +85,12 @@ from {{ ref('stg_orders') }}
 group by customer_id
 ```
 
-### dynamic_table — downstream-triggered (for intermediate layers)
+### dynamic_table — ODS/staging layer
 ```sql
 {{ config(
     materialized='dynamic_table',
-    refresh_interval='DOWNSTREAM',  -- only refreshes when downstream tables need it
-    refresh_vc='default_ap'
+    refresh_interval='5 minutes',  -- use longer interval for low-frequency sources
+    refresh_vc='default'           -- Note: DOWNSTREAM is not supported in ClickZetta
 ) }}
 select
     order_id,
@@ -101,7 +101,6 @@ select
 from {{ source('raw', 'orders') }}
 where order_id is not null
 ```
-Use `DOWNSTREAM` for ODS/staging layers — they don't need their own schedule, they refresh in sync with their downstream dependents.
 
 ### incremental + insert_overwrite (time-windowed daily batch)
 ```sql
@@ -209,8 +208,10 @@ Indexes are created automatically at table creation time. Selection principles:
 | Interval | Use Case | Cost |
 |---|---|---|
 | `1 minutes` | Near-real-time, latency-sensitive | High — VCluster runs continuously |
-| `5 minutes` | Most near-real-time scenarios | Moderate |
-| `1 hours` | Low-freshness aggregates | Low |
-| `DOWNSTREAM` | Intermediate layers (ODS/staging) | Minimal — only refreshes when needed |
+| `5 minutes` | Most scenarios, good default | Moderate |
+| `30 minutes` | Dimension tables, low-freshness aggregates | Low |
+| `1 hours` | Very low-freshness, batch-style aggregates | Minimal |
 
-**refresh_vc**: Use a dedicated small VCluster for refresh to avoid competing with query workloads. If unavailable, use `default_ap`.
+Note: `DOWNSTREAM` is a Snowflake-specific syntax and is **not supported in ClickZetta**. Use a fixed interval instead.
+
+**refresh_vc**: Use `default`, or a dedicated small VCluster to avoid competing with query workloads.

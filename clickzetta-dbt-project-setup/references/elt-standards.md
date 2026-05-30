@@ -53,14 +53,15 @@ models/
 
 ## Scheduling Strategy Standards
 
-### What to schedule with dbt + Studio
-- Fully rebuilt dimension tables (`materialized='table'`)
-- Incremental fact tables (`materialized='incremental'`)
-- Snapshot tables (`materialized='snapshot'`)
+### What to use Dynamic Table for (preferred default — no Studio task needed)
+- ODS/staging layers, dimension tables, fact tables, DWS/ADS aggregations — anything that can be expressed as a SELECT reflecting current upstream state
+- The system handles incremental refresh, row updates, and dependency propagation automatically
+- Use `refresh_interval` to control freshness (e.g. `5 minutes`, `30 minutes`, `1 hours`)
 
-### What to use Dynamic Table for (no Studio task needed)
-- Real-time aggregation metrics (`materialized='dynamic_table'`)
-- Summary tables requiring minute-level refresh
+### What to schedule with dbt + Studio (only when dynamic_table doesn't fit)
+- Fully rebuilt dimension tables (`materialized='table'`) — when full rebuild is simpler
+- Incremental fact tables (`materialized='incremental'`) — when time-window control is required (yesterday's data only, last hour only)
+- Snapshot tables (`materialized='snapshot'`) — SCD Type 2 history tracking
 
 ### Scheduling Time Windows (standard)
 ```
@@ -81,7 +82,7 @@ models/
 ### Incremental Filter Pattern (standard)
 ```sql
 {% if is_incremental() %}
-where updated_at > (select max(updated_at) from {{ this }})
+where updated_at >= (select max(updated_at) from {{ this }})
 {% endif %}
 ```
 

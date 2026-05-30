@@ -96,6 +96,6 @@ dbt run-operation refresh_dynamic_table --args '{model_name: my_dt}'
 | `instance` | Instance ID | `f8866243` |
 | `workspace` | Workspace (= dbt database) | `quick_start` |
 | `schema` | Default write schema | `my_marts` |
-| `vcluster` | Compute cluster | `default_ap` |
+| `vcluster` | Compute cluster | `default` |
 
 > `workspace` maps to dbt's `database`, and `{{ this }}` renders as `workspace.schema.table`

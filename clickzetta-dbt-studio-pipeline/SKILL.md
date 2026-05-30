@@ -42,7 +42,7 @@ Both goals must be completed — neither can be skipped. Asset management is the
 
 ## Opening Statement (must say first, before any action)
 
-After the skill triggers, **the first thing is to explain to the user what will be done this session** — don't jump straight to technical operations. Explain in plain language:
+After the skill triggers, **read `target/manifest.json` first** to count total models and how many need scheduling (table/incremental/snapshot). Then explain to the user what will be done this session — don't jump straight to technical operations. Fill in the actual numbers N and M:
 
 > This session covers two things, both required:
 >
@@ -125,7 +125,7 @@ Ask the user to confirm each decision before executing. **Do not execute anythin
 
 3. **Asset management scope**: Ask whether to publish all models or exclude specific ones. If excluding, ask which models to skip.
 
-4. **Incremental SQL rewrite**: For each incremental model, show the before/after SQL diff and ask the user to confirm the rewrite. Options: confirm all, or adjust a specific model.
+4. **Incremental SQL rewrite**: Show all incremental models' before/after SQL diffs in one message. Ask the user to confirm all at once, or flag specific models to adjust. Do not ask model by model — that creates unnecessary back-and-forth when there are many models.
 
 5. **Scheduling configuration**: Ask two things — what schedule (daily at 03:00 for standard T+1, hourly for near real-time, or custom cron) and which VCluster to use (default or specify another).
 
