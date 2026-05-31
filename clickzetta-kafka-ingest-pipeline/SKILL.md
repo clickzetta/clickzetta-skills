@@ -3,16 +3,20 @@ name: clickzetta-kafka-ingest-pipeline
 description: |
   Build Kafka-to-Lakehouse ingestion pipelines using READ_KAFKA Pipe or Kafka External Table + Table Stream.
   Covers: connection validation, JSON/CSV parsing, Pipe DDL, SASL auth, VCluster sizing, latency monitoring, tuning.
-  Triggers: Kafka ingestion, Kafka Pipe, read_kafka, Kafka external table, Kafka consumer, message queue import, Kafka backlog.
+  Trigger when the user says: "Kafka ingestion", "Kafka Pipe", "read_kafka", "Kafka external table",
+  "Kafka consumer", "message queue import", "Kafka backlog", "ingest from Kafka",
+  "stream data to Lakehouse", "real-time Kafka pipeline", "Kafka to ODS".
+  Keywords: Kafka, Pipe, read_kafka, message queue, streaming ingestion, real-time ETL
 ---
 
 # Kafka Data Ingestion Pipeline Workflow
 
+See [references/kafka-pipe-syntax.md](references/kafka-pipe-syntax.md) for full parameter reference, DDL templates, and MAP options.
+See [references/operations.md](references/operations.md) for production tuning, error recovery, troubleshooting, and cz-cli examples.
+
 > **Compatibility**: Requires ClickZetta Lakehouse with Pipe support (v2.0+). All SQL executed via `cz-cli sql --sync`.
 
 ## Quick Start (Simple JSON, No Auth)
-
-For the fastest path — flat JSON topic, PLAINTEXT, default settings:
 
 ```bash
 # 1. Verify connectivity
@@ -31,8 +35,6 @@ cz-cli sql "SELECT COUNT(*) FROM ods.my_table" --sync
 
 Replace `BROKER:9092`, `TOPIC`, field names, and types. Pipe starts automatically.
 
-> **Tip**: If backtick escaping causes issues in your shell, write the SQL to a file and run `cz-cli sql -f pipe.sql --sync` instead.
-
 ---
 
 ## Decision Tree
@@ -42,19 +44,13 @@ User wants Kafka → Lakehouse ingestion
 │
 ├─ Message format?
 │  ├─ JSON (flat)      → Standard path, parse_json + field extraction
-│  ├─ JSON (nested)    → Layer-by-layer parse_json unwrapping (see Step 2 below)
-│  ├─ CSV              → split(value::string, ',')[N] extraction (see CSV section)
+│  ├─ JSON (nested)    → Layer-by-layer parse_json unwrapping
+│  ├─ CSV              → split(value::string, ',')[N] extraction
 │  └─ Avro / Protobuf  → NOT SUPPORTED natively; land as raw BINARY, decode downstream
 │
 ├─ Ingestion path?
-│  ├─ READ_KAFKA Pipe (default)
-│  │   → Simpler, fewer objects, supports complex SQL in COPY INTO
-│  │   → Use for: most scenarios
-│  │
-│  └─ Kafka External Table + Table Stream Pipe
-│      → Retains raw messages in external table
-│      → Multiple downstream consumers can read same topic independently
-│      → Use for: audit trail, multi-consumer fan-out
+│  ├─ READ_KAFKA Pipe (default) — simpler, fewer objects, use for most scenarios
+│  └─ Kafka External Table + Table Stream — raw message retention, multi-consumer fan-out
 │
 ├─ Authentication?
 │  ├─ None             → MAP('kafka.security.protocol','PLAINTEXT')
@@ -71,9 +67,7 @@ User wants Kafka → Lakehouse ingestion
 
 ## Wizard: Collect Required Information
 
-Before building a Kafka pipeline, use an interactive Q&A tool (e.g., `question`) to collect the following. If no such tool is available, list all questions in text:
-
-Ask the user three questions: (1) What is the Kafka message format — JSON (flat, fields map directly), JSON (nested, requires layer-by-layer parse_json), CSV (comma-separated, use split()), or Avro/Protobuf/Other (land as raw binary, decode downstream)? (2) Which ingestion path — READ_KAFKA Pipe (recommended, general use, fewer objects) or Kafka External Table + Table Stream (retain raw messages or multi-consumer fan-out)? (3) What authentication method — None/PLAINTEXT (no credentials) or SASL_PLAINTEXT (username/password)?
+Ask three questions: (1) Message format (JSON flat / JSON nested / CSV / Avro/Protobuf)? (2) Ingestion path (READ_KAFKA Pipe / Kafka External Table + Table Stream)? (3) Authentication (None/PLAINTEXT / SASL_PLAINTEXT)?
 
 **If the user has already provided sufficient information, skip the wizard and proceed directly.**
 
@@ -87,7 +81,7 @@ Ask the user three questions: (1) What is the Kafka message format — JSON (fla
 - `CREATE OR REPLACE PIPE` is **not supported** — use DROP then CREATE
 - `RESET_KAFKA_GROUP_OFFSETS` only takes effect at creation time
 - `topic_pattern` (position 3) is **reserved and unused** — always pass empty string `''`
-- Recommend a **dedicated GP VCluster** for Kafka Pipe to avoid resource contention
+- Use a **dedicated GP VCluster** for Kafka Pipe to avoid resource contention with other workloads
 
 ---
 
@@ -96,7 +90,6 @@ Ask the user three questions: (1) What is the Kafka message format — JSON (fla
 ### Step 1: Validate Kafka Connection
 
 > ⚠️ READ_KAFKA uses **positional parameters only**. No `=>` named params, no `TABLE()` wrapper.
-> Full parameter reference: see `references/kafka-pipe-syntax.md`
 
 ```sql
 SELECT value::string
@@ -105,73 +98,36 @@ FROM read_kafka(
   'orders',                   -- topic
   '',                         -- reserved (always empty)
   'test_explore',             -- group_id (use temp name for exploration)
-  '', '', '', '',             -- offsets/timestamps (leave empty)
-  'raw', 'raw', 0,           -- key_format, value_format, max_errors
-  MAP(
-    'kafka.security.protocol', 'PLAINTEXT',
-    'kafka.auto.offset.reset', 'earliest'
-  )
+  '', '', '', '',
+  'raw', 'raw', 0,
+  MAP('kafka.security.protocol', 'PLAINTEXT', 'kafka.auto.offset.reset', 'earliest')
 )
 LIMIT 10;
 ```
 
-For SASL authentication, add to MAP:
-```sql
-MAP(
-  'kafka.security.protocol', 'SASL_PLAINTEXT',
-  'kafka.sasl.mechanism', 'PLAIN',
-  'kafka.sasl.username', 'my_user',
-  'kafka.sasl.password', 'my_password',
-  'kafka.auto.offset.reset', 'earliest'
-)
-```
-
-> **Multi-broker format**: `'broker1:9092,broker2:9092,broker3:9092'` (recommended for HA)
+For SASL: add `'kafka.sasl.mechanism','PLAIN','kafka.sasl.username','user','kafka.sasl.password','pass'` to MAP.
 
 ### Step 2: Explore Schema and Parse Messages
 
 **JSON (flat)**:
 ```sql
-SELECT
-  j['order_id']::STRING AS order_id,
-  j['amount']::DECIMAL(10,2) AS amount,
-  timestamp_millis(j['created_at']::BIGINT) AS created_at
-FROM (
-  SELECT parse_json(value::string) AS j
-  FROM read_kafka('kafka:9092','orders','','test_schema','','','','','raw','raw',0,
-    MAP('kafka.security.protocol','PLAINTEXT','kafka.auto.offset.reset','earliest'))
-  LIMIT 5
-);
+SELECT j['order_id']::STRING, j['amount']::DECIMAL(10,2)
+FROM (SELECT parse_json(value::string) AS j
+      FROM read_kafka('kafka:9092','orders','','test_schema','','','','','raw','raw',0,
+        MAP('kafka.security.protocol','PLAINTEXT','kafka.auto.offset.reset','earliest')) LIMIT 5);
 ```
 
 **JSON (nested)** — unwrap layer by layer:
 ```sql
-SELECT
-  j['id']::STRING AS id,
-  parse_json(j['event']::STRING)['action']::STRING AS action,
-  parse_json(parse_json(j['event']::STRING)['payload']::STRING)['ref']::STRING AS ref
-FROM (
-  SELECT parse_json(value::string) AS j
-  FROM read_kafka('kafka:9092','events','','test_nested','','','','','raw','raw',0,
-    MAP('kafka.security.protocol','PLAINTEXT','kafka.auto.offset.reset','earliest'))
-  LIMIT 5
-);
+SELECT j['id']::STRING, parse_json(j['event']::STRING)['action']::STRING AS action
+FROM (SELECT parse_json(value::string) AS j FROM read_kafka(...) LIMIT 5);
 ```
 
 **CSV** — use `split()`:
 ```sql
-SELECT
-  split(value::string, ',')[0] AS id,
-  split(value::string, ',')[1] AS name,
-  CAST(split(value::string, ',')[2] AS DECIMAL(10,2)) AS amount
-FROM read_kafka('kafka:9092','csv_topic','','test_csv','','','','','raw','raw',0,
-  MAP('kafka.security.protocol','PLAINTEXT','kafka.auto.offset.reset','earliest'))
-LIMIT 5;
+SELECT split(value::string, ',')[0] AS id, split(value::string, ',')[1] AS name
+FROM read_kafka(...) LIMIT 5;
 ```
-
-**Avro / Protobuf**: Not natively supported for parsing. Land as raw binary (`value` column) and decode in a downstream Dynamic Table or external process.
-
-> **Best Practice**: Unwrap all nested JSON with `parse_json` in the Pipe SELECT to avoid repeated computation downstream.
 
 ### Step 3: Create Target Table
 
@@ -186,19 +142,17 @@ CREATE TABLE IF NOT EXISTS ods.kafka_orders (
 );
 ```
 
-> Always add `__kafka_timestamp__` for end-to-end latency monitoring.
+Always add `__kafka_timestamp__` — it enables end-to-end latency monitoring without which you cannot tell how fresh the data is.
 
-### Step 4: Create Dedicated VCluster (Recommended)
+### Step 4: Create Dedicated VCluster
 
 ```sql
 CREATE VCLUSTER IF NOT EXISTS pipe_kafka_vc
   VCLUSTER_TYPE = GENERAL
   VCLUSTER_SIZE = 4
-  AUTO_SUSPEND_IN_SECOND = 0
+  AUTO_SUSPEND_IN_SECOND = 0   -- keep always-on to avoid cold-start latency
   COMMENT 'Dedicated always-on cluster for Kafka Pipe';
 ```
-
-> Set `AUTO_SUSPEND_IN_SECOND = 0` for sub-minute freshness to avoid cold-start latency.
 
 ### Step 5: Create Kafka Pipe
 
@@ -210,30 +164,20 @@ CREATE PIPE kafka_orders_pipe
 AS
 COPY INTO ods.kafka_orders FROM (
   SELECT
-    j['order_id']::STRING,
-    j['user_id']::STRING,
-    j['amount']::DECIMAL(10,2),
-    j['status']::STRING,
+    j['order_id']::STRING, j['user_id']::STRING,
+    j['amount']::DECIMAL(10,2), j['status']::STRING,
     j['created_at']::TIMESTAMP,
     CAST(`timestamp` AS TIMESTAMP) AS __kafka_timestamp__
   FROM (
     SELECT `timestamp`, parse_json(value::string) AS j
-    FROM read_kafka(
-      'kafka.example.com:9092',
-      'orders',
-      '',
-      'lakehouse_orders',         -- production group_id
-      '', '', '', '',             -- must be empty in Pipe
-      'raw', 'raw', 0,
-      MAP('kafka.security.protocol', 'PLAINTEXT')
-    )
+    FROM read_kafka('kafka.example.com:9092', 'orders', '', 'lakehouse_orders',
+      '', '', '', '', 'raw', 'raw', 0,
+      MAP('kafka.security.protocol', 'PLAINTEXT'))
   )
 );
 ```
 
-> **Inside a Pipe**: positional offset params MUST be empty (Pipe manages offsets). Do NOT set `kafka.auto.offset.reset` in MAP — use `RESET_KAFKA_GROUP_OFFSETS` Pipe parameter instead.
-
-For full parameter reference, see `references/kafka-pipe-syntax.md`.
+> Inside a Pipe: positional offset params MUST be empty (Pipe manages offsets). Do NOT set `kafka.auto.offset.reset` in MAP.
 
 ### Step 6: Verify
 
@@ -241,14 +185,13 @@ For full parameter reference, see `references/kafka-pipe-syntax.md`.
 DESC PIPE EXTENDED kafka_orders_pipe;
 SELECT COUNT(*) FROM ods.kafka_orders;
 SELECT * FROM load_history('ods.kafka_orders') ORDER BY last_load_time DESC LIMIT 10;
-SHOW JOBS WHERE query_tag = 'pipe.my_workspace.ods.kafka_orders_pipe';
 ```
 
 ---
 
 ## Path Two: Kafka External Table + Table Stream Pipe
 
-Use when: raw message retention needed, or multiple independent downstream consumers on the same topic.
+Use when raw message retention is needed, or multiple independent downstream consumers on the same topic.
 
 ### Step 1: Create Kafka Storage Connection
 
@@ -259,48 +202,27 @@ CREATE STORAGE CONNECTION IF NOT EXISTS kafka_conn
   SECURITY_PROTOCOL = 'PLAINTEXT';
 ```
 
-> Drop with `DROP CONNECTION IF EXISTS kafka_conn` (not `DROP STORAGE CONNECTION`).
-
 ### Step 2: Create Kafka External Table
 
 ```sql
 CREATE EXTERNAL TABLE kafka_orders_ext (
-  topic STRING,
-  partition INT,
-  `offset` BIGINT,
-  `timestamp` TIMESTAMP,
-  timestamp_type STRING,
-  headers STRING,
-  key BINARY,
-  value BINARY
+  topic STRING, partition INT, `offset` BIGINT, `timestamp` TIMESTAMP,
+  timestamp_type STRING, headers STRING, key BINARY, value BINARY
 )
 USING KAFKA
-OPTIONS (
-  'group_id' = 'lakehouse_ext_orders',
-  'topics' = 'orders',
-  'starting_offset' = 'earliest'
-)
+OPTIONS ('group_id' = 'lakehouse_ext_orders', 'topics' = 'orders', 'starting_offset' = 'earliest')
 CONNECTION kafka_conn;
 ```
 
-> - Column definitions are **required** (omitting causes `failed to detect columns`)
-> - `offset` and `timestamp` are reserved words — always backtick-escape
-> - Drop with `DROP TABLE` (not `DROP EXTERNAL TABLE`)
+> Column definitions are required. `offset` and `timestamp` are reserved words — always backtick-escape. Drop with `DROP TABLE` (not `DROP EXTERNAL TABLE`).
 
-### Step 3: Create Table Stream
+### Step 3: Create Table Stream and Pipe
 
 ```sql
-CREATE TABLE STREAM kafka_orders_stream
-  ON TABLE kafka_orders_ext
+CREATE TABLE STREAM kafka_orders_stream ON TABLE kafka_orders_ext
   WITH PROPERTIES ('TABLE_STREAM_MODE' = 'APPEND_ONLY');
-```
 
-### Step 4: Create Target Table and Pipe
-
-```sql
-CREATE TABLE IF NOT EXISTS ods.kafka_orders_from_ext (
-    order_id STRING, user_id STRING, amount DECIMAL(10,2), kafka_ts TIMESTAMP
-);
+CREATE TABLE IF NOT EXISTS ods.kafka_orders_from_ext (order_id STRING, kafka_ts TIMESTAMP);
 
 -- Table Stream Pipe uses INSERT INTO ... SELECT (not COPY INTO)
 CREATE PIPE kafka_ext_orders_pipe
@@ -308,200 +230,35 @@ CREATE PIPE kafka_ext_orders_pipe
   BATCH_INTERVAL_IN_SECONDS = '60'
 AS
 INSERT INTO ods.kafka_orders_from_ext
-SELECT
-  j['order_id']::STRING,
-  j['user_id']::STRING,
-  j['amount']::DECIMAL(10,2),
-  CAST(`timestamp` AS TIMESTAMP)
-FROM (
-  SELECT `timestamp`, parse_json(CAST(value AS STRING)) AS j
-  FROM kafka_orders_stream
-);
+SELECT j['order_id']::STRING, CAST(`timestamp` AS TIMESTAMP)
+FROM (SELECT `timestamp`, parse_json(CAST(value AS STRING)) AS j FROM kafka_orders_stream);
 ```
-
-> **Note**: `GET_JSON_OBJECT(str, '$.path')` also works but `parse_json(str)['field']::TYPE` is preferred — it's more composable for nested structures and consistent with Path One.
 
 ---
 
 ## Monitoring & Operations
 
-### Check Pipe Status and Lag
-
 ```sql
+-- Check Pipe status and lag
 DESC PIPE EXTENDED kafka_orders_pipe;
+-- Key: pipe_latency.timeLag (ms) — continuously increasing = backlog
+
+-- End-to-end latency (requires __kafka_timestamp__)
+SELECT MAX(DATEDIFF('second', __kafka_timestamp__, CURRENT_TIMESTAMP())) AS max_delay_s
+FROM ods.kafka_orders WHERE __kafka_timestamp__ >= CURRENT_TIMESTAMP() - INTERVAL 1 HOUR;
+
+-- Pause / Resume
+ALTER PIPE kafka_orders_pipe SET PIPE_EXECUTION_PAUSED = true;
+ALTER PIPE kafka_orders_pipe SET PIPE_EXECUTION_PAUSED = false;
 ```
 
-Key field `pipe_latency` (JSON):
-- `lastConsumeTimestamp` — last consumed offset time
-- `offsetLag` — message backlog count
-- `timeLag` — consumer lag in ms (shows -1 when abnormal)
-
-> Normal: `timeLag` fluctuates 0–90s (with 60s batch interval + 2x headroom). Continuously increasing = backlog.
-
-### End-to-End Latency (requires `__kafka_timestamp__`)
-
-```sql
-SELECT
-  MAX(DATEDIFF('second', __kafka_timestamp__, CURRENT_TIMESTAMP())) AS max_delay_s,
-  AVG(DATEDIFF('second', __kafka_timestamp__, CURRENT_TIMESTAMP())) AS avg_delay_s
-FROM ods.kafka_orders
-WHERE __kafka_timestamp__ >= CURRENT_TIMESTAMP() - INTERVAL 1 HOUR;
-```
-
-### Pause / Resume
-
-```sql
-ALTER PIPE kafka_orders_pipe SET PIPE_EXECUTION_PAUSED = true;   -- pause
-ALTER PIPE kafka_orders_pipe SET PIPE_EXECUTION_PAUSED = false;  -- resume
-```
-
-### Modify Pipe Properties
-
-Only `PIPE_EXECUTION_PAUSED`, `VIRTUAL_CLUSTER`, and `COPY_JOB_HINT` are alterable (one per ALTER call). Everything else — including `BATCH_INTERVAL_IN_SECONDS`, `BATCH_SIZE_PER_KAFKA_PARTITION`, and SELECT logic — requires drop + recreate. See `references/kafka-pipe-syntax.md` § ALTER PIPE for the full support matrix.
-
-### Modify Pipe SQL Logic (Drop + Recreate)
-
-```sql
-DROP PIPE kafka_orders_pipe;
-
--- Recreate with same group_id, do NOT set RESET_KAFKA_GROUP_OFFSETS → continues from last offset
-CREATE PIPE kafka_orders_pipe
-  VIRTUAL_CLUSTER = 'pipe_kafka_vc'
-  BATCH_INTERVAL_IN_SECONDS = '60'
-AS
-COPY INTO ods.kafka_orders FROM (
-  SELECT
-    j['order_id']::STRING,
-    j['user_id']::STRING,
-    j['amount']::DECIMAL(10,2),
-    UPPER(j['status']::STRING),  -- changed logic
-    j['created_at']::TIMESTAMP,
-    CAST(`timestamp` AS TIMESTAMP) AS __kafka_timestamp__
-  FROM (
-    SELECT `timestamp`, parse_json(value::string) AS j
-    FROM read_kafka('kafka.example.com:9092','orders','','lakehouse_orders',
-      '','','','','raw','raw',0,MAP('kafka.security.protocol','PLAINTEXT'))
-  )
-);
-```
-
----
-
-## Production Tuning
-
-Run `DESC PIPE EXTENDED` multiple times — if `timeLag` continuously increases, the Pipe is backlogged.
-
-| Problem | Fix |
-|---------|-----|
-| Batch can't consume a full interval's data | Increase `BATCH_SIZE_PER_KAFKA_PARTITION` (drop + recreate, e.g., `'1000000'`) |
-| Job needs multiple rounds | Increase VCluster size so cores ≥ partitions: `ALTER VCLUSTER ... SET VCLUSTER_SIZE = 16` |
-| Few partitions, large volume | Split tasks by count: `ALTER PIPE ... SET COPY_JOB_HINT = '{"cz.sql.split.kafka.strategy":"size","cz.mapper.kafka.message.size":"200000"}'` |
-
-> **VCluster size-to-core mapping** (GENERAL type, 1 CRU = 8 cores):
-> | VCLUSTER_SIZE (CRU) | Cores | Suitable for |
-> |---------------------|-------|--------------|
-> | 4 | 32 | ≤ 32 partitions, moderate throughput |
-> | 8 | 64 | ≤ 64 partitions, high throughput |
-> | 16 | 128 | Large-scale ingestion |
-> | 32 | 256 | Very high partition count / throughput |
->
-> Rule of thumb: set cores ≥ Kafka partition count so each partition gets a dedicated task slot.
-
-> `COPY_JOB_HINT` must be valid JSON with double-quoted keys/values. Setting it overwrites all previous hints.
+For production tuning, error recovery, and troubleshooting, see [references/operations.md](references/operations.md).
 
 ---
 
 ## Schema Evolution
 
 When the Kafka topic adds new fields:
-
-1. **Add columns** to the target table:
-   ```sql
-   ALTER TABLE ods.kafka_orders ADD COLUMN new_field STRING;
-   ```
-
-2. **Drop and recreate Pipe** with updated SELECT (keep same `group_id`, omit `RESET_KAFKA_GROUP_OFFSETS`):
-   ```sql
-   DROP PIPE kafka_orders_pipe;
-   CREATE PIPE kafka_orders_pipe ...  -- add j['new_field']::STRING to SELECT
-   ```
-
-3. Existing rows will have `NULL` in the new column. New messages will populate it.
-
-> There is no ALTER PIPE to change the SELECT — always drop + recreate. Keep the same `group_id` to avoid reprocessing.
-
----
-
-## Error Recovery Playbook
-
-| Scenario | Recovery |
-|----------|----------|
-| **Kafka broker failover** | Pipe auto-retries. If stuck > 5 min, pause then resume: `ALTER PIPE ... SET PIPE_EXECUTION_PAUSED = true` then `false` |
-| **Consumer group offset expired** (data loss on resume) | Recreate Pipe with `RESET_KAFKA_GROUP_OFFSETS = '<epoch_millis>'` to replay from a known timestamp |
-| **Pipe job keeps failing** (bad message) | Check `MAX_SKIP_BATCH_COUNT_ON_ERROR` (default 30). If exceeded, Pipe pauses. Fix data or increase skip count via drop + recreate |
-| **Duplicate data after recreate** | Caused by setting `RESET_KAFKA_GROUP_OFFSETS` unnecessarily. Omit it to continue from last committed offset |
-| **Target table schema mismatch** | Pipe will fail if SELECT output doesn't match table columns. ALTER TABLE + recreate Pipe |
-| **Lakehouse service upgrade** | Pipe jobs may failover temporarily. Auto-recovers. No action needed |
-| **VCluster suspended** | Set `AUTO_SUSPEND_IN_SECOND = 0` for Pipe VClusters, or resume manually: `ALTER VCLUSTER ... RESUME` |
-
----
-
-## Troubleshooting
-
-| Error | Cause & Fix |
-|-------|-------------|
-| `Syntax error at or near '('` | Using `TABLE(READ_KAFKA(...))` or `=>` named params. Use positional: `FROM read_kafka(...)` |
-| `cannot resolve column` | Using `=` assignment (e.g., `KAFKA_BROKER = 'x'`). READ_KAFKA is positional only |
-| No data from exploration | Wrong broker/port/topic, or offset is `latest`. Add `'kafka.auto.offset.reset','earliest'` to MAP |
-| Pipe created, no data loading | Check `DESC PIPE EXTENDED` — may be paused, or group offset is at latest with no new messages |
-| `Syntax error at or near 'SELECT'` (Table Stream Pipe) | Using `COPY INTO ... SELECT`. Table Stream Pipe must use `INSERT INTO ... SELECT` |
-| `AlreadyExist` on CREATE OR REPLACE PIPE | Not supported. Use `DROP PIPE` + `CREATE PIPE` |
-| SASL auth failure | Confirm protocol is `SASL_PLAINTEXT` (not SSL). Check mechanism/username/password in MAP |
-| `COPY_JOB_HINT` params lost | SET overwrites all hints. Include all keys in one JSON string |
-
----
-
-## Execution via cz-cli
-
-All operations use `cz-cli sql --sync`. Examples:
-
-```bash
-# Explore topic
-cz-cli sql "SELECT value::string FROM read_kafka('broker:9092','topic','','test','','','','','raw','raw',0,MAP('kafka.security.protocol','PLAINTEXT','kafka.auto.offset.reset','earliest')) LIMIT 5" --sync
-
-# Create table
-cz-cli sql "CREATE TABLE IF NOT EXISTS ods.my_table (id STRING, ts TIMESTAMP)" --sync
-
-# Create Pipe
-cz-cli sql "CREATE PIPE my_pipe VIRTUAL_CLUSTER='pipe_vc' BATCH_INTERVAL_IN_SECONDS='60' AS COPY INTO ods.my_table FROM (SELECT j['id']::STRING, CAST(\`timestamp\` AS TIMESTAMP) FROM (SELECT \`timestamp\`, parse_json(value::string) AS j FROM read_kafka('broker:9092','topic','','cz_group','','','','','raw','raw',0,MAP('kafka.security.protocol','PLAINTEXT'))))" --sync
-
-# Check status
-cz-cli sql "DESC PIPE EXTENDED my_pipe" --sync
-
-# Pause
-cz-cli sql "ALTER PIPE my_pipe SET PIPE_EXECUTION_PAUSED = true" --sync
-
-# Resume
-cz-cli sql "ALTER PIPE my_pipe SET PIPE_EXECUTION_PAUSED = false" --sync
-
-# Drop and recreate (to change logic)
-cz-cli sql "DROP PIPE my_pipe" --sync
-cz-cli sql "CREATE PIPE my_pipe ..." --sync
-```
-
-> For multi-statement workflows, chain `cz-cli sql` calls in a shell script. Each statement must be a separate invocation.
-
----
-
-## Reference Documentation
-
-- [Pipe Overview](https://www.yunqi.tech/documents/pipe-summary)
-- [Continuous Import with read_kafka](https://www.yunqi.tech/documents/pipe-kafka)
-- [Kafka External Table + Table Stream](https://www.yunqi.tech/documents/pipe-kafka-table-stream)
-- [Best Practice: Kafka Pipe Tuning](https://www.yunqi.tech/documents/pipe-kafka-bestpractice-1)
-- [read_kafka Function](https://www.yunqi.tech/documents/read_kafka)
-- [Kafka External Table](https://www.yunqi.tech/documents/kafka-external-table)
-- [Kafka Storage Connection](https://www.yunqi.tech/documents/Kafka_connection)
-- [PIPE Syntax](https://www.yunqi.tech/documents/pipe-syntax)
-
-> **Syntax details** (parameter tables, DDL templates, MAP options): see `references/kafka-pipe-syntax.md`
+1. `ALTER TABLE ods.kafka_orders ADD COLUMN new_field STRING;`
+2. Drop and recreate Pipe with updated SELECT (keep same `group_id`, omit `RESET_KAFKA_GROUP_OFFSETS`)
+3. Existing rows will have `NULL` in the new column; new messages will populate it.
