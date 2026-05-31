@@ -2,6 +2,19 @@
 
 > Source: https://www.yunqi.tech/documents/ZettaparkQuickStart
 
+## Table of Contents
+- [Installation & Session](#installation)
+- [Build DataFrame](#build-dataframe)
+- [Transformations](#dataframe-transformations)
+- [Aggregation](#aggregation)
+- [JOIN](#join)
+- [Execute & Collect](#execute-and-collect-results)
+- [Write Data](#write-data)
+- [Execute SQL](#execute-sql)
+- [File Operations](#file-operations-volume)
+- [Functions Reference](#common-functions-quick-reference)
+- [Worked Examples](#worked-examples)
+
 ## Installation
 
 ```bash
@@ -277,4 +290,73 @@ F.count_distinct(col)
 
 # Type casting
 F.col("amount").cast(IntegerType())
+```
+
+---
+
+## Worked Examples
+
+### ETL data processing
+
+```python
+from clickzetta.zettapark.session import Session
+from clickzetta.zettapark import functions as F
+
+session = Session.builder.configs(config).create()
+
+raw = session.table("bronze.raw_orders")
+
+cleaned = (
+    raw
+    .filter(F.isnotnull(F.col("order_id")))
+    .filter(F.col("amount") > 0)
+    .with_column("order_date", F.col("created_at").cast("DATE"))
+    .with_column("year_month", F.date_format(F.col("order_date"), "yyyy-MM"))
+    .select("order_id", "customer_id", "amount", "order_date", "year_month")
+)
+
+cleaned.write.save_as_table("silver.orders_cleaned", mode="overwrite")
+session.close()
+```
+
+### Feature engineering (machine learning)
+
+```python
+from clickzetta.zettapark import functions as F
+
+customer = session.table("clickzetta_sample_data.tpch_100g.customer")
+orders = session.table("clickzetta_sample_data.tpch_100g.orders")
+
+customer_features = (
+    orders
+    .group_by("o_custkey")
+    .agg(
+        F.sum("o_totalprice").as_("total_spend"),
+        F.count("*").as_("order_count"),
+        F.avg("o_totalprice").as_("avg_order_value"),
+        F.max("o_orderdate").as_("last_order_date"),
+    )
+    .join(customer, orders["o_custkey"] == customer["c_custkey"])
+    .select("c_custkey", "c_name", "total_spend", "order_count", "avg_order_value")
+)
+
+customer_features.write.save_as_table("ml_features.customer_features", mode="overwrite")
+```
+
+### Import from local file
+
+```python
+import json, gzip
+from clickzetta.zettapark.session import Session
+
+session = Session.builder.configs(config).create()
+
+data = []
+with gzip.open('data.json.gz', 'rt', encoding='utf-8') as f:
+    for line in f:
+        if line.strip():
+            data.append(json.loads(line))
+
+session.create_dataframe(data).write.save_as_table("my_table", mode="overwrite")
+session.close()
 ```
