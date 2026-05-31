@@ -1,47 +1,50 @@
 ---
 name: clickzetta-zettapark
 description: |
-  使用 ZettaPark Python 库操作 ClickZetta Lakehouse 数据。ZettaPark 提供类 pandas 的
-  DataFrame API，将 Python 操作翻译为 SQL 在 Lakehouse 中分布式执行。
-  覆盖 Session 创建、DataFrame 构建与转换（filter/select/join/groupBy）、
-  结果收集（collect/to_pandas/show）、写入表（save_as_table）、
-  文件操作（PUT/GET）、执行 SQL 等完整工作流。
-  当用户说"ZettaPark"、"zettapark"、"DataFrame API"、"Python 操作 Lakehouse"、
-  "save_as_table"、"session.table"、"session.sql"、"collect()"、"to_pandas"、
-  "Python 数据工程"、"Python 写入 Lakehouse"、"Python 读取 Lakehouse"、
-  "clickzetta_zettapark_python"时触发。
+  Use the ZettaPark Python library to work with ClickZetta Lakehouse data. ZettaPark provides
+  a pandas-like DataFrame API that translates Python operations into SQL for distributed execution
+  in Lakehouse — no need to write SQL manually for data transformations.
+  Covers Session creation, DataFrame construction and transformation (filter/select/join/groupBy),
+  result collection (collect/to_pandas/show), writing tables (save_as_table),
+  file operations (PUT/GET), and executing SQL.
+
+  Trigger when the user says: "ZettaPark", "zettapark", "DataFrame API", "Python Lakehouse",
+  "save_as_table", "session.table", "session.sql", "collect()", "to_pandas",
+  "Python data engineering", "Python write to Lakehouse", "Python read from Lakehouse",
+  "clickzetta_zettapark_python", "Python ETL", "Python ML on Lakehouse",
+  "feature engineering Python", "Python DataFrame Lakehouse".
   Keywords: ZettaPark, DataFrame, pandas-like, Python, SQL translation, distributed compute
 ---
 
 # ClickZetta ZettaPark
 
-ZettaPark 是 ClickZetta Lakehouse 的 Python DataFrame 框架，将 Python 操作翻译为 SQL 在 Lakehouse 中分布式执行，提供类 pandas 的开发体验。
+ZettaPark is ClickZetta Lakehouse's Python DataFrame framework. It translates Python operations into SQL for distributed execution in Lakehouse, giving you a pandas-like development experience without writing SQL manually. Use it when you need Python logic (ML, complex transformations, file processing) that operates on Lakehouse data at scale.
 
-阅读 [references/zettapark-api.md](references/zettapark-api.md) 了解完整 API。
+See [references/zettapark-api.md](references/zettapark-api.md) for the complete API reference.
 
-## 安装
+## Installation
 
-> ⚠️ **Python 版本要求**：推荐 **Python 3.12**（最低 3.10，不支持 3.9 及以下）
+> ⚠️ **Python version**: Python 3.12 recommended (minimum 3.10; 3.9 and below not supported)
 
 ```bash
-# 方式 1：venv（Python 内置，推荐）
+# Option 1: venv (built-in, recommended)
 python3.12 -m venv .venv
 source .venv/bin/activate   # macOS/Linux  |  .venv\Scripts\activate (Windows)
-pip install clickzetta_zettapark_python -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install clickzetta_zettapark_python
 
-# 方式 2：pyenv（需要切换 Python 版本时）
+# Option 2: pyenv (when switching Python versions)
 pyenv install 3.12.9 && pyenv local 3.12.9
 python -m venv .venv && source .venv/bin/activate
-pip install clickzetta_zettapark_python -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install clickzetta_zettapark_python
 
-# 方式 3：conda（数据科学环境）
+# Option 3: conda (data science environments)
 conda create -n lakehouse python=3.12 -y && conda activate lakehouse
-pip install clickzetta_zettapark_python -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install clickzetta_zettapark_python
 ```
 
 ---
 
-## 创建会话
+## Create Session
 
 ```python
 from clickzetta.zettapark.session import Session
@@ -53,40 +56,39 @@ connection_parameters = {
     "instance": "your_instance_id",
     "workspace": "your_workspace",
     "schema": "public",
-    "vcluster": "default_ap",
+    "vcluster": "default",
 }
 
 session = Session.builder.configs(connection_parameters).create()
 
-# 验证连接
+# Verify connection
 session.sql("SELECT current_user(), current_workspace()").show()
 ```
 
 ---
 
-## 核心工作流
+## Core Workflow
 
-### 读取数据
+### Read data
 
 ```python
 from clickzetta.zettapark import functions as F
 
-# 从表读取
+# From table
 df = session.table("orders")
 df = session.table("my_schema.orders")
 
-# 从 SQL 读取
+# From SQL
 df = session.sql("SELECT * FROM orders WHERE year = 2024")
 
-# 从 Python 数据创建
+# From Python data
 df = session.create_dataframe([[1, "Alice", 100.0], [2, "Bob", 200.0]],
                                schema=["id", "name", "amount"])
 ```
 
-### 转换数据
+### Transform data
 
 ```python
-# 过滤、选择、新增列
 result = (
     session.table("orders")
     .filter(F.col("status") == "completed")
@@ -97,7 +99,7 @@ result = (
 )
 ```
 
-### 聚合
+### Aggregate
 
 ```python
 summary = (
@@ -129,39 +131,39 @@ result = orders.join(
 )
 ```
 
-### 写入数据
+### Write data
 
 ```python
-# 追加到已有表
+# Append to existing table
 df.write.save_as_table("result_table", mode="append")
 
-# 覆盖写入（自动建表）
+# Overwrite (auto-creates table if not exists)
 df.write.save_as_table("result_table", mode="overwrite")
 ```
 
-### 获取结果
+### Collect results
 
 ```python
-# 打印预览
+# Print preview
 df.show(20)
 
-# 收集为 Row 列表
+# Collect as Row list
 rows = df.collect()
 for row in rows:
     print(row["id"], row["name"])
 
-# 转为 Pandas DataFrame（小数据量）
+# Convert to Pandas DataFrame (small data only — large results will OOM)
 pandas_df = df.to_pandas()
 
-# 获取行数
+# Get row count
 print(df.count())
 ```
 
 ---
 
-## 典型场景
+## Typical Scenarios
 
-### 场景 1：ETL 数据处理
+### Scenario 1: ETL data processing
 
 ```python
 from clickzetta.zettapark.session import Session
@@ -169,10 +171,8 @@ from clickzetta.zettapark import functions as F
 
 session = Session.builder.configs(config).create()
 
-# 读取原始数据
 raw = session.table("bronze.raw_orders")
 
-# 清洗转换
 cleaned = (
     raw
     .filter(F.isnotnull(F.col("order_id")))
@@ -182,13 +182,11 @@ cleaned = (
     .select("order_id", "customer_id", "amount", "order_date", "year_month")
 )
 
-# 写入 Silver 层
 cleaned.write.save_as_table("silver.orders_cleaned", mode="overwrite")
-
 session.close()
 ```
 
-### 场景 2：特征工程（机器学习）
+### Scenario 2: Feature engineering (machine learning)
 
 ```python
 from clickzetta.zettapark import functions as F
@@ -196,7 +194,6 @@ from clickzetta.zettapark import functions as F
 customer = session.table("clickzetta_sample_data.tpch_100g.customer")
 orders = session.table("clickzetta_sample_data.tpch_100g.orders")
 
-# 构建客户消费特征
 customer_features = (
     orders
     .group_by("o_custkey")
@@ -213,7 +210,7 @@ customer_features = (
 customer_features.write.save_as_table("ml_features.customer_features", mode="overwrite")
 ```
 
-### 场景 3：从本地文件导入
+### Scenario 3: Import from local file
 
 ```python
 import json
@@ -222,27 +219,24 @@ from clickzetta.zettapark.session import Session
 
 session = Session.builder.configs(config).create()
 
-# 读取本地 JSON 数据
 data = []
 with gzip.open('data.json.gz', 'rt', encoding='utf-8') as f:
     for line in f:
         if line.strip():
             data.append(json.loads(line))
 
-# 创建 DataFrame 并写入
 df = session.create_dataframe(data)
 df.write.save_as_table("my_table", mode="overwrite")
-
 session.close()
 ```
 
 ---
 
-## 常见问题
+## Troubleshooting
 
-| 问题 | 原因 | 解决方案 |
+| Problem | Cause | Solution |
 |---|---|---|
-| `collect()` 超时 | 数据量过大或集群规格不足 | 增大 `sdk.job.timeout`，或先 `limit()` 测试 |
-| `to_pandas()` 内存溢出 | 结果集过大 | 先聚合/过滤再转 pandas，或分批处理 |
-| 列名冲突（JOIN 后） | 两表有同名列 | 用 `df_left["col"]` 明确指定来源 |
-| `save_as_table` 报错 | 表已存在且 mode 不对 | 使用 `mode="overwrite"` 或 `mode="append"` |
+| `collect()` timeout | Data volume too large or cluster too small | Increase `sdk.job.timeout`, or test with `limit()` first |
+| `to_pandas()` OOM | Result set too large — all data is pulled to local memory | Aggregate/filter before converting to pandas, or process in batches |
+| Column name conflict after JOIN | Both tables have a column with the same name | Use `df_left["col"]` to explicitly specify the source |
+| `save_as_table` error | Table already exists with incompatible mode | Use `mode="overwrite"` or `mode="append"` |
