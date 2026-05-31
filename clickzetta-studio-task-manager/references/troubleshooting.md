@@ -48,7 +48,8 @@
 
 ❌ Never include in dependency chain:
 - DDL tasks (00_ddl) — run once manually, stay DRAFT
-- Dynamic Tables — auto-refresh, no task needed
+- Dynamic Table DDL tasks (03_ddl_dws_ads) — stay DRAFT, no scheduling
+- Dynamic Tables themselves — auto-refresh, no Studio task needed
 ```
 
 ## Multi-environment Management

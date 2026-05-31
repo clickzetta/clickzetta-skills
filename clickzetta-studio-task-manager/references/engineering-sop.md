@@ -117,7 +117,7 @@ Agile principle: **verify immediately after each step — don't wait until the f
 - [ ] Key field NULL rate within acceptable range
 - [ ] LEFT JOIN result row count ≥ left table row count
 - [ ] All DDL tasks are in DRAFT status
-- [ ] No redundant scheduled tasks for DWS/ADS layer
+- [ ] DWS/ADS Dynamic Table DDL saved as DRAFT task (code asset), no scheduling configured
 - [ ] Scheduling DAG has no circular dependencies
 - [ ] ETL task dependency chain is complete (`cz-cli task deps <task>`, `task_dependencies` not empty)
 - [ ] Key tables and fields have comments (load `clickzetta-manage-comments`)

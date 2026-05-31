@@ -98,7 +98,7 @@ After confirmation, route to the appropriate skill:
 | **Data sync** | External source → ODS | ✅ Cron (batch) or continuous (real-time) | PUBLISHED |
 | **ETL transformation** | ODS→DWD cleaning SQL | ✅ Cron + depends on upstream sync | PUBLISHED |
 | **Data quality** | Row count checks, NULL validation | ✅ Cron + depends on ETL | PUBLISHED |
-| **DWS/ADS aggregation** | Metric summaries | ❌ Use Dynamic Table, no task needed | — |
+| **DWS/ADS aggregation** | Metric summaries | ❌ Use Dynamic Table — save DDL as DRAFT task, no scheduling needed | DRAFT |
 
 > ⚠️ **DDL tasks must never have Cron** — repeated CREATE TABLE causes `SCHEDULE_TASK_HAD_CHILDREN_NODES_EXCEPTION`.
 > ⚠️ **Do not create scheduled tasks for DWS/ADS** — Dynamic Tables auto-refresh; extra tasks waste resources.
@@ -117,7 +117,7 @@ After confirmation, route to the appropriate skill:
 └── 04_dqc/     ← Data quality checks (optional) — Cron, depends on 03_dwd
 ```
 
-DWS/ADS: Dynamic Tables with `refresh_interval` — **no task needed**.
+DWS/ADS: Dynamic Tables with `refresh_interval` — save DDL as **DRAFT task** (code asset), no scheduling or deployment needed.
 
 **Naming conventions:**
 
