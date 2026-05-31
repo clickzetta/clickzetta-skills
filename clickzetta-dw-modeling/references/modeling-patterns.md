@@ -1,100 +1,192 @@
-# 数仓建模模式参考
+# Data Warehouse Modeling Patterns
 
-## 传统数仓分层详细说明
+## Traditional DW Layering (ODS/DWD/DWS/ADS)
 
-### 分层职责
-
-```
-ODS（Operational Data Store）
-├── 贴源存储，不做业务转换
-├── 保留原始字段名和类型
-├── 增加 dw_insert_time、dw_source 等元数据字段
-└── 按时间分区，支持增量同步
-
-DWD（Data Warehouse Detail）
-├── 数据清洗：去重、NULL 处理、格式标准化
-├── 维度退化：将常用维度字段冗余到事实表
-├── 业务规则：状态码映射、金额单位统一
-└── 建立主键约束（逻辑主键，ClickZetta 不强制）
-
-DWS（Data Warehouse Summary）
-├── 轻度聚合：按天/周/月汇总
-├── 使用 Dynamic Table 自动增量刷新
-├── 面向主题域：用户域、商品域、交易域
-└── 不直接对外提供查询（由 ADS 层封装）
-
-ADS（Application Data Store）
-├── 面向具体应用/报表的宽表
-├── 使用 Dynamic Table 或直接查询 DWS
-└── 字段命名业务友好
-```
-
-### 命名规范建议
+### Layer responsibilities
 
 ```
-Schema 命名：ods_<业务域> / dwd_<业务域> / dws / ads
-表命名：
-  ODS：ods_<源系统>_<表名>（如 ods_mysql_orders）
-  DWD：dwd_<主题>_<粒度>（如 dwd_trade_order_detail）
-  DWS：dws_<主题>_<维度>_<周期>（如 dws_user_order_1d）
-  ADS：ads_<应用>_<指标>（如 ads_report_gmv_daily）
+ODS (Operational Data Store)
+├── Raw ingestion, no business transformation
+├── Preserve original field names and types
+├── Add metadata fields: dw_insert_time, dw_source
+└── Partition by time, support incremental sync
+
+DWD (Data Warehouse Detail)
+├── Data cleansing: dedup, NULL handling, format standardization
+├── Dimension denormalization: redundant common dimension fields into fact tables
+├── Business rules: status code mapping, amount unit normalization
+└── Logical primary key (ClickZetta does not enforce constraints)
+
+DWS (Data Warehouse Summary)
+├── Light aggregation: daily/weekly/monthly rollups
+├── Use Dynamic Table for auto incremental refresh
+├── Organized by subject domain: user, product, transaction
+└── Not directly exposed to BI (ADS layer wraps it)
+
+ADS (Application Data Store)
+├── Wide tables for specific applications/reports
+├── Use Dynamic Table or direct query from DWS
+└── Business-friendly field naming
 ```
 
----
-
-## 大奖牌架构（Medallion）详细说明
-
-### 分层职责
+### Naming conventions
 
 ```
-Bronze（铜牌层）
-├── 原始数据，零转换原则
-├── 支持多种格式：结构化/半结构化/非结构化
-├── 保留所有历史版本（Time Travel）
-└── 数据来源标记（source_system、ingestion_time）
-
-Silver（银牌层）
-├── 可信数据：去重、清洗、标准化
-├── 跨源整合：统一字段命名和类型
-├── 业务实体识别：用户、订单、商品
-└── 可直接用于数据科学和探索性分析
-
-Gold（金牌层）
-├── 业务就绪数据：聚合指标、宽表
-├── 使用 Dynamic Table 自动刷新
-├── 面向 BI 工具和应用系统
-└── 语义清晰，字段命名业务友好
-```
-
-### Schema 命名建议
-
-```
-bronze.<source>_<entity>   -- 如 bronze.mysql_orders
-silver.<entity>            -- 如 silver.orders
-gold.<domain>_<metric>     -- 如 gold.trade_gmv_daily
+Schema: {prefix}_ods / {prefix}_dwd / {prefix}_dws / {prefix}_ads
+Tables:
+  ODS: ods_{source}_{table}       e.g. ods_mysql_orders
+  DWD: dwd_{domain}_{grain}       e.g. dwd_trade_order_detail
+  DWS: dws_{domain}_{dim}_{period} e.g. dws_user_order_1d
+  ADS: ads_{app}_{metric}         e.g. ads_report_gmv_daily
 ```
 
 ---
 
-## Dynamic Table vs 物化视图对比
+## Medallion Architecture (Bronze/Silver/Gold)
 
-| 特性 | Dynamic Table | 物化视图 |
+### Layer responsibilities
+
+```
+Bronze
+├── Raw data, zero-transformation principle
+├── Supports structured / semi-structured / unstructured
+├── Preserve all historical versions (Time Travel)
+└── Source markers: source_system, ingestion_time
+
+Silver
+├── Trusted data: dedup, cleanse, standardize
+├── Cross-source integration: unified field naming and types
+├── Business entity identification: user, order, product
+└── Directly usable for data science and exploratory analysis
+
+Gold
+├── Business-ready data: aggregated metrics, wide tables
+├── Use Dynamic Table for auto-refresh
+├── Facing BI tools and application systems
+└── Semantically clear, business-friendly field naming
+```
+
+### Schema naming
+
+```
+{prefix}_bronze.{source}_{entity}   e.g. ecommerce_bronze.mysql_orders
+{prefix}_silver.{entity}            e.g. ecommerce_silver.orders
+{prefix}_gold.{domain}_{metric}     e.g. ecommerce_gold.trade_gmv_daily
+```
+
+---
+
+## Dynamic Table vs Materialized View
+
+| Feature | Dynamic Table | Materialized View |
 |---|---|---|
-| 刷新机制 | CBO 增量计算，只刷新变化分区 | 全量或手动增量 |
-| 调度方式 | TARGET_LAG 自动控制 | 需手动配置调度 |
-| Time Travel | ✅ 支持 | ❌ 不支持 |
-| 数据恢复 | ✅ RESTORE TABLE | ❌ 不支持 |
-| 语法复杂度 | 简单，类似 CREATE TABLE | 较复杂 |
-| 推荐场景 | **新项目首选** | 遗留项目兼容 |
+| Refresh mechanism | CBO incremental compute, only refreshes changed partitions | Full or manual incremental |
+| Scheduling | REFRESH INTERVAL auto-controls | Requires manual scheduling config |
+| Time Travel | ✅ Supported | ❌ Not supported |
+| Data recovery | ✅ RESTORE TABLE | ❌ Not supported |
+| Syntax complexity | Simple, similar to CREATE TABLE | More complex |
+| Recommended for | **New projects — always prefer** | Legacy project compatibility |
 
-**结论：新建项目一律使用 Dynamic Table，不使用物化视图。**
+**Conclusion: Use Dynamic Table for all new projects. Avoid Materialized View.**
 
 ---
 
-## 常见建模陷阱
+## DDL Templates
 
-1. **过度规范化**：DWD 层不要拆太细，适当冗余维度字段，减少下游 JOIN
-2. **分区粒度过细**：按小时分区会产生大量小文件，日批场景用按天分区
-3. **ADS 层直接写 SQL**：ADS 层应该用 Dynamic Table，不要让 BI 工具直接跑复杂 SQL
-4. **忽略数据质量**：ODS 层入库时就应该检查 NULL 比例，不要等到 DWS 层才发现问题
-5. **Bronze 层做转换**：Bronze 层一旦做了转换，原始数据就丢失了，回溯困难
+### ODS/Bronze (CDC ingestion example)
+
+```sql
+CREATE TABLE IF NOT EXISTS ods.orders (
+    order_id       BIGINT,
+    user_id        BIGINT,
+    amount         DECIMAL(18, 2),
+    status         STRING,
+    created_at     TIMESTAMP,
+    _op            STRING,    -- CDC operation type: I/U/D
+    _ts            TIMESTAMP, -- change timestamp
+    dw_insert_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)
+PARTITIONED BY (days(created_at))
+COMMENT 'ODS orders raw table, raw ingestion no transformation';
+```
+
+### DWD/Silver
+
+```sql
+CREATE TABLE IF NOT EXISTS dwd.fact_orders (
+    order_id       BIGINT,
+    user_id        BIGINT,
+    amount         DECIMAL(18, 2),
+    status_code    INT,
+    order_date     DATE,
+    dw_insert_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)
+PARTITIONED BY (days(order_date))
+CLUSTERED BY (user_id) INTO 32 BUCKETS
+COMMENT 'DWD orders fact table, cleansed and standardized';
+```
+
+### DWS/Gold (Dynamic Table — not Materialized View)
+
+```sql
+-- First confirm available GP-type VCluster: SHOW VCLUSTERS;
+CREATE DYNAMIC TABLE IF NOT EXISTS dws.user_order_daily
+  REFRESH INTERVAL 1 HOUR vcluster <gp_vcluster_name>
+AS
+SELECT
+    user_id,
+    order_date,
+    COUNT(order_id)  AS order_cnt,
+    SUM(amount)      AS total_amount,
+    AVG(amount)      AS avg_amount
+FROM dwd.fact_orders
+WHERE status_code = 1
+GROUP BY user_id, order_date;
+
+-- Immediately trigger first refresh after creation to reset refresh baseline
+REFRESH DYNAMIC TABLE dws.user_order_daily;
+```
+
+---
+
+## Scheduling DAG
+
+### Batch scenario (T+1)
+
+```
+00_sync (Cron 02:00)
+  → 04_transform (Cron 02:30, depends on 00_sync)
+    → 05_dqc (optional, depends on 04_transform)
+
+DWS/ADS: Dynamic Table auto-refresh — no Studio task needed
+```
+
+### Real-time scenario
+
+```
+CDC/Kafka continuous write to Bronze/ODS
+  → Silver/DWD (REFRESH INTERVAL 10 MINUTE)
+    → Gold/DWS (REFRESH INTERVAL 1 HOUR)
+      → ADS (REFRESH INTERVAL 1 HOUR or direct query)
+```
+
+### Standard scheduling time windows (batch)
+
+```
+02:00  Data sync task completes (Studio sync)
+02:30  ODS/staging layer ETL
+03:00  DWD/silver layer ETL
+03:30  DWS/gold/marts layer (if using incremental, not DT)
+04:00  Data quality checks (DQC)
+```
+
+---
+
+## Common Modeling Pitfalls
+
+1. **Over-normalization**: DWD layer should not be split too granularly — redundant dimension fields reduce downstream JOINs
+2. **Partition granularity too fine**: Hourly partitions create many small files; use daily partitions for batch scenarios
+3. **ADS layer running raw SQL**: ADS should use Dynamic Table — don't let BI tools run complex SQL directly
+4. **Ignoring data quality at ODS**: Check NULL rates at ingestion time, not after DWS is built
+5. **Transforming in Bronze**: Once Bronze is transformed, raw data is lost and traceability breaks
+6. **LEFT JOIN filter in WHERE**: `LEFT JOIN ... WHERE right_field = value` degrades to INNER JOIN — filters on right-table fields must go in the `ON` clause

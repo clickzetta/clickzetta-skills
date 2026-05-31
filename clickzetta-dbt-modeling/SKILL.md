@@ -22,6 +22,8 @@ See [references/incremental-patterns.md](references/incremental-patterns.md) for
 See [references/test-strategy.md](references/test-strategy.md) for test coverage standards and custom test templates.
 See [references/grant-patterns.md](references/grant-patterns.md) for grant configuration (multi-tenant / data security scenarios).
 
+For the **complete end-to-end pipeline architecture** (ingestion → modeling → Studio publishing), see [../clickzetta-dbt-project-setup/references/elt-standards.md](../clickzetta-dbt-project-setup/references/elt-standards.md).
+
 ---
 
 ## Goal
@@ -31,74 +33,136 @@ Users don't need to describe table schemas — you discover them, you infer the 
 
 ## Workflow
 
-**Explore → Confirm scope → Infer → Single confirmation → Generate → Execute**
+This skill runs as a series of conversation turns. Each turn ends with a question to the user — no files are written and no dbt commands are run until the user responds to that turn's question.
 
-1. **Explore**: Quickly discover available data, then **immediately interact with the user** — do not silently explore for a long time.
+---
 
-   **Step 1a — Schema list** (fast, ~2 seconds): Run `cz-cli schema list` to get all schemas.
-   Immediately show the user what was found and ask which schemas contain the raw data they want to model. Present the schema names as options. **Do not proceed to table-level exploration until the user has confirmed scope** — this is the first interaction checkpoint and the user should see something within seconds of the skill starting.
+### Turn 0 — Discover schemas, ask which to use
 
-   **Step 1b — Table list** (after user selects schemas): Run `cz-cli table list` on the selected schemas only. Show the table list to the user.
+Run `cz-cli schema list`. Show the user the schema list immediately and ask:
+> "Which schemas contain the raw data you want to model?"
 
-   **Step 1c — Branch decision** (must pass this gate before inferring):
+Present the schema names as options. **Stop here.**
 
-   - **Data found and suitable** → before proceeding to inference, ask the user two things: (1) what is the business scenario (e.g. retail orders, user behavior, finance reporting — this helps name models correctly), and (2) which layers to build (staging only, staging + marts, full ODS→DWD→DWS→ADS, etc.). **Wait for the user's answer before running any COUNT or history queries.**
-   - **No relevant tables in current schema** → ask the user whether to expand scope. Present three options: explore other schemas in the same workspace (list them), explore other workspaces, or let the user specify a table/schema directly.
-   - **Data exists but not suitable for modeling** → show what was found and why it's not suitable, then ask what the user wants to do. Present options: proceed anyway with available data, ingest missing/better data first (stay in conversation and continue modeling after ingestion), or point to different data.
-   - **No raw data anywhere in Lakehouse** → ask the user about their data source and route to the appropriate ingestion skill. Present options: relational database batch sync or CDC, Kafka/message queue, files (OSS/S3/CSV), or user will prepare data themselves.
+If no schemas exist at all → ask about the data source and route to the appropriate ingestion skill. Tell the user: "Once data is ingested, come back and I'll pick up from here."
 
-   **For no-data and unsuitable-data cases: do not route away and abandon the session.** Tell the user: "Once ingestion is done, come back here and tell me — I'll pick up from where we left off and continue with modeling."
+---
 
-   **Do not proceed to inference or generate any model files when data is absent or unsuitable** — models built on empty or malformed tables will fail `dbt test`, and field inference will be completely wrong, creating more rework.
+### Turn 1 — Explore selected schemas, ask about business context
 
-2. **Infer**: After the user confirms business scenario and target layers, run the four-dimension analysis. Tell the user "Analyzing table structures and data volumes..." so they know work is in progress — don't go silent.
-   - **Table name**: identify fact / dimension / aggregation naming patterns
-   - **Columns**: presence of `updated_at` / `dt` / primary key fields
-   - **Row count**: `SELECT COUNT(*)` to determine data volume
-   - **Growth history**: check last 7 days new rows and modification patterns
+After the user selects schemas, run `cz-cli table list` on those schemas. Show the table list.
 
-   **Default to `dynamic_table` unless there is a specific reason not to.** The key question is:
-   > Can this model be fully expressed as a SELECT that should always reflect the current state of its upstream tables?
+Then ask three things:
+1. **Business scenario**: what does this data represent? (e.g. retail orders, user behavior, finance — helps name models correctly)
+2. **Target layers**: which layers to build? If the project was set up with `clickzetta-dbt-project-setup`, use the layering mode already chosen. Otherwise ask the user — common options:
+   - dbt standard: staging → marts (add intermediate if needed)
+   - Medallion: bronze → silver → gold
+   - Traditional DW: ODS → DWD → DWS → ADS
+   - Custom: specify layer names
+3. **Data freshness requirement**: how fresh does the data need to be? (near-real-time / minute-level, T+1 daily batch, or mixed) — this determines whether to use dynamic_table (continuous refresh) or incremental (scheduled batch), which has significant cost implications
 
-   - **Yes → `dynamic_table`**: ODS/staging, dimension tables, fact tables, DWS/ADS aggregations — all qualify. The system handles incremental refresh, row updates, and dependency propagation automatically. No merge logic, no Studio dependency config needed.
-     - ODS / staging layers: use `refresh_interval='5 minutes'` (or longer if low-frequency source)
-     - Dimension tables (small, infrequent changes): use `refresh_interval='30 minutes'` or longer
-     - Fact tables / DWS aggregations (high-frequency updates): use `refresh_interval='5 minutes'` or match business SLA
-     - ADS report tables: use `refresh_interval='5 minutes'` or a longer fixed interval
-   - **No → `incremental` or `table`**: only when ALL of the following apply: (1) must process only a specific time window (yesterday's data only, last hour only), (2) must run after a specific upstream Studio task completes, or (3) SCD Type 2 history tracking. If none of these apply, use `dynamic_table`.
-   - **Small reference tables with no incremental requirement** → `table` (full rebuild, simplest)
+Also branch on data quality:
+- **No relevant tables found** → ask: explore other schemas, explore other workspaces, or specify tables directly?
+- **Data exists but looks unsuitable** (empty tables, no meaningful columns) → show what was found and why it's a concern. Ask: proceed anyway, ingest better data first (stay in conversation), or point to different data?
 
-3. **Single confirmation**: Present all inferred models in one table and **stop — do not write any files until the user responds**. The user must explicitly choose before generation begins. This is the most important gate in the workflow: writing files before confirmation creates rework and pollutes the project.
+**Stop here. Do not run any COUNT or DESC queries yet.**
 
-   The confirmation table must include a `refresh_interval` column for `dynamic_table` models so users can review and adjust refresh frequency before generation. Use the **actual inferred values** from step 2 — do not copy the example below, it is only a format reference:
+---
 
-   | Model | Materialization | refresh_interval | Notes |
-   |---|---|---|---|
-   | ods_orders | dynamic_table | 5 minutes | Source layer, frequent refresh |
-   | dwd_fct_orders | dynamic_table | 5 minutes | Fact table, system handles incremental |
-   | dws_order_daily | dynamic_table | 5 minutes | Aggregation layer, upstream changes propagate |
-   | dim_customers | dynamic_table | 30 minutes | Small dimension table, low-frequency refresh |
-   | ads_order_summary | dynamic_table | 5 minutes | Report layer, fixed interval |
+### Turn 2 — Analyze data, present modeling plan
 
-   For `incremental` models, show `incremental_strategy` and `incremental_field` instead of `refresh_interval`.
+After the user confirms business context and layers, run the analysis (tell the user "Analyzing table structures and data volumes..."):
+- `DESC TABLE` each source table — identify columns, types, primary keys
+- `SELECT COUNT(*)` — determine data volume
+- Check growth history (last 7 days new rows)
 
-   Ask the user: confirm all and generate, adjust specific models, or do partial modeling. **Wait for the answer. Do not proceed to step 4.**
+Use these dimensions plus the Decision Tree in [references/materialization-guide.md](references/materialization-guide.md) to infer materialization and strategy for each model.
 
-4. **Generate**: Only after the user has confirmed the plan in step 3 — generate sources.yml, staging models, marts models, schema.yml in one pass.
+**Default to `dynamic_table`** for most models — it handles T+1 batch, large tables, and near-real-time equally well. Only switch to `incremental` when dynamic_table genuinely cannot do the job:
+- The model needs to process a **specific time window** (yesterday's data only, last hour only) — dynamic_table always reflects full current state
+- The model must run **after a specific upstream Studio task** (dependency ordering)
+- The source is a **Table Stream** and you need to process changes by type or control offset advancement
 
-5. **Execute**: Show the user which commands will run and ask for confirmation before each phase. Wait for the user's go-ahead before running each command — do not chain them automatically:
-   - `dbt seed`: only when `seeds/` directory contains `.csv` files
-   - `dbt run`: always
-   - `dbt snapshot`: only when `snapshots/` directory contains `.sql` files
-   - `dbt test`: always
+The confirmation table format depends on materialization type:
 
-Present options via interactive question tool at every user decision point. If no such tool is available, list options in text. **Do not execute anything before receiving the user's answer.**
+| Model | Materialization | Key config | Notes |
+|---|---|---|---|
+| stg_orders | dynamic_table | refresh_interval: 5 MINUTE | Staging, near-real-time |
+| dim_customers | dynamic_table | refresh_interval: 30 MINUTE | Small dimension, low-frequency |
+| fct_orders_daily | incremental | strategy: insert_overwrite, partition: dt | T+1 batch, cheaper than DT |
+| fct_orders_stream | incremental | strategy: merge, source: orders_stream | CDC stream source |
+| dws_daily_revenue | incremental | strategy: insert_overwrite, partition: dt | Daily aggregation, T+1 |
 
-**Expand scope** (when no relevant tables in current schema): Ask the user how to proceed — explore other schemas in the same workspace (list them), explore other workspaces, or let the user specify the exact table name or schema directly.
+For each model, briefly explain **why** that materialization was chosen — not just what it is. This helps the user make an informed decision.
 
-**Data not suitable** (when data exists but has issues): Show what was found and why it's not suitable. Ask what the user wants to do — proceed anyway with available data and fix issues later, set up an ingestion pipeline first and come back to model after (stay in conversation), or point to a different schema or table.
+Ask: "Confirm all and generate / adjust specific models / partial modeling (subset only)?"
 
-**No data** (when Lakehouse has no raw data at all): Ask about the data source — relational database (MySQL / PostgreSQL / SQL Server, batch sync or CDC → `clickzetta-data-ingest-pipeline`), Kafka / message queue (real-time ingestion → `clickzetta-kafka-ingest-pipeline`), files (OSS / S3 / local CSV → `clickzetta-data-ingest-pipeline`), or the user will prepare the data themselves.
+**Stop here. Do not write any files.**
+
+---
+
+### Turn 3 — Generate files
+
+Only after the user confirms the plan: generate all files in one pass.
+
+Generate the directory structure to match the user's chosen layering mode. Examples:
+
+```
+# dbt standard
+models/
+├── staging/
+│   ├── stg_{source}_{table}.sql
+│   └── schema.yml
+├── intermediate/          # only if needed for complex JOINs
+│   └── int_{entity}__{verb}.sql
+└── marts/
+    ├── dim_{entity}.sql
+    ├── fct_{event}.sql
+    └── schema.yml
+
+# Medallion
+models/
+├── bronze/
+│   ├── {source}_{table}.sql
+│   └── schema.yml
+├── silver/
+│   ├── {entity}.sql
+│   └── schema.yml
+└── gold/
+    ├── {metric}.sql
+    └── schema.yml
+
+# Traditional DW
+models/
+├── ods/
+│   ├── ods_{source}_{table}.sql
+│   └── schema.yml
+├── dwd/
+│   ├── dwd_{domain}_{table}.sql
+│   └── schema.yml
+├── dws/
+│   └── dws_{domain}_{metric}.sql
+└── ads/
+    └── ads_{subject}_{metric}.sql
+```
+
+For custom layering, generate directories matching the layer names the user specified.
+
+Templates and schema.yml conventions are in the **Generated File Structure** section below.
+
+After writing files, tell the user what was created and ask: "Ready to run `dbt run` and `dbt test`?"
+
+---
+
+### Turn 4 — Execute
+
+Only after the user says yes, run commands in order:
+- `dbt seed` — only if `seeds/` has `.csv` files
+- `dbt run`
+- `dbt snapshot` — only if `snapshots/` has `.sql` files
+- `dbt test`
+
+Report results after each command. If `dbt test` fails, diagnose and fix before declaring completion.
 
 ## Key Constraints
 
@@ -116,26 +180,36 @@ Present options via interactive question tool at every user decision point. If n
 
 ## Generated File Structure
 
-Generate files in the following directory structure after confirmation:
+Generate files in the directory structure matching the user's chosen layering mode (see Turn 3 above). The naming conventions below apply regardless of which layering pattern is used:
 
+**dbt standard naming** (staging/marts):
 ```
-models/
-├── staging/
-│   ├── stg_{source}_{table}.sql    # one staging model per raw table
-│   └── schema.yml                  # sources definition + column-level tests
-├── marts/
-│   ├── dim_{entity}.sql            # dimension tables
-│   ├── fct_{event}.sql             # fact tables
-│   └── schema.yml
-└── snapshots/                      # only create when SCD requirements exist
-    └── {table}_snapshot.sql
+stg_{source}_{table}.sql    # staging: one per raw table
+dim_{entity}.sql            # dimension tables
+fct_{event}.sql             # fact tables
+int_{entity}__{verb}.sql    # intermediate (double underscore)
 ```
 
-**`dynamic_table` model template** (use for ODS, dim, fct, DWS, ADS by default):
+**Medallion naming** (bronze/silver/gold):
+```
+{source}_{table}.sql        # bronze: raw, minimal transformation
+{entity}.sql                # silver: cleaned, conformed
+{metric}.sql                # gold: aggregated, business-ready
+```
+
+**Traditional DW naming** (ODS/DWD/DWS/ADS):
+```
+ods_{source}_{table}.sql    # ODS layer
+dwd_{domain}_{table}.sql    # DWD layer
+dws_{domain}_{metric}.sql   # DWS layer
+ads_{subject}_{metric}.sql  # ADS layer
+```
+
+**`dynamic_table` model template** (default for most layers):
 ```sql
 {{ config(
     materialized='dynamic_table',
-    refresh_interval='5 minutes',
+    refresh_interval='5 MINUTE',
     refresh_vc='default'
 ) }}
 select
@@ -144,17 +218,41 @@ from {{ ref('upstream_model') }}
 ```
 
 **`incremental` model template** (only when time-window control or Studio dependency is required):
+
+Two patterns — choose based on how the model will be triggered:
+
+**Pattern A — self-driven** (dbt decides what to process based on existing data):
 ```sql
 {{ config(
     materialized='incremental',
-    incremental_strategy='insert_overwrite',  -- or 'merge'
-    partition_by='dt'
+    incremental_strategy='merge',
+    unique_key='order_id',
+    on_schema_change='append_new_columns'
 ) }}
-select ...
+select order_id, customer_id, amount, status, updated_at
+from {{ source('raw', 'orders') }}
 {% if is_incremental() %}
-where dt = '${bizdate}'
+where updated_at >= (select max(updated_at) from {{ this }})
 {% endif %}
 ```
+
+**Pattern B — partition overwrite** (Studio injects the date parameter at scheduling time):
+```sql
+{{ config(
+    materialized='incremental',
+    incremental_strategy='insert_overwrite',
+    partition_by='dt',
+    on_schema_change='append_new_columns'
+) }}
+select dt, region, count(*) as order_count, sum(amount) as revenue
+from {{ source('raw', 'orders') }}
+where status = 'completed'
+group by dt, region
+-- No is_incremental() filter needed — insert_overwrite replaces the entire partition each run
+-- When published to Studio, the WHERE clause is injected by the scheduling parameter (bizdate)
+```
+
+**`on_schema_change` default**: always set `on_schema_change='append_new_columns'` on incremental models — the default `ignore` silently drops new columns from upstream, causing data loss that is hard to diagnose.
 
 sources.yml goes inside `models/staging/schema.yml` (not a separate file):
 ```yaml
@@ -205,6 +303,7 @@ models:
 |---|---|
 | No dbt project yet | `clickzetta-dbt-project-setup` |
 | Models developed, ready to publish and schedule | `clickzetta-dbt-studio-pipeline` |
+| User prefers SQL modeling without dbt | `clickzetta-dw-modeling` |
 | Need to batch sync data from database / files | `clickzetta-data-ingest-pipeline` |
 | Need real-time ingestion from Kafka / message queue | `clickzetta-kafka-ingest-pipeline` |
 | Need CDC real-time sync from source database | `clickzetta-cdc-sync-pipeline` |
@@ -218,7 +317,7 @@ models:
     - name: fct_orders
       config:
         meta:
-          refresh_interval: "5 minutes"
+          refresh_interval: "5 MINUTE"
           refresh_vc: default
   ```
 - `incremental` models have `incremental_field` and `incremental_strategy` recorded in schema.yml `meta` (for use by `clickzetta-dbt-studio-pipeline`):

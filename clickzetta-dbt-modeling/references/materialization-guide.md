@@ -1,57 +1,164 @@
 # Materialization Selection Guide
 
-## Core Principle: Two Paradigms of Incremental Computation
+## Core Principle
 
-There are two fundamentally different ways to keep a table up to date:
+`dynamic_table` is the default for most models. It uses declarative incremental refresh — the system detects upstream changes and only recomputes what changed. No upstream change = no computation, no cost. It handles T+1 batch, large tables, near-real-time, and most aggregation patterns equally well.
 
-**Declarative (dynamic_table)**: You declare *what the table should contain* as a SELECT statement. The system automatically detects upstream changes and incrementally recomputes the result — inserts, updates, and deletes in the source are all reflected automatically. You never write incremental filter logic. The system handles it.
+Use a different mechanism only when `dynamic_table` has a **fundamental limitation** for your use case.
 
-**Imperative (incremental)**: You write *how to process each batch* — which rows to pick up (`WHERE updated_at >= ...`), how to merge them (`merge`/`insert_overwrite`/`append`). You control the logic; the system just executes it on schedule.
+## When dynamic_table Cannot Do the Job
 
-**The key question is not "does it need DML" — dynamic_table handles row-level changes automatically through declarative incremental refresh. The key question is: do you need to control the time window of data being processed?**
+### 1. SCD Type 2 — historical version tracking → `snapshot`
 
-- **No time window control needed** → `dynamic_table` (system keeps it fresh automatically)
-- **Must process only a specific window** (e.g. "yesterday's data only", "last hour only") → `incremental`
-- **Must run after a specific upstream task** (not just when data changes) → `incremental` + Studio scheduling
+Dynamic table always reflects the **current state** of upstream data. When a source row changes, the dynamic table updates in place — the old value is gone. If you need to track "what was the customer's city last month", dynamic_table cannot help.
+
+`snapshot` is the only mechanism that preserves historical versions with `dbt_valid_from` / `dbt_valid_to` timestamps.
+
+```sql
+{% snapshot customers_snapshot %}
+{{ config(
+    target_schema='snapshots',
+    unique_key='customer_id',
+    strategy='check',
+    check_cols=['city', 'status']
+) }}
+select * from {{ source('raw', 'customers') }}
+{% endsnapshot %}
+```
+
+### 2. Time-windowed processing → `incremental + insert_overwrite`
+
+Dynamic table always reflects the full current state — it cannot produce a view that contains "only yesterday's data". If your downstream model needs to process a specific time window (e.g. daily partition recompute, hourly aggregation), use `incremental + insert_overwrite` with Studio scheduling to inject the time parameter.
+
+```sql
+{{ config(
+    materialized='incremental',
+    incremental_strategy='insert_overwrite',
+    partition_by='dt',
+    on_schema_change='append_new_columns'
+) }}
+select dt, region, count(*) as order_count, sum(amount) as revenue
+from {{ source('raw', 'orders') }}
+where status = 'completed'
+group by dt, region
+-- Studio injects: WHERE dt = '${bizdate}' at scheduling time
+```
+
+### 3. Studio dependency ordering → `incremental + merge/insert_overwrite`
+
+Dynamic table refreshes when upstream data changes, not when a specific upstream task completes. If your model must run **after** a specific Studio task (e.g. after a data sync task finishes loading), use `incremental` with Studio dependency config.
+
+### 4. Change-type routing (INSERT vs DELETE vs UPDATE) → Table Stream + `incremental`
+
+Dynamic table reflects the current state — it cannot distinguish "this row was deleted" from "this row never existed". If you need to route changes by type (e.g. apply inserts to one table, route deletes to an audit log), use a Table Stream as source.
+
+```sql
+{{ config(
+    materialized='incremental',
+    incremental_strategy='merge',
+    unique_key='order_id',
+    on_schema_change='append_new_columns'
+) }}
+select order_id, customer_id, amount, status
+from {{ source('raw', 'orders_stream') }}
+where __change_type in ('INSERT', 'UPDATE_AFTER')
+-- Stream offset advances when this MERGE completes
+```
+
+### 5. Append-only guarantee → `incremental + append`
+
+Dynamic table can delete rows if upstream rows are deleted. If you need a table that only ever grows (e.g. an audit log, an event ledger that must never lose records), use `incremental + append`.
+
+```sql
+{{ config(
+    materialized='incremental',
+    incremental_strategy='append'
+) }}
+select event_id, user_id, event_type, created_at
+from {{ source('raw', 'events') }}
+{% if is_incremental() %}
+where created_at >= (select max(created_at) from {{ this }})
+{% endif %}
+```
+
+### 6. Partition-level backfill / correction → `incremental + delete+insert`
+
+When you need to reprocess and replace a specific partition (e.g. correct yesterday's data after a source fix), `delete+insert` gives explicit control: delete the matching rows, then insert the corrected data.
+
+```sql
+{{ config(
+    materialized='incremental',
+    incremental_strategy='delete+insert',
+    unique_key='order_id'   -- required: used as DELETE condition
+) }}
+select ...
+{% if is_incremental() %}
+where dt >= current_date() - interval 3 days
+{% endif %}
+```
+
+### 7. Small static reference table → `table`
+
+For lookup/config tables that rarely change and are small enough for full rebuild, `table` is simpler and more predictable than managing a dynamic_table.
 
 ## Decision Tree
 
 ```
-Can this model be fully expressed as a SELECT that should always reflect
-the current state of its upstream tables?
+Does dynamic_table have a fundamental limitation for this model?
 │
-├── YES → dynamic_table (declarative incremental, system handles everything)
-│   │
-│   ├── ODS / staging (rename, cast, filter from raw)
-│   │   └── refresh_interval='5 minutes' or longer — low-frequency source can use longer intervals
-│   │
-│   ├── DWD dimension tables (customers, products, stores)
-│   │   └── refresh_interval='5 minutes' or longer — auto-tracks source changes
-│   │
-│   ├── DWD fact tables (orders, events — including those with status updates)
-│   │   └── dynamic_table handles row updates automatically; no merge logic needed
-│   │
-│   ├── DWS / ADS aggregation (customer stats, daily revenue, product performance)
-│   │   └── dynamic_table — aggregates stay current as upstream facts change
-│   │
-│   └── Single-table query acceleration (no joins, no transforms)
-│       └── materialized_view is more efficient (query optimizer rewrites automatically)
+├── Need to preserve historical versions of rows (SCD Type 2)
+│   └── snapshot
 │
-└── NO → incremental or table
-    │
-    ├── Must process only a specific time window
-    │   ├── Daily partition recompute (dt field) → incremental + insert_overwrite
-    │   └── Hourly window (start_time / end_time) → incremental + insert_overwrite
-    │
-    ├── Must run after a specific upstream Studio task completes
-    │   └── incremental + Studio scheduling + dependency config
-    │
-    ├── SCD Type 2 (track historical versions of dimension rows)
-    │   └── snapshot
-    │
-    └── Small table, simplest possible rebuild
-        └── table (full rebuild each run)
+├── Need to process only a specific time window (yesterday, last hour)
+│   or must run after a specific upstream Studio task
+│   ├── Has date partition → incremental + insert_overwrite
+│   └── Has update timestamp → incremental + merge
+│
+├── Need to route changes by type (INSERT vs DELETE vs UPDATE)
+│   └── Table Stream as source + incremental
+│
+├── Need append-only guarantee (records must never be deleted)
+│   └── incremental + append
+│
+├── Need partition-level backfill / correction
+│   └── incremental + delete+insert
+│
+├── Small static reference table
+│   └── table (full rebuild)
+│
+└── None of the above
+    └── dynamic_table (default — handles everything else)
+        ├── ODS/staging: refresh_interval='5 MINUTE' or longer
+        ├── Dimension tables: refresh_interval='30 MINUTE' or longer
+        ├── Fact tables / DWS aggregations: refresh_interval='5 MINUTE'
+        └── ADS report tables: refresh_interval='5 MINUTE' or longer
 ```
+
+## Table Stream Setup
+
+Before using a Table Stream as a dbt source, it must be created (via pre_hook or manually):
+
+```sql
+-- Enable change tracking on the source table
+ALTER TABLE {schema}.orders SET PROPERTIES ('change_tracking' = 'true');
+
+-- Create the stream (TABLE_STREAM_MODE is required)
+CREATE TABLE STREAM {schema}.orders_stream
+  ON TABLE {schema}.orders
+  WITH PROPERTIES ('TABLE_STREAM_MODE' = 'STANDARD');
+```
+
+Define it as a dbt source:
+```yaml
+sources:
+  - name: raw
+    schema: "{{ target.schema }}"
+    tables:
+      - name: orders_stream
+```
+
+**Key behavior**: SELECT does not advance the stream offset — only DML (INSERT/MERGE) does. Each `dbt run` that executes the MERGE advances the offset, so the next run sees only new changes.
+
 
 ## Studio Scheduling and Dynamic Tables
 
@@ -73,7 +180,7 @@ REFRESH DYNAMIC TABLE {workspace}.{schema}.{model};
 ```sql
 {{ config(
     materialized='dynamic_table',
-    refresh_interval='5 minutes',  -- '1 minutes' / '5 minutes' / '1 hours'
+    refresh_interval='5 MINUTE',  -- '1 MINUTE' / '5 MINUTE' / '1 HOUR'
     refresh_vc='default'
 ) }}
 select
@@ -89,7 +196,7 @@ group by customer_id
 ```sql
 {{ config(
     materialized='dynamic_table',
-    refresh_interval='5 minutes',  -- use longer interval for low-frequency sources
+    refresh_interval='5 MINUTE',  -- use longer interval for low-frequency sources
     refresh_vc='default'           -- Note: DOWNSTREAM is not supported in ClickZetta
 ) }}
 select
@@ -207,10 +314,10 @@ Indexes are created automatically at table creation time. Selection principles:
 
 | Interval | Use Case | Cost |
 |---|---|---|
-| `1 minutes` | Near-real-time, latency-sensitive | High — VCluster runs continuously |
-| `5 minutes` | Most scenarios, good default | Moderate |
-| `30 minutes` | Dimension tables, low-freshness aggregates | Low |
-| `1 hours` | Very low-freshness, batch-style aggregates | Minimal |
+| `1 MINUTE` | Near-real-time, latency-sensitive | High — VCluster runs continuously |
+| `5 MINUTE` | Most scenarios, good default | Moderate |
+| `30 MINUTE` | Dimension tables, low-freshness aggregates | Low |
+| `1 HOUR` | Very low-freshness, batch-style aggregates | Minimal |
 
 Note: `DOWNSTREAM` is a Snowflake-specific syntax and is **not supported in ClickZetta**. Use a fixed interval instead.
 

@@ -1,15 +1,114 @@
 # ELT Standards Template
 
+## End-to-End Pipeline Architecture
+
+A complete ClickZetta data pipeline has three layers. Each layer has dedicated tools — choose based on the scenario.
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  Layer 1: Data Ingestion                                        │
+│  External sources → Lakehouse raw schema                        │
+│                                                                 │
+│  Real-time CDC    Studio sync task (task_type=28/281)           │
+│  (seconds)        MySQL/PostgreSQL → Lakehouse via Binlog/WAL   │
+│                   Skill: clickzetta-cdc-sync-pipeline           │
+│                                                                 │
+│  Batch sync       Studio sync task (task_type=10/291)           │
+│  (hourly/daily)   Any DB → Lakehouse, cron-scheduled            │
+│                   Skill: clickzetta-batch-sync-pipeline         │
+│                                                                 │
+│  File/stream      SQL Pipe (OSS/S3/COS/Kafka)                   │
+│  (continuous)     Auto-ingests new files or messages            │
+│                   Skill: clickzetta-oss-ingest-pipeline         │
+│                          clickzetta-kafka-ingest-pipeline       │
+│                                                                 │
+│  One-time import  COPY INTO / file upload                       │
+│                   Skill: clickzetta-file-import-pipeline        │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼ raw schema (ods / bronze / raw)
+┌─────────────────────────────────────────────────────────────────┐
+│  Layer 2: Transformation (dbt)                                  │
+│  Raw schema → modeled schemas                                   │
+│                                                                 │
+│  Project setup    profiles.yml + dbt_project.yml                │
+│                   Skill: clickzetta-dbt-project-setup           │
+│                                                                 │
+│  Modeling         sources.yml + model .sql files                │
+│                   Dynamic Table (auto-refresh) preferred        │
+│                   Incremental (time-window control) when needed │
+│                   Skill: clickzetta-dbt-modeling                │
+│                                                                 │
+│  Layering         Choose one pattern:                           │
+│  patterns         • dbt standard: staging → marts               │
+│                   • Medallion: bronze → silver → gold           │
+│                   • Traditional DW: ODS → DWD → DWS → ADS      │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼ modeled schemas (marts / gold / ads)
+┌─────────────────────────────────────────────────────────────────┐
+│  Layer 3: Publishing & Scheduling (Studio)                      │
+│  dbt models → Studio tasks for unified management               │
+│                                                                 │
+│  Asset mgmt       All models → Studio SQL tasks (DRAFT)         │
+│  (all models)     Team can see full pipeline code in Studio     │
+│                                                                 │
+│  Scheduling       table/incremental/snapshot → PUBLISHED        │
+│  (batch models)   Cron + dependencies + bizdate params          │
+│                   dynamic_table: skip — self-refreshes          │
+│                                                                 │
+│                   Skill: clickzetta-dbt-studio-pipeline         │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+                    BI tools / downstream apps
+```
+
+### Choosing the ingestion method
+
+| Source | Latency needed | Recommended method |
+|---|---|---|
+| MySQL / PostgreSQL | Seconds (real-time) | Studio CDC sync (Binlog/WAL) |
+| MySQL / PostgreSQL | Hours/days (batch) | Studio batch sync (cron) |
+| OSS / S3 / COS files | Minutes (continuous) | SQL Pipe (LIST_PURGE or EVENT mode) |
+| Kafka / message queue | Seconds (streaming) | SQL Pipe (READ_KAFKA) |
+| Local files / URLs | One-time | COPY INTO |
+| Any DB | One-time migration | Studio batch sync (full load) |
+
+### Dynamic Table vs dbt incremental — when to use which
+
+| Scenario | Use | Reason |
+|---|---|---|
+| Reflect current upstream state | `dynamic_table` | System handles incremental refresh automatically |
+| Process only yesterday's data | `incremental` (insert_overwrite) | DT always reflects full current state |
+| Run after a specific upstream task | `incremental` | Studio dependency ordering |
+| Consume Table Stream (CDC) | `incremental` (merge) | Need to control stream offset advancement |
+| SCD Type 2 history | `snapshot` | dbt snapshot handles slowly changing dimensions |
+
+### Scheduling time windows (batch pipeline standard)
+
+```
+02:00  Layer 1: Data sync task completes (Studio sync)
+02:30  Layer 2a: Raw/staging layer dbt run
+03:00  Layer 2b: Core modeling layer dbt run (dwd / silver)
+03:30  Layer 2c: Aggregation layer dbt run (dws / gold / marts)
+04:00  Layer 3: Data quality checks (DQC)
+```
+
+Dynamic Table models do not appear in this schedule — they refresh continuously on their own `refresh_interval`.
+
+---
+
 ## Layering Pattern Comparison
 
-| Dimension | Two-layer (staging/marts) | Two-layer + intermediate (staging/intermediate/marts) | Three-layer (ods/dwd/ads) | Four-layer (ods/dwd/dws/ads) |
+| Dimension | dbt standard (staging/marts) | dbt standard + intermediate | Medallion (bronze/silver/gold) | Traditional DW (ODS/DWD/DWS/ADS) |
 |---|---|---|---|---|
-| Applicable scale | Small to medium projects | Medium projects with complex JOIN logic | Medium to large projects | Large data warehouses |
-| Team requirements | Familiarity with dbt is sufficient | Familiarity with dbt is sufficient | Requires data warehouse design experience | Requires a dedicated data team |
-| Latency | T+1 (daily batch) | T+1 (daily batch) | Minute-level (ADS uses DT) | Minute-level |
+| Applicable scale | Small to medium projects | Medium projects with complex JOIN logic | Data lakehouse, modern stack | Large data warehouses, traditional teams |
+| Team requirements | Familiar with dbt | Familiar with dbt | Familiar with lakehouse concepts | Data warehouse design experience |
+| Latency | T+1 or real-time (DT) | T+1 or real-time (DT) | Real-time preferred (silver/gold as DT) | Minute-level (ADS uses DT) |
 | Tooling | dbt + Studio | dbt + Studio | dbt + Studio + Dynamic Table | dbt + Studio + Dynamic Table |
 
-**Intermediate layer notes**: When marts models require multi-table JOINs with complex logic, an intermediate layer can be added between staging and marts to handle JOINs and data shaping, preventing marts models from becoming too bloated. Intermediate models:
+**Intermediate layer notes**: When marts models require multi-table JOINs with complex logic, an intermediate layer can be added between staging and marts. Intermediate models:
 - Naming convention: `int_{entity}__{verb}.sql` (double underscore separates entity and action, e.g. `int_orders__joined.sql`)
 - Materialization: `ephemeral` or `view`, not exposed to BI tools
 - Not mandatory — only introduce when JOIN logic in marts spans more than 3 tables
@@ -56,7 +155,7 @@ models/
 ### What to use Dynamic Table for (preferred default — no Studio task needed)
 - ODS/staging layers, dimension tables, fact tables, DWS/ADS aggregations — anything that can be expressed as a SELECT reflecting current upstream state
 - The system handles incremental refresh, row updates, and dependency propagation automatically
-- Use `refresh_interval` to control freshness (e.g. `5 minutes`, `30 minutes`, `1 hours`)
+- Use `refresh_interval` to control freshness (e.g. `5 MINUTE`, `30 MINUTE`, `1 HOUR`)
 
 ### What to schedule with dbt + Studio (only when dynamic_table doesn't fit)
 - Fully rebuilt dimension tables (`materialized='table'`) — when full rebuild is simpler

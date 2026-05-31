@@ -21,7 +21,7 @@ description: |
 # clickzetta-dbt-project-setup
 
 See [references/dbt-clickzetta-adapter.md](references/dbt-clickzetta-adapter.md) for adapter capabilities and connection parameters.
-See [references/elt-standards.md](references/elt-standards.md) for layering standards and naming conventions.
+See [references/elt-standards.md](references/elt-standards.md) for the **complete end-to-end pipeline architecture** (ingestion → dbt modeling → Studio publishing), layering patterns, and naming conventions.
 
 ---
 
@@ -32,84 +32,129 @@ Users don't need to understand dbt internals — they only need to answer a few 
 
 ## Workflow
 
-**Explore first, then recommend — never make users fill in blanks. Interact early — don't silently run commands for a long time.**
+This skill runs as a series of conversation turns. Each turn ends with a question to the user — nothing is executed until the user responds to that turn's question.
 
-0. **Installation check**: Verify dbt-clickzetta is installed; guide installation if not:
-   ```bash
-   pip show dbt-clickzetta   # check if installed
-   pip install dbt-clickzetta  # install if missing; recommend using a venv
-   ```
-   Tell the user the result immediately ("dbt-clickzetta 1.7.x is installed ✓" or "Not installed — installing now...").
+---
 
-1. **Quick Lakehouse scan** (~2 seconds): Run `cz-cli schema list` to see if there's existing data. Immediately tell the user what was found (greenfield or existing data), then **ask the four setup questions before doing anything else** — do not silently explore further:
+### Turn 0 — Check installation, then ask setup questions
 
-   Ask the user to confirm four things (present as choices, not blank fields):
-   - **Connection config**: do you have an existing profiles.yml or cz-cli config file? (If yes, paste or upload it — no need to answer the individual connection questions below. If no, I'll ask for each parameter.)
-   - **Project directory**: current directory, or a path they specify
-   - **Layering mode**: two-layer (staging → marts, recommended for small/medium), two-layer + intermediate (for complex joins), three-layer (ODS → DWD → ADS), or four-layer (ODS → DWD → DWS → ADS)
-   - **Naming prefix**: business domain name (e.g. retail, finance), company/team name, or custom
+Run `pip show dbt-clickzetta` and `cz-cli schema list` in parallel. Report results immediately:
+- Installation status ("dbt-clickzetta 1.7.x installed ✓" or "not installed — will install")
+- Lakehouse state (greenfield or existing schemas found)
 
-2. After the user answers all questions, **confirm the plan before executing** — show a one-line summary ("Creating `retail_dw` in current directory, four-layer ODS→DWD→DWS→ADS, prefix `retail`") and wait for the user's go-ahead. Only then run `dbt init` and generate files.
+Then ask the user four things at once (present as choices, not blank fields):
 
-   ```bash
-   dbt init {project_name}          # generate project skeleton
-   rm -rf models/example            # remove example files to avoid polluting dbt run results
-   ```
+1. **Connection config**: do you have an existing profiles.yml or cz-cli config file? If yes, paste or upload it. If no, I'll ask for each parameter next.
+2. **Project directory**: current directory, or specify a path.
+3. **Layering mode**: choose the pattern that fits your team —
+   - **dbt standard** (staging → marts): recommended for most projects; add `intermediate/` when marts need complex multi-table JOINs
+   - **Medallion** (bronze → silver → gold): popular in data lakehouse contexts; bronze = raw, silver = cleaned/conformed, gold = business-ready
+   - **Traditional DW** (ODS → DWD → DWS → ADS): familiar to data warehouse teams; four-layer with aggregation layer
+   - **Custom**: specify your own layer names
+4. **Naming prefix**: business domain (e.g. retail, finance), company/team name, or custom.
 
-   Generated directory structure:
-   ```
-   {project_name}/
-   ├── dbt_project.yml              # configure layer schemas + global persist_docs
-   ├── profiles.yml                 # connection config (not committed to git — contains passwords)
-   ├── .gitignore                   # includes profiles.yml and target/
-   └── models/
-       ├── staging/                 # cleansing layer
-       └── marts/                  # business layer (or adjusted per layering choice)
-   ```
+**Stop here. Do not run `dbt init` or create any files yet.**
 
-   Generate `dbt_project.yml` with **`dynamic_table` as the default materialization for all layers** — this is the ClickZetta Lakehouse native approach. The system handles incremental refresh and dependency propagation automatically; no manual merge logic or Studio dependency config needed.
+---
 
-   Note: `refresh_interval` and `refresh_vc` are set per-model in `{{ config() }}` blocks. The `dbt_project.yml` below sets the materialization default only; individual models should override `refresh_interval` in their own config to match their SLA.
+### Turn 1 — Collect connection parameters (if no config file provided)
 
-   ```yaml
-   models:
-     {project_name}:
-       +persist_docs:
-         relation: true    # table comments
-         columns: true     # column comments
+If the user provided a config file in Turn 0: extract all parameters from it, skip to Turn 2.
 
-       # Two-layer example (staging → marts):
-       staging:
-         +materialized: dynamic_table
-       marts:
-         +materialized: dynamic_table
+If not, ask for each connection parameter (see [references/dbt-clickzetta-adapter.md](references/dbt-clickzetta-adapter.md)):
+- `service`: API endpoint (e.g. `cn-shanghai-alicloud.api.clickzetta.com`)
+- `instance`: instance ID
+- `workspace`: workspace name (= dbt database)
+- `schema`: **where dbt writes model outputs** — NOT the source data schema. Do not infer from the current session. Typical: `{project}_dw` or a name the user specifies.
+- `vcluster`: compute cluster name (use `default` if unsure)
+- `username` / `password`
 
-       # Four-layer example (ODS → DWD → DWS → ADS):
-       ods:
-         +materialized: dynamic_table
-       dwd:
-         +materialized: dynamic_table
-       dws:
-         +materialized: dynamic_table
-       ads:
-         +materialized: dynamic_table
-   ```
+**Stop here. Do not create any files yet.**
 
-   Use the template matching the user's chosen layering mode. Each model sets its own `refresh_interval` and `refresh_vc` in `{{ config() }}` — see the model template in `clickzetta-dbt-modeling`.
+---
 
-   Connection parameters for profiles.yml — two options (prefer config file if available):
-   - **User provides a config file**: ask user to upload or paste an existing profiles.yml / cz-cli config file, extract parameters directly — no need to ask one by one
-   - **Ask individually**: if no existing config, ask for each parameter in turn (see references/dbt-clickzetta-adapter.md):
-     - `service`: API endpoint (e.g. `cn-shanghai-alicloud.api.clickzetta.com`)
-     - `instance`: instance ID
-     - `workspace`: workspace name (= dbt database)
-     - `schema`: **the schema where dbt will write model outputs** — this is NOT the source data schema. Must be explicitly confirmed with the user. Do not infer from the current session schema or cz-cli connection context. Typical values: `{project}_dw`, `{project}_staging`, or a name the user specifies.
-     - `vcluster`: compute cluster name
-     - `username` / `password`: credentials
+### Turn 2 — Confirm plan, then scaffold
 
-Use the interactive question tool for user decision points. If no such tool is available, list options in text. **Do not proceed before receiving the user's answer.**
+Show a one-line summary of what will be created:
+> "Creating `retail_dw` in current directory — staging → marts (dbt standard), prefix `retail`, writing to schema `retail_dw`."
 
-Ask the user to confirm four things: (1) **Connection config** — do you have an existing profiles.yml or cz-cli config file? (2) **Project directory** — current directory, or a path they specify. (3) **Layering mode** — two-layer (staging → marts, recommended for small/medium projects), two-layer + intermediate (for complex multi-table joins), three-layer (ODS → DWD → ADS, for larger projects with multiple business domains), or four-layer (ODS → DWD → DWS → ADS, for large data warehouses with dedicated data teams). (4) **Naming prefix** — business domain name (e.g. retail, finance, marketing), company/team name (e.g. acme, dataeng), or a custom prefix they specify.
+(Adjust the summary to match the user's chosen layering mode.)
+
+Ask: "Confirm?" Wait for the user's go-ahead.
+
+Only after confirmation:
+```bash
+pip install dbt-clickzetta   # if not installed
+dbt init {project_name}
+rm -rf models/example        # remove example files — they pollute dbt run
+```
+
+Generate `dbt_project.yml`, `profiles.yml`, `.gitignore`. **Do NOT create any `.sql` model files** — model files are created by `clickzetta-dbt-modeling` after data exploration.
+
+`dbt_project.yml` sets `dynamic_table` as the default materialization. Do not add `refresh_interval` here — each model sets its own value in `{{ config() }}`.
+
+Generate the `+schema` blocks to match the user's chosen layering mode. Examples:
+
+```yaml
+# dbt standard (staging → marts)
+models:
+  {project_name}:
+    +persist_docs:
+      relation: true
+      columns: true
+    staging:
+      +materialized: dynamic_table
+      +schema: staging
+    marts:
+      +materialized: dynamic_table
+      +schema: marts
+
+# Medallion (bronze → silver → gold)
+models:
+  {project_name}:
+    +persist_docs:
+      relation: true
+      columns: true
+    bronze:
+      +materialized: table
+      +schema: bronze
+    silver:
+      +materialized: dynamic_table
+      +schema: silver
+    gold:
+      +materialized: dynamic_table
+      +schema: gold
+
+# Traditional DW (ODS → DWD → DWS → ADS)
+models:
+  {project_name}:
+    +persist_docs:
+      relation: true
+      columns: true
+    ods:
+      +materialized: table
+      +schema: ods
+    dwd:
+      +materialized: dynamic_table
+      +schema: dwd
+    dws:
+      +materialized: dynamic_table
+      +schema: dws
+    ads:
+      +materialized: dynamic_table
+      +schema: ads
+```
+
+For custom layering, generate the blocks based on the layer names the user specified.
+
+---
+
+### Turn 3 — Verify and hand off
+
+Run `dbt debug --profiles-dir .` and report the result. If all checks pass, tell the user:
+> "Project is ready. Next: load `clickzetta-dbt-modeling` to explore your Lakehouse data and build models."
+
+If debug fails, diagnose and fix before handing off.
 
 ## Key Constraints
 
@@ -123,7 +168,12 @@ Ask the user to confirm four things: (1) **Connection config** — do you have a
 |---|---|
 | Already have a dbt project, want to model | `clickzetta-dbt-modeling` |
 | Already have a dbt project, want to publish and schedule | `clickzetta-dbt-studio-pipeline` |
-| Need to sync data to Lakehouse first | `clickzetta-data-ingest-pipeline` |
+| Want SQL modeling without dbt (Dynamic Table / raw SQL) | `clickzetta-dw-modeling` |
+| Need to sync data from MySQL/PostgreSQL in real-time | `clickzetta-cdc-sync-pipeline` |
+| Need to sync data from any DB in batch | `clickzetta-batch-sync-pipeline` |
+| Need to ingest files from OSS/S3/COS continuously | `clickzetta-oss-ingest-pipeline` |
+| Need to ingest from Kafka | `clickzetta-kafka-ingest-pipeline` |
+| Not sure which ingestion method to use | `clickzetta-data-ingest-pipeline` |
 | Don't want dbt, use Dynamic Table directly | `clickzetta-sql-pipeline-manager` |
 
 ## Completion Criteria

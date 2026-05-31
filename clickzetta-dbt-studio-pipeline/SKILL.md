@@ -23,6 +23,8 @@ description: |
 See [references/studio-task-sop.md](references/studio-task-sop.md) for complete cz-cli task command reference.
 See [references/parameter-guide.md](references/parameter-guide.md) for Studio parameter types and bizdate configuration.
 
+For the **complete end-to-end pipeline architecture** (ingestion → dbt modeling → Studio publishing), see [../clickzetta-dbt-project-setup/references/elt-standards.md](../clickzetta-dbt-project-setup/references/elt-standards.md).
+
 ---
 
 ## Goal
@@ -40,125 +42,167 @@ view and dynamic_table don't need scheduling — view is computed at query time,
 
 Both goals must be completed — neither can be skipped. Asset management is the foundation; scheduling is incremental configuration on top of it.
 
-## Opening Statement (must say first, before any action)
+## Workflow
 
-After the skill triggers, **read `target/manifest.json` first** to count total models and how many need scheduling (table/incremental/snapshot). Then explain to the user what will be done this session — don't jump straight to technical operations. Fill in the actual numbers N and M:
+This skill runs as a series of conversation turns. Each turn ends with a question to the user — no Studio tasks are created until the user responds to that turn's question.
+
+---
+
+### Turn 0 — Read manifest, explain scope, ask profile
+
+Read `target/manifest.json`. If it doesn't exist or is stale, run `dbt compile --profiles-dir .` first.
+
+Count: total models (N), models needing scheduling (table/incremental/snapshot = M), dynamic_table models (auto-refresh, no scheduling needed).
+
+Then explain to the user what this session covers — fill in the actual N and M:
 
 > This session covers two things, both required:
 >
-> **① Asset management (all N models)**: Each model gets two Studio records — a DDL statement (`CREATE OR REPLACE TABLE/VIEW AS ...`) in the `00_ddl` directory, and the ETL execution logic in the layer directory (incremental-filtered SQL or full-rebuild SQL). Kept in DRAFT state so the team can see the complete data pipeline definition and execution logic in Studio.
+> **① Asset management (all N models)**: Each model gets two Studio records — a DDL statement in `00_ddl` (what this table is), and the ETL execution logic in the layer directory (how it runs). Kept in DRAFT so the team can see the full pipeline in Studio.
 >
-> **② Scheduling (only table/incremental/snapshot, M models total)**: Configure cron schedule, dependencies, and deploy as PUBLISHED so they run automatically.
+> **② Scheduling (M models — table/incremental/snapshot only)**: Configure cron, dependencies, deploy as PUBLISHED.
 >
-> dynamic_table with `refresh_interval` set: **no Studio scheduling needed** — the system auto-refreshes on its own schedule. Only create a Studio task for a dynamic_table if it uses manual refresh mode (i.e. you want to trigger `REFRESH DYNAMIC TABLE` as part of a dependency chain).
-> view: no scheduling needed — computed at query time.
+> dynamic_table models ({count} total): no scheduling needed — `refresh_interval` drives auto-refresh. view models: no scheduling needed.
 
-Then proceed to the key decision points. **Don't skip this opening** — when users say "publish to Studio" they typically only have scheduling in mind and don't know about asset management; if not mentioned, it gets skipped.
+Then run `cz-cli profile list` and ask: "Which profile should I use for deployment?"
 
-## Preparation: Read dbt Compiled Artifacts
+**Stop here.**
 
-Before starting asset management, confirm compiled artifacts exist — asset management uploads compiled SQL, not dbt template syntax; Studio doesn't understand Jinja:
+---
 
-```bash
-# If target/ doesn't exist or manifest.json is stale, compile first
-dbt compile --profiles-dir .
+### Turn 1 — Confirm directory structure and scope
 
-# Compiled artifact paths
-target/manifest.json          # model metadata (materialization type, dependency graph)
-target/compiled/<project>/    # compiled SELECT SQL (needs DDL wrapping before upload)
+Read the dbt project's `dbt_project.yml` to determine the actual layer names (staging/marts, bronze/silver/gold, ods/dwd/ads, or custom). Build the Studio directory structure to match.
+
+Propose the Studio directory structure based on the actual layers found:
 ```
+{project}_dw/
+├── 00_ddl/          ← initialization DDL for table/incremental/view only (not dynamic_table)
+├── 01_{layer1}/     ← e.g. 01_staging/ or 01_bronze/
+├── 02_{layer2}/     ← e.g. 02_marts/ or 02_silver/
+├── 03_{layer3}/     ← e.g. 03_gold/ or 03_dwd/ (if exists)
+├── ...              ← additional layers as needed
+├── {N}_snapshots/   ← snapshot ETL, PUBLISHED + scheduled
+└── {N+1}_dqc/       ← data quality checks, optional
+```
+Naming: DDL tasks as `ddl_{layer}_{model}`, ETL/DT tasks as `{layer}_{model}`.
 
-Key fields per model in `manifest.json`:
-- `config.materialized`: determines DDL wrapping method and whether scheduling is needed
-- `depends_on.nodes`: upstream dependencies (used to configure Studio task dependencies, ensuring execution order)
-- `meta.incremental_field` / `meta.incremental_strategy`: incremental fields (written by modeling skill)
+Ask: "Does this structure work, or do you want to customize? Also, are there any models you want to exclude from publishing?"
+
+**Stop here.**
+
+---
+
+### Turn 2 — Show incremental SQL rewrites, confirm schedule
+
+If there are incremental models: show all before/after SQL diffs in one message (not one by one). Ask the user to confirm all or flag specific ones to adjust.
+
+Also ask: "What schedule for the M models that need it?" (daily at 03:00 for T+1 / hourly / custom cron) and "Which VCluster?" (default or specify).
+
+**Stop here.**
+
+---
+
+### Turn 3 — Final confirmation, then execute
+
+Show the complete execution plan:
+- Total tasks to create (N DDL + ETL tasks)
+- Directory structure
+- Schedule times and VCluster
+- Which models are DRAFT only vs PUBLISHED + scheduled
+
+Ask: "Confirm and deploy?"
+
+Only after confirmation: create all Studio tasks, upload SQL, configure schedules and dependencies.
+
+---
+
+### Turn 4 — Verify and wrap up
+
+After deployment:
+1. Check row counts in target tables, confirm task status
+2. Output Studio links for all tasks
+3. Note: DQC tasks need manual configuration in Studio UI (cz-cli doesn't support DQC type yet)
+4. Suggest next steps: verify scheduling tomorrow, configure BI connections, set up alerts
 
 ## SQL Content Rules
 
-Each model corresponds to **two tasks** in Studio, placed in different directories:
+Key fields per model in `manifest.json`:
+- `config.materialized`: determines DDL wrapping and whether scheduling is needed
+- `depends_on.nodes`: upstream dependencies (for Studio task dependency config)
+- `meta.incremental_field` / `meta.incremental_strategy`: written by modeling skill
 
-**`00_ddl` directory**: DDL create statements defining table structure, for manual execution or initialization:
+Each model gets **one or two tasks** in Studio depending on materialization type. The directory structure mirrors the dbt project's layer structure:
 
-| materialization | SQL in 00_ddl |
-|---|---|
-| `view` | `CREATE OR REPLACE VIEW {db}.{schema}.{model} AS {compiled_sql}` |
-| `table` | `CREATE OR REPLACE TABLE {db}.{schema}.{model} AS {compiled_sql}` |
-| `incremental` | `CREATE TABLE IF NOT EXISTS {db}.{schema}.{model} AS {compiled_sql}` |
-| `dynamic_table` | `CREATE DYNAMIC TABLE {db}.{schema}.{model} REFRESH_INTERVAL='...' VC='...' AS {compiled_sql}` |
-| `snapshot` | Not uploaded — managed by dbt |
+```
+{project}_dw/
+├── 00_ddl/        ← initialization DDL for table/incremental/view (not dynamic_table)
+├── 01_{layer1}/   ← matches dbt project layer (staging, bronze, ods, etc.)
+├── 02_{layer2}/   ← matches dbt project layer (marts, silver, dwd, etc.)
+└── ...
+```
 
-**`01_staging` / `02_marts` etc. directories**: ETL execution logic, the actual content run during scheduling:
+Task naming:
+- DDL tasks (inside `00_ddl/`): named `ddl_{layer}_{model}` — e.g. `ddl_staging_stg_orders`
+- ETL/DT tasks (inside layer dirs): named `{layer}_{model}` — e.g. `stg_orders`, `fct_orders`
 
-| materialization | SQL in ETL directory |
-|---|---|
-| `view` | Same as DDL (`CREATE OR REPLACE VIEW ...`), rebuilds view definition each run, DRAFT no scheduling |
-| `table` | `CREATE OR REPLACE TABLE ... AS {compiled_sql}`, full rebuild |
-| `incremental` | Incremental-filtered SQL (see Incremental SQL Rewrite Rules), with bizdate parameter, scheduled execution |
-| `dynamic_table` | No ETL task needed — auto-refreshes |
-| `snapshot` | Not uploaded |
+**`00_ddl/` directory** — initialization DDL for table/incremental/view only. `dynamic_table` does NOT go here.
 
-`{db}` = `target.database` (workspace name), `{schema}` read from manifest's `schema` field.
+| materialization | SQL | Task name |
+|---|---|---|
+| `view` | `CREATE OR REPLACE VIEW {db}.{schema}.{model} AS {compiled_sql}` | `ddl_{layer}_{model}` |
+| `table` | `CREATE OR REPLACE TABLE {db}.{schema}.{model} AS {compiled_sql}` | `ddl_{layer}_{model}` |
+| `incremental` | `CREATE TABLE IF NOT EXISTS {db}.{schema}.{model} AS {compiled_sql}` | `ddl_{layer}_{model}` |
+| `snapshot` | Not uploaded — managed by dbt | — |
 
-**The complete meaning of asset management**: each model has two records in Studio — the DDL in `00_ddl` (what this table is) + the execution logic in the ETL directory (how this table runs). Both are required.
+**Layer directories (`01_staging/`, `02_marts/`, etc.)** — one task per model in its own layer:
 
-## Key Decision Points
+| materialization | Task type | Content | State | Scheduling |
+|---|---|---|---|---|
+| `view` | SQL | `CREATE OR REPLACE VIEW ...` | DRAFT | None — computed at query time |
+| `table` | SQL | `CREATE OR REPLACE TABLE ... AS {compiled_sql}` | PUBLISHED | Scheduled |
+| `incremental` | SQL | Incremental-filtered SQL with bizdate param | PUBLISHED | Scheduled |
+| `dynamic_table` | SQL | `CREATE OR REPLACE DYNAMIC TABLE ... REFRESH INTERVAL {N} MINUTE vcluster {vc} AS {compiled_sql}` | DRAFT | None — auto-refreshes |
+| `python` | PYTHON | The model's `.py` source code (the `model(dbt, session)` function) | DRAFT | None — executed via `dbt run` |
+| `snapshot` | — | Not uploaded — managed by dbt | — | — |
 
-Ask the user to confirm each decision before executing. **Do not execute anything before receiving the user's answer** — acting early creates Studio tasks that need manual cleanup. Work through these one at a time: ask, wait for the answer, then move to the next. Do not batch all questions at once and do not proceed to execution until all six are answered.
+`python` models belong in their layer directory (same as SQL models). Use task type `PYTHON` when creating via `cz-cli task create --type PYTHON`. The content is the model's `.py` file. No DDL entry in `00_ddl/` needed — Python models write their own output table.
 
-1. **cz-cli profile**: Run `cz-cli profile list`, show the available profiles, and ask the user which one to use for deployment.
+For `dynamic_table`, read `refresh_interval` and `refresh_vc` from `manifest.json` → `config` block (set by the modeling skill). Example:
+```sql
+CREATE OR REPLACE DYNAMIC TABLE quick_start.dbt_demo.stg_customers
+  REFRESH INTERVAL 30 MINUTE vcluster default
+AS
+select ...
+```
 
-2. **Studio directory structure**: Propose the recommended structure below and ask the user to confirm or customize.
-
-   ```
-   {project}_dw/
-   ├── 00_ddl/          ← ALL DDL statements (CREATE TABLE/VIEW/DYNAMIC TABLE), DRAFT, no scheduling
-   ├── 01_staging/      ← staging layer ETL (view DDL + SELECT), DRAFT, no scheduling
-   ├── 02_marts/        ← marts layer ETL (table/incremental), PUBLISHED, scheduled
-   ├── 03_snapshots/    ← snapshot layer, PUBLISHED, scheduled
-   └── 04_dqc/          ← data quality checks, optional
-   ```
-
-   **Naming conventions** (consistent with `clickzetta-studio-task-manager`):
-   - DDL tasks: `ddl_{layer}_{model}` (e.g. `ddl_staging_stg_orders`, `ddl_marts_fct_orders`)
-   - ETL tasks: `{layer}_{model}` with no prefix (e.g. `stg_orders`, `fct_orders`)
-   - dynamic_table models with `refresh_interval`: **no ETL task needed** — auto-refreshes; only add a Studio task if using manual refresh mode
-
-3. **Asset management scope**: Ask whether to publish all models or exclude specific ones. If excluding, ask which models to skip.
-
-4. **Incremental SQL rewrite**: Show all incremental models' before/after SQL diffs in one message. Ask the user to confirm all at once, or flag specific models to adjust. Do not ask model by model — that creates unnecessary back-and-forth when there are many models.
-
-5. **Scheduling configuration**: Ask two things — what schedule (daily at 03:00 for standard T+1, hourly for near real-time, or custom cron) and which VCluster to use (default or specify another).
-
-6. **Final confirmation**: Show the complete execution plan (total task count, directory structure, schedule times) and ask the user to confirm before deploying.
-
+`{db}` = `target.database`, `{schema}` from manifest's `schema` field.
 
 ## Incremental SQL Rewrite Rules
 
-dbt compiled SQL is the full version (no incremental filter). Before publishing to Studio, Agent rewrites based on schedule frequency:
+dbt incremental models come in two types — handle them differently:
 
-| Schedule | Time field type | Rewrite method | params |
+**Type 1 — Self-driven** (model has `{% if is_incremental() %} where updated_at >= ... {% endif %}`):
+- The dbt compiled SQL already contains the incremental filter logic
+- Upload the compiled SQL as-is to the ETL directory — **no rewrite needed**
+- Must configure upstream data sync task as a dependency so source data is ready before triggering:
+  `cz-cli task save-config <task> --deps replace --dep-tasks '[{"taskId": <sync_task_id>}]'`
+- If no upstream sync task exists yet, inform the user to create one via `clickzetta-data-ingest-pipeline` first
+
+**Type 2 — Partition-based** (`insert_overwrite` with `partition_by`, no `is_incremental()` filter in the model):
+- The dbt compiled SQL is the full SELECT with no time filter
+- Rewrite by injecting a WHERE clause with a Studio scheduling parameter:
+
+| Schedule | Time field type | WHERE clause to inject | params |
 |---|---|---|---|
 | Daily | Date field (dt/date) | `WHERE dt = '${bizdate}'` | `{"bizdate":"bizdate"}` |
 | Daily | Timestamp field (*_at/*_time) | `WHERE DATE(col) = '${bizdate}'` | `{"bizdate":"bizdate"}` |
 | Hourly | Timestamp field | `WHERE col >= '${start_time}' AND col < '${end_time}'` | `{"start_time":"$[yyyy-MM-dd HH:00:00,-1h]","end_time":"$[yyyy-MM-dd HH:00:00,0h]"}` |
 | Full load (table type) | — | No rewrite | none |
 
-**Self-driven incremental models** (`WHERE updated_at >= (SELECT MAX(updated_at) FROM {{ this }})`):
-- SQL itself does not need rewriting — upload as-is to the ETL directory
-- But must configure upstream data sync task as a dependency to ensure source data is ready before triggering — **this sync task already exists** (created by `clickzetta-data-ingest-pipeline` etc.); this skill does not create new data pipeline tasks
-- Ask user for the upstream sync task name or ID (use `cz-cli task list` to find it), then configure dependency:
-  `cz-cli task save-config <task> --deps replace --dep-tasks '[{"taskId": <sync_task_id>}]'`
-- If user has no upstream sync task yet, inform them to create one via `clickzetta-data-ingest-pipeline` first, then return to configure the dependency
+**How to tell which type**: check `meta.incremental_strategy` in manifest.json. If `insert_overwrite` with `partition_by` → Type 2. If `merge` or `delete+insert` with `updated_at` filter → Type 1.
 
 **Important**: `save-content --params` automatically declares the corresponding parameter definitions in the Studio task; Studio injects them automatically during scheduling.
-
-## Verification and Next Steps
-
-After deployment:
-1. Self-verify: check row counts in target tables, confirm task status is online
-2. Output Studio direct links for all tasks (`https://{instance}.studio.clickzetta.com/task/{id}`)
-3. Inform user: DQC tasks need to be manually configured as DQC type in Studio UI (cz-cli doesn't support this yet)
-4. Suggest next steps: verify scheduling tomorrow, configure BI connections, set up alerts
 
 ## Routing
 
