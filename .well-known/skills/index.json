@@ -42,13 +42,6 @@
       ]
     },
     {
-      "name": "clickzetta-dba-guide",
-      "description": "ClickZetta Lakehouse DBA 日常运维操作手册。集中覆盖 DBA 最常用的 6 类操作：",
-      "files": [
-        "SKILL.md"
-      ]
-    },
-    {
       "name": "clickzetta-dbt-modeling",
       "description": "dbt-clickzetta data modeling wizard. Discovers Lakehouse data sources, infers modeling strategies, generates sources.yml and model files, and runs tests.",
       "files": [

@@ -6,7 +6,7 @@
 
 ## Skills 总览
 
-当前仓库包含 31 个顶层 `clickzetta-*` skills，另有官方文档知识库 `lakehouse-doc-en`：
+当前仓库包含 30 个顶层 `clickzetta-*` skills，另有官方文档知识库 `lakehouse-doc-en`：
 
 | 类别 | Skill | 适用场景 |
 |---|---|---|
@@ -40,7 +40,6 @@
 | SDK 与外部集成 | [clickzetta-external-function](./clickzetta-external-function/) | External Function、Python/Java UDF、AI_COMPLETE、AI_EMBEDDING |
 | SDK 与外部集成 | [clickzetta-external-catalog](./clickzetta-external-catalog/) | Hive、Iceberg、Databricks、Snowflake Open Catalog 联邦查询 |
 | 运维与治理 | [clickzetta-volume-manager](./clickzetta-volume-manager/) | Volume 创建、OSS/COS/S3 挂载、PUT/GET、文件查询、导入导出 |
-| 运维与治理 | [clickzetta-dba-guide](./clickzetta-dba-guide/) | DBA 运维：集群、作业、恢复、存储优化、Schema/对象、成本分析 |
 | 运维与治理 | [clickzetta-table-lineage](./clickzetta-table-lineage/) | 基于 job_history 的表血缘和成本可视化 |
 
 ## 路由建议
@@ -60,10 +59,10 @@
 | 诊断管道质量、任务失败、链路缺陷 | `clickzetta-pipeline-review` |
 | 写 ClickZetta 原生 SQL、查函数或语法 | `lakehouse-doc-en` |
 | 从 Snowflake / Databricks / Spark SQL 迁移 | `clickzetta-sql-migration` |
-| 查询元数据、表结构、作业历史、成本归因 | `clickzetta-metadata` / `clickzetta-dba-guide` |
+| 查询元数据、表结构、作业历史、成本归因 | `clickzetta-metadata` / `lakehouse-doc-en` |
 | 查询慢、作业慢、小文件、缓存、执行计划 | `clickzetta-query-optimizer` |
 | 用户、角色、授权、脱敏、网络策略 | `lakehouse-doc-en` |
-| 集群、恢复、生命周期、数据共享 | `clickzetta-dba-guide` / `lakehouse-doc-en` |
+| 集群、恢复、生命周期、数据共享 | `lakehouse-doc-en` |
 | Volume、对象存储挂载、文件导入导出 | `clickzetta-volume-manager` |
 | Python、Java、JDBC、SQLAlchemy、BI 工具连接 | `lakehouse-doc-en` / `clickzetta-lakehouse-connect` / `clickzetta-zettapark` |
 | Spark、Flink 写入 Lakehouse | `clickzetta-spark-flink-connector` |
@@ -262,12 +261,6 @@ External Catalog 联邦查询指南，支持 Hive、Iceberg、Databricks Unity C
 Volume 对象管理指南，覆盖外部 Volume、User Volume、Table Volume。支持 OSS/COS/S3 挂载、PUT/GET/REMOVE 文件操作、SELECT FROM VOLUME 查询文件、COPY INTO TABLE 导入和 COPY INTO VOLUME 导出。
 
 适合对象存储挂载、临时文件上传、本地文件导入、数据导出、CSV/Parquet 导出等场景。
-
-#### [clickzetta-dba-guide](./clickzetta-dba-guide/)
-
-DBA 日常运维手册，集中覆盖计算集群运维、作业监控与诊断、数据恢复与保护、存储优化、Schema 与对象管理、成本和资源分析。
-
-提供可直接执行的 SQL，并标注 ClickZetta 特有限制。安全治理类操作请参考 `lakehouse-doc-en` 官方文档。
 
 #### [clickzetta-table-lineage](./clickzetta-table-lineage/)
 

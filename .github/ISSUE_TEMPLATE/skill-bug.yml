@@ -14,7 +14,6 @@ body:
         - clickzetta-cdc-sync-pipeline
         - clickzetta-data-ingest-pipeline
         - clickzetta-data-science
-        - clickzetta-dba-guide
         - clickzetta-dbt-modeling
         - clickzetta-dbt-project-setup
         - clickzetta-dbt-studio-pipeline
