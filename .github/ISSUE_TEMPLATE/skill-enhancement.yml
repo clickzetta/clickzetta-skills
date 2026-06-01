@@ -9,37 +9,36 @@ body:
       label: 涉及的 Skill（新 skill 请选"新增 skill"）
       options:
         - 新增 skill
-        - clickzetta-access-control
-        - clickzetta-ai-vector-search
+        - lakehouse-doc-en
+        - clickzetta-ai-function
         - clickzetta-batch-sync-pipeline
-        - clickzetta-bi-connect
         - clickzetta-cdc-sync-pipeline
-        - clickzetta-concepts
         - clickzetta-data-ingest-pipeline
-        - clickzetta-data-lifecycle
-        - clickzetta-data-recovery
-        - clickzetta-data-sharing
+        - clickzetta-data-science
         - clickzetta-dba-guide
+        - clickzetta-dbt-modeling
+        - clickzetta-dbt-project-setup
+        - clickzetta-dbt-studio-pipeline
         - clickzetta-dw-modeling
+        - clickzetta-dynamic-table
         - clickzetta-external-catalog
         - clickzetta-external-function
         - clickzetta-file-import-pipeline
-        - clickzetta-index-manager
-        - clickzetta-information-schema
         - clickzetta-kafka-ingest-pipeline
         - clickzetta-lakehouse-connect
-        - clickzetta-manage-comments
-        - clickzetta-metadata-query
-        - clickzetta-monitoring
+        - clickzetta-metadata
         - clickzetta-oss-ingest-pipeline
+        - clickzetta-overview
+        - clickzetta-pipeline-review
         - clickzetta-query-optimizer
         - clickzetta-realtime-sync-pipeline
         - clickzetta-semantic-view
-        - clickzetta-sql-pipeline-manager
+        - clickzetta-spark-flink-connector
         - clickzetta-sql-migration
-        - clickzetta-studio-overview
+        - clickzetta-sql-pipeline-manager
+        - clickzetta-studio-task-manager
+        - clickzetta-table-lineage
         - clickzetta-table-stream-pipeline
-        - clickzetta-vcluster-manager
         - clickzetta-volume-manager
         - clickzetta-zettapark
     validations:

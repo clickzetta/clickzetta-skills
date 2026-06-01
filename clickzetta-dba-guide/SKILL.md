@@ -11,8 +11,8 @@ description: |
   "OPTIMIZE", "ANALYZE TABLE", "storage usage", "DBA operations",
   "create schema", "drop schema", "rename table", "object management", "schema management".
 
-  For user/role/permission management and network policies, use clickzetta-access-control skill.
-  For cost analysis and billing, use clickzetta-cost-management skill.
+  For user/role/permission management and network policies, use lakehouse-doc-en.
+  For cost analysis and billing, use this skill or clickzetta-metadata.
   Keywords: DBA, operations, monitoring, troubleshooting, cluster management, storage
 ---
 

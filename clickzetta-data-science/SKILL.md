@@ -127,5 +127,5 @@ For other syntax errors, load `clickzetta-sql-migration` to see Snowflake/Databr
 |---|---|
 | Need to ingest raw data into Lakehouse first | `clickzetta-data-ingest-pipeline` |
 | Want to build dbt models from the feature tables | `clickzetta-dbt-modeling` |
-| Need to connect a BI tool to visualize results | `clickzetta-bi-connect` |
+| Need to connect a BI tool to visualize results | `lakehouse-doc-en` official BI / JDBC / SQLAlchemy connection docs |
 | SQL syntax errors beyond the table above | `clickzetta-sql-migration` |

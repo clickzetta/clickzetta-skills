@@ -7,7 +7,7 @@ description: |
   当用户说"查看表列表"、"查看字段"、"查看作业历史"、"SHOW TABLES"、
   "DESC TABLE"、"查看分区"、"查看权限"、"SHOW GRANTS"、"查看 Volume"、
   "费用分析"、"成本归因"、"用量统计"、"元数据查询"、"information_schema"时触发。
-  注意：本 skill 仅覆盖只读元数据查询；权限变更请使用 clickzetta-access-control。
+  注意：本 skill 仅覆盖只读元数据查询；权限变更请参考 lakehouse-doc-en 官方文档。
   Keywords: SHOW, DESC, metadata, load_history, information_schema, job history, cost analysis, CRU
 ---
 

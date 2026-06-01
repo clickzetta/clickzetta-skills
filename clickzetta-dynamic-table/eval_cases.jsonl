@@ -1,5 +1,12 @@
-{"case_id":"001","type":"should_call","user_input":"帮我创建一个 Dynamic Table，从 public.dim_studio_user_dmin_f 聚合按租户+日期统计用户数，每 60 分钟自动刷新","expected_skill":"clickzetta-dynamic-table","expected_output_contains":["DYNAMIC TABLE","REFRESH"]}
-{"case_id":"002","type":"should_call","user_input":"怎么查看动态表的刷新历史和状态","expected_skill":"clickzetta-dynamic-table","expected_output_contains":["REFRESH HISTORY"]}
-{"case_id":"003","type":"should_call","user_input":"动态表的增量刷新怎么配置？SESSION_CONFIGS 怎么用？","expected_skill":"clickzetta-dynamic-table","expected_output_contains":["SESSION_CONFIGS","增量"]}
-{"case_id":"004","type":"should_call","user_input":"静态分区 DT 和动态分区 DT 有什么区别？该怎么选？","expected_skill":"clickzetta-dynamic-table","expected_output_contains":["静态分区","动态分区"]}
-{"case_id":"005","type":"should_call","user_input":"动态表怎么修改刷新间隔和 vcluster？","expected_skill":"clickzetta-dynamic-table","expected_output_contains":["ALTER","DYNAMIC TABLE"]}
+{"case_id":"001","type":"should_call","user_input":"什么是 Dynamic Table？它和普通表、物化视图相比适合哪些增量计算场景？","expected_skill":"clickzetta-dynamic-table","expected_output_contains":["Dynamic Table","增量"]}
+{"case_id":"002","type":"should_call","user_input":"怎么创建一个每 60 分钟刷新一次的 Dynamic Table？REFRESH INTERVAL 和 vcluster 语法怎么写？","expected_skill":"clickzetta-dynamic-table","expected_output_contains":["REFRESH INTERVAL","vcluster"]}
+{"case_id":"003","type":"should_call","user_input":"Dynamic Table 增量刷新失败时，cz.optimizer.incremental.force.full.refresh 和 try.incremental.refresh.enabled 分别怎么用？","expected_skill":"clickzetta-dynamic-table","expected_output_contains":["force.full.refresh","try.incremental"]}
+{"case_id":"004","type":"should_call","user_input":"Dynamic Table 里维表 JOIN 怎么配置 mv_const_tables？维表变更后历史结果会自动修正吗？","expected_skill":"clickzetta-dynamic-table","expected_output_contains":["mv_const_tables","维表"]}
+{"case_id":"005","type":"should_call","user_input":"Dynamic Table 的 state table 什么时候要显式开启？lifecycle、rebuild、specified schema 分别解决什么问题？","expected_skill":"clickzetta-dynamic-table","expected_output_contains":["state table","lifecycle"]}
+{"case_id":"006","type":"should_call","user_input":"Dynamic Table 性能优化时，为什么建议 INNER JOIN、减少 DISTINCT、窗口函数加 PARTITION BY？","expected_skill":"clickzetta-dynamic-table","expected_output_contains":["INNER JOIN","PARTITION BY"]}
+{"case_id":"007","type":"should_call","user_input":"源表每次变更量超过 20% 时，Dynamic Table 增量刷新一定更快吗？怎么判断是否应该全量刷新？","expected_skill":"clickzetta-dynamic-table","expected_output_contains":["20%","全量"]}
+{"case_id":"008","type":"should_call","user_input":"非分区 Dynamic Table 读取持续写入的明细表并用 ROW_NUMBER 去重，会有什么长期风险？","expected_skill":"clickzetta-dynamic-table","expected_output_contains":["ROW_NUMBER","MERGE INTO"]}
+{"case_id":"009","type":"should_call","user_input":"Dynamic Table 支持哪些 SQL 模式？JOIN、聚合、窗口函数和非确定性函数有什么限制？","expected_skill":"clickzetta-dynamic-table","expected_output_contains":["SQL","窗口函数"]}
+{"case_id":"010","type":"should_call","user_input":"把 Hive 的 CREATE TABLE 加 INSERT OVERWRITE 转成 Dynamic Table 时，${ds} 这类占位符怎么转 SESSION_CONFIGS？","expected_skill":"clickzetta-dynamic-table","expected_output_contains":["SESSION_CONFIGS","INSERT OVERWRITE"]}
+{"case_id":"011","type":"should_call","user_input":"SQL 转 Dynamic Table 时，静态分区值要怎么注入 SELECT，并生成 refresh、prev_refresh、backfill 文件？","expected_skill":"clickzetta-dynamic-table","expected_output_contains":["静态分区","backfill"]}
+{"case_id":"012","type":"should_call","user_input":"帮我在阿里云上创建一个 Dynamic Table demo，说明创建语法、刷新方式和增量配置注意事项。","expected_skill":"clickzetta-dynamic-table","expected_output_contains":["Dynamic Table","demo"]}

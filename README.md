@@ -6,15 +6,15 @@
 
 ## Skills 总览
 
-当前仓库包含 37 个顶层 `clickzetta-*` skills：
+当前仓库包含 31 个顶层 `clickzetta-*` skills，另有官方文档知识库 `lakehouse-doc-en`：
 
 | 类别 | Skill | 适用场景 |
 |---|---|---|
+| 官方文档 | [lakehouse-doc-en](./lakehouse-doc-en/) | Singdata Lakehouse 官方文档知识库：SQL、函数、权限、VCluster、数据共享、SDK、BI、AI 函数等 |
 | 基础与连接 | [clickzetta-overview](./clickzetta-overview/) | ClickZetta 产品全貌、对象模型、架构、Studio 模块、品牌与服务地址 |
 | 基础与连接 | [clickzetta-lakehouse-connect](./clickzetta-lakehouse-connect/) | Python SDK、ZettaPark、SQLAlchemy、JDBC 等连接配置 |
 | 基础与连接 | [clickzetta-sql-migration](./clickzetta-sql-migration/) | 从 Snowflake / Databricks / Spark SQL 迁移到 ClickZetta 的语法差异、函数对照、隐式转换规则 |
 | 基础与连接 | [clickzetta-metadata](./clickzetta-metadata/) | SHOW/DESC 命令族、INFORMATION_SCHEMA 元数据、费用和用量统计 |
-| 基础与连接 | [clickzetta-manage-comments](./clickzetta-manage-comments/) | Schema、表、字段、动态表、物化视图、VCluster、Workspace 注释管理 |
 | 数据导入与管道 | [clickzetta-data-ingest-pipeline](./clickzetta-data-ingest-pipeline/) | 数据导入方案路由，根据数据源、实时性、范围选择最佳导入方式 |
 | 数据导入与管道 | [clickzetta-file-import-pipeline](./clickzetta-file-import-pipeline/) | URL、本地文件、Volume 文件导入，格式推断、建表、COPY INTO |
 | 数据导入与管道 | [clickzetta-oss-ingest-pipeline](./clickzetta-oss-ingest-pipeline/) | OSS/S3/COS 对象存储批量导入或 PIPE 持续导入 |
@@ -26,26 +26,21 @@
 | 数据导入与管道 | [clickzetta-table-stream-pipeline](./clickzetta-table-stream-pipeline/) | Table Stream 变更捕获、offset 管理、增量 ETL 消费 |
 | 数据导入与管道 | [clickzetta-studio-task-manager](./clickzetta-studio-task-manager/) | Studio 任务类型、目录、调度、依赖、cz-cli task 命令族和建管分离规范 |
 | 数据导入与管道 | [clickzetta-pipeline-review](./clickzetta-pipeline-review/) | 数据管道 Review、任务/表/运行记录发现、问题诊断与修复建议 |
+| 数据导入与管道 | [clickzetta-dbt-studio-pipeline](./clickzetta-dbt-studio-pipeline/) | 将 dbt models 发布为 Studio 资产并配置调度执行 |
 | 建模与计算 | [clickzetta-dw-modeling](./clickzetta-dw-modeling/) | 数仓建模、ODS/DWD/DWS/ADS、Medallion 架构、DDL 与管道设计 |
+| 建模与计算 | [clickzetta-dbt-project-setup](./clickzetta-dbt-project-setup/) | dbt-clickzetta 项目初始化、profiles.yml、分层规范和项目配置 |
+| 建模与计算 | [clickzetta-dbt-modeling](./clickzetta-dbt-modeling/) | dbt-clickzetta 建模向导：sources、models、增量策略和测试 |
 | 建模与计算 | [clickzetta-dynamic-table](./clickzetta-dynamic-table/) | Dynamic Table 创建、增量刷新、ALTER、性能优化和最佳实践 |
 | 建模与计算 | [clickzetta-query-optimizer](./clickzetta-query-optimizer/) | 慢查询、EXPLAIN、Result Cache、OPTIMIZE、Hints、Sort Key 调优 |
-| 建模与计算 | [clickzetta-index-manager](./clickzetta-index-manager/) | Bloom Filter、倒排索引、向量索引创建、构建、删除、查看 |
 | 建模与计算 | [clickzetta-data-science](./clickzetta-data-science/) | 数据科学工作流：Jupyter、EDA、特征工程、采样、推理、向量检索 |
 | 建模与计算 | [clickzetta-semantic-view](./clickzetta-semantic-view/) | Semantic View 语义层、逻辑表、维度、指标、过滤器和查询 |
-| SDK 与外部集成 | [clickzetta-app-python-sdk](./clickzetta-app-python-sdk/) | Python 应用 SDK：connector、BulkLoad、IGS 实时写入、SQLAlchemy |
 | SDK 与外部集成 | [clickzetta-zettapark](./clickzetta-zettapark/) | ZettaPark DataFrame API、Session、表读写、文件操作、SQL 执行 |
-| SDK 与外部集成 | [clickzetta-java-sdk](./clickzetta-java-sdk/) | Java SDK BulkloadStream batch writes and RealtimeStream Kafka real-time writes |
 | SDK 与外部集成 | [clickzetta-spark-flink-connector](./clickzetta-spark-flink-connector/) | Spark Connector 读写、Flink CDC/append-only 写入 |
-| SDK 与外部集成 | [clickzetta-bi-connect](./clickzetta-bi-connect/) | Superset、Tableau、Metabase、DBeaver、DataGrip、FineBI、PowerBI 连接 |
+| SDK 与外部集成 | [clickzetta-ai-function](./clickzetta-ai-function/) | 内置 AI_COMPLETE / AI_EMBEDDING 函数和 AI API Connection |
 | SDK 与外部集成 | [clickzetta-external-function](./clickzetta-external-function/) | External Function、Python/Java UDF、AI_COMPLETE、AI_EMBEDDING |
 | SDK 与外部集成 | [clickzetta-external-catalog](./clickzetta-external-catalog/) | Hive、Iceberg、Databricks、Snowflake Open Catalog 联邦查询 |
-| 运维与治理 | [clickzetta-access-control](./clickzetta-access-control/) | 用户、角色、GRANT/REVOKE、动态脱敏、网络策略 |
-| 运维与治理 | [clickzetta-vcluster-manager](./clickzetta-vcluster-manager/) | VCluster 创建、启停、扩缩容、自动挂起、缓存预加载 |
 | 运维与治理 | [clickzetta-volume-manager](./clickzetta-volume-manager/) | Volume 创建、OSS/COS/S3 挂载、PUT/GET、文件查询、导入导出 |
-| 运维与治理 | [clickzetta-monitoring](./clickzetta-monitoring/) | SHOW JOBS、job_history、慢查询、失败作业、集群负载、缓存命中率 |
 | 运维与治理 | [clickzetta-dba-guide](./clickzetta-dba-guide/) | DBA 运维：集群、作业、恢复、存储优化、Schema/对象、成本分析 |
-| 运维与治理 | [clickzetta-data-retention](./clickzetta-data-retention/) | TTL 生命周期、Time Travel、UNDROP、RESTORE、历史版本查询 |
-| 运维与治理 | [clickzetta-data-sharing](./clickzetta-data-sharing/) | Share 跨账户/跨实例零复制数据共享 |
 | 运维与治理 | [clickzetta-table-lineage](./clickzetta-table-lineage/) | 基于 job_history 的表血缘和成本可视化 |
 
 ## 路由建议
@@ -60,16 +55,29 @@
 | 从文件、URL、对象存储或 Kafka 导入数据 | `clickzetta-file-import-pipeline` / `clickzetta-oss-ingest-pipeline` / `clickzetta-kafka-ingest-pipeline` |
 | 做离线同步、实时同步、多表 CDC | `clickzetta-batch-sync-pipeline` / `clickzetta-realtime-sync-pipeline` / `clickzetta-cdc-sync-pipeline` |
 | 管理 Studio 任务、调度、依赖、补数、任务目录 | `clickzetta-studio-task-manager` |
+| 初始化 dbt 项目、写 dbt model、发布 dbt 调度 | `clickzetta-dbt-project-setup` / `clickzetta-dbt-modeling` / `clickzetta-dbt-studio-pipeline` |
 | 设计数据管道、动态表、流式增量 ETL | `clickzetta-sql-pipeline-manager` / `clickzetta-dynamic-table` / `clickzetta-table-stream-pipeline` |
 | 诊断管道质量、任务失败、链路缺陷 | `clickzetta-pipeline-review` |
-| 写 SQL、迁移 SQL、查函数或语法差异 | `clickzetta-sql-migration`（迁移/对比时）+ ClickZetta 官方文档（写 ClickZetta 原生 SQL 时） |
-| 查询元数据、表结构、作业历史、成本归因 | `clickzetta-metadata` / `clickzetta-monitoring` |
+| 写 ClickZetta 原生 SQL、查函数或语法 | `lakehouse-doc-en` |
+| 从 Snowflake / Databricks / Spark SQL 迁移 | `clickzetta-sql-migration` |
+| 查询元数据、表结构、作业历史、成本归因 | `clickzetta-metadata` / `clickzetta-dba-guide` |
 | 查询慢、作业慢、小文件、缓存、执行计划 | `clickzetta-query-optimizer` |
-| 用户、角色、授权、脱敏、网络策略 | `clickzetta-access-control` |
-| 集群、Volume、DBA 运维、恢复、生命周期 | `clickzetta-vcluster-manager` / `clickzetta-volume-manager` / `clickzetta-dba-guide` / `clickzetta-data-retention` |
-| Python、Java、Spark、Flink、BI 工具集成 | `clickzetta-app-python-sdk` / `clickzetta-java-sdk` / `clickzetta-spark-flink-connector` / `clickzetta-bi-connect` |
+| 用户、角色、授权、脱敏、网络策略 | `lakehouse-doc-en` |
+| 集群、恢复、生命周期、数据共享 | `clickzetta-dba-guide` / `lakehouse-doc-en` |
+| Volume、对象存储挂载、文件导入导出 | `clickzetta-volume-manager` |
+| Python、Java、JDBC、SQLAlchemy、BI 工具连接 | `lakehouse-doc-en` / `clickzetta-lakehouse-connect` / `clickzetta-zettapark` |
+| Spark、Flink 写入 Lakehouse | `clickzetta-spark-flink-connector` |
+| AI_COMPLETE、AI_EMBEDDING、External Function | `clickzetta-ai-function` / `clickzetta-external-function` |
 
 ## Skills 列表
+
+### 官方文档
+
+#### [lakehouse-doc-en](./lakehouse-doc-en/)
+
+Singdata Lakehouse 官方文档知识库，按用户问题在 `references/` 下定位对应官方文档。覆盖 SQL 语法、内置函数、权限、VCluster、数据共享、Time Travel、SDK、BI、AI 函数等已经从专项 skill 收敛到官方文档的知识。
+
+适用于原生语法查询、已删除专项 skill 的知识兜底，以及需要以官方文档为准的问答。
 
 ### 基础与连接
 
@@ -95,13 +103,7 @@ ClickZetta Lakehouse SQL 迁移指南，专注于从 Snowflake、Databricks、Sp
 
 ClickZetta 元数据查询入口，统一覆盖 SHOW/DESC 命令族和 INFORMATION_SCHEMA 视图。SHOW/DESC 适合实时查看单个对象状态，INFORMATION_SCHEMA 适合跨对象统计、作业分析、权限审计、费用归因和用量分析。
 
-适用于查看表列表、字段、分区、权限、Volume、作业历史、对象成本、工作空间级或实例级元数据等只读场景。权限变更和授权操作应使用 `clickzetta-access-control`。
-
-#### [clickzetta-manage-comments](./clickzetta-manage-comments/)
-
-管理 ClickZetta Lakehouse 各类对象注释（COMMENT）。支持 Schema、普通表、外部表、字段、动态表、物化视图、VCluster、Workspace 的注释增加、修改和删除。
-
-ClickZetta 的注释语法与标准 SQL `COMMENT ON ...` 不同，本 skill 固化了各对象类型的正确 ALTER 语法、字段注释写法和单引号转义规则。
+适用于查看表列表、字段、分区、权限、Volume、作业历史、对象成本、工作空间级或实例级元数据等只读场景。权限变更和授权操作请参考 `lakehouse-doc-en` 官方文档。
 
 ### 数据导入与管道
 
@@ -171,6 +173,12 @@ Kafka 数据接入管道工作流，覆盖连接验证、数据探查、目标�
 
 重点识别调度依赖缺失、DDL 幂等问题、分层跳层、Dynamic Table 反模式、任务失败、数据不一致等问题，并按优先级给出修复建议。
 
+#### [clickzetta-dbt-studio-pipeline](./clickzetta-dbt-studio-pipeline/)
+
+将 dbt models 发布到 Studio 进行统一代码管理，并为需要周期执行的 models 配置调度。读取 dbt `manifest.json`，将 SQL 重写为适配 Studio 调度参数的任务资产。
+
+适合把 dbt 项目纳入 Studio 资产、调度、依赖、重试策略和运维体系。
+
 ### 建模与计算
 
 #### [clickzetta-dw-modeling](./clickzetta-dw-modeling/)
@@ -179,23 +187,29 @@ ClickZetta Lakehouse 数仓建模向导。支持传统 ODS/DWD/DWS/ADS 分层、
 
 适合设计事实表、维度表、宽表、星型/雪花模型、分层 schema、端到端数据流转。核心原则是聚合计算层优先使用 Dynamic Table，不推荐物化视图承载主链路计算。
 
+#### [clickzetta-dbt-project-setup](./clickzetta-dbt-project-setup/)
+
+dbt-clickzetta 项目初始化向导，覆盖安装检查、`profiles.yml` 连接配置、分层规范、`dbt_project.yml` 生成和端到端 ELT 标准。
+
+适合从零创建 dbt 项目、配置 dbt-clickzetta adapter、建立 ODS/DWD/DWS/ADS 或 Bronze/Silver/Gold 分层。
+
+#### [clickzetta-dbt-modeling](./clickzetta-dbt-modeling/)
+
+dbt-clickzetta 建模向导，会先探索 Lakehouse 数据源，再推导建模策略，生成 `sources.yml`、model SQL 和测试配置。
+
+适合把原始表转成可分析的数据集、构建事实表/维度表、设计增量模型、补齐 dbt tests。
+
 #### [clickzetta-dynamic-table](./clickzetta-dynamic-table/)
 
 Dynamic Table 使用指南，覆盖动态表创建、刷新配置、增量计算、ALTER 操作、刷新历史、性能优化和最佳实践。包含静态分区 DT、动态分区 DT、维度表 JOIN、状态表、MERGE INTO、非分区表风险等内容。
 
-目录下还包含子 skill：`dt-creator` 用于创建动态表，`dynamic-table-alter` 用于修改动态表结构和属性。
+目录下还包含子目录：`dt-creator` 用于创建动态表，`sql-to-dt` 用于 SQL 转动态表，`best-practices` 用于最佳实践和性能调优。
 
 #### [clickzetta-query-optimizer](./clickzetta-query-optimizer/)
 
 ClickZetta SQL 性能诊断和优化工作流。覆盖慢查询排查、EXPLAIN 执行计划分析、SHOW JOBS / job_history 作业定位、Result Cache、小文件合并、Map Join、Sort Key 和 Hint 调优。
 
 适用于“查询慢”“作业耗时高”“小文件太多”“执行计划怎么看”“缓存没命中”等性能问题。
-
-#### [clickzetta-index-manager](./clickzetta-index-manager/)
-
-管理 Bloom Filter、倒排索引和向量索引三类索引。覆盖索引类型选择、创建、构建存量数据、查看和删除等完整生命周期。
-
-Bloom Filter 适合等值查询加速，倒排索引用于全文检索，向量索引用于语义相似度搜索和 RAG 类场景。
 
 #### [clickzetta-data-science](./clickzetta-data-science/)
 
@@ -211,23 +225,11 @@ Bloom Filter 适合等值查询加速，倒排索引用于全文检索，向量�
 
 ### SDK 与外部集成
 
-#### [clickzetta-app-python-sdk](./clickzetta-app-python-sdk/)
-
-Python 应用程序集成 ClickZetta 的官方 SDK 用法。覆盖 `clickzetta-connector-python` SQL 查询、参数绑定、批量插入、异步执行，`clickzetta-ingestion-python` BulkLoad 批量上传，以及 `clickzetta-ingestion-python-v2` IGS 实时写入。
-
-也包含 SQLAlchemy dialect 集成、连接参数、executemany、execute_async、主键表 CDC、UPSERT/DELETE 等应用开发常见模式。
-
 #### [clickzetta-zettapark](./clickzetta-zettapark/)
 
 ZettaPark Python DataFrame API 使用指南。ZettaPark 提供类 pandas 的开发体验，将 DataFrame 操作翻译为 SQL 在 Lakehouse 中分布式执行。
 
 覆盖 Session 创建、DataFrame 读取、filter/select/join/groupBy、collect/to_pandas/show、save_as_table、PUT/GET 文件操作和 SQL 执行。
-
-#### [clickzetta-java-sdk](./clickzetta-java-sdk/)
-
-ClickZetta Java SDK data write guide covering the BulkloadStream and RealtimeStream interfaces. BulkloadStream is best for local file or database batch uploads, while RealtimeStream is best for Kafka real-time consumption and writes.
-
-Includes Maven dependencies, JDBC URL parameters, row write APIs, status monitoring, Options tuning, and common error handling.
 
 #### [clickzetta-spark-flink-connector](./clickzetta-spark-flink-connector/)
 
@@ -235,11 +237,11 @@ Spark Connector 和 Flink Write Connector 集成指南。覆盖 Spark DataFrame 
 
 适合 Spark/Flink 作业写入 Lakehouse，尤其是 Flink CDC 主键表写入和 append-only 流式写入。
 
-#### [clickzetta-bi-connect](./clickzetta-bi-connect/)
+#### [clickzetta-ai-function](./clickzetta-ai-function/)
 
-BI 工具和数据库客户端连接指南。覆盖 Apache Superset、Tableau、Metabase、DBeaver、DataGrip、帆软 FineBI、PowerBI、Navicat 等工具的 JDBC、SQLAlchemy 或 MySQL 协议连接配置。
+AI 函数指南，覆盖 `AI_COMPLETE`、`AI_EMBEDDING`、AI API Connection、模型调用参数、文本生成和向量化等场景。
 
-包含 JDBC 连接字符串、驱动类、驱动下载、SQLAlchemy URL、Superset Docker 快速启动等配置说明。
+适合在 SQL 中直接调用 LLM、生成 embeddings、做文本处理或构建向量检索前置数据。
 
 #### [clickzetta-external-function](./clickzetta-external-function/)
 
@@ -255,47 +257,17 @@ External Catalog 联邦查询指南，支持 Hive、Iceberg、Databricks Unity C
 
 ### 运维与治理
 
-#### [clickzetta-access-control](./clickzetta-access-control/)
-
-用户、角色、权限和安全治理工作流。覆盖已有账户用户加入工作空间、自定义角色、GRANT/REVOKE 细粒度授权、SHOW GRANTS 权限查看、动态脱敏策略和网络策略。
-
-推荐优先使用 RBAC 角色管理权限，而非直接对用户逐个授权。适合授权、撤权、创建角色、列级安全、敏感数据保护、IP 白名单/黑名单等场景。
-
-#### [clickzetta-vcluster-manager](./clickzetta-vcluster-manager/)
-
-VCluster 计算集群生命周期管理。覆盖通用型、分析型、同步型集群创建，启动/停止，规格调整，弹性扩缩容，自动挂起/自动恢复，缓存预加载和状态查看。
-
-适合 ETL、BI 高并发、数据同步等不同负载的集群选择和运维。
-
 #### [clickzetta-volume-manager](./clickzetta-volume-manager/)
 
 Volume 对象管理指南，覆盖外部 Volume、User Volume、Table Volume。支持 OSS/COS/S3 挂载、PUT/GET/REMOVE 文件操作、SELECT FROM VOLUME 查询文件、COPY INTO TABLE 导入和 COPY INTO VOLUME 导出。
 
 适合对象存储挂载、临时文件上传、本地文件导入、数据导出、CSV/Parquet 导出等场景。
 
-#### [clickzetta-monitoring](./clickzetta-monitoring/)
-
-作业监控和运行分析指南。覆盖 SHOW JOBS 实时作业查看、information_schema.job_history 历史分析、慢查询识别、失败作业排查、集群负载、缓存命中率、query_tag 作业追踪等。
-
-也可辅助进行表、列、schema、workspace 等元数据盘点，但复杂元数据查询优先使用 `clickzetta-metadata`。
-
 #### [clickzetta-dba-guide](./clickzetta-dba-guide/)
 
 DBA 日常运维手册，集中覆盖计算集群运维、作业监控与诊断、数据恢复与保护、存储优化、Schema 与对象管理、成本和资源分析。
 
-提供可直接执行的 SQL，并标注 ClickZetta 特有限制。安全治理类操作应使用 `clickzetta-access-control`。
-
-#### [clickzetta-data-retention](./clickzetta-data-retention/)
-
-数据生命周期和恢复工作流。覆盖 TTL 自动回收（`data_lifecycle`）、Time Travel 保留周期（`data_retention_days`）、历史数据查询（TIMESTAMP AS OF）、误删表恢复（UNDROP TABLE）、表回滚（RESTORE TABLE）和历史版本查看（DESC HISTORY）。
-
-适合设置表数据过期、自动清理、查看历史版本、恢复误删表、回滚误操作等场景。
-
-#### [clickzetta-data-sharing](./clickzetta-data-sharing/)
-
-跨账户/跨实例数据分享指南。通过 Share 实现无复制实时共享表或视图，覆盖提供方 `CREATE SHARE`、`GRANT TO SHARE`、`ALTER SHARE ADD INSTANCE`，以及消费方 `SHOW SHARES`、`DESC SHARE`、`CREATE SCHEMA FROM SHARE` 和查询。
-
-适合将数据分享给其他团队、公司或实例，或接收外部共享数据。
+提供可直接执行的 SQL，并标注 ClickZetta 特有限制。安全治理类操作请参考 `lakehouse-doc-en` 官方文档。
 
 #### [clickzetta-table-lineage](./clickzetta-table-lineage/)
 
@@ -315,7 +287,7 @@ clickzetta-xxx/
 └── evals/                # 可选，结构化评测数据
 ```
 
-少数 skill 还包含子 skill 或最佳实践文档，例如 `clickzetta-dynamic-table/dt-creator/`、`clickzetta-dynamic-table/dynamic-table-alter/` 和 `clickzetta-dynamic-table/best-practices/`。
+少数 skill 还包含子 skill 或最佳实践文档，例如 `clickzetta-dynamic-table/dt-creator/`、`clickzetta-dynamic-table/sql-to-dt/` 和 `clickzetta-dynamic-table/best-practices/`。
 
 ## 使用方式
 

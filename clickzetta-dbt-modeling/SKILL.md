@@ -337,7 +337,7 @@ Present the following options after modeling is complete — let the user choose
 **A. Publish model code to Studio as assets** → `clickzetta-dbt-studio-pipeline`
 Publish SQL code to Studio for unified code management. Only `table` / `incremental` / `snapshot` models need scheduling — `dynamic_table` models self-refresh and do not need Studio cron tasks.
 
-**B. Connect BI tools and start reporting** → `clickzetta-bi-connect`
+**B. Connect BI tools and start reporting** → `lakehouse-doc-en` official BI / JDBC / SQLAlchemy connection docs
 Connect marts layer tables to Tableau / Metabase / FineReport or other BI tools for direct query and analysis.
 
 **C. Configure data quality monitoring**
