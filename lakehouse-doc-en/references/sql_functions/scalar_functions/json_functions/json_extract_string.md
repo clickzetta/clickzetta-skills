@@ -32,6 +32,6 @@ SELECT json_extract_string(PARSE_JSON('{"name":null}'), '$.name');
 
 ## Related Documentation
 
-- [JSON_EXTRACT_INT](sql_functions/scalar_functions/json_functions/json_extract_int.md), [JSON_EXTRACT_DOUBLE](sql_functions/scalar_functions/json_functions/json_extract_double.md), [JSON_EXTRACT_BOOLEAN](sql_functions/scalar_functions/json_functions/json_extract_boolean.md)
-- [GET_JSON_OBJECT](sql_functions/scalar_functions/json_functions/get_json_object.md) — similar functionality, accepts a string type as input
-- [PARSE_JSON](sql_functions/scalar_functions/json_functions/json_parse.md)
+- [JSON_EXTRACT_INT](json_extract_int.md), [JSON_EXTRACT_DOUBLE](json_extract_double.md), [JSON_EXTRACT_BOOLEAN](json_extract_boolean.md)
+- [GET_JSON_OBJECT](get_json_object.md) — similar functionality, accepts a string type as input
+- [PARSE_JSON](json_parse.md)

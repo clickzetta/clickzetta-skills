@@ -3,7 +3,7 @@
 N8N's Agent node supports directly integrating [tools](https://modelcontextprotocol.io/docs/concepts/tools) from external [MCP](https://modelcontextprotocol.io/introduction) servers. This provides a new way to integrate Lakehouse with your N8N AI workflows.
 Lakehouse MCP Server achieves integration with N8N through this approach, allowing the rich tools from Lakehouse MCP Server to be easily invoked in N8N's Agent node.
 
-First, you need to deploy a [Lakehouse MCP Server that supports the SSE protocol](LakehouseMCPServer_intro.md).
+First, you need to deploy a [Lakehouse MCP Server that supports the SSE protocol](lakehousemcpserver_intro.md).
 
 ## Adding MCP Client in N8N Workflow AI Agent Node
 

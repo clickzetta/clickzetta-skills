@@ -36,6 +36,6 @@ SELECT nvl2(0, 'not null', 'null result');
 
 ## Related Documentation
 
-- [NVL](sql_functions/scalar_functions/conditional_functions/nvl.md) — two-argument version that returns a default value when NULL
-- [NULLIF](sql_functions/scalar_functions/conditional_functions/nullif.md)
-- [COALESCE](sql_functions/scalar_functions/conditional_functions/coalesce.md)
+- [NVL](nvl.md) — two-argument version that returns a default value when NULL
+- [NULLIF](nullif.md)
+- [COALESCE](coalesce.md)

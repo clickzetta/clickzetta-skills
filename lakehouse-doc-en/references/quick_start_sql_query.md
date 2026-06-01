@@ -10,7 +10,7 @@ Before reading this guide, we recommend reviewing the following documents:
 
 * [Lakehouse Product Introduction](what_is_clickzetta_lakehouse.md)
 * [Key Concepts](key-concepts.md)
-* [Lakehouse Studio Quick Tour](LakehouseStudio-tour.md)
+* [Lakehouse Studio Quick Tour](lakehousestudio-tour.md)
 
 ## How-to Guide
 

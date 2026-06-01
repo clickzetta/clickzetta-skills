@@ -2,7 +2,7 @@
 
 ## Overview
 
-Singdata Lakehouse provides unified management of data lake files and data warehouse tables through its abstract storage layer ([Volume](datalake_volume.md), [Schema](schema.md), and [Table](table.md)) and Python API. This guide demonstrates how to perform file management operations in the data lake, including uploading (PUT), downloading (GET), and listing (LIST) files.
+Singdata Lakehouse provides unified management of data lake files and data warehouse tables through its abstract storage layer ([Volume](datalake_volume.md), [Schema](om-schema.md), and [Table](om-table.md)) and Python API. This guide demonstrates how to perform file management operations in the data lake, including uploading (PUT), downloading (GET), and listing (LIST) files.
 
 **Key Concepts**:
 
@@ -161,3 +161,5 @@ Through this guide, you have learned how to:
 
 * [Get the source code from the GitHub repository](https://github.com/yunqiqiliang/clickzetta_quickstart/blob/main/Zettapark/Managing%20Files%20on%20Datalake%20Volume%20with%20Zettapark.ipynb)
 * [Get more Zettapark Python API examples](https://github.com/yunqiqiliang/clickzetta_quickstart/tree/main/Zettapark-examples/Notebook)
+
+^

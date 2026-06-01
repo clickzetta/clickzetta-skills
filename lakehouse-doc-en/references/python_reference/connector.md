@@ -244,5 +244,5 @@ print(results)
 | [BulkLoad](../java_reference/bulkload-upload.md) | High-speed bulk writes at millions-of-rows scale |
 | [Parameter Management](../set-properties.md) | SQL hints and session parameter reference |
 | [Connect to Lakehouse](../tutorial_connect_to_lakehouse.md) | Overview of all connection methods |
-| [**Usage Examples (complete scenarios)**](python_reference/connector_examples.md) | Bulk writes, conditional queries, aggregation, CSV export, async execution, and more |
-| [**Advanced Usage**](python_reference/connector_advanced.md) | fetch_pandas, performance analysis, query cancellation, dynamic schema switching, and more |
+| [**Usage Examples (complete scenarios)**](connector_examples.md) | Bulk writes, conditional queries, aggregation, CSV export, async execution, and more |
+| [**Advanced Usage**](connector_advanced.md) | fetch_pandas, performance analysis, query cancellation, dynamic schema switching, and more |

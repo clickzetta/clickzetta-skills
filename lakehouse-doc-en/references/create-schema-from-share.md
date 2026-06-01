@@ -35,6 +35,18 @@ Extract the schema `sample_schema` from the `share_demo` share of the service in
 CREATE SCHEMA data_from_share_demo FROM SHARE y237xm2x.share_demo.sample_schema;
 ```
 
+After mounting, you can query the shared data directly just like a local table, or join it with local tables:
+
+```SQL
+-- Query shared table directly
+SELECT * FROM data_from_share_demo.orders LIMIT 10;
+
+-- Join with a local table
+SELECT o.*, c.name
+FROM data_from_share_demo.orders o
+JOIN my_schema.customers c ON o.customer_id = c.id;
+```
+
 ## Related Statements
 
 * [SHOW SHARES](show-shares.md)

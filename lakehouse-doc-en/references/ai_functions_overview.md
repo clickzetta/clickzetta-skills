@@ -60,7 +60,7 @@ FROM orders;
 
 | Function | Description |
 |------|----------|
-| [AI_COMPLETE](AI_COMPLETE.md) | General-purpose LLM completion with custom prompts; suitable for complex reasoning, code generation, and more |
+| [AI_COMPLETE](ai_complete.md) | General-purpose LLM completion with custom prompts; suitable for complex reasoning, code generation, and more |
 | [AI_SUMMARIZE](ai_summarize.md) | Generate text summaries; supports `max_words` to control summary length |
 | [AI_TRANSLATE](ai_translate.md) | Multi-language translation with automatic source language detection; supports 20+ languages |
 | [AI_FIX_GRAMMAR](ai_fix_grammar.md) | Grammar and spelling correction; supports Chinese, English, and mixed-language text |
@@ -78,7 +78,7 @@ FROM orders;
 
 | Function | Description |
 |------|----------|
-| [AI_EMBEDDING](AI_EMBEDDING.md) | Convert text to high-dimensional vectors for semantic retrieval, recommendations, and more |
+| [AI_EMBEDDING](ai_embedding.md) | Convert text to high-dimensional vectors for semantic retrieval, recommendations, and more |
 | [AI_SIMILARITY](ai_similarity.md) | Compute cosine similarity between two texts based on embeddings; returns a score in [0, 1] |
 
 ### Multimodal Processing
@@ -88,7 +88,7 @@ FROM orders;
 | [AI_TRANSCRIBE](ai_transcribe.md) | Transcribe audio files in a Volume to text (ASR) |
 | [AI_CLASSIFY](ai_classify.md) | Supports image input for classifying image content |
 | [AI_EXTRACT](ai_extract.md) | Supports image input for extracting structured information from images |
-| [AI_COMPLETE](AI_COMPLETE.md) | Supports image input for generating responses combining images and text prompts |
+| [AI_COMPLETE](ai_complete.md) | Supports image input for generating responses combining images and text prompts |
 
 ---
 
@@ -103,10 +103,10 @@ FROM orders;
 | Multi-language content translation | [AI_TRANSLATE](ai_translate.md) |
 | UGC content cleaning, text correction | [AI_FIX_GRAMMAR](ai_fix_grammar.md) |
 | Data masking, compliance processing | [AI_MASK](ai_mask.md) |
-| Semantic search, similarity recommendations | [AI_EMBEDDING](AI_EMBEDDING.md) + [AI_SIMILARITY](ai_similarity.md) |
+| Semantic search, similarity recommendations | [AI_EMBEDDING](ai_embedding.md) + [AI_SIMILARITY](ai_similarity.md) |
 | Customer service recording transcription and analysis | [AI_TRANSCRIBE](ai_transcribe.md) + [AI_CLASSIFY](ai_classify.md) / [AI_EXTRACT](ai_extract.md) |
 | Image content recognition and structuring | [AI_CLASSIFY](ai_classify.md) / [AI_EXTRACT](ai_extract.md) (image mode) |
-| Complex reasoning, code generation, custom tasks | [AI_COMPLETE](AI_COMPLETE.md) |
+| Complex reasoning, code generation, custom tasks | [AI_COMPLETE](ai_complete.md) |
 
 ---
 
@@ -246,7 +246,7 @@ FROM products;
 
 ## Related Documentation
 
-- [AI_COMPLETE](AI_COMPLETE.md) — General-purpose LLM completion for custom prompt scenarios
+- [AI_COMPLETE](ai_complete.md) — General-purpose LLM completion for custom prompt scenarios
 - [AI_CLASSIFY](ai_classify.md) — Text and image classification
 - [AI_EXTRACT](ai_extract.md) — Extract structured JSON from text or images
 - [AI_SENTIMENT](ai_sentiment.md) — Sentiment analysis
@@ -254,6 +254,6 @@ FROM products;
 - [AI_TRANSLATE](ai_translate.md) — Multi-language translation
 - [AI_FIX_GRAMMAR](ai_fix_grammar.md) — Grammar and spelling correction
 - [AI_MASK](ai_mask.md) — PII sensitive data masking
-- [AI_EMBEDDING](AI_EMBEDDING.md) — Text vectorization
+- [AI_EMBEDDING](ai_embedding.md) — Text vectorization
 - [AI_SIMILARITY](ai_similarity.md) — Semantic text similarity
 - [AI_TRANSCRIBE](ai_transcribe.md) — Audio transcription (ASR)

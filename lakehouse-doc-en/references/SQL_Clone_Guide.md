@@ -184,5 +184,5 @@ DROP TABLE IF EXISTS orders_clone_empty;
 ## Related Documentation
 
 * [CREATE...CLONE](clone-doc.md)
-* [Time Travel](TIMETRAVEL.md)
-* [UNDROP TABLE](UNDROP-TABLE.md)
+* [Time Travel](timetravel.md)
+* [UNDROP TABLE](undrop-table.md)

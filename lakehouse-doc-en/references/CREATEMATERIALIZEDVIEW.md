@@ -4,7 +4,7 @@
 
 Based on the query of existing tables, create a new materialized view in the currently specified Schema and populate the view with query data.
 
-For more detailed information, please refer to [Materialized View](MATERIALIZEDVIEW.md).
+For more detailed information, please refer to [Materialized View](materializedview.md).
 
 ## Syntax Description
 ```SQL
@@ -257,7 +257,7 @@ FROM      mv_base_a;
 
  8. refreshOption Optional, refresh option
    * START WITH timestamp\_exp Specifies the start time, supports specifying a timestamp expression. If START WITH is not written, the refresh starts from the current time
-     * The `timestamp_expression` returns a standard timestamp type expression. The earliest timestamp specified by TIMESTAMP AS OF depends on the [TIME TRAVEL](TIMETRAVEL.md)(data\_retention\_days) parameter. If the specified version does not exist, an error will be reported. If not specified, the version data of the current timestamp will be used, for example:
+     * The `timestamp_expression` returns a standard timestamp type expression. The earliest timestamp specified by TIMESTAMP AS OF depends on the [TIME TRAVEL](timetravel.md)(data\_retention\_days) parameter. If the specified version does not exist, an error will be reported. If not specified, the version data of the current timestamp will be used, for example:
        \* `'2023-11-07 14:49:18'`, a string that can be forcibly converted to a timestamp.
        \* `cast('2023-11-07 14:49:18 Asia/Shanghai' as timestamp)`.
        \* `current_timestamp() - interval '12' hours`.
@@ -273,7 +273,7 @@ CREATE MATERIALIZED VIEW mydt
     SELECT    *
     FROM      mv_base_a;
 ```
-* `interval_time` specifies the time interval and supports [interval types](INTERVAL.md). If `interval_time` is not specified but `START WITH` is provided, the refresh will only occur once at the time specified by `START WITH`. The `interval_time` intervals are as follows:
+* `interval_time` specifies the time interval and supports [interval types](interval.md). If `interval_time` is not specified but `START WITH` is provided, the refresh will only occur once at the time specified by `START WITH`. The `interval_time` intervals are as follows:
 
 | Syntax                               | Description                    | Example                                                     |
 | ------------------------------------ | ------------------------------ | ----------------------------------------------------------- |
@@ -306,7 +306,7 @@ day: The range is \[0, 2147483647]. hour: The range is \[0, 23]. minute: The ran
 
 ## Notes
 
-* The incremental refresh of the materialized view is based on the historical version of the base table. The historical version depends on the [TIME TRAVEL](TIMETRAVEL.md) (data_retention_days) parameter. If the specified version does not exist, an error will be reported. This parameter defines the length of time that deleted data is retained. By default, Lakehouse retains data for one day. Depending on your business needs, you can extend or shorten the data retention period by adjusting the `data_retention_days` parameter. Please note that adjusting the data retention period may affect storage costs. Extending the retention period will increase storage requirements, which may increase related costs.
+* The incremental refresh of the materialized view is based on the historical version of the base table. The historical version depends on the [TIME TRAVEL](timetravel.md) (data_retention_days) parameter. If the specified version does not exist, an error will be reported. This parameter defines the length of time that deleted data is retained. By default, Lakehouse retains data for one day. Depending on your business needs, you can extend or shorten the data retention period by adjusting the `data_retention_days` parameter. Please note that adjusting the data retention period may affect storage costs. Extending the retention period will increase storage requirements, which may increase related costs.
 
 ## Examples
 

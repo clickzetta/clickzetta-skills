@@ -28,9 +28,9 @@ CREATE BLOOMFILTER INDEX [IF NOT EXISTS] index_name ON TABLE
 ## Reference Documentation
 
 * [Build Index](build-index.md)
-* [Delete Index](DROP-INDEX.md)
-* [List All Indexes](SHOW-INDEX.md)
-* [View Index Details](DESC-INDEX.md)
+* [Delete Index](drop-index.md)
+* [List All Indexes](show-index.md)
+* [View Index Details](desc-index.md)
 
 ## Usage Notes
 

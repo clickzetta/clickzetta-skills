@@ -2,7 +2,7 @@
 
 A Table is the basic unit for storing data in the Lakehouse. Unlike row-oriented databases such as MySQL, Lakehouse tables use **Parquet columnar storage** — data is organized and compressed by column. Queries only need to read the relevant columns, dramatically reducing I/O. Unlike Hive's static partitioning, Lakehouse uses a **hidden partitioning** mechanism similar to Iceberg, where the partitioning strategy can be changed without affecting the data.
 
-> A table is like a "manually managed data container" — you are responsible for writing data, and the system handles efficient storage and querying. If you need to **incrementally compute** processed results from upstream data, use a [Dynamic Table](om-dynamic-table.md). If you only need **transparent acceleration** of existing queries, use a [Materialized View](MATERIALIZEDVIEW.md).
+> A table is like a "manually managed data container" — you are responsible for writing data, and the system handles efficient storage and querying. If you need to **incrementally compute** processed results from upstream data, use a [Dynamic Table](om-dynamic-table.md). If you only need **transparent acceleration** of existing queries, use a [Materialized View](materializedview.md).
 
 ## Core Features
 
@@ -158,7 +158,7 @@ CREATE TABLE users (
 - Writing data consumes VCluster CRU
 - Query cost depends on the amount of data scanned (partitions/indexes can reduce scan volume)
 
-> 💡 **Tip**: For detailed billing rules, refer to the [Billing Documentation](Billing.md).
+> 💡 **Tip**: For detailed billing rules, refer to the [Billing Documentation](billing.md).
 
 ## Lifecycle Management
 
@@ -189,5 +189,5 @@ UNDROP TABLE orders;
 - [Partitioning](partition_table_guide.md) — Partition design guide
 - [Bucketing](cluster-table-guide.md) — Bucket design guide
 - [Time Travel](timetravel-summary.md) — Querying historical data
-- [OPTIMIZE](OPTIMIZE.md) — Small file compaction
+- [OPTIMIZE](optimize.md) — Small file compaction
 - [Data Lifecycle](data-lifecycle.md) — Automatically cleaning up expired data

@@ -41,7 +41,7 @@ Data tables are the core objects for storing and processing data. All belong to 
 * [Table](table.md) — A columnar-storage structured data table supporting INSERT / UPDATE / DELETE. The foundational storage unit for all layers of a data warehouse.
 * [Dynamic Table](dynamic-table.md) — Defines transformation logic in SQL; the system automatically refreshes results incrementally. Ideal for building ODS→DWD→ADS data pipelines without manual scheduling.
 * [View](view.md) — A virtual table that stores no data and is computed dynamically at query time. Useful for encapsulating complex SQL and enforcing column-level access control.
-* [Materialized View](MATERIALIZEDVIEW.md) — Pre-computes and physically stores query results. Suitable for frequently executed fixed aggregation queries, trading storage for query speed.
+* [Materialized View](materializedview.md) — Pre-computes and physically stores query results. Suitable for frequently executed fixed aggregation queries, trading storage for query speed.
 * [External Table](external-table-guide.md) — Data resides in an external system (Delta Lake, Hudi, Kafka, etc.); Lakehouse manages only the metadata. Suitable when you want to query data in place without migrating it.
 * [Semantic View](semantic-view-overview.md) — Encapsulates multi-table JOIN and aggregation logic as a business semantic layer. BI tools and AI agents access data through semantic views, hiding the complexity of the underlying table structure.
 
@@ -90,7 +90,7 @@ Function objects belong to the **Schema level**:
 
 * [User-Defined Functions](user-external-function.md) — Encapsulate reusable computation logic in SQL or code, callable like built-in functions in any query.
   * [SQL Function](create-sql-function.md) — Defined with SQL expressions and executed within the engine. Suitable for encapsulating business rules, calculation formulas, and other pure-SQL logic.
-  * [External Function](RemoteFunction-intro.md) — Registers an external HTTP service as a SQL function. Suitable for calling LLMs for text processing, vision services for image recognition, and other AI-augmented computation scenarios.
+  * [External Function](remotefunction-intro.md) — Registers an external HTTP service as a SQL function. Suitable for calling LLMs for text processing, vision services for image recognition, and other AI-augmented computation scenarios.
 
 ### Synonyms
 

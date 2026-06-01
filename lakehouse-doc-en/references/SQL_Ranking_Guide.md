@@ -249,6 +249,6 @@ DROP TABLE IF EXISTS performance;
 
 ## Related Documentation
 
-* [Window Functions](WINDOWFUNCTION.md)
+* [Window Functions](windowfunction.md)
 * [QUALIFY Clause](sql-qualify.md)
 * [GROUP BY Clause](groupby.md)

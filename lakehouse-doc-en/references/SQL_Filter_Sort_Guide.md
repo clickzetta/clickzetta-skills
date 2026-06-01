@@ -221,5 +221,5 @@ DROP TABLE IF EXISTS employees;
 ## Related Documentation
 
 * [SELECT Basic Syntax](query-syntax.md)
-* [Window Functions](WINDOWFUNCTION.md)
+* [Window Functions](windowfunction.md)
 * [QUALIFY Clause](sql-qualify.md)

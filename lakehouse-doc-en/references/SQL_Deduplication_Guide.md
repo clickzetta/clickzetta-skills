@@ -198,6 +198,6 @@ DROP TABLE IF EXISTS orders_deduped;
 ## Related Documentation
 
 * [SELECT Basic Syntax](query-syntax.md)
-* [Window Functions](WINDOWFUNCTION.md)
+* [Window Functions](windowfunction.md)
 * [QUALIFY Clause](sql-qualify.md)
-* [INSERT OVERWRITE Behavior](SQL_DML_Considerations.md)
+* [INSERT OVERWRITE Behavior](sql_dml_considerations.md)

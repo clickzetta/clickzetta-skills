@@ -115,5 +115,5 @@ ALTER TABLE my_table SET PROPERTIES ("cz.storage.write.max.string.bytes"="335544
 
 - [SET (session parameters)](set-command.md)
 - [ALTER TABLE](alter-table.md)
-- [ALTER SCHEMA](ALTER-SCHEMA.md)
+- [ALTER SCHEMA](alter-schema.md)
 - [ALTER WORKSPACE](alter-workspace.md)

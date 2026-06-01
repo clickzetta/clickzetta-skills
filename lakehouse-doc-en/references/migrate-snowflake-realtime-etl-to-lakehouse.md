@@ -5,11 +5,8 @@
 This article demonstrates how to quickly migrate a Snowflake real-time ETL pipeline to Singdata Lakehouse, and reveals that the Singdata Lakehouse-based solution offers the following unique advantages:
 
 * Global multi-cloud support. In this solution, both Singdata Lakehouse and Snowflake are based on AWS, providing cloud experience consistency. This solution is also suitable for migration on GCP. Additionally, Singdata Lakehouse supports Alibaba Cloud, Tencent Cloud, and Huawei Cloud, beyond just mainstream global cloud service providers.
-* Low migration cost.
-  * Singdata Lakehouse provides product concepts very similar to Snowflake's, making it easy for users familiar with Snowflake to understand and get started quickly.
-  * Singdata Lakehouse's SQL syntax is highly compatible with Snowflake's, requiring only minor modifications for code migration.
-* Low operations cost
-  * Singdata Lakehouse provides a built-in Python runtime environment with unified scheduling, operations, and monitoring alongside SQL tasks. No additional Airflow services or Python runtime environments are needed, greatly simplifying system architecture and reducing operations difficulty and cost.
+* You don't need to learn a new set of product concepts. Singdata Lakehouse's product model is highly similar to Snowflake's, and the SQL syntax requires only minimal changes — engineers familiar with Snowflake can get started directly.
+* You can eliminate Airflow. Singdata Lakehouse has a built-in Python runtime environment where SQL tasks and Python tasks are scheduled, operated, and monitored together. No separate Airflow service is needed, resulting in a simpler architecture and lower operations cost.
 
 ## Introduction to the Real-Time Insurance Data ETL Pipeline with Snowflake Project
 
@@ -850,7 +847,7 @@ ORDER BY table_type;
 
 [Singdata Lakehouse Basic Concepts](key-concepts.md)
 
-[Singdata Lakehouse JDBC Driver](JDBC-Driver.md)
+[Singdata Lakehouse JDBC Driver](jdbc-driver.md)
 
 [Singdata Lakehouse Python Tasks](python-task.md)
 

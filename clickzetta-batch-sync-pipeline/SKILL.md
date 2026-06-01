@@ -17,36 +17,7 @@ description: |
 
 Before creating a sync task, use an interactive question tool (e.g., `question`) to collect the following information via option menus. If no such tool is available, list all questions in text at once:
 
-```
-question({
-  questions: [
-    {
-      question: "What is the data source type and name?",
-      options: [
-        { label: "MySQL", description: "e.g., aliyun_mysql, rds_mysql" },
-        { label: "PostgreSQL", description: "e.g., pg_prod, aurora_pg" },
-        { label: "SQL Server", description: "e.g., sqlserver_prod" },
-        { label: "OSS/S3/COS Object Storage", description: "e.g., oss_bucket, s3_data" }
-      ]
-    },
-    {
-      question: "What is the sync scope?",
-      options: [
-        { label: "Single-table sync", description: "Sync one source table to one target table" },
-        { label: "Multi-table mirror", description: "Sync entire database or multiple selected tables" },
-        { label: "Sharded table merge", description: "Merge multiple source tables into one target table" }
-      ]
-    },
-    {
-      question: "Write mode?",
-      options: [
-        { label: "Full overwrite (OVERWRITE)", description: "Overwrite target table each run, recommended" },
-        { label: "Incremental append (APPEND)", description: "Append new data without deleting history" }
-      ]
-    }
-  ]
-})
-```
+Ask the user three questions: (1) What is the data source type — MySQL (e.g. aliyun_mysql), PostgreSQL (e.g. pg_prod), SQL Server, or OSS/S3/COS object storage? (2) What is the sync scope — single-table sync, multi-table mirror (entire database or selected tables), or sharded table merge? (3) What write mode — full overwrite (OVERWRITE, recommended) or incremental append (APPEND)?
 
 After collecting the above, also confirm: target schema (e.g., `ods`) and schedule time (e.g., daily at 02:00). These can be asked after the user responds, or inferred from context.
 

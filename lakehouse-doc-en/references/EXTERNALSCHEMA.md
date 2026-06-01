@@ -43,8 +43,8 @@ This design provides great flexibility and convenience as it reduces the need fo
 
 Singdata Lakehouse provides commands to create and delete EXTERNAL SCHEMA, allowing users to manage access permissions and configurations for these external data sources as needed.
 
-* **Create EXTERNAL SCHEMA**: Users can create a new EXTERNAL SCHEMA using the `CREATE EXTERNAL SCHEMA` command to start interacting with external databases. Specific syntax and parameter settings can be found in the [Create EXTERNAL SCHEMA](CREATEEXTERNAlLSCHEMA.md) document.
-* **Delete EXTERNAL SCHEMA**: If an EXTERNAL SCHEMA is no longer needed, or if users want to remove access to an external database, they can use the `DROP SCHEMA` command to delete it. Detailed operation steps and precautions are provided in the [Delete EXTERNAL SCHEMA](DROPSCHEMA.md) document.
+* **Create EXTERNAL SCHEMA**: Users can create a new EXTERNAL SCHEMA using the `CREATE EXTERNAL SCHEMA` command to start interacting with external databases. Specific syntax and parameter settings can be found in the [Create EXTERNAL SCHEMA](createexternallschema.md) document.
+* **Delete EXTERNAL SCHEMA**: If an EXTERNAL SCHEMA is no longer needed, or if users want to remove access to an external database, they can use the `DROP SCHEMA` command to delete it. Detailed operation steps and precautions are provided in the [Delete EXTERNAL SCHEMA](dropschema.md) document.
 
 ## Permission Explanation
 

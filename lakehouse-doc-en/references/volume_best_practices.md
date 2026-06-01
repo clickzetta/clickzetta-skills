@@ -1136,7 +1136,7 @@ By following the recommendations in this document, you can build efficient, secu
 
 * [COPY INTO Location Parameter Reference](from_lakehouse_to_volume.md)
 * [COPY INTO Table Parameter Reference](copy-into-table.md)
-* [GET_PRESIGNED_URL Function Documentation](sql_functions/scalar_functions/file_functions/GET_PRESIGNED_URL.md)
+* [GET_PRESIGNED_URL Function Documentation](sql_functions/scalar_functions/file_functions/get_presigned_url.md)
 * [Data Lake JSON Analysis Guide](discovery_analysis_data_in_json_file_on_external_volume.md)
 * [PIPE Streaming Data Ingestion Overview](pipe-summary.md)
 * [PIPE Object Storage Ingestion](pipe-storage-object.md)

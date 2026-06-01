@@ -35,5 +35,5 @@ SELECT json_unquote(NULL);
 
 ## Related Documentation
 
-- [GET_JSON_OBJECT](sql_functions/scalar_functions/json_functions/get_json_object.md)
-- [JSON_EXTRACT_STRING](sql_functions/scalar_functions/json_functions/json_extract_string.md)
+- [GET_JSON_OBJECT](get_json_object.md)
+- [JSON_EXTRACT_STRING](json_extract_string.md)

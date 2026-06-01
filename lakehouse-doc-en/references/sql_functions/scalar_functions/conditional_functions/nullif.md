@@ -39,6 +39,6 @@ SELECT 10 / nullif(0, 0);
 
 ## Related Documentation
 
-- [NVL](sql_functions/scalar_functions/conditional_functions/nvl.md) — NULL replacement function
-- [NVL2](sql_functions/scalar_functions/conditional_functions/nvl2.md)
-- [COALESCE](sql_functions/scalar_functions/conditional_functions/coalesce.md)
+- [NVL](nvl.md) — NULL replacement function
+- [NVL2](nvl2.md)
+- [COALESCE](coalesce.md)

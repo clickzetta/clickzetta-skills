@@ -24,7 +24,7 @@ Migrating from another platform? See [SQL Syntax Compatibility Reference](sql-re
 | [Dynamic Tables](dynamic-table.md) | Core incremental computation object: create, refresh configuration, ALTER, refresh history |
 | [Table Stream](table-stream-title.md) | CDC change capture object: create, inspect, drop |
 | [External Tables](create-external-table.md) | Table definitions for external data sources such as Kafka external tables |
-| [Indexes](SQL_Index_Guide.md) | Create and manage bloom filter indexes, inverted indexes, and vector indexes |
+| [Indexes](sql_index_guide.md) | Create and manage bloom filter indexes, inverted indexes, and vector indexes |
 
 ## Storage, Connections, and Ecosystem
 

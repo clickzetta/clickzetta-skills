@@ -55,15 +55,15 @@ Executing an `ALTER` operation generally requires `OWNERSHIP` or corresponding a
 - [ALTER SHARE](alter-share.md)
 
 ### Schema and Catalog
-- [ALTER SCHEMA](ALTER-SCHEMA.md)
+- [ALTER SCHEMA](alter-schema.md)
 - [ALTER EXTERNAL SCHEMA](alter-external-schema.md)
 
 ### Data Objects
 - [ALTER TABLE](alter-table.md)
-- [ALTER TABLE COLUMN](ALTER-TABLE-COLUMN.md)
+- [ALTER TABLE COLUMN](alter-table-column.md)
 - [ALTER DYNAMIC TABLE](alter-dynamic-table.md)
 - [ALTER MATERIALIZED VIEW](alter-materialized-view.md)
-- [ALTER EXTERNAL TABLE](ALTER-EXTERNAL-TABLE.md)
+- [ALTER EXTERNAL TABLE](alter-external-table.md)
 
 ### Pipes and Connections
 - [ALTER PIPE](pipe-syntax.md)

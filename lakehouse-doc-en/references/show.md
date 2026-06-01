@@ -68,9 +68,9 @@ SHOW COLUMNS FROM order_details   -- equivalent to SHOW COLUMNS IN TABLE order_d
 
 ### Users and Privileges
 - [SHOW USERS](show-users.md)
-- [SHOW ROLES](SHOWROLES.md)
+- [SHOW ROLES](show-roles.md)
 - [SHOW GRANTS (User)](show-grants-user.md)
-- [SHOW GRANTS (Role)](SHOWGRANTS.md)
+- [SHOW GRANTS (Role)](show-grants.md)
 
 ### Schema and Catalog
 - [SHOW SCHEMAS](show-schemas.md)
@@ -88,7 +88,7 @@ SHOW COLUMNS FROM order_details   -- equivalent to SHOW COLUMNS IN TABLE order_d
 - [SHOW PARTITIONS](list-partition.md)
 
 ### Indexes and Synonyms
-- [SHOW INDEX](SHOW-INDEX.md)
+- [SHOW INDEX](show-index.md)
 - [SHOW SYNONYMS](show-synonyms.md)
 
 ### Pipes and Volumes
@@ -101,5 +101,5 @@ SHOW COLUMNS FROM order_details   -- equivalent to SHOW COLUMNS IN TABLE order_d
 - [SHOW DYNAMIC TABLE REFRESH HISTORY](refresh-history.md)
 
 ### Connections and Shares
-- [SHOW CONNECTIONS](SHOWCONNECTIONS.md)
+- [SHOW CONNECTIONS](show-connections.md)
 - [SHOW SHARES](show-shares.md)

@@ -8,7 +8,7 @@ This guide helps developers learn how to write external functions in Python to p
 
 > * **Python Version**: Only Python 3.10 is supported. If your dependencies include native libraries with shared object files (.so), such libraries must be compatible with the Python 3.10 ABI (Application Binary Interface).
 > * **Deployment Package Format**: Supports standalone `.py` script files or packages archived in `.zip` format.
-> * **Large Package Deployment**: If the program and its dependencies exceed 500MB after compression, you must create the function via a container image. For details, refer to the tutorial: [Practical: Using Hugging Face Image Recognition Model to Process Image Data](RemoteFunction-on-acr.md)
+> * **Large Package Deployment**: If the program and its dependencies exceed 500MB after compression, you must create the function via a container image. For details, refer to the tutorial: [Practical: Using Hugging Face Image Recognition Model to Process Image Data](remotefunction-on-acr.md)
 
 ## Environment Preparation
 
@@ -74,7 +74,7 @@ cd ./deps
 zip -rq code.zip ./*
 ```
 
-Upload code.zip to cloud object storage and grant the cloud role of Singdata Lakehouse access to the corresponding path. The authorization process is not described in this development guide; please refer to [Usage Process: External Function](RemoteFunction-best-practice.md).
+Upload code.zip to cloud object storage and grant the cloud role of Singdata Lakehouse access to the corresponding path. The authorization process is not described in this development guide; please refer to [Usage Process: External Function](remotefunction-best-practice.md).
 You may also specify an internal volume. Although you can use an internal volume, the code bucket parameter when creating an API CONNECTION must still point to an external address.
 
 * **User Volume Format Address**: `volume:user://~/upper.jar`
@@ -92,7 +92,7 @@ You may also specify an internal volume. Although you can use an internal volume
 
 Only applicable for functions larger than 500MB after packaging or those requiring GPU resources. Requires enabling Alibaba Cloud Container Registry (free).
 
-Please refer to the document: [Practical: Using Hugging Face Image Recognition Model to Process Image Data](RemoteFunction-on-acr.md)
+Please refer to the document: [Practical: Using Hugging Face Image Recognition Model to Process Image Data](remotefunction-on-acr.md)
 
 ^
 

@@ -30,6 +30,6 @@ SELECT json_extract_timestamp(PARSE_JSON('{"ts":"2024-01-15 12:00:00"}'), '$.oth
 
 ## Related Documentation
 
-- [JSON_EXTRACT_TIMESTAMP_NTZ](sql_functions/scalar_functions/json_functions/json_extract_timestamp_ntz.md) — timestamp extraction without time zone
-- [JSON_EXTRACT_DATE](sql_functions/scalar_functions/json_functions/json_extract_date.md)
-- [PARSE_JSON](sql_functions/scalar_functions/json_functions/json_parse.md)
+- [JSON_EXTRACT_TIMESTAMP_NTZ](json_extract_timestamp_ntz.md) — timestamp extraction without time zone
+- [JSON_EXTRACT_DATE](json_extract_date.md)
+- [PARSE_JSON](json_parse.md)

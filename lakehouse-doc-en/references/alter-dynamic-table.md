@@ -244,7 +244,7 @@ FROM      change_table;
 ```
 ## Modify Column Type
 
-If it is a compatible type, for example, changing int to bigint. For specific compatible types, you can [refer to Modify Column Type](ALTER-TABLE-COLUMN.md) which will incrementally refresh.
+If it is a compatible type, for example, changing int to bigint. For specific compatible types, you can [refer to Modify Column Type](alter-table-column.md) which will incrementally refresh.
 ```SQL
 -- Create a base table
 DROP      TABLE IF EXISTS dy_base_a;

@@ -972,6 +972,6 @@ Note: Each time files PUT to the Volume are consumed by the Pipe, they are autom
 
 [Table Stream](table_stream.md)
 
-[Merge Into](MERGE.md)
+[Merge Into](merge.md)
 
 [Dynamic Table](dynamic_table_summary.md)

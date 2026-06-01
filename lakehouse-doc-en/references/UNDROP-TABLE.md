@@ -1,6 +1,6 @@
 # UNDROP TABLE
 
-Using the `UNDROP TABLE` statement, you can restore deleted tables, dynamic tables, and materialized views. Whether a deleted object can be restored depends on the table's [data retention period](TIMETRAVEL.md).
+Using the `UNDROP TABLE` statement, you can restore deleted tables, dynamic tables, and materialized views. Whether a deleted object can be restored depends on the table's [data retention period](timetravel.md).
 
 ## Data Retention Period
 
@@ -166,6 +166,6 @@ SELECT * FROM mv1;
 - [DROP TABLE](drop-table.md)
 - [DROP DYNAMIC TABLE](drop-dynamic-table.md)
 - [DROP MATERIALIZED VIEW](drop-materialized-view.md)
-- [Time Travel Query](TIMETRAVEL.md)
+- [Time Travel Query](timetravel.md)
 - [RESTORE TABLE](restore.md)
-- [Historical Data Rollback](SQL_Time_Travel_Guide.md): Complete workflow for data recovery using Time Travel and UNDROP together
+- [Historical Data Rollback](sql_time_travel_guide.md): Complete workflow for data recovery using Time Travel and UNDROP together

@@ -6,7 +6,7 @@
 
 ## Skills 总览
 
-当前仓库包含 26 个顶层 `clickzetta-*` skills，另有官方文档知识库 `lakehouse-doc-en`：
+当前仓库包含 29 个顶层 `clickzetta-*` skills，另有官方文档知识库 `lakehouse-doc-en`：
 
 | 类别 | Skill | 适用场景 |
 |---|---|---|
@@ -25,7 +25,10 @@
 | 数据导入与管道 | [clickzetta-table-stream-pipeline](./clickzetta-table-stream-pipeline/) | Table Stream 变更捕获、offset 管理、增量 ETL 消费 |
 | 数据导入与管道 | [clickzetta-studio-task-manager](./clickzetta-studio-task-manager/) | Studio 任务类型、目录、调度、依赖、cz-cli task 命令族和建管分离规范 |
 | 数据导入与管道 | [clickzetta-pipeline-review](./clickzetta-pipeline-review/) | 数据管道 Review、任务/表/运行记录发现、问题诊断与修复建议 |
+| 数据导入与管道 | [clickzetta-dbt-studio-pipeline](./clickzetta-dbt-studio-pipeline/) | 将 dbt models 发布为 Studio 资产并配置调度执行 |
 | 建模与计算 | [clickzetta-dw-modeling](./clickzetta-dw-modeling/) | 数仓建模、ODS/DWD/DWS/ADS、Medallion 架构、DDL 与管道设计 |
+| 建模与计算 | [clickzetta-dbt-project-setup](./clickzetta-dbt-project-setup/) | dbt-clickzetta 项目初始化、profiles.yml、分层规范和项目配置 |
+| 建模与计算 | [clickzetta-dbt-modeling](./clickzetta-dbt-modeling/) | dbt-clickzetta 建模向导：sources、models、增量策略和测试 |
 | 建模与计算 | [clickzetta-dynamic-table](./clickzetta-dynamic-table/) | Dynamic Table 创建、增量刷新、ALTER、性能优化和最佳实践 |
 | 建模与计算 | [clickzetta-query-optimizer](./clickzetta-query-optimizer/) | 慢查询、EXPLAIN、Result Cache、OPTIMIZE、Hints、Sort Key 调优 |
 | 建模与计算 | [clickzetta-data-science](./clickzetta-data-science/) | 数据科学工作流：Jupyter、EDA、特征工程、采样、推理、向量检索 |
@@ -49,6 +52,7 @@
 | 从文件、URL、对象存储或 Kafka 导入数据 | `clickzetta-file-import-pipeline` / `clickzetta-oss-ingest-pipeline` / `clickzetta-kafka-ingest-pipeline` |
 | 做离线同步、实时同步、多表 CDC | `clickzetta-batch-sync-pipeline` / `clickzetta-realtime-sync-pipeline` / `clickzetta-cdc-sync-pipeline` |
 | 管理 Studio 任务、调度、依赖、补数、任务目录 | `clickzetta-studio-task-manager` |
+| 初始化 dbt 项目、写 dbt model、发布 dbt 调度 | `clickzetta-dbt-project-setup` / `clickzetta-dbt-modeling` / `clickzetta-dbt-studio-pipeline` |
 | 设计数据管道、动态表、流式增量 ETL | `clickzetta-sql-pipeline-manager` / `clickzetta-dynamic-table` / `clickzetta-table-stream-pipeline` |
 | 诊断管道质量、任务失败、链路缺陷 | `clickzetta-pipeline-review` |
 | 写 SQL、迁移 SQL、查函数或语法差异 | `clickzetta-sql-migration`（迁移/对比时）/ `lakehouse-doc-en`（写 ClickZetta 原生 SQL 时） |
@@ -156,6 +160,12 @@ Kafka 数据接入管道工作流，覆盖连接验证、数据探查、目标�
 
 重点识别调度依赖缺失、DDL 幂等问题、分层跳层、Dynamic Table 反模式、任务失败、数据不一致等问题，并按优先级给出修复建议。
 
+#### [clickzetta-dbt-studio-pipeline](./clickzetta-dbt-studio-pipeline/)
+
+将 dbt models 发布到 Studio 进行统一代码管理，并为需要周期执行的 models 配置调度。读取 dbt `manifest.json`，将 SQL 重写为适配 Studio 调度参数的任务资产。
+
+适合把 dbt 项目纳入 Studio 资产、调度、依赖、重试策略和运维体系。
+
 ### 建模与计算
 
 #### [clickzetta-dw-modeling](./clickzetta-dw-modeling/)
@@ -163,6 +173,18 @@ Kafka 数据接入管道工作流，覆盖连接验证、数据探查、目标�
 ClickZetta Lakehouse 数仓建模向导。支持传统 ODS/DWD/DWS/ADS 分层、Medallion Bronze/Silver/Gold 架构和混合模式，强调数据管道与建模一体化设计。
 
 适合设计事实表、维度表、宽表、星型/雪花模型、分层 schema、端到端数据流转。核心原则是聚合计算层优先使用 Dynamic Table，不推荐物化视图承载主链路计算。
+
+#### [clickzetta-dbt-project-setup](./clickzetta-dbt-project-setup/)
+
+dbt-clickzetta 项目初始化向导，覆盖安装检查、`profiles.yml` 连接配置、分层规范、`dbt_project.yml` 生成和端到端 ELT 标准。
+
+适合从零创建 dbt 项目、配置 dbt-clickzetta adapter、建立 ODS/DWD/DWS/ADS 或 Bronze/Silver/Gold 分层。
+
+#### [clickzetta-dbt-modeling](./clickzetta-dbt-modeling/)
+
+dbt-clickzetta 建模向导，会先探索 Lakehouse 数据源，再推导建模策略，生成 `sources.yml`、model SQL 和测试配置。
+
+适合把原始表转成可分析的数据集、构建事实表/维度表、设计增量模型、补齐 dbt tests。
 
 #### [clickzetta-dynamic-table](./clickzetta-dynamic-table/)
 

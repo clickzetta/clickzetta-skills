@@ -53,7 +53,7 @@ Port: 3306 Optional
   * Lakehouse implements some commonly used MySQL functions, such as `str_to_date` and `date_format`. If you need more, please contact Lakehouse support.
 * Data import restrictions
   * Does not support MySQL bulk data import, such as the MySQL load command.
-  * Using the MySQL driver does not support Lakehouse local commands ([COPY LOCAL file](copy.md), [PUT](PUT.md), [REMOVE](remove-volume.md), [GET](GET.md), etc.), and does not support using the MySQL driver to call Lakehouse's Java SDK for bulk upload and real-time upload of data.
+  * Using the MySQL driver does not support Lakehouse local commands ([COPY LOCAL file](copy.md), [PUT](put.md), [REMOVE](remove-volume.md), [GET](get.md), etc.), and does not support using the MySQL driver to call Lakehouse's Java SDK for bulk upload and real-time upload of data.
 * When MySQL lists the table structure, it needs to query the information schema. Currently, there is a 15-minute delay for newly created tables in the information schema in Lakehouse, so newly created tables cannot be seen immediately.
 
 ## Connection Method

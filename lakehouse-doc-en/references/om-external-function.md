@@ -44,6 +44,6 @@ FROM order_reviews;
 
 ## Related Documents
 
-- [External Function Details](RemoteFunction-intro.md)
+- [External Function Details](remotefunction-intro.md)
 - [API Connection](om-api-connection.md) — configure function compute service authentication
 - [Custom Function Overview](user-external-function.md)

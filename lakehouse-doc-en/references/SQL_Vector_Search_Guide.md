@@ -550,6 +550,6 @@ LIMIT 10;
 
 * [VECTOR Type](vector-type.md)
 * [Vector Functions Reference](vector-functions.md)
-* [AI_EMBEDDING Function](AI_EMBEDDING.md)
-* [Array and Map Processing Guide](SQL_Array_Map_Processing_Guide.md)
-* [AI Model Image Analysis](BP_AI_Function_Image2text.md)
+* [AI_EMBEDDING Function](ai_embedding.md)
+* [Array and Map Processing Guide](sql_array_map_processing_guide.md)
+* [AI Model Image Analysis](bp_ai_function_image2text.md)

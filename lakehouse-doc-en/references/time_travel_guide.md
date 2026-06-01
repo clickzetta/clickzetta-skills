@@ -21,9 +21,9 @@ Data governance features help you manage historical versions, lifecycle, and cha
 
 | What I want to do | Method | Reference |
 |-----------|------|------|
-| Query historical data at a specific point in time | SELECT ... TIMESTAMP AS OF '...' | [TIME TRAVEL](TIMETRAVEL.md) |
+| Query historical data at a specific point in time | SELECT ... TIMESTAMP AS OF '...' | [TIME TRAVEL](timetravel.md) |
 | View the version history of a table | `DESC HISTORY table_name` | [DESC HISTORY](desc-history.md) |
-| Recover an accidentally dropped table | `UNDROP TABLE table_name` | [UNDROP TABLE](UNDROP-TABLE.md) |
+| Recover an accidentally dropped table | `UNDROP TABLE table_name` | [UNDROP TABLE](undrop-table.md) |
 | Roll back table data to a historical version | RESTORE TABLE ... TO TIMESTAMP AS OF '...' | [RESTORE TABLE](restore.md) |
 | Set the number of days to retain historical data | ALTER TABLE ... SET PROPERTIES ('data_retention_days'='7') | [Time Travel Overview](timetravel-summary.md) |
 | Automatically clean up expired data | ALTER TABLE ... SET PROPERTIES ('data_lifecycle'='30') | [Data Lifecycle Management](data-lifecycle.md) |

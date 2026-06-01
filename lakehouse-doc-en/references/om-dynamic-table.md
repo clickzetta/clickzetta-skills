@@ -163,7 +163,7 @@ ALTER TABLE dws_category_sales SET PROPERTIES ('data_retention_days'='7');
 
 > Extending the retention period increases storage requirements. The Lakehouse bills Time Travel storage separately.
 
-> 💡 **Tip**: For detailed billing rules, refer to the [Billing Documentation](Billing.md).
+> 💡 **Tip**: For detailed billing rules, refer to the [Billing Documentation](billing.md).
 
 ## Lifecycle Management
 

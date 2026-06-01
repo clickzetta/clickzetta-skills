@@ -270,4 +270,4 @@ DROP TABLE IF EXISTS user_profiles;
 
 * [Conditional Functions](conditional_function.md)
 * [Aggregate Functions](agg_function.md)
-* [Window Functions](WINDOWFUNCTION.md)
+* [Window Functions](windowfunction.md)

@@ -4,7 +4,7 @@
 
 The `DESC` command is used to view the column structure of a materialized view, including field names, data types, and comments. `DESC EXTENDED` can further display detailed metadata of the materialized view, such as creation time, query definition, source table information, and more.
 
-For more details, see [Materialized View](MATERIALIZEDVIEW.md).
+For more details, see [Materialized View](materializedview.md).
 
 ## Syntax
 
@@ -107,4 +107,4 @@ Result (partial):
 
 - [DESC TABLE](desc-table.md): View regular table structure
 - [SHOW TABLES WHERE is_materialized_view=true](show-materialized-view.md): List all materialized views
-- [REFRESH MATERIALIZED VIEW](REFRESH.md): Refresh a materialized view
+- [REFRESH MATERIALIZED VIEW](refresh-materialized-view.md): Refresh a materialized view

@@ -28,6 +28,6 @@ SELECT split_by_string('a|b|c', '|');
 
 ## Related Documentation
 
-- [SPLIT](sql_functions/scalar_functions/string_functions/split.md) — splits by regular expression
-- [SPLIT_BY_REGEXP](sql_functions/scalar_functions/string_functions/split_by_regexp.md) — explicitly splits by regular expression
-- [REGEXP_SPLIT_TO_ARRAY](sql_functions/scalar_functions/string_functions/regexp_split_to_array.md)
+- [SPLIT](split.md) — splits by regular expression
+- [SPLIT_BY_REGEXP](split_by_regexp.md) — explicitly splits by regular expression
+- [REGEXP_SPLIT_TO_ARRAY](regexp_split_to_array.md)

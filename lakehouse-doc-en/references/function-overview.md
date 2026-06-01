@@ -88,9 +88,9 @@ SELECT public.upper_udf('hello');
 ## Related Documentation
 
 - [CREATE SQL FUNCTION](create-sql-function.md)
-- [CREATE EXTERNAL FUNCTION](CREATE_EXTERNAL_FUNCTION.md)
-- [External Function Usage Guide](RemoteFunction-best-practice.md)
-- [External Function Development Guide (Python 3)](RemoteFunction-dev-guide-python3.md)
+- [CREATE EXTERNAL FUNCTION](create_external_function.md)
+- [External Function Usage Guide](remotefunction-best-practice.md)
+- [External Function Development Guide (Python 3)](remotefunction-dev-guide-python3.md)
 - [External Function Development Guide (Java)](external-function-dev-guide-java.md)
 - [DROP FUNCTION](drop-function.md)
 - [DESC FUNCTION](desc-function.md)

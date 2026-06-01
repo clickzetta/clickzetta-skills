@@ -23,7 +23,7 @@ FILE_FORMAT = ( TYPE = { CSV  | PARQUET | JSON }  [ formatTypeOptions ]  )
 * COPY INTO: Indicates appending data to the directory
 
 * VOLUME supports external\_volume\_name: For detailed introduction, refer to [Volume Introduction](datalake_volume.md)
-  * external\_volume\_name: The external storage location specified by the customer, Singdata only retains the path metadata. Supported storage products include: Alibaba Cloud OSS, Tencent Cloud COS, Amazon S3. The creation process can be referred to in [CONNECTION Creation](Datalake_StorageConnection.md) and [VOLUME Creation](datalake_volume_object.md)
+  * external\_volume\_name: The external storage location specified by the customer, Singdata only retains the path metadata. Supported storage products include: Alibaba Cloud OSS, Tencent Cloud COS, Amazon S3. The creation process can be referred to in [CONNECTION Creation](datalake_storageconnection.md) and [VOLUME Creation](datalake_volume_object.md)
   * Table Volume: Internal storage of Lakehouse, stored together with internal table objects under the specified Schema path
   * User Volume: The file storage area associated with the user account, the Workspace User has default management permissions for this area. Each Workspace by default has a User Volume with management permissions
 
@@ -255,7 +255,7 @@ SHOW  TABLE VOLUME  DIRECTORY  birds SUBDIRECTORY 'dau_unload/';
 REMOVE  TABLE  VOLUME birds  FILE 'dau_unload/part00001.csv';
 ```
 
-Exporting to an external volume requires creating a VOLUME and CONNECTION. The creation process can be referenced in [CONNECTION creation](Datalake_StorageConnection.md) and [VOLUME creation](datalake_volume_object.md)
+Exporting to an external volume requires creating a VOLUME and CONNECTION. The creation process can be referenced in [CONNECTION creation](datalake_storageconnection.md) and [VOLUME creation](datalake_volume_object.md)
 
 ### Export data to oss
 

@@ -144,6 +144,6 @@ REMOVE USER VOLUME FILE 'data_export.csv';
 ## Related Documentation
 
 * [Volume Object](volume-introduction.md)
-* [PUT](PUT.md)
-* [GET](GET.md)
+* [PUT](put.md)
+* [GET](get.md)
 * [COPY INTO Import](copy-into-table.md)

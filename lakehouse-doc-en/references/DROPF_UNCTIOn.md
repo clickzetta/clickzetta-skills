@@ -2,7 +2,7 @@
 
 Delete the external function in the current or specified schema.
 
-Related functions: [CREATE CONNECTION](CREATECONNECTION.md), [CREATE EXTERNAL FUNCTION](CREATE_EXTERNAL_FUNCTION.md), [SHOW EXTERNAL FUNCTION](SHOWFUNCTIONS.md)
+Related functions: [CREATE CONNECTION](createconnection.md), [CREATE EXTERNAL FUNCTION](create_external_function.md), [SHOW EXTERNAL FUNCTION](showfunctions.md)
 
 ### Syntax
 

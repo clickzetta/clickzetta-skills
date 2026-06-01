@@ -9,8 +9,8 @@ ZettaPark is the Python DataFrame API for Singdata Lakehouse — you write data 
 | Need | Recommended Tool |
 |------|---------|
 | DataFrame operations, pandas/PySpark-style | ZettaPark (this section) |
-| Execute fixed SQL, script automation | [Python Connector](../python_reference/connector.md) |
-| High-speed bulk writes (millions of rows) | [BulkLoad](../java_reference/bulkload.md) |
+| Execute fixed SQL, script automation | [Python Connector](python_reference/connector.md) |
+| High-speed bulk writes (millions of rows) | [BulkLoad](java_reference/bulkload-upload.md) |
 | ML feature engineering + model training | ZettaPark + Python ML libraries |
 
 ## Core Mechanism

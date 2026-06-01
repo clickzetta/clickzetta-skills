@@ -46,5 +46,5 @@ GROUP BY k;
 
 ## Related Documentation
 
-- [COLLECT_LIST](sql_functions/aggregate_functions/collect_list.md) — alias function with identical behavior
-- [JSON_ARRAY_AGG](sql_functions/aggregate_functions/json_array_agg.md) — aggregates into a JSON array string
+- [COLLECT_LIST](collect_list.md) — alias function with identical behavior
+- [JSON_ARRAY_AGG](json_array_agg.md) — aggregates into a JSON array string

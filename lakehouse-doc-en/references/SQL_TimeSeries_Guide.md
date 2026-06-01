@@ -356,7 +356,7 @@ DROP TABLE IF EXISTS doc_ts_events;
 
 ## Related Documentation
 
-* [Window Functions](WINDOWFUNCTION.md)
+* [Window Functions](windowfunction.md)
 * [Date and Time Functions](datetime_patterns.md)
 * [QUALIFY Clause](sql-qualify.md)
 * [GROUP BY Clause](groupby.md)

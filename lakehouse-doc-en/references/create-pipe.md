@@ -57,4 +57,4 @@ AS <copy_statement>;
 - [Pipe Full Syntax Reference](pipe-syntax.md)
 - [Continuously Import Object Storage Data Using Pipe](pipe-storage-object.md)
 - [Continuously Import Kafka Data Using read_kafka](pipe-kafka.md)
-- [Continuous Data Ingestion](SQL_Pipe_Guide.md): Full usage scenarios for Pipe, including OSS file scanning, Kafka consumption, and error handling strategies
+- [Continuous Data Ingestion](sql_pipe_guide.md): Full usage scenarios for Pipe, including OSS file scanning, Kafka consumption, and error handling strategies

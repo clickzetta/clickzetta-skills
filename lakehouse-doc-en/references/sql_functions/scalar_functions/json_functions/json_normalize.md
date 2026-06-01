@@ -36,4 +36,4 @@ SELECT json_normalize(NULL);
 ## Related Documentation
 
 - [JSON_MINIFY](json_minify.md) — Compress whitespace only, without sorting keys
-- [PARSE_JSON](parse_json.md) — Parse a string into a JSON object
+- [PARSE_JSON](json_parse.md) — Parse a string into a JSON object

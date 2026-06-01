@@ -33,6 +33,6 @@ SELECT json_array_get(PARSE_JSON('["a","b","c"]'), 5);
 
 ## Related Documentation
 
-- [JSON_EXTRACT](sql_functions/scalar_functions/json_functions/json_extract.md) — general extraction function supporting JSONPath
-- [GET_JSON_OBJECT](sql_functions/scalar_functions/json_functions/get_json_object.md)
-- [PARSE_JSON](sql_functions/scalar_functions/json_functions/json_parse.md)
+- [JSON_EXTRACT](json_extract.md) — general extraction function supporting JSONPath
+- [GET_JSON_OBJECT](get_json_object.md)
+- [PARSE_JSON](json_parse.md)

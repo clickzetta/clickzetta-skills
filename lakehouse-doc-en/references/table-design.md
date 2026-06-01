@@ -265,6 +265,6 @@ Please enjoy the learning process and learn more!
 
 ### Download Zeppelin Notebook Source File
 
-The code in this document is also available in a version that runs on [Zeppelin](eco_integration/Zeppelin.md). If you want to run the code directly, please follow the documentation to install [Zeppelin](eco_integration/Zeppelin.md).
+The code in this document is also available in a version that runs on [Zeppelin](eco_integration/zeppelin.md). If you want to run the code directly, please follow the documentation to install [Zeppelin](eco_integration/zeppelin.md).
 
 [02.Table Design.ipynb](https://github.com/yunqiqiliang/clickzetta_quickstart/blob/main/zeppelin_notebook/02.%E8%A1%A8%E8%AE%BE%E8%AE%A1.ipynb)

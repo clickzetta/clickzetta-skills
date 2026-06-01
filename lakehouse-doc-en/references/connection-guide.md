@@ -34,24 +34,24 @@ The syntax for creating a Storage Connection is as follows:
     ACCESS_KEY='******'
     SECRET_KEY='******';
   ```
-The specific syntax and steps can be found in the [Create CONNECTION](CREATECONNECTION.md) document.
+The specific syntax and steps can be found in the [Create CONNECTION](createconnection.md) document.
 
 * **List all CONNECTIONS**: Users can use the list syntax to view all CONNECTION objects in the current Lakehouse workspace. For example, the command to view the current CONNECTIONS is as follows:
   ```sql
   SHOW CONNECTIONS;
   ```
-This helps users manage and select existing CONNECTIONS for operations. Relevant commands and options can be found in the [List All CONNECTIONS](SHOWCONNECTIONS.md) document.
+This helps users manage and select existing CONNECTIONS for operations. Relevant commands and options can be found in the [List All CONNECTIONS](showconnections.md) document.
 
 * **View CONNECTION Details**: To better understand and manage CONNECTIONS, users may need to view the details of a specific CONNECTION. This includes authentication information, configuration parameters, etc. For example, the syntax to view the details of an API Connection is as follows:
   ```sql
   DESCRIBE CONNECTION my_api_conn;
   ```
-The syntax and methods for viewing details are explained in detail in the [View CONNECTION Details](DESCCONNECTION.md) document.
+The syntax and methods for viewing details are explained in detail in the [View CONNECTION Details](descconnection.md) document.
 
 * **Delete CONNECTION**: When a CONNECTION is no longer needed, the user can remove it using the delete syntax. For example, the command to delete a CONNECTION is as follows:
   ```sql
   DROP CONNECTION my_api_conn;
   ```
-This helps keep the workspace tidy and prevents unnecessary security risks. The specific deletion steps and precautions are described in the [Delete CONNECTION](DROPCONNECTION.md) document.
+This helps keep the workspace tidy and prevents unnecessary security risks. The specific deletion steps and precautions are described in the [Delete CONNECTION](dropconnection.md) document.
 
 ^

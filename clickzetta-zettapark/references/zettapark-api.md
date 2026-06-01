@@ -1,16 +1,29 @@
-# ZettaPark 快速参考
+# ZettaPark API Quick Reference
 
-> 来源：https://www.yunqi.tech/documents/ZettaparkQuickStart
+> Source: https://www.yunqi.tech/documents/ZettaparkQuickStart
 
-## 安装
+## Table of Contents
+- [Installation & Session](#installation)
+- [Build DataFrame](#build-dataframe)
+- [Transformations](#dataframe-transformations)
+- [Aggregation](#aggregation)
+- [JOIN](#join)
+- [Execute & Collect](#execute-and-collect-results)
+- [Write Data](#write-data)
+- [Execute SQL](#execute-sql)
+- [File Operations](#file-operations-volume)
+- [Functions Reference](#common-functions-quick-reference)
+- [Worked Examples](#worked-examples)
+
+## Installation
 
 ```bash
-pip install clickzetta_zettapark_python -U -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install clickzetta_zettapark_python -U
 ```
 
 ---
 
-## 创建会话
+## Create Session
 
 ```python
 from clickzetta.zettapark.session import Session
@@ -22,13 +35,13 @@ connection_parameters = {
     "instance": "your_instance_id",
     "workspace": "your_workspace",
     "schema": "public",
-    "vcluster": "default_ap",
+    "vcluster": "default",
 }
 
 session = Session.builder.configs(connection_parameters).create()
 ```
 
-带 hints（超时、query_tag 等）：
+With hints (timeout, query_tag, etc.):
 
 ```python
 connection_parameters = {
@@ -38,7 +51,7 @@ connection_parameters = {
     "instance": "your_instance_id",
     "workspace": "your_workspace",
     "schema": "public",
-    "vcluster": "default_ap",
+    "vcluster": "default",
     "hints": {
         "sdk.job.timeout": 300,
         "query_tag": "my_zettapark_app",
@@ -48,7 +61,7 @@ connection_parameters = {
 session = Session.builder.configs(connection_parameters).create()
 ```
 
-从 JSON 配置文件读取：
+From JSON config file:
 
 ```python
 import json
@@ -57,13 +70,13 @@ with open('config.json', 'r') as f:
 session = Session.builder.configs(config).create()
 ```
 
-验证连接：
+Verify connection:
 
 ```python
 session.sql("SELECT current_user(), current_workspace(), current_vcluster()").show()
 ```
 
-关闭会话：
+Close session:
 
 ```python
 session.close()
@@ -71,78 +84,78 @@ session.close()
 
 ---
 
-## 构建 DataFrame
+## Build DataFrame
 
 ```python
-# 从表创建
+# From table
 df = session.table("my_schema.my_table")
 
-# 从 SQL 创建
+# From SQL
 df = session.sql("SELECT * FROM orders WHERE year = 2024")
 
-# 从 Python 数据创建
+# From Python data
 df = session.create_dataframe([1, 2, 3, 4]).to_df("id")
 df = session.create_dataframe([[1, "Alice"], [2, "Bob"]], schema=["id", "name"])
 
-# 从 Row 对象创建
+# From Row objects
 from clickzetta.zettapark import Row
 df = session.create_dataframe([Row(id=1, name="Alice"), Row(id=2, name="Bob")])
 
-# 带 Schema 创建
+# With explicit schema
 from clickzetta.zettapark.types import IntegerType, StringType, StructType, StructField
 schema = StructType([StructField("id", IntegerType()), StructField("name", StringType())])
 df = session.create_dataframe([[1, "Alice"], [2, "Bob"]], schema)
 
-# 范围序列
+# Range sequence
 df = session.range(1, 10, 2).to_df("n")  # 1,3,5,7,9
 ```
 
 ---
 
-## DataFrame 转换操作
+## DataFrame Transformations
 
 ```python
 from clickzetta.zettapark import functions as F
 
-# 过滤行
+# Filter rows
 df.filter(F.col("age") > 18)
 df.filter(F.col("status") == "active")
 df.where(F.col("amount") > 1000)
 
-# 选择列
+# Select columns
 df.select("id", "name", "amount")
 df.select(F.col("id"), F.col("name").as_("user_name"))
 
-# 新增/修改列
+# Add / modify columns
 df.with_column("total", F.col("price") * F.col("qty"))
 df.with_column("upper_name", F.upper(F.col("name")))
 
-# 重命名列
+# Rename columns
 df.rename(F.col("old_name"), "new_name")
 
-# 排序
+# Sort
 df.sort(F.col("amount").desc())
 df.order_by(F.col("created_at").asc())
 
-# 去重
+# Deduplicate
 df.distinct()
 df.drop_duplicates(["user_id"])
 
-# 限制行数
+# Limit rows
 df.limit(100)
 
-# 删除列
+# Drop columns
 df.drop("unnecessary_col")
 ```
 
 ---
 
-## 聚合操作
+## Aggregation
 
 ```python
 from clickzetta.zettapark import functions as F
 
-# 分组聚合
+# Group by aggregation
 df.group_by("category").agg(
     F.sum("amount").as_("total_amount"),
     F.count("*").as_("order_count"),
@@ -151,133 +164,199 @@ df.group_by("category").agg(
     F.min("amount").as_("min_amount"),
 )
 
-# 全局聚合
+# Global aggregation
 df.agg(F.count("*"), F.sum("amount"))
 ```
 
 ---
 
-## JOIN 操作
+## JOIN
 
 ```python
-# 内连接
+# Inner join
 df_orders.join(df_customers, df_orders["customer_id"] == df_customers["id"])
 
-# 左连接
+# Left join
 df_orders.join(df_customers, df_orders["customer_id"] == df_customers["id"], "left")
 
-# 选择连接后的列（避免列名冲突）
+# Select columns after join (avoid column name conflicts)
 result = df_orders.join(df_customers, df_orders["customer_id"] == df_customers["id"]) \
     .select(df_orders["order_id"], df_customers["name"], df_orders["amount"])
 ```
 
 ---
 
-## 执行与结果获取
+## Execute and Collect Results
 
 ```python
-# 打印前 N 行（触发执行）
+# Print first N rows (triggers execution)
 df.show()
 df.show(20)
 
-# 收集所有结果为 Row 列表
+# Collect all results as Row list
 rows = df.collect()
 for row in rows:
     print(row["id"], row["name"])
 
-# 转换为 Pandas DataFrame
+# Convert to Pandas DataFrame
 pandas_df = df.to_pandas()
 
-# 获取行数
+# Get row count
 count = df.count()
 
-# 获取列名
+# Get column names
 print(df.columns)
 
-# 查看 Schema
+# View schema
 df.schema.print_tree()
 ```
 
 ---
 
-## 写入数据
+## Write Data
 
 ```python
-# 写入已有表（追加）
+# Append to existing table
 df.write.save_as_table("my_table", mode="append")
 
-# 覆盖写入
+# Overwrite (recreates table)
 df.write.save_as_table("my_table", mode="overwrite")
 
-# 自动建表并写入（overwrite 会重建表）
-df.write.save_as_table("new_table", mode="overwrite")
-
-# 写入指定 Schema 下的表
+# Write to table in specific schema
 df.write.save_as_table("my_schema.my_table", mode="append")
 ```
 
 ---
 
-## 执行 SQL
+## Execute SQL
 
 ```python
-# 执行 DDL/DML
+# Execute DDL/DML
 session.sql("CREATE TABLE IF NOT EXISTS t (id INT, name STRING)").collect()
 session.sql("INSERT INTO t VALUES (1, 'Alice')").collect()
 
-# 执行查询并获取 DataFrame
+# Execute query and get DataFrame
 df = session.sql("SELECT * FROM orders WHERE amount > 1000")
 df.show()
 
-# 切换 Schema
+# Switch schema
 session.use_schema("my_schema")
 ```
 
 ---
 
-## 文件操作（Volume）
+## File Operations (Volume)
 
 ```python
-# 上传文件到 User Volume
+# Upload file to User Volume
 session.file.put("/local/path/data.csv", "volume:user://~/data/")
 
-# 下载文件
+# Download file
 session.file.get("volume:user://~/data/data.csv", "/local/output/")
 
-# 列出 User Volume 文件
+# List User Volume files
 session.sql("LIST USER VOLUME").show()
 session.sql("SHOW USER VOLUME DIRECTORY").show()
 ```
 
 ---
 
-## 常用 functions 速查
+## Common Functions Quick Reference
 
 ```python
 from clickzetta.zettapark import functions as F
 
-# 字符串
+# String
 F.upper(col), F.lower(col), F.concat(col1, col2)
 F.substring(col, 1, 3), F.trim(col), F.length(col)
 
-# 数值
+# Numeric
 F.abs(col), F.round(col, 2), F.floor(col), F.ceil(col)
 F.sqrt(col), F.pow(col, 2)
 
-# 日期时间
+# Date/time
 F.current_date(), F.current_timestamp()
 F.year(col), F.month(col), F.day(col)
 F.date_add(col, 7), F.datediff(col1, col2)
 
-# 条件
+# Conditional
 F.when(F.col("status") == "A", "Active").otherwise("Inactive")
-F.coalesce(col1, col2)  # 第一个非 null 值
+F.coalesce(col1, col2)  # first non-null value
 F.isnull(col), F.isnotnull(col)
 
-# 聚合
+# Aggregation
 F.count("*"), F.sum(col), F.avg(col), F.max(col), F.min(col)
 F.count_distinct(col)
 
-# 类型转换
+# Type casting
 F.col("amount").cast(IntegerType())
+```
+
+---
+
+## Worked Examples
+
+### ETL data processing
+
+```python
+from clickzetta.zettapark.session import Session
+from clickzetta.zettapark import functions as F
+
+session = Session.builder.configs(config).create()
+
+raw = session.table("bronze.raw_orders")
+
+cleaned = (
+    raw
+    .filter(F.isnotnull(F.col("order_id")))
+    .filter(F.col("amount") > 0)
+    .with_column("order_date", F.col("created_at").cast("DATE"))
+    .with_column("year_month", F.date_format(F.col("order_date"), "yyyy-MM"))
+    .select("order_id", "customer_id", "amount", "order_date", "year_month")
+)
+
+cleaned.write.save_as_table("silver.orders_cleaned", mode="overwrite")
+session.close()
+```
+
+### Feature engineering (machine learning)
+
+```python
+from clickzetta.zettapark import functions as F
+
+customer = session.table("clickzetta_sample_data.tpch_100g.customer")
+orders = session.table("clickzetta_sample_data.tpch_100g.orders")
+
+customer_features = (
+    orders
+    .group_by("o_custkey")
+    .agg(
+        F.sum("o_totalprice").as_("total_spend"),
+        F.count("*").as_("order_count"),
+        F.avg("o_totalprice").as_("avg_order_value"),
+        F.max("o_orderdate").as_("last_order_date"),
+    )
+    .join(customer, orders["o_custkey"] == customer["c_custkey"])
+    .select("c_custkey", "c_name", "total_spend", "order_count", "avg_order_value")
+)
+
+customer_features.write.save_as_table("ml_features.customer_features", mode="overwrite")
+```
+
+### Import from local file
+
+```python
+import json, gzip
+from clickzetta.zettapark.session import Session
+
+session = Session.builder.configs(config).create()
+
+data = []
+with gzip.open('data.json.gz', 'rt', encoding='utf-8') as f:
+    for line in f:
+        if line.strip():
+            data.append(json.loads(line))
+
+session.create_dataframe(data).write.save_as_table("my_table", mode="overwrite")
+session.close()
 ```

@@ -79,7 +79,7 @@ Dedicated paths for data engineers, analysts, AI engineers, and administrators<b
 <td style="width:22%; vertical-align:top; overflow-wrap:break-word;"><strong>AI / ML Engineer</strong><br><small>Vector search, RAG, AI functions, model invocation</small></td>
 <td style="vertical-align:top; overflow-wrap:break-word;">
 
-[AI Data Readiness](server-data-for-ai.md) · [Vector Search](vector_search_ai.md) · [AI Functions (AI\_COMPLETE / AI\_EMBEDDING)](AI_function_in_SQL.md) · [AI Gateway](AIGateway.md) · [Python SDK (SQL interface)](python_reference/connector.md) · [ZettaPark (DataFrame API)](LakehousePython-zettapark.md)
+[AI Data Readiness](server-data-for-ai.md) · [Vector Search](vector_search_ai.md) · [AI Functions (AI\_COMPLETE / AI\_EMBEDDING)](ai_function_in_sql.md) · [AI Gateway](aigateway.md) · [Python SDK (SQL interface)](python_reference/connector.md) · [ZettaPark (DataFrame API)](lakehousepython-zettapark.md)
 
 </td>
 </tr>
@@ -95,7 +95,7 @@ Dedicated paths for data engineers, analysts, AI engineers, and administrators<b
 <td style="width:22%; vertical-align:top; overflow-wrap:break-word;"><strong>AI Agent / Automation</strong><br><small>Deterministic interface calls, semantic layer queries, automated data pipelines</small></td>
 <td style="vertical-align:top; overflow-wrap:break-word;">
 
-[cz-cli Command-Line Tool](setup_cz_cli.md) (deterministic interface, ideal for Agent calls) · [Semantic View](semantic-view-overview.md) (business semantic layer, natural-language friendly) · [Python SDK (SQL interface)](python_reference/connector.md) · [ZettaPark (DataFrame API)](LakehousePython-zettapark.md) · [Data Analytics Agent](datagpt_introduction.md)
+[cz-cli Command-Line Tool](setup_cz_cli.md) (deterministic interface, ideal for Agent calls) · [Semantic View](semantic-view-overview.md) (business semantic layer, natural-language friendly) · [Python SDK (SQL interface)](python_reference/connector.md) · [ZettaPark (DataFrame API)](lakehousepython-zettapark.md) · [Data Analytics Agent](datagpt_introduction.md)
 
 </td>
 </tr>
@@ -153,7 +153,7 @@ Vectorized execution engine. Leading industry performance on TPC-DS / TPC-H / SS
 
 Vector indexes, full-text search, AI Functions (AI\_COMPLETE / AI\_EMBEDDING), and Semantic Views are built into the data platform. Build RAG knowledge bases and AI-enhanced analytics without external services. Data Analytics Agent supports natural language conversational data queries.
 
-[Lakehouse AI Overview](LakehouseAI-overview.md) · [Vector Search](vector_search_ai.md) · [AI Functions](AI_function_in_SQL.md) · [Semantic View](semantic-view-overview.md) · [Data Analytics Agent](datagpt_introduction.md)
+[Lakehouse AI Overview](lakehouseai-overview.md) · [Vector Search](vector_search_ai.md) · [AI Functions](ai_function_in_sql.md) · [Semantic View](semantic-view-overview.md) · [Data Analytics Agent](datagpt_introduction.md)
 
 </td>
 <td style="width:50%; vertical-align:top; padding:0 0 0 16px; overflow-wrap:break-word;">
@@ -182,6 +182,6 @@ Built-in IDE, task scheduling, data integration, data quality, and operations mo
 |------|-------------|
 | [Before You Begin](setup.md) | Ways to access Lakehouse: Studio, CLI, drivers and connectors |
 | [Account Signup and Setup](logging-in.md) | Register an account, activate a service instance, complete initialization |
-| [Supported Cloud Platforms](Supported-Cloud-Platforms.md) | Supported cloud providers and available regions |
+| [Supported Cloud Platforms](supported-cloud-platforms.md) | Supported cloud providers and available regions |
 | [Pricing and Billing](pricing.md) | Billing model and cost breakdown |
 | [Trial Account Quotas and Limits](trial-account-quotas-and-limits.md) | Resource quota limits during the trial period |

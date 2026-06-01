@@ -1,6 +1,6 @@
 # Data Engineering Based on Singdata Zettapark
 
-This is a very basic data engineering example that demonstrates basic DataFrame operations such as reading, grouping, and writing data through Singdata [Zettapark](ZettaparkQuickStart.md) Python code. This example uses the built-in free sample database (clickzetta\_sample\_data.tpch\_100g) in Singdata Lakehouse as the data source.
+This is a very basic data engineering example that demonstrates basic DataFrame operations such as reading, grouping, and writing data through Singdata [Zettapark](zettaparkquickstart.md) Python code. This example uses the built-in free sample database (clickzetta\_sample\_data.tpch\_100g) in Singdata Lakehouse as the data source.
 
 Steps are as follows:
 

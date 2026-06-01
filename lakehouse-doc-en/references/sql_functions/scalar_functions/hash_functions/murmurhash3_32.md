@@ -29,5 +29,5 @@ SELECT murmurhash3_32('world');
 
 ## Related Documentation
 
-- [MURMURHASH3_64](sql_functions/scalar_functions/hash_functions/murmurhash3_64.md) — 64-bit variant with higher precision
-- [GENERAL_MURMURHASH3](sql_functions/scalar_functions/hash_functions/general_murmurhash3.md)
+- [MURMURHASH3_64](murmurhash3_64.md) — 64-bit variant with higher precision
+- [GENERAL_MURMURHASH3](general_murmurhash3.md)

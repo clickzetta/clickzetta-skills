@@ -4,21 +4,19 @@ Singdata Lakehouse integrates AI capabilities natively into the data platform �
 
 ![](/.topwrite/assets/26-lakehouse-ai-overview.svg)
 
-:-: ![](/.topwrite/assets/image_1779796213194.png =825)
-
 ***
 
 ## Selection Guide
 
 | What I want to do | Recommended approach |
 | ----------------------------------- | ---------------------------------------------- |
-| Call an LLM in a SQL query (text classification, summarization, extraction, translation) | [AI Functions / AI\_COMPLETE](AI_COMPLETE.md) |
-| Manage and switch between multiple LLM models (OpenAI, Qwen, etc.) | [AI Gateway](AIGateway.md) |
+| Call an LLM in a SQL query (text classification, summarization, extraction, translation) | [AI Functions / AI\_COMPLETE](ai_complete.md) |
+| Manage and switch between multiple LLM models (OpenAI, Qwen, etc.) | [AI Gateway](aigateway.md) |
 | Semantic similarity search, RAG retrieval, image search | [Vector Search](vector_search_ai.md) |
-| Call external HTTP services (cloud functions, vision APIs, custom models) | [External Function](RemoteFunction-intro.md) |
+| Call external HTTP services (cloud functions, vision APIs, custom models) | [External Function](remotefunction-intro.md) |
 | Python data processing + AI inference with a PySpark-like interface | [Zettapark](zettapark-quick-start.md) |
 | Encapsulate business semantics for BI tools and AI Agents | [Semantic View](semantic-view-overview.md) |
-| Natural language conversational data analysis, zero-barrier data querying | [Data Analytics Agent (DataGPT)](AI_Gateway.md) |
+| Natural language conversational data analysis, zero-barrier data querying | [Data Analytics Agent (DataGPT)](ai_gateway.md) |
 | Let an AI Agent operate Lakehouse directly | [CZ-CLI](cz-cli.md) |
 
 ***
@@ -41,7 +39,7 @@ SELECT
 FROM user_reviews;
 ```
 
-→ [AI Functions Full Documentation](ai_functions_overview.md) · [AI\_COMPLETE Syntax Reference](AI_COMPLETE.md) · [AI Gateway Model Management](AIGateway.md)
+→ [AI Functions Full Documentation](ai_functions_overview.md) · [AI\_COMPLETE Syntax Reference](ai_complete.md) · [AI Gateway Model Management](aigateway.md)
 
 ***
 
@@ -66,7 +64,7 @@ LIMIT 5;
 
 Register HTTP services such as Alibaba Cloud Function Compute or Tencent Cloud SCF as SQL functions, and call vision recognition, speech transcription, custom models, and other capabilities directly in queries.
 
-→ [External Function Introduction](RemoteFunction-intro.md) · [Development Guide (Python)](RemoteFunction-dev-guide-python3.md) · [Usage Guide](RemoteFunction-best-practice.md)
+→ [External Function Introduction](remotefunction-intro.md) · [Development Guide (Python)](remotefunction-dev-guide-python3.md) · [Usage Guide](remotefunction-best-practice.md)
 
 ***
 
@@ -98,4 +96,4 @@ A PySpark-like Python interface for running Python scripts on Lakehouse — suit
 → [Semantic View Best Practices](semantic-view-best-practices.md)
 
 **Image / Multimodal Processing**: Call vision APIs for image classification, OCR
-→ [Using Hugging Face Image Recognition Model to Process Image Data](RemoteFunction-on-acr.md)
+→ [Using Hugging Face Image Recognition Model to Process Image Data](remotefunction-on-acr.md)

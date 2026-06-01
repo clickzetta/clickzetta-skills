@@ -1,6 +1,6 @@
 # Description
 
-The `DESCRIBE HISTORY` command is used to obtain historical information about tables, dynamic tables, or materialized views. Through these historical records, users can perform rollback operations or query table data at specific points in time. Whether the operation history of an object can be viewed depends on the data [retention period](TIMETRAVEL.md).
+The `DESCRIBE HISTORY` command is used to obtain historical information about tables, dynamic tables, or materialized views. Through these historical records, users can perform rollback operations or query table data at specific points in time. Whether the operation history of an object can be viewed depends on the data [retention period](timetravel.md).
 
 ## Syntax 
 ```SQL

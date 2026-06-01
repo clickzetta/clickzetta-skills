@@ -124,6 +124,6 @@ If you have any suggestions for the product, please feel free to provide feedbac
 | [User Guide](datagpt_tutorial.md) | Data source configuration, semantic layer setup, dashboard creation |
 | [Best Practices](datagpt_bestpractice.md) | Methods to improve Q&A accuracy |
 | [Q&A Accuracy Improvement](answer-accuracy-improve.md) | Semantic layer optimization, metric definition standards |
-| [Lakehouse DataGPT Tour](LakehouseDataGPT-tour.md) | Feature demo videos and screenshots |
+| [Lakehouse DataGPT Tour](lakehousedatagpt-tour.md) | Feature demo videos and screenshots |
 
 ^

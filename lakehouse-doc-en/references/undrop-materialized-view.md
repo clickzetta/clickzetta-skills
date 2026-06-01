@@ -1,8 +1,8 @@
 # UNDROP TABLE
 
-Use the UNDROP TABLE statement to restore deleted tables, dynamic tables, and materialized views. Therefore, this article uses UNDROP TABLE to restore deleted materialized views. Whether the deleted object can be restored depends on the data [retention period](TIMETRAVEL.md).
+Use the UNDROP TABLE statement to restore deleted tables, dynamic tables, and materialized views. Therefore, this article uses UNDROP TABLE to restore deleted materialized views. Whether the deleted object can be restored depends on the data [retention period](timetravel.md).
 **Data Retention Period**:
-The ability to restore historical objects depends on the data retention period. The current preview version has a default data retention period of 7 days, which will be adjusted to 1 day in the future. You can adjust the retention period by executing the [ALTER command](TIMETRAVEL.md). Please note that modifying the retention period may increase storage costs. Supported objects include tables (TABLE), dynamic tables (DYNAMIC TABLE), and materialized views.
+The ability to restore historical objects depends on the data retention period. The current preview version has a default data retention period of 7 days, which will be adjusted to 1 day in the future. You can adjust the retention period by executing the [ALTER command](timetravel.md). Please note that modifying the retention period may increase storage costs. Supported objects include tables (TABLE), dynamic tables (DYNAMIC TABLE), and materialized views.
 
 ## Syntax
 ```sql

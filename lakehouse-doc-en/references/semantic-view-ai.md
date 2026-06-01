@@ -25,7 +25,7 @@ FROM semantic_view(
 );
 ```
 
-> You need to configure AI Gateway first and specify a valid model name. See [AI Functions](AI_function_in_SQL.md) for details.
+> You need to configure AI Gateway first and specify a valid model name. See [AI Functions](ai_function_in_sql.md) for details.
 
 You can also materialize semantic view results before performing batch AI processing:
 
@@ -79,7 +79,7 @@ See [CZ-CLI Documentation](cz-cli.md) for details.
 
 ## MCP Server Tools
 
-The Singdata Lakehouse MCP Server provides a set of tools specifically for semantic views, which can be integrated into AI Agent frameworks (Dify, N8N, Claude Desktop, etc.). See [MCP Server Documentation](MCPServers.md) for details.
+The Singdata Lakehouse MCP Server provides a set of tools specifically for semantic views, which can be integrated into AI Agent frameworks (Dify, N8N, Claude Desktop, etc.). See [MCP Server Documentation](mcpservers.md) for details.
 
 ### Tool Overview
 
@@ -178,7 +178,7 @@ The YAML format is compatible with the Snowflake Cortex Analyst specification. U
 
 ## Related Documents
 
-- [AI Functions](AI_function_in_SQL.md)
+- [AI Functions](ai_function_in_sql.md)
 - [CZ-CLI](cz-cli.md)
-- [MCP Server](MCPServers.md)
+- [MCP Server](mcpservers.md)
 - [Query Semantic View](semantic-view-query.md)

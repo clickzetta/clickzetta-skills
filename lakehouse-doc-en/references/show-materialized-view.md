@@ -4,7 +4,7 @@
 
 The `SHOW TABLES` command with the `WHERE is_materialized_view=true` condition lists all materialized views under a specified schema.
 
-For more details, see [Materialized Views](MATERIALIZEDVIEW.md).
+For more details, see [Materialized Views](materializedview.md).
 
 ## Syntax
 
@@ -77,5 +77,5 @@ SHOW TABLES IN doc_test WHERE table_name LIKE '%test%' AND is_materialized_view 
 
 - [CREATE MATERIALIZED VIEW](create-materialized-view.md): Create a materialized view
 - [DROP MATERIALIZED VIEW](drop-materialized-view.md): Drop a materialized view
-- [REFRESH MATERIALIZED VIEW](REFRESH.md): Refresh a materialized view
+- [REFRESH MATERIALIZED VIEW](refresh-materialized-view.md): Refresh a materialized view
 - [DESC MATERIALIZED VIEW](desc-materialized-view.md): View the structure of a materialized view

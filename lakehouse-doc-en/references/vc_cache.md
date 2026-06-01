@@ -37,6 +37,13 @@ Compute Cluster Cache is divided into two types:
     ALTER VCLUSTER default SET PRELOAD_TABLES="schema1.table1,schema2.table2,schema3.table3";
     ```
 
+`PRELOAD_TABLES` supports wildcards. Use `schema_name.*` to cache all tables in a Schema:
+
+```SQL
+-- Cache all tables in the sales Schema, plus dim_date from the public Schema
+ALTER VCLUSTER bi_vc SET PRELOAD_TABLES="sales.*,public.dim_date";
+```
+
 ## **Viewing Cache Status**:
 
 When tables are loaded into the compute cluster using the `ALTER..PRELOAD_TABLES` command, there may be a delay in the update of the cache status displayed by `SHOW PRELOAD`. However, the cached tables are actually effective. Under normal circumstances, this delay is about 10 minutes.
@@ -69,7 +76,10 @@ SHOW EXTENDED PRELOAD CACHED STATUS;
 
 ## Precautions
 
-* The cluster supports automatic start and stop. When the cluster stops, the cached tables will be automatically released. In AP type clusters, the pre-cached tables will be automatically loaded upon restart.
+* Active caching (PRELOAD_TABLES) is only supported on **Analytics (AP)** clusters. General Purpose (GP) clusters do not support this feature.
+* `PRELOAD_TABLES` is an **overwrite** operation. When adding a new table, you must include all previously configured tables, otherwise they will be removed from preloading.
+* The cluster supports automatic start and stop. When the cluster stops, the local cache is automatically released. In AP clusters, only the most recently written data or partitions are cached on restart.
 * After executing the cache command, only newly written data will be cached.
+* `SHOW PRELOAD` status updates may have approximately a 10-minute delay, but the cache is already effective.
 
 ^

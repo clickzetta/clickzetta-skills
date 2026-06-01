@@ -30,4 +30,4 @@ SELECT 10 DIV 0;
 
 ## Related Documentation
 
-- [MOD](sql_functions/scalar_functions/math_functions/mod.md) — Modulo operation
+- [MOD](mod.md) — Modulo operation

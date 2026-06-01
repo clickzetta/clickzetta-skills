@@ -48,4 +48,4 @@ Singdata Lakehouse Studio includes a full-featured data integration capability t
 | [Real-time Sync Task](realtime_sync.md) | Single-table real-time CDC sync |
 | [Multi-table Real-time Sync Task](multitable_realtime_sync.md) | Full-database real-time CDC sync |
 | [Multi-table Real-time Sync Complete Guide](multitable_realtime_sync_sop.md) | End-to-end SOP for full-database migration |
-| [Offline Sync FAQ](batch_sync_Sop.md) | Common questions and usage guide |
+| [Offline Sync FAQ](batch_sync_sop.md) | Common questions and usage guide |

@@ -45,7 +45,7 @@ Modern methods for implementing Slowly Changing Dimensions (SCD) in Lakehouse le
 An end-to-end data pipeline that automatically captures and processes data changes:
 
 1. **Data Source** (Jupyter calls Fake to generate test data) **→** Use Python to create data to simulate real-world events.
-2. [Zettapark](ZettaparkQuickStart.md) **PUT**→ Use Zettapark to pull and load data into the data lake Volume.
+2. [Zettapark](zettaparkquickstart.md) **PUT**→ Use Zettapark to pull and load data into the data lake Volume.
 3. [Data Lake Volume](datalake_volume.md) → Data lake storage based on Alibaba Cloud OSS.
 4. [Lakehouse Pipe](pipe-summary.md) **captures data lake file changes** → Lakehouse Pipe efficiently streams data from the data lake Volume to the Lakehouse.
 5. [Lakehouse Table Stream](table_stream.md) **captures Table data changes** → Captures changes in the base table for incremental consumption.
@@ -584,4 +584,4 @@ View task instances:
 
 [Table Stream](table_stream.md)
 
-[Merge Into](MERGE.md)
+[Merge Into](merge.md)

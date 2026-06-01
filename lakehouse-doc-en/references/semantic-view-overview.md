@@ -38,5 +38,5 @@ A Semantic View consists of four core components:
 | [Advanced Query Usage](semantic-view-advanced.md) | Subqueries, CTEs, JOIN with regular tables, CTAS |
 | [Manage Semantic View](semantic-view-manage.md) | DROP, ALTER, SHOW, DESC, access control |
 | [Integrate with AI](semantic-view-ai.md) | AI_COMPLETE combined queries, CZ-CLI, MCP tools |
-| [Generate and Maintain Semantic Views with AI Agent](semantic-view-agent-guide.md) | Information collection, design evaluation, validation methods, common pitfalls |
+| [Generate and Maintain Semantic Views with AI Agent](semantic-view-agent-guide.md) | Information collection, design evaluation, validation methods, common issues |
 | [Best Practices](semantic-view-best-practices.md) | Naming conventions, design recommendations, FAQ |

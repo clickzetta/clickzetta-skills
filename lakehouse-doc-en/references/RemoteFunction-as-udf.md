@@ -29,7 +29,7 @@ The creation process has four steps:
 | UDAF (multiple rows in, single row out) | ❌ | ✅ |
 | UDTF (single row in, multiple rows out) | ❌ | ✅ |
 
-Runtime environments: Java 8 / Python 3.10. When compressed dependencies exceed 500 MB, use container image deployment instead — see [Using Hugging Face Image Recognition Model to Process Image Data](RemoteFunction-on-acr.md).
+Runtime environments: Java 8 / Python 3.10. When compressed dependencies exceed 500 MB, use container image deployment instead — see [Using Hugging Face Image Recognition Model to Process Image Data](remotefunction-on-acr.md).
 
 ---
 
@@ -37,7 +37,7 @@ Runtime environments: Java 8 / Python 3.10. When compressed dependencies exceed 
 
 | Page | Description |
 |------|------|
-| [Introduction: External Function](RemoteFunction-intro.md) | Concepts, architecture, advantages, usage limits, and billing |
-| [Development Guide: Python3](RemoteFunction-dev-guide-python3.md) | Environment setup, code structure, dependency packaging, deployment to Alibaba Cloud FC |
+| [Introduction: External Function](remotefunction-intro.md) | Concepts, architecture, advantages, usage limits, and billing |
+| [Development Guide: Python3](remotefunction-dev-guide-python3.md) | Environment setup, code structure, dependency packaging, deployment to Alibaba Cloud FC |
 | [Development Guide: Java](external-function-dev-guide-java.md) | Java 8 function development, packaging, UDF/UDAF/UDTF implementation |
-| [Usage Guide: External Function](RemoteFunction-best-practice.md) | Complete workflow: authorization, creating connections, registering functions, calling in SQL |
+| [Usage Guide: External Function](remotefunction-best-practice.md) | Complete workflow: authorization, creating connections, registering functions, calling in SQL |

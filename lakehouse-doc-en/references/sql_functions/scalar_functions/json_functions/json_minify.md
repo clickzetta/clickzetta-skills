@@ -30,4 +30,4 @@ SELECT json_minify(NULL);
 ## Related Documentation
 
 - [JSON_NORMALIZE](json_normalize.md) — Normalize JSON (sort keys + compress)
-- [PARSE_JSON](parse_json.md) — Parse a string into a JSON object
+- [PARSE_JSON](json_parse.md) — Parse a string into a JSON object

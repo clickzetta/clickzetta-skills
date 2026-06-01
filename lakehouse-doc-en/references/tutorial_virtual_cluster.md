@@ -32,7 +32,7 @@ All three cluster types support **second-level cold start** (auto-wake on job su
 
 | Page | Description |
 |------|------|
-| [Using Lakehouse Compute Clusters](working_with_Vclusters.md) | Cluster creation, start/stop, spec adjustment, SQL operations, and best practices for common use cases |
+| [Using Lakehouse Compute Clusters](working_with_vclusters.md) | Cluster creation, start/stop, spec adjustment, SQL operations, and best practices for common use cases |
 | [Supporting Multi-Concurrent Queries with Horizontal Elastic Scaling](concurrency_scaling.md) | How multi-instance scaling works for Analytical clusters and hands-on tutorial |
 
 ---

@@ -71,8 +71,8 @@ Executing `DESC` statements typically only requires basic view permissions (`USA
 - [DESC SHARE](desc-share.md)
 
 ### Indexes and Jobs
-- [DESC INDEX](DESC-INDEX.md)
-- [DESC JOB](DESC-JOB.md)
+- [DESC INDEX](desc-index.md)
+- [DESC JOB](desc-job.md)
 
 ### Others
 - [DESC HISTORY](desc-history.md)

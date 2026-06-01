@@ -177,5 +177,5 @@ DROP TABLE IF EXISTS doc_copy_target;
 ## Related Documentation
 
 - [COPY INTO Import](copy-into-table.md)
-- [COPY INTO Export](COPY-INTO-Location.md)
-- [Volume File Management](SQL_Volume_Guide.md)
+- [COPY INTO Export](copy-into-location.md)
+- [Volume File Management](sql_volume_guide.md)

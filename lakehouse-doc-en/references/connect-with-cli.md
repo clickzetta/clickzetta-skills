@@ -54,7 +54,7 @@ jdbc:clickzetta://<Lakehouse service instance name>.api.singdata.com/<workspace 
 ```
 Parameter Description:
 
-* `<JDBC URL>`: The JDBC connection string for the current service instance. For the detailed format, see [JDBC Driver](JDBC-Driver.md).
+* `<JDBC URL>`: The JDBC connection string for the current service instance. For the detailed format, see [JDBC Driver](jdbc-driver.md).
 * `<user_name>`: The username of the workspace member in the target workspace.
 * `<password>`: The password of the workspace member in the target workspace.
 * `schema`: The schema to be linked must be specified.

@@ -52,7 +52,7 @@ This directly expresses intent, and the execution plan is determined by the Lake
 
 ## Migration Conclusions Up Front
 
-**The business logic of RDD can be fully preserved — only the expression changes.**
+You won't lose any analytical capability — your code will actually get shorter. RDD requires telling the engine *how* to do it; ZettaPark only needs you to say *what* you want. The business logic stays the same, but a 6-step secondary sort becomes a single window function, and a hand-written cogroup iterator becomes a HAVING clause.
 
 | RDD Operation | ZettaPark Equivalent | Code Volume Change |
 |---------|---------------|-----------|

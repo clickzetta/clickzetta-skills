@@ -9,7 +9,7 @@ After logging into Dify, click **Tools** -> **MCP** in the left navigation bar t
 
 ## Adding a Lakehouse MCP Server
 
-First, you need to deploy the [Lakehouse MCP Server supporting HTTP protocol](LakehouseMCPServer-intro.md)
+First, you need to deploy the [Lakehouse MCP Server supporting HTTP protocol](lakehousemcpserver-intro.md)
 
 :-: ![](.topwrite/assets/image_1756885164463.png =815)
 

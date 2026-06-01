@@ -32,6 +32,6 @@ SELECT json_extract_int(PARSE_JSON('{"score":null}'), '$.score');
 
 ## Related Documentation
 
-- [JSON_EXTRACT_BIGINT](sql_functions/scalar_functions/json_functions/json_extract_bigint.md), [JSON_EXTRACT_DOUBLE](sql_functions/scalar_functions/json_functions/json_extract_double.md), [JSON_EXTRACT_STRING](sql_functions/scalar_functions/json_functions/json_extract_string.md)
-- [GET_JSON_OBJECT](sql_functions/scalar_functions/json_functions/get_json_object.md) — general-purpose function that extracts values as strings
-- [PARSE_JSON](sql_functions/scalar_functions/json_functions/json_parse.md)
+- [JSON_EXTRACT_BIGINT](json_extract_bigint.md), [JSON_EXTRACT_DOUBLE](json_extract_double.md), [JSON_EXTRACT_STRING](json_extract_string.md)
+- [GET_JSON_OBJECT](get_json_object.md) — general-purpose function that extracts values as strings
+- [PARSE_JSON](json_parse.md)

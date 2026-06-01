@@ -113,5 +113,5 @@ Preferred method?
 - [Data Sharing Complete Reference](data-sharing.md) — Full operation steps and permission details
 - [Cross-Account Data Sharing Guide](data_sharing_between_accounts_guide.md) — End-to-end operation example
 - [Cross-Enterprise Real-Time Data Sharing](quickstart_datashare_between_companies.md) — Complete case with view filtering
-- [Data Sharing SQL Guide](SQL_Share_Guide.md) — SQL command reference
+- [Data Sharing SQL Guide](sql_share_guide.md) — SQL command reference
 - [CREATE SHARE](create-share.md) · [ALTER SHARE](alter-share.md) · [GRANT TO SHARE](grant-to-share.md) · [REVOKE FROM SHARE](revoke-from-share.md) · [SHOW SHARES](show-shares.md) · [DESC SHARE](desc-share.md) · [DROP SHARE](drop-share.md)

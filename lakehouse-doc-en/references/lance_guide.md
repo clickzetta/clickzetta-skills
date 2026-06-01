@@ -314,7 +314,7 @@ Only rows with `source = 'source_1'` are returned, confirming that both the scal
 
 * [Create Storage Connection](create-storage-connection.md)
 * [Create External Table](create-external-table.md)
-* [Vector Search and RAG Application Guide](SQL_Vector_Search_Guide.md)
+* [Vector Search and RAG Application Guide](sql_vector_search_guide.md)
 * [Vector Function Reference](vector-functions.md)
 
 ^

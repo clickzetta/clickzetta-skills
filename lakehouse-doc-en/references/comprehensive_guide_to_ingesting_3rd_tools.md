@@ -4,8 +4,8 @@
 
 #### Resources
 
-[Loading Data into Lakehouse via Airbyte](ELTModernDataStack.md)
+[Loading Data into Lakehouse via Airbyte](eltmoderndatastack.md)
 
 [Loading Data Collected by Octoparse into Lakehouse via MySQL Protocol](simpletosimple_bazhuayu_datagpt.md)
 
-[Real-Time Data Synchronization from Oracle Database to Singdata Lakehouse via Bluepipe](BluepipeOracleLakehouse_DataSync.md)
+[Real-Time Data Synchronization from Oracle Database to Singdata Lakehouse via Bluepipe](bluepipeoraclelakehouse_datasync.md)

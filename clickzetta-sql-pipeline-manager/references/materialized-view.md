@@ -1,11 +1,11 @@
-# Materialized View SQL Reference
+# Materialized View（物化视图）SQL 参考
 
-> **⚠️ ClickZetta-specific syntax**
-> - Scheduled refresh: `REFRESH INTERVAL 10 MINUTE vcluster default` (same syntax as Dynamic Table)
-> - Manual refresh: `REFRESH MATERIALIZED VIEW <name>;`
-> - Modify comments with `ALTER TABLE`, not `ALTER MATERIALIZED VIEW`
+> **⚠️ ClickZetta 特有语法**
+> - 定时刷新：`REFRESH INTERVAL 10 MINUTE vcluster default`（与动态表语法相同）
+> - 手动刷新：`REFRESH MATERIALIZED VIEW <name>;`
+> - 修改注释用 `ALTER TABLE`，不是 `ALTER MATERIALIZED VIEW`
 
-Materialized Views pre-compute and physically store query results, making them ideal for fixed-dimension aggregation acceleration. Unlike Dynamic Tables, Materialized Views support manual or scheduled refresh but do not support incremental refresh.
+物化视图将查询结果预计算并物理存储，适合固定维度的聚合加速场景。与动态表的区别：物化视图支持手动或定时刷新，不支持增量刷新。
 
 ## CREATE MATERIALIZED VIEW
 
@@ -19,15 +19,15 @@ AS
   <query>;
 ```
 
-**Key parameters:**
-- `REFRESH INTERVAL 10 MINUTE vcluster default`: scheduled automatic refresh (same syntax as Dynamic Table)
-- Omitting the REFRESH clause: only manual refresh via `REFRESH MATERIALIZED VIEW <name>;`
-- `BUILD DEFERRED`: deferred build — does not compute results immediately at creation time
-- `DISABLE QUERY REWRITE`: disables query rewrite (MV will not automatically accelerate queries)
+**关键参数：**
+- `REFRESH INTERVAL 10 MINUTE vcluster default`：定时自动刷新（与动态表语法相同）
+- 不写 REFRESH 子句：只能手动触发 `REFRESH MATERIALIZED VIEW <name>;`
+- `BUILD DEFERRED`：延迟构建，创建时不立即计算结果
+- `DISABLE QUERY REWRITE`：禁用查询改写（不自动用 MV 加速查询）
 
-**Examples:**
+**示例：**
 ```sql
--- Materialized View with scheduled auto-refresh (every 10 minutes)
+-- 定时自动刷新的物化视图（每 10 分钟）
 CREATE MATERIALIZED VIEW mv_dept_stats
 REFRESH INTERVAL 10 MINUTE vcluster default
 AS
@@ -40,7 +40,7 @@ FROM departments d
 JOIN employees e ON d.dept_id = e.dept_id
 GROUP BY d.dept_id, d.dept_name;
 
--- Modify refresh interval (requires CREATE OR REPLACE)
+-- 修改刷新周期（需要 CREATE OR REPLACE）
 CREATE OR REPLACE MATERIALIZED VIEW mv_dept_stats
 BUILD DEFERRED
 REFRESH INTERVAL 20 MINUTE vcluster default
@@ -57,32 +57,32 @@ FROM departments d
 JOIN employees e ON d.dept_id = e.dept_id
 GROUP BY d.dept_id, d.dept_name, d.location;
 
--- Manual refresh
+-- 手动刷新
 REFRESH MATERIALIZED VIEW mv_dept_stats;
 ```
 
 ## ALTER MATERIALIZED VIEW
 
 ```sql
--- Suspend automatic refresh
+-- 暂停自动刷新
 ALTER MATERIALIZED VIEW <name> SUSPEND;
 
--- Resume automatic refresh
+-- 恢复自动刷新
 ALTER MATERIALIZED VIEW <name> RESUME;
 
--- Modify comment
+-- 修改注释
 ALTER TABLE <mv_name> SET COMMENT '<comment>';
 
--- Modify column comment (Materialized Views use ALTER TABLE syntax)
+-- 修改列注释（物化视图用 ALTER TABLE 语法）
 ALTER TABLE <mv_name> CHANGE COLUMN <col_name> COMMENT '<comment>';
 ```
 
-> Note: Use `ALTER TABLE` (not `ALTER MATERIALIZED VIEW`) to modify comments on a Materialized View.
+> 注意：物化视图的注释修改使用 `ALTER TABLE`，不是 `ALTER MATERIALIZED VIEW`。
 
 ## REFRESH MATERIALIZED VIEW
 
 ```sql
--- Manually trigger a full refresh
+-- 手动触发全量刷新
 REFRESH MATERIALIZED VIEW <name>;
 ```
 
@@ -95,35 +95,35 @@ DROP MATERIALIZED VIEW [ IF EXISTS ] <name>;
 ## SHOW / DESC
 
 ```sql
--- List all Materialized Views in the current schema
+-- 列出当前 schema 下所有物化视图
 SHOW TABLES WHERE is_materialized_view = true;
 
--- Filter by name
+-- 按名称过滤
 SHOW TABLES LIKE 'mv_%' WHERE is_materialized_view = true;
 
--- View Materialized View structure
+-- 查看物化视图结构
 DESC MATERIALIZED VIEW <name>;
 DESCRIBE MATERIALIZED VIEW <name> EXTENDED;
 
--- View full CREATE statement
+-- 查看完整建表语句
 SHOW CREATE TABLE <name>;
 ```
 
-## Dynamic Table vs Materialized View — Selection Guide
+## 动态表 vs 物化视图 选择指南
 
-| Scenario | Recommended |
+| 场景 | 推荐 |
 |---|---|
-| Need second/minute-level automatic incremental refresh | Dynamic Table |
-| Fixed aggregation, manual or low-frequency refresh | Materialized View |
-| Need CDC change detection | Dynamic Table + Table Stream |
-| Accelerate BI queries, real-time data not required | Materialized View |
+| 需要秒/分钟级自动增量刷新 | Dynamic Table |
+| 固定聚合，手动或低频刷新 | Materialized View |
+| 需要 CDC 变更感知 | Dynamic Table + Table Stream |
+| 加速 BI 查询，数据不要求实时 | Materialized View |
 
-## Reference Documentation
+## 参考文档
 
 - [CREATE MATERIALIZED VIEW](https://www.yunqi.tech/documents/CREATEMATERIALIZEDVIEW)
 - [ALTER MATERIALIZED VIEW](https://www.yunqi.tech/documents/alter-materialzied-view)
 - [REFRESH MATERIALIZED VIEW](https://www.yunqi.tech/documents/REFRESH)
 - [DROP MATERIALIZED VIEW](https://www.yunqi.tech/documents/DROPMATERIALIZEDVIEW)
 - [SHOW MATERIALIZED VIEWS](https://www.yunqi.tech/documents/show-materialized-view)
-- [Materialized View Concepts and Use Cases](https://www.yunqi.tech/documents/MATERIALIZEDVIEW)
-- [Materialized View DDL Summary](https://www.yunqi.tech/documents/materialized_ddl)
+- [物化视图概念与场景](https://www.yunqi.tech/documents/MATERIALIZEDVIEW)
+- [物化视图 DDL 汇总](https://www.yunqi.tech/documents/materialized_ddl)

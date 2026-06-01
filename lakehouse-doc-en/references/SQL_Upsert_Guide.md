@@ -194,6 +194,6 @@ DROP TABLE IF EXISTS daily_stock;
 
 ## Related Documentation
 
-* [MERGE INTO](MERGE.md)
-* [INSERT INTO](INSERT.md)
-* [UPDATE](UPDATE.md)
+* [MERGE INTO](merge.md)
+* [INSERT INTO](insert.md)
+* [UPDATE](update.md)

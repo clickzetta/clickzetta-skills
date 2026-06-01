@@ -31,7 +31,7 @@ SELECT json_extract_float(PARSE_JSON('{"val":3.14}'), '$.other');
 
 ## Related Documentation
 
-- [JSON_EXTRACT_DOUBLE](sql_functions/scalar_functions/json_functions/json_extract_double.md) — higher-precision floating-point extraction
-- [JSON_EXTRACT_INT](sql_functions/scalar_functions/json_functions/json_extract_int.md), [JSON_EXTRACT_STRING](sql_functions/scalar_functions/json_functions/json_extract_string.md)
-- [GET_JSON_OBJECT](sql_functions/scalar_functions/json_functions/get_json_object.md) — general-purpose function that extracts values as strings
-- [PARSE_JSON](sql_functions/scalar_functions/json_functions/json_parse.md)
+- [JSON_EXTRACT_DOUBLE](json_extract_double.md) — higher-precision floating-point extraction
+- [JSON_EXTRACT_INT](json_extract_int.md), [JSON_EXTRACT_STRING](json_extract_string.md)
+- [GET_JSON_OBJECT](get_json_object.md) — general-purpose function that extracts values as strings
+- [PARSE_JSON](json_parse.md)

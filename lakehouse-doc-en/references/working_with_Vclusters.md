@@ -103,7 +103,7 @@ Enable **Auto Start**;
 
 Automatic stop time to **10 minutes**.
 
-This way, complex queries with an expected data volume of 100GiB can return query results within 3 seconds. When the computing cluster is running, it can support 8 concurrent queries at the minimum scale and up to 80 concurrent queries at the maximum scale. When the concurrency exceeds 80, new concurrent requests will start queuing. After being idle for more than 10 minutes, the computing cluster will automatically shut down, stopping the computation cost. Extending the shutdown time to 10 minutes instead of 1 minute can minimize the impact of frequent restarts on the query experience and retain the cache for faster response to subsequent queries, balancing cost and query performance.
+This way, complex queries with an expected data volume of 100GiB can return query results within 3 seconds. When the computing cluster is running, it can support 8 concurrent queries at the minimum scale and up to 80 concurrent queries at the maximum scale. When the concurrency exceeds 80, new concurrent requests will start queuing. After being idle for more than 30 minutes, the computing cluster will automatically shut down, stopping the computation cost. Extending the shutdown time to 30 minutes instead of 1 minute can minimize the impact of frequent restarts on the query experience and retain the cache for faster response to subsequent queries, balancing cost and query performance. To proactively preload hot tables into the cluster cache, see [Compute Cluster Cache](vc_cache.md).
 
 :-: ![](.topwrite/assets/image_1739277930228.png =580)
 
@@ -132,7 +132,7 @@ High real-time query processing efficiency, automatically scaling new instances 
 
 :-: ![](.topwrite/assets/image_1739326621174.png =378)
 
-2\. During the analysis phase, **disable auto-stop** or set the auto-stop time to more than 30 minutes to retain cache, significantly improving speed during repeated queries.
+2\. During the analysis phase, **disable auto-stop** or set the auto-stop time to more than 30 minutes to retain cache, significantly improving speed during repeated queries. To proactively preload frequently used tables into the cluster cache, see [Compute Cluster Cache](vc_cache.md).
 
 :-: ![](.topwrite/assets/image_1739326785003.png =692)
 

@@ -4,7 +4,7 @@
 
 ### 1. Enabling MCP Tool Integration
 
-If your environment supports MCP (Model Context Protocol) tools, you can add an [MCP server](LakehouseMCPServer.md) via the command line:
+If your environment supports MCP (Model Context Protocol) tools, you can add an [MCP server](lakehousemcpserver.md) via the command line:
 
 Add an HTTP-type MCP server:
 

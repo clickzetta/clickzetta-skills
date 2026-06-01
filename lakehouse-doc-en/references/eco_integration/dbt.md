@@ -1,155 +1,300 @@
-# dbt Singdata adapter User Guide
+# DBT ClickZetta Adapter Usage Guide
 
-> 💡 **If your goal with dbt is to do data transformation and modeling on Singdata Lakehouse**, Singdata Studio provides native development, orchestration, and operations capabilities — no need to maintain a separate dbt project:
+> 💡 **If you are using dbt to perform data transformation and modeling on Singdata Lakehouse**, Singdata Studio provides native development, orchestration, and operations capabilities — no need to maintain a separate dbt project:
 >
 > **Step 1: Develop transformation logic in Studio SQL tasks**
 >
-> [Studio SQL Tasks](../task-develop.md) are Singdata's native data modeling approach, supporting SQL development in the IDE with scheduled execution. Choose the appropriate object type based on your transformation scenario:
+> [Studio SQL tasks](../task-develop.md) are Singdata's native data modeling approach, supporting SQL authoring and scheduled execution in an IDE. Choose the appropriate object type based on your transformation scenario:
 >
 > | Scenario | Object Type | Description |
 > |------|---------|------|
 > | Transformation logic requiring automatic incremental refresh | [Dynamic Table](../dynamic-table.md) | Declaratively define transformation SQL; the system automatically computes incrementally without manual scheduling logic |
-> | High-frequency fixed aggregation query acceleration | [Materialized View](../MATERIALIZEDVIEW.md) | Pre-computed results stored physically; BI queries hit directly |
+> | Accelerating high-frequency fixed aggregation queries | [Materialized View](../materializedview.md) | Pre-computed results stored physically; BI queries hit directly |
 > | Standard SQL ETL logic | Regular table + INSERT/MERGE | Standard SQL writes with flexible execution control |
 >
 > **Step 2: Orchestrate multiple SQL tasks into a workflow**
 >
-> Multiple SQL tasks can be combined into a [Workflow (DAG)](../composite_task.md), defining dependencies between tasks for unified scheduled triggering.
+> Multiple SQL tasks can be combined into a [workflow (DAG)](../composite_task.md), defining dependencies between tasks for unified scheduling.
 >
 > **Step 3: Scheduling, monitoring, and operations**
 >
-> Studio has a built-in scheduling system supporting Cron-based triggers, task dependencies, failure alerts, run log viewing, and failure reruns. See [Using Studio In Depth](../studio_manual.md) for details.
+> Studio has a built-in scheduling system supporting cron triggers, task dependencies, failure alerts, run log viewing, and failure reruns. See [Using Studio In Depth](../studio_manual.md).
 >
 > If you have an existing dbt project to migrate, or your team prefers the dbt development workflow, continue reading the integration guide below.
 
 ---
 
-## Introduction to dbt
+## Installation
 
-dbt (data build tool) is an open-source data modeling tool designed to bring software engineering methods into the data modeling development process. dbt supports multiple data sources, enabling data developers to achieve cross-platform, quality-controlled data development. dbt has an active community and offers a wealth of extension components, such as data quality and integration with other systems, making data development more convenient.
+Requires Python 3.10+ (3.12 recommended) and dbt-core 1.8+.
 
-Singdata has launched the `dbt-clickzetta` adapter to achieve compatibility with dbt, supporting dbt version 1.5+. This article will detail the installation and usage of the plugin, using the dbt standard example [Jaffle Shop](https://github.com/dbt-labs/jaffle-shop-classic).
+```bash
+pip install "dbt-clickzetta>=1.7.8"
+```
 
-## Preparing the Environment
+## Connection Configuration
 
-1. Install the dbt-clickzetta plugin (which already integrates dbt-core and dbt-extractor):
-   ```shell
-   pip install dbt-clickzetta
-   ```
-3. Prepare the dbt project:
-   ```shell
-   git clone https://github.com/dbt-labs/jaffle-shop-classic.git
-   ```
-4. Manage and edit the project in the version control system.
+Configure connection details in `profiles.yml`:
 
-## Configuration
-
-In the root directory of the dbt project (i.e., the jaffle\_shop directory), edit the `profiles.yml` file as follows:
 ```yaml
-jaffle_shop:
-  target: prod
+my_project:
+  target: dev
   outputs:
-    prod:
+    dev:
       type: clickzetta
-      service: api.singdata.com
-      instance: instance_name
-      username: user_name
-      password: password
-      workspace: workspace_name
-      schema: jaffle_shop
+      service: cn-shanghai-alicloud.api.clickzetta.com
+      instance: your_instance
+      workspace: your_workspace
+      username: your_username
+      password: your_password
+      schema: your_schema
       vcluster: default
 ```
-Parameter Description:
 
-- For the official dbt profile parameters (such as jaffle\_shop, target, etc. in the example above), please refer to the [dbt official documentation](https://docs.getdbt.com/docs/core/connect-data-platform/connection-profiles).
-- Parameters recognized by the dbt-clickzetta plugin include:
-  - type: Fixed as clickzetta
-  - service: Singdata Lakehouse service address
-  - instance: Instance name
-  - username: Username
-  - password: Password
-  - workspace: Workspace name
-  - schema: Schema name
-  - vcluster: Compute cluster name
+| Parameter | Required | Description |
+|------|------|------|
+| `type` | Yes | Fixed as `clickzetta` |
+| `service` | Yes | API address, e.g., `cn-shanghai-alicloud.api.clickzetta.com` |
+| `instance` | Yes | Instance name |
+| `workspace` | Yes | Workspace name |
+| `username` | Yes | Username |
+| `password` | Yes | Password |
+| `schema` | Yes | Default schema name |
+| `vcluster` | Yes | Compute cluster name, e.g., `default` |
+| `connect_retries` | No | Connection retry count, default 3 |
 
-To facilitate the use of the `dbt` command, copy the `profiles.yml` file to the user directory:
-```shell
-mkdir ~/.dbt/ && cp profiles.yml ~/.dbt/
+Verify the connection:
+
+```bash
+dbt debug
 ```
-Run `dbt debug` to verify the configuration is correct.
 
-## Run dbt Project
+---
 
-### 1. Upload Data
+## Supported Features
 
-Run `dbt seed` to upload the CSV data from the project to Singdata Lakehouse.
+| Feature | Support |
+|------|---------|
+| `table` materialization | ✅ |
+| `view` materialization | ✅ |
+| `incremental` materialization | ✅ |
+| `ephemeral` materialization | ✅ |
+| `snapshot` (SCD Type 2) | ✅ |
+| `dynamic_table` materialization | ✅ |
+| `materialized_view` materialization | ✅ |
+| `dbt test` (generic + singular) | ✅ |
+| `dbt seed` | ✅ |
+| `dbt docs generate` | ✅ (includes row count, size, last modified time) |
+| `dbt source freshness` | ✅ |
+| `persist_docs` (relation + columns) | ✅ |
+| Partitioned tables | ✅ |
+| Bucketed tables | ✅ |
+| Python models | ❌ Not supported; SQL models only |
+| `on_schema_change` | ✅ (append_new_columns, sync_all_columns) |
+| `grants` | ✅ |
+| `clone` materialization | ✅ (zero-copy clone + Time Travel clone) |
+| Indexes (Bloomfilter / Inverted / Vector) | ✅ (auto-created via `indexes` config) |
+| Table Stream as source | ✅ (declared in `sources.yml`, referenced via `source()`) |
+| VCluster per-model | ✅ (via `vcluster` config) |
 
-### 2. Run Models
+---
 
-Use `dbt run`, dbt will automatically generate and execute SQL based on the files described in the models directory.
+## Incremental Strategies
 
-### 3. Validate Output
+Four incremental strategies are supported:
 
-Run `dbt test` to validate the output tables. Tests are assertions you make about the models and other resources (such as sources, seeds, and snapshots) in your dbt project. When you run `dbt test`, dbt will tell you whether each test in your project passes or fails.
-
-### 4. Generate and View Reports
-
-Run `dbt docs generate` to generate the documentation website for the project. Run `dbt docs serve` to start a local HTTP service, and open `http://localhost:8080` in your browser to view the report page.
-
-#### View Report
-
-![dbt docs screenshot](dbt_docs_screenshot.png)
-
-#### View Data Lineage
-
-![Data Lineage Screenshot](../.topwrite/assets/image_1697458411669.png)
-
-## More Examples
-
-### Example 1: Create a Model
-
-Create a new file `example_model.sql` under the `models` directory and add the following content:
+| Strategy | Description |
+|------|------|
+| `merge` (default) | MERGE INTO, requires `unique_key` |
+| `append` | INSERT INTO, no deduplication |
+| `insert_overwrite` | INSERT OVERWRITE, dynamic partition mode |
+| `delete+insert` | Delete matching rows by `unique_key` first, then insert (`unique_key` required) |
 
 ```sql
--- This is an example model
-SELECT 1 AS example_column
+{{ config(
+    materialized='incremental',
+    incremental_strategy='merge',
+    unique_key='id'
+) }}
+
+select * from {{ ref('stg_orders') }}
+{% if is_incremental() %}
+where updated_at >= (select max(updated_at) from {{ this }})
+{% endif %}
+```
+
+---
+
+## Dynamic Table
+
+Dynamic Table automatically refreshes incrementally at `refresh_interval` without external scheduling:
+
 ```sql
-CREATE VIEW example_model AS
-SELECT
-  customers.first_name,
-  customers.last_name,
-  SUM(orders.total) AS total_spent
-FROM
-  {{ ref('customers') }} customers
-JOIN
-  {{ ref('orders') }} orders
-ON
-  customers.id = orders.customer_id
-GROUP BY
-  customers.first_name,
-  customers.last_name;
+{{ config(
+    materialized='dynamic_table',
+    refresh_interval='5 MINUTE',
+    refresh_vc='default'
+) }}
+
+select
+    customer_id,
+    count(order_id)  as order_count,
+    sum(amount)      as total_amount
+from {{ ref('stg_orders') }}
+group by customer_id
 ```
-### Example 2: Running a Specific Model
 
-Run `dbt run-operation example_model` to execute a specific model.
+Manually trigger an immediate refresh:
 
-### Example 3: Using Tests
+```bash
+dbt run-operation refresh_dynamic_table --args '{model_name: my_dynamic_table}'
+```
 
-Add tests in the `schema.yml` file under the `models` directory:
+---
+
+## Indexes
+
+Indexes are automatically created when building tables. Three types are supported: Bloomfilter (equality queries), Inverted (full-text search), and Vector (similarity search):
+
+```sql
+{{ config(
+    materialized='table',
+    indexes=[
+        {'type': 'bloomfilter', 'columns': ['order_id']},
+        {'type': 'inverted',    'columns': ['status'], 'analyzer': 'unicode'},
+        {'type': 'vector',      'columns': ['embedding'],
+         'distance_function': 'cosine_distance', 'scalar_type': 'f32'}
+    ]
+) }}
+```
+
+---
+
+## VCluster per-model
+
+Specify a compute cluster for individual models to isolate resources between large and small models:
+
+```sql
+{{ config(
+    materialized='incremental',
+    incremental_strategy='delete+insert',
+    unique_key='order_id',
+    vcluster='large_ap'
+) }}
+```
+
+You can also configure by directory in `dbt_project.yml`:
+
 ```yaml
 models:
-  - name: stg_customers
-    columns:
-      - name: customer_id
-        tests:
-          - unique
-          - not_null
+  my_project:
+    marts:
+      +vcluster: large_ap
+    staging:
+      +vcluster: default_ap
 ```
-Run `dbt test` to execute the tests.
 
-### Example 4: Using Hooks
+---
 
-Add hooks in the `schema.yml` file under the `models` directory:
+## Table Stream as Source
+
+Declare a Table Stream in `sources.yml` and reference it with `source()` in models to consume CDC change data:
+
 ```yaml
-models:
-  - name: stg_orders
+sources:
+  - name: my_streams
+    schema: my_schema
+    tables:
+      - name: orders_stream
+```
+
+```sql
+{{ config(materialized='incremental', incremental_strategy='append') }}
+
+select
+    `__change_type`      as cdc_change_type,
+    `__commit_timestamp` as cdc_commit_ts,
+    order_id, customer_id, amount
+from {{ source('my_streams', 'orders_stream') }}
+```
+
+> ⚠️ **Note**: `__change_type`, `__commit_timestamp`, and `__commit_version` are Table Stream system columns and must be wrapped in backticks when referenced. When consuming, it is recommended to use `SELECT * EXCEPT(__change_type, __commit_timestamp, __commit_version)` to filter out system columns.
+
+---
+
+## Clone
+
+Zero-copy clone, suitable for CI/CD environment isolation or quickly creating test copies:
+
+```sql
+{{ config(
+    materialized='clone',
+    source='my_schema.fct_orders'
+) }}
+```
+
+Time Travel clone (restore to a historical point in time):
+
+```sql
+{{ config(
+    materialized='clone',
+    source='my_schema.fct_orders',
+    at_timestamp="current_timestamp() - interval 1 hours"
+) }}
+```
+
+---
+
+## Snapshot (SCD Type 2)
+
+Implements SCD Type 2 via MERGE INTO, without requiring Delta/Iceberg:
+
+```sql
+{% snapshot orders_snapshot %}
+{{ config(
+    target_schema='snapshots',
+    unique_key='order_id',
+    strategy='timestamp',
+    updated_at='updated_at'
+) }}
+select * from {{ source('raw', 'orders') }}
+{% endsnapshot %}
+```
+
+---
+
+## Utility Macros
+
+Call built-in macros via `dbt run-operation`:
+
+```bash
+# Compact small files (use after high-frequency incremental writes)
+dbt run-operation optimize_table --args '{relation: my_schema.my_table}'
+dbt run-operation optimize_table --args '{relation: my_schema.my_table, where: "dt >= current_date() - interval 7 days"}'
+
+# Switch the current session's VCluster
+dbt run-operation use_vcluster --args '{vcluster: large_ap}'
+
+# View recoverable deleted objects
+dbt run-operation show_tables_history --args '{schema: my_schema}'
+
+# Recover a deleted object (table / dynamic_table / materialized_view / stream)
+dbt run-operation undrop --args '{relation: my_schema.my_table}'
+
+# Drop an object
+dbt run-operation drop_object --args '{relation: my_schema.my_table, type: table}'
+
+# Manually refresh a Dynamic Table
+dbt run-operation refresh_dynamic_table --args '{model_name: my_dynamic_table}'
+```
+
+---
+
+## Related Documentation
+
+- [dbt Quick Start (Jaffle Shop)](dbt-jaffle-shop-quickstart.md)
+- [dbt Development in Practice (Table Stream + Dynamic Table)](../use-dbt-dev.md)
+- [dbt Snowflake Migration Guide](../dbt-snowflake-to-clickzetta-migration.md)
+- [Dynamic Table](../dynamic-table.md)
+- [Table Stream](../table_stream.md)
+- [dbt-clickzetta GitHub](https://github.com/clickzetta/dbt-clickzetta)
