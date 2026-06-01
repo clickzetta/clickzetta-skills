@@ -1,52 +1,63 @@
 ---
 name: clickzetta-volume-manager
 description: |
-  管理 ClickZetta Lakehouse Volume 对象，实现对象存储（OSS/COS/S3）的挂载、
-  文件查询与数据导入导出。覆盖外部 Volume 创建（OSS/COS/S3）、内部 User Volume
-  文件操作（PUT/GET/REMOVE）、SELECT FROM VOLUME 直接查询文件、
-  COPY INTO TABLE 导入、COPY INTO VOLUME 导出等完整工作流。
-  当用户说"创建Volume"、"挂载OSS"、"挂载S3"、"挂载COS"、"Volume管理"、
-  "查询OSS文件"、"查询S3文件"、"上传文件到Volume"、"PUT文件"、"GET文件"、
-  "从Volume导入数据"、"导出到Volume"、"COPY INTO VOLUME"、"SELECT FROM VOLUME"、
-  "User Volume"、"数据湖文件"、"数据导出"、"导出数据"、"导出CSV"、"导出Parquet"、
-  "COPY OVERWRITE INTO"时触发。
+  Manage ClickZetta Lakehouse Volume objects for mounting object storage (OSS/COS/S3),
+  querying files, and importing/exporting data. Covers creating External Volumes (OSS/COS/S3),
+  User Volume file operations (PUT/GET/REMOVE), SELECT FROM VOLUME direct file queries,
+  COPY INTO TABLE imports, COPY INTO VOLUME exports, and more.
+  Triggered when users say "create Volume", "mount OSS", "mount S3", "mount COS",
+  "Volume management", "query OSS files", "query S3 files", "upload files to Volume",
+  "PUT files", "GET files", "import data from Volume", "export to Volume",
+  "COPY INTO VOLUME", "SELECT FROM VOLUME", "User Volume", "data lake files",
+  "data export", "export data", "export CSV", "export Parquet", "COPY OVERWRITE INTO".
   Keywords: Volume, OSS, COS, S3, mount, file query, COPY INTO, external storage
 ---
 
-# ClickZetta Volume 管理
+# ClickZetta Volume Management
 
-阅读 [references/volume-ddl.md](references/volume-ddl.md) 了解完整语法。
+See [references/volume-ddl.md](references/volume-ddl.md) for complete syntax reference.
 
-## Volume 类型
+## Volume Types
 
-| 类型 | 说明 | 典型用途 |
+| Type | Description | Lifecycle |
 |---|---|---|
-| 外部 Volume | 挂载 OSS/COS/S3 路径 | 访问已有对象存储数据 |
-| User Volume | 用户专属内部存储 | 临时文件上传、本地文件导入 |
-| Table Volume | 表关联内部存储 | 表数据文件管理 |
+| External Volume | Mount OSS/COS/S3 paths via Storage Connection | User creates/drops |
+| Managed Volume | ClickZetta-managed storage, no connection needed | User creates/drops |
+| User Volume | Auto-created per user per workspace, user-scoped access | Auto-managed; data removed when user deleted |
+| Table Volume | Auto-created per table, access tied to table permissions | Auto-managed; data removed when table dropped |
+
+## SQL Reference Patterns
+
+```sql
+-- External Volume / Managed Volume
+VOLUME [[<workspace>].<schema>].volume_name
+
+-- User Volume
+USER VOLUME
+
+-- Table Volume
+TABLE VOLUME [[<workspace>].<schema>].table_name
+```
 
 ---
 
-## 创建外部 Volume
+## Creating External Volumes
 
-前提：先创建 STORAGE CONNECTION（对象存储认证配置）
+Prerequisite: Create a STORAGE CONNECTION first (object storage auth configuration)
 
-> ⚠️ **跨云限制**：Storage Connection 必须与 Lakehouse 实例在同一云厂商。阿里云实例不能创建 COS/S3 Connection，腾讯云实例不能创建 OSS Connection。
+> **Cross-cloud restriction**: The Storage Connection must be in the same cloud provider as the Lakehouse instance. Alibaba Cloud instances cannot create COS/S3 Connections; Tencent Cloud instances cannot create OSS Connections.
 
-> ⚠️ **阿里云 OSS 参数名**：
-> - 小写形式：`access_id` / `access_key`（推荐）
-> - 大写形式：`ACCESS_KEY_ID` / `ACCESS_KEY_SECRET`（也可以）
-> - ⚠️ `ACCESS_KEY` / `SECRET_KEY` 会报错（缺少 `_ID` / `_SECRET` 后缀）
+> **Alibaba Cloud OSS parameter names**: Use `ACCESS_KEY_ID` / `ACCESS_KEY_SECRET`. Avoid `ACCESS_KEY` / `SECRET_KEY` (missing `_ID` / `_SECRET` suffix, will fail).
 
 ```sql
--- 阿里云 OSS
+-- Alibaba Cloud OSS
 CREATE STORAGE CONNECTION IF NOT EXISTS my_oss_conn
   TYPE OSS
-  access_id = 'LTAIxxxxxxxxxxxx'
-  access_key = 'T8Gexxxxxxmtxxxxxx'
+  ACCESS_KEY_ID = '<access_key>'
+  ACCESS_KEY_SECRET = '<secret_key>'
   ENDPOINT = 'oss-cn-hangzhou-internal.aliyuncs.com';
 
--- 腾讯云 COS
+-- Tencent Cloud COS
 CREATE STORAGE CONNECTION IF NOT EXISTS my_cos_conn
   TYPE COS
   ACCESS_KEY = '<access_key>'
@@ -63,21 +74,21 @@ CREATE STORAGE CONNECTION IF NOT EXISTS my_s3_conn
 ```
 
 ```sql
--- 挂载阿里云 OSS
+-- Mount Alibaba Cloud OSS
 CREATE EXTERNAL VOLUME my_oss_volume
   LOCATION 'oss://my-bucket/data-path/'
   USING CONNECTION my_oss_conn
   DIRECTORY = (ENABLE = TRUE, AUTO_REFRESH = TRUE)
   RECURSIVE = TRUE;
 
--- 挂载腾讯云 COS
+-- Mount Tencent Cloud COS
 CREATE EXTERNAL VOLUME my_cos_volume
   LOCATION 'cos://my-bucket/data-path/'
   USING CONNECTION my_cos_conn
   DIRECTORY = (ENABLE = TRUE)
   RECURSIVE = TRUE;
 
--- 挂载 AWS S3
+-- Mount AWS S3
 CREATE EXTERNAL VOLUME my_s3_volume
   LOCATION 's3://my-bucket/data-path/'
   USING CONNECTION my_s3_conn
@@ -87,58 +98,67 @@ CREATE EXTERNAL VOLUME my_s3_volume
 
 ---
 
-## 查看 Volume
+## Creating Managed Volumes
+
+Managed Volumes use ClickZetta-managed storage. No Storage Connection is required.
 
 ```sql
--- 列出所有 Volume
-SHOW VOLUMES;
-
--- 过滤外部 Volume（SHOW VOLUMES 不支持 WHERE 过滤，使用 information_schema）
-SELECT volume_name, volume_type, volume_region, volume_creator
-FROM information_schema.volumes
-WHERE volume_type = 'EXTERNAL';
-
--- 查看详情
-DESC VOLUME my_oss_volume;
-
--- 查看目录下的文件
-SHOW VOLUME DIRECTORY my_oss_volume;
-
--- 刷新目录元数据后查询（上传新文件后可能需要手动刷新）
-ALTER VOLUME my_oss_volume REFRESH;
-SELECT * FROM DIRECTORY(VOLUME my_oss_volume);
+CREATE VOLUME my_managed_volume RECURSIVE = TRUE;
 ```
-
-> ⚠️ **目录刷新注意**：上传文件到对象存储后，`SHOW VOLUME DIRECTORY` 可能不会立即显示新文件。
-> 如果启用了 `AUTO_REFRESH = TRUE`，系统会定期自动刷新；否则需要手动执行 `ALTER VOLUME name REFRESH`。
 
 ---
 
-## 直接查询 Volume 中的文件
-
-> ⚠️ **语法限制**：ClickZetta 不支持 `@volume_name` 简写（Snowflake Stage 语法），必须使用 `FROM VOLUME name USING format` 完整语法。
-> ⚠️ **多格式文件处理**：如果 Volume 中包含多种格式的文件（如 .csv 和 .json 混合），不指定 `FILES()` 或 `SUBDIRECTORY` 时会尝试读取所有文件，可能因格式不匹配而报错。建议使用 `FILES('xxx.csv')` 指定文件或 `SUBDIRECTORY 'csv_data/'` 指定子目录。
-> ⚠️ **JSON 嵌套字段访问**：使用 `data['key']` 语法（不是 Snowflake 的 `data:key` 语法）。
+## Viewing Volumes
 
 ```sql
--- 查询 CSV 文件（自动推断 schema）
+-- List all Volumes
+SHOW VOLUMES;
+
+-- Filter External Volumes
+SELECT *
+FROM (SHOW VOLUMES)
+WHERE external = true;
+
+-- View details
+DESC VOLUME my_oss_volume;
+
+-- View files in directory
+SHOW VOLUME DIRECTORY my_oss_volume;
+```
+
+---
+
+## Querying Files Directly from Volume
+
+> **Syntax limitation**: ClickZetta does not support the `@volume_name` shorthand (Snowflake Stage syntax). You must use the full `FROM VOLUME name USING format` syntax.
+> **Multi-format file handling**: If a Volume contains mixed-format files (e.g., .csv and .json), omitting `FILES()` or `SUBDIRECTORY` will attempt to read all files and may fail due to format mismatch. Use `FILES('xxx.csv')` or `SUBDIRECTORY 'csv_data/'`.
+> **JSON nested field access**: Use `data['key']` syntax (not Snowflake's `data:key` syntax).
+
+```sql
+-- Query External Volume files
 SELECT * FROM VOLUME my_oss_volume
 USING CSV
 OPTIONS('header' = 'true', 'sep' = ',')
 SUBDIRECTORY 'orders/2024/'
 LIMIT 100;
 
--- 查询 Parquet 文件
+-- Query Managed Volume files
+SELECT * FROM VOLUME my_managed_volume
+USING CSV
+OPTIONS('header' = 'true')
+FILES('data.csv');
+
+-- Query Parquet files
 SELECT * FROM VOLUME my_oss_volume
 USING PARQUET
 REGEXP '.*2024-0[1-6].parquet';
 
--- 查询指定文件（推荐，避免多格式冲突）
+-- Query specific files (recommended to avoid format conflicts)
 SELECT * FROM VOLUME my_oss_volume
 USING JSON
 FILES('user_events.json');
 
--- 查询 JSON 嵌套字段
+-- Query JSON nested fields
 SELECT
   data['event_id'] AS event_id,
   data['properties']['device'] AS device
@@ -146,147 +166,213 @@ FROM VOLUME my_oss_volume
 USING JSON
 FILES('events.json');
 
--- 查询 User Volume 文件
+-- Query User Volume files
 SELECT * FROM USER VOLUME
 USING CSV
 OPTIONS('header' = 'true')
 FILES('upload.csv');
+
+-- Query Table Volume files
+SELECT * FROM TABLE VOLUME my_table
+USING CSV
+OPTIONS('header' = 'true')
+FILES('data.csv');
 ```
 
 ---
 
-## User Volume 文件操作
+## File Operations (PUT / GET / REMOVE)
+
+All four Volume types support file-level operations. However, `PUT` and `GET` require client support (e.g., [cz-cli](https://yunqi.tech/documents/cz-cli), [Java JDBC driver](https://yunqi.tech/documents/java_reference/java-sdk-summary), [Python connector](https://yunqi.tech/documents/python_reference/python-sdk-summary)). **ClickZetta Studio Web does not support PUT/GET.**
+
+> **Note**: User Volume is auto-created per user per workspace and cannot be explicitly created or dropped. When the user is deleted, the User Volume becomes unavailable and its data is removed.
 
 ```sql
--- 查看文件列表
+-- List files
+SHOW VOLUME DIRECTORY my_oss_volume;
+SHOW VOLUME DIRECTORY my_managed_volume;
 SHOW USER VOLUME DIRECTORY;
+SHOW TABLE VOLUME DIRECTORY my_table;
 
--- 上传本地文件
+-- Upload local files (External / Managed Volume)
+PUT '/local/path/data.csv' TO VOLUME my_oss_volume;
+PUT '/local/path/data.csv' TO VOLUME my_managed_volume;
+
+-- Upload to User Volume
 PUT '/local/path/data.csv' TO USER VOLUME;
 PUT '/local/path/data.csv' TO USER VOLUME FILE 'subdir/data.csv';
 
--- 下载文件
+-- Upload to Table Volume
+PUT '/local/path/data.csv' TO TABLE VOLUME my_table;
+
+-- Download files (External / Managed Volume)
+GET VOLUME my_oss_volume FILE 'subdir/data.csv' TO '/local/output/';
+GET VOLUME my_managed_volume FILE 'subdir/data.csv' TO '/local/output/';
+
+-- Download from User Volume
 GET USER VOLUME FILE 'subdir/data.csv' TO '/local/output/';
 
--- 删除文件
+-- Download from Table Volume
+GET TABLE VOLUME my_table FILE 'subdir/data.csv' TO '/local/output/';
+
+-- Delete files
+REMOVE VOLUME my_oss_volume FILE 'subdir/data.csv';
+REMOVE VOLUME my_managed_volume FILE 'subdir/data.csv';
 REMOVE USER VOLUME FILE 'subdir/data.csv';
+REMOVE TABLE VOLUME my_table FILE 'subdir/data.csv';
 ```
 
 ---
 
-## 数据导入导出
+## Data Import & Export
 
-### 从 Volume 导入到表
+### Import from Volume to Table
 
 ```sql
--- CSV 导入
+-- CSV import from External Volume
 COPY INTO my_table
 FROM VOLUME my_oss_volume
 USING CSV
 OPTIONS('header' = 'true')
 SUBDIRECTORY 'data/';
 
--- 指定文件导入
+-- Import from Managed Volume
+COPY INTO my_table
+FROM VOLUME my_managed_volume
+USING CSV
+OPTIONS('header' = 'true')
+FILES('data.csv');
+
+-- Import from User Volume
+COPY INTO my_table
+FROM USER VOLUME
+USING CSV
+OPTIONS('header' = 'true')
+FILES('data.csv');
+
+-- Import from Table Volume
+COPY INTO my_table
+FROM TABLE VOLUME source_table
+USING CSV
+OPTIONS('header' = 'true')
+FILES('data.csv');
+
+-- Import specific files
 COPY INTO my_table
 FROM VOLUME my_oss_volume
 USING PARQUET
 FILES('data_2024.parquet');
 
--- 正则匹配文件导入
+-- Regex match file import
 COPY INTO my_table
 FROM VOLUME my_oss_volume
 USING PARQUET
 REGEXP '.*2024-0[1-6].parquet';
 
--- 覆盖写入（清空表后导入）
+-- Overwrite (truncate table then import)
 COPY OVERWRITE INTO my_table
 FROM VOLUME my_oss_volume
 USING CSV
 OPTIONS('header' = 'true');
 ```
 
-### 导出表到 Volume
+### Export Table to Volume
 
 ```sql
--- 导出整张表为 Parquet（到 External Volume）
+-- Export entire table as Parquet (to External Volume)
 COPY INTO VOLUME my_oss_volume
 SUBDIRECTORY 'export/'
 FROM TABLE my_table
 FILE_FORMAT = (TYPE = PARQUET);
 
--- 导出查询结果为 CSV（带压缩）
+-- Export query result as CSV (with compression)
 COPY INTO VOLUME my_oss_volume
 SUBDIRECTORY 'export/2024/'
 FROM (SELECT * FROM orders WHERE year = 2024)
 FILE_FORMAT = (TYPE = CSV COMPRESSION = 'GZIP');
 
--- 导出到 User Volume
+-- Export to Managed Volume
+COPY INTO VOLUME my_managed_volume
+SUBDIRECTORY 'export/'
+FROM TABLE my_table
+FILE_FORMAT = (TYPE = CSV);
+
+-- Export to User Volume
 COPY INTO USER VOLUME
 SUBDIRECTORY 'my_export/'
 FROM TABLE my_table
 FILE_FORMAT = (TYPE = CSV);
 
--- 导出到 Table Volume
+-- Export to Table Volume
 COPY INTO TABLE VOLUME my_table
 SUBDIRECTORY 'backup/'
 FROM TABLE my_table
 FILE_FORMAT = (TYPE = PARQUET);
 ```
 
-> ⚠️ `COPY INTO VOLUME` 导出使用 `FILE_FORMAT = (TYPE = CSV/PARQUET)`，不是 `USING CSV`。
-> `USING` 关键字仅用于 `SELECT FROM VOLUME` 查询文件。
+> `COPY INTO VOLUME` exports use `FILE_FORMAT = (TYPE = CSV/PARQUET)`, not `USING CSV`.
+> The `USING` keyword is only for `SELECT FROM VOLUME` queries.
 
-### 导出到本地（GET 命令）
+### Export to Local (GET Command)
 
 ```sql
--- 从 Volume 下载文件到本地
+-- Download files from Volume to local
 GET VOLUME my_oss_volume FILE 'export/data.csv' TO '/local/output/';
 
--- 从 User Volume 下载
+-- Download files from Volume to local
+GET VOLUME my_managed_volume FILE 'export/data.csv' TO '/local/output/';
+
+-- Download from User Volume
 GET USER VOLUME FILE 'my_export/data.csv' TO '/local/output/';
 ```
 
-### 通过 Studio 导出
+### Export via Studio
 
-在 Lakehouse Studio 中：
-- 执行 SQL 查询后，点击结果区域的「导出」按钮，可导出为 CSV 或 Excel 文件
-- 支持导出最多 10 万行查询结果
+In Lakehouse Studio:
+- After executing a SQL query, click the "Export" button in the result area to export as CSV or Excel
+- Supports exporting up to 100,000 rows of query results
 
 ---
 
-## 删除 Volume
+## Dropping Volumes
+
+Only External Volumes and Managed Volumes can be explicitly dropped. User Volume and Table Volume are auto-managed and cannot be dropped explicitly.
 
 ```sql
+-- Drop External Volume
 DROP VOLUME IF EXISTS my_oss_volume;
+
+-- Drop Managed Volume
+DROP VOLUME IF EXISTS my_managed_volume;
 ```
 
 ---
 
-## 常见问题
+## FAQ
 
-| 问题 | 原因 | 解决方案 |
+| Issue | Cause | Solution |
 |---|---|---|
-| SHOW VOLUME DIRECTORY 无文件 | 目录未刷新 | 执行 `ALTER VOLUME name REFRESH` |
-| SELECT FROM VOLUME 报错 | 格式不匹配 | 确认 USING 后的格式与实际文件格式一致；使用 `FILES()` 指定文件 |
-| COPY INTO 读取多格式文件失败 | Volume 中有混合格式文件 | 使用 `FILES('xxx.csv')` 指定文件或 `SUBDIRECTORY` 指定子目录 |
-| PUT 命令失败 | 本地路径不存在 | 确认本地文件路径正确 |
-| COPY INTO 报错 | 权限不足 | 检查 STORAGE CONNECTION 的访问密钥权限 |
-| `@volume` 语法报错 | ClickZetta 不支持 | 使用 `FROM VOLUME name USING format` 完整语法 |
-| `data:key` 语法报错 | Snowflake JSON 语法不适用 | 使用 `data['key']` 语法访问 JSON 嵌套字段 |
-| `METADATA$FILENAME` 报错 | ClickZetta 不支持此元数据字段 | 使用字符串字面量或在 INSERT 时手动添加文件路径列 |
+| SHOW VOLUME DIRECTORY shows no files | Directory not refreshed | Run `ALTER VOLUME name REFRESH` |
+| SELECT FROM VOLUME fails | Format mismatch | Ensure USING format matches actual file format; use `FILES()` to specify files |
+| COPY INTO fails with mixed format files | Mixed format files in Volume | Use `FILES('xxx.csv')` or `SUBDIRECTORY` to narrow scope |
+| PUT command fails | Local path does not exist | Verify local file path is correct |
+| COPY INTO errors | Insufficient permissions | Check STORAGE CONNECTION access key permissions |
+| `@volume` syntax error | Not supported in ClickZetta | Use `FROM VOLUME name USING format` |
+| `data:key` syntax error | Snowflake JSON syntax not applicable | Use `data['key']` syntax for JSON nested fields |
+| `METADATA$FILENAME` error | This metadata field is not supported | Use string literals or add a file path column manually during INSERT |
 
 ---
 
-## Snowflake 迁移对照
+## Snowflake Migration Reference
 
-| Snowflake 语法 | ClickZetta 等价语法 | 说明 |
+| Snowflake Syntax | ClickZetta Equivalent | Notes |
 |---|---|---|
 | `@my_stage` | `VOLUME my_volume` | Stage → Volume |
-| `SELECT * FROM @stage/path` | `SELECT * FROM VOLUME vol USING CSV SUBDIRECTORY 'path/'` | 必须指定 USING 格式 |
-| `data:key::STRING` | `data['key']` | JSON 字段访问 |
-| `data:nested.key` | `data['nested']['key']` | 嵌套 JSON 访问 |
-| `METADATA$FILENAME` | 不支持 | 需手动添加文件路径列 |
-| `METADATA$FILE_ROW_NUMBER` | 不支持 | 无等价功能 |
-| `FILE_FORMAT = (TYPE = CSV)` | `USING CSV OPTIONS(...)` | 导入时用 USING，导出时用 FILE_FORMAT |
-| `COPY INTO table FROM @stage` | `COPY INTO table FROM VOLUME vol USING format` | 导入语法 |
-| `COPY INTO @stage FROM table` | `COPY INTO VOLUME vol SUBDIRECTORY '/' FROM TABLE t FILE_FORMAT=(...)` | 导出语法 |
+| `SELECT * FROM @stage/path` | `SELECT * FROM VOLUME vol USING CSV SUBDIRECTORY 'path/'` | Must specify USING format |
+| `data:key::STRING` | `data['key']` | JSON field access |
+| `data:nested.key` | `data['nested']['key']` | Nested JSON access |
+| `METADATA$FILENAME` | Not supported | Add file path column manually |
+| `METADATA$FILE_ROW_NUMBER` | Not supported | No equivalent |
+| `FILE_FORMAT = (TYPE = CSV)` | `USING CSV OPTIONS(...)` | Use USING for imports, FILE_FORMAT for exports |
+| `COPY INTO table FROM @stage` | `COPY INTO table FROM VOLUME vol USING format` | Import syntax |
+| `COPY INTO @stage FROM table` | `COPY INTO VOLUME vol SUBDIRECTORY '/' FROM TABLE t FILE_FORMAT=(...)` | Export syntax |
