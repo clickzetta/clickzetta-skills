@@ -6,7 +6,7 @@ The repository turns ClickZetta operational knowledge into reusable routing rule
 
 ## Repository Contents
 
-The repository currently contains 27 top-level `clickzetta-*` skills and one official documentation knowledge base:
+The repository currently contains 26 top-level `clickzetta-*` skills and one official documentation knowledge base:
 
 - `lakehouse-doc-en`: English ClickZetta Lakehouse official documentation index and reference corpus.
 - `clickzetta-*`: task-oriented skills for ingestion, Studio tasks, dbt, modeling, dynamic tables, connectors, external integrations, governance, and operations.
@@ -17,7 +17,6 @@ The repository currently contains 27 top-level `clickzetta-*` skills and one off
 |---|---|---|
 | Official docs | [lakehouse-doc-en](./lakehouse-doc-en/) | Official ClickZetta Lakehouse documentation covering SQL, functions, permissions, VClusters, data sharing, SDKs, BI tools, AI functions, and general platform usage. |
 | Foundation and connectivity | [clickzetta-overview](./clickzetta-overview/) | Product overview, object model, architecture, Studio modules, brand naming, and service endpoints. |
-| Foundation and connectivity | [clickzetta-lakehouse-connect](./clickzetta-lakehouse-connect/) | Python SDK, ZettaPark Session, SQLAlchemy, JDBC, connection parameters, and common connection diagnostics. |
 | Foundation and connectivity | [clickzetta-sql-migration](./clickzetta-sql-migration/) | SQL migration guidance from Snowflake, Databricks, and Spark SQL to ClickZetta SQL. |
 | Data ingestion and pipelines | [clickzetta-data-ingest-pipeline](./clickzetta-data-ingest-pipeline/) | Router for choosing ingestion methods based on source type, latency, sync scope, and whether ingestion is one-time or continuous. |
 | Data ingestion and pipelines | [clickzetta-file-import-pipeline](./clickzetta-file-import-pipeline/) | Import data from URLs, local files, or Volume paths using format inference, table creation, and `COPY INTO`. |
@@ -39,7 +38,8 @@ The repository currently contains 27 top-level `clickzetta-*` skills and one off
 | Modeling and analytics | [clickzetta-semantic-view](./clickzetta-semantic-view/) | Semantic View modeling with logical tables, dimensions, metrics, filters, and semantic layer queries. |
 | SDK and integrations | [clickzetta-zettapark](./clickzetta-zettapark/) | ZettaPark DataFrame API, Session setup, reads, transformations, writes, file operations, and SQL execution. |
 | SDK and integrations | [clickzetta-spark-flink-connector](./clickzetta-spark-flink-connector/) | Spark Connector reads/writes and Flink Write Connector CDC or append-only writes. |
-| SDK and integrations | [clickzetta-external-function](./clickzetta-external-function/) | External Functions, Python/Java UDF packaging, cloud function integration, and built-in AI function usage. |
+| SDK and integrations | [clickzetta-external-function](./clickzetta-external-function/) | External Functions, Python/Java UDF packaging, and cloud function integration. |
+| SDK and integrations | [clickzetta-ai-function](./clickzetta-ai-function/) | Built-in AI functions: AI_COMPLETE (call LLMs) and AI_EMBEDDING (text vectors) with API CONNECTION setup. |
 | Operations and governance | [clickzetta-volume-manager](./clickzetta-volume-manager/) | External Volume, User Volume, Table Volume, object storage mounting, file operations, import, and export. |
 | Operations and governance | [clickzetta-table-lineage](./clickzetta-table-lineage/) | Table lineage and cost visualization based on `information_schema.job_history` and generated HTML artifacts. |
 
@@ -50,7 +50,7 @@ Use the table below when deciding which skill should handle a user request.
 | User intent | Recommended entry point |
 |---|---|
 | Understand ClickZetta concepts, Workspace, Schema, VCluster, object hierarchy, or Studio modules. | `clickzetta-overview` |
-| Configure Python, JDBC, SQLAlchemy, ZettaPark, or general Lakehouse connections. | `clickzetta-lakehouse-connect` |
+| Configure Python, JDBC, SQLAlchemy, ZettaPark, or general Lakehouse connections. | `clickzetta-zettapark` / `lakehouse-doc-en` |
 | Choose an ingestion method without knowing whether to use files, object storage, Kafka, batch sync, real-time sync, or CDC. | `clickzetta-data-ingest-pipeline` |
 | Import files from a local path, URL, Volume, object storage, or Kafka. | `clickzetta-file-import-pipeline` / `clickzetta-oss-ingest-pipeline` / `clickzetta-kafka-ingest-pipeline` |
 | Build Studio offline sync, single-table real-time sync, or multi-table CDC tasks. | `clickzetta-batch-sync-pipeline` / `clickzetta-realtime-sync-pipeline` / `clickzetta-cdc-sync-pipeline` |
@@ -111,7 +111,6 @@ When adding, renaming, or deleting a skill:
 2. Update `.well-known/skills/index.json`.
 3. Update this `README.md` catalog and routing table.
 4. Search the repository for stale skill references.
-5. Keep evaluation cases outside this repository; skill directories should not contain `eval_cases.jsonl`.
 
 For deleted or consolidated topics, route users to `lakehouse-doc-en` unless there is another active task-specific skill that clearly owns the workflow.
 

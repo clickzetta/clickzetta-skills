@@ -57,7 +57,7 @@
         "references/ai-function-ddl.md"
       ]
     },
-{
+    {
       "name": "clickzetta-external-function",
       "description": "Create and use External Functions (custom UDFs) in ClickZetta Lakehouse using Python or Java, deployed on Alibaba Cloud FC / Tencent Cloud SCF / AWS Lambda. Covers CREATE API CONNECTION (TYPE CLOUD_FUNCTION), CREATE EXTERNAL FUNCTION, Python/Java UDF code structure and packaging.",
       "files": [
@@ -78,18 +78,6 @@
       "files": [
         "SKILL.md",
         "references/kafka-pipe-syntax.md"
-      ]
-    },
-    {
-      "name": "clickzetta-lakehouse-connect",
-      "description": "Guide for connecting to ClickZetta Lakehouse via SDK/JDBC. Covers Python SDK (clickzetta.connect), ZettaPark Session (DataFrame API), SQLAlchemy (ORM/BI tools), and JDBC (Java). Use this skill when user needs to configure a connection from external tools or code. Trigger for: \"Python SDK 连接\", \"JDBC 连接\", \"SQLAlchemy 配置\", \"ZettaPark 怎么用\", \"连接报错\", \"clickzetta-connector-python\", \"clickzetta-sqlalchemy\".",
-      "files": [
-        "SKILL.md",
-        "references/config-file.md",
-        "references/jdbc.md",
-        "references/python-sdk.md",
-        "references/sqlalchemy.md",
-        "references/zettapark-session.md"
       ]
     },
     {
