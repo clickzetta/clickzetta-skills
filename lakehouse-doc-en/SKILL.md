@@ -1,11 +1,11 @@
 ---
 name: lakehouse-doc-en
-description: "Singdata Lakehouse official documentation knowledge base (English). Consult references/ when writing SQL or answering questions about query syntax, functions, data types, DDL/DML, dynamic tables, permissions, vclusters, data lake, AI functions, and other Lakehouse topics."
+description: "Singdata/Clickzetta Lakehouse official documentation knowledge base (English). Consult references/ when writing SQL or answering questions about query syntax, functions, data types, DDL/DML, dynamic tables, permissions, vclusters, data lake, AI functions, external catalog federation queries, and other Lakehouse topics."
 ---
 
 # lakehouse-doc-en
 
-Singdata Lakehouse official documentation (English). Locate docs by filename under `references/` based on the user's question.
+Singdata/Clickzetta Lakehouse official documentation (English). Locate docs by filename under `references/` based on the user's question.
 
 ## references/ layout
 
@@ -47,9 +47,9 @@ references/
 
 ## Document Index (llms.txt)
 
-# Singdata Lakehouse Documentation (LLM Navigation)
+# Singdata/Clickzetta Lakehouse Documentation (LLM Navigation)
 
-> Singdata Lakehouse is a fully managed lakehouse architecture platform built from the ground up on cloud-native design principles. Through **storage-compute separation**, **Serverless elastic architecture**, **open storage formats**, and **AI-optimized tools**, it provides enterprises with a unified platform for data warehousing, data lakes, real-time processing, and BI reporting. [Free Trial](https://www.singdata.com)
+> Singdata/Clickzetta Lakehouse is a fully managed lakehouse architecture platform built from the ground up on cloud-native design principles. Through **storage-compute separation**, **Serverless elastic architecture**, **open storage formats**, and **AI-optimized tools**, it provides enterprises with a unified platform for data warehousing, data lakes, real-time processing, and BI reporting. [Free Trial](https://www.singdata.com)
 
 
 ## Quick Start

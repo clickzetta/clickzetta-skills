@@ -6,7 +6,7 @@ The repository turns ClickZetta operational knowledge into reusable routing rule
 
 ## Repository Contents
 
-The repository currently contains 28 top-level `clickzetta-*` skills and one official documentation knowledge base:
+The repository currently contains 27 top-level `clickzetta-*` skills and one official documentation knowledge base:
 
 - `lakehouse-doc-en`: English ClickZetta Lakehouse official documentation index and reference corpus.
 - `clickzetta-*`: task-oriented skills for ingestion, Studio tasks, dbt, modeling, dynamic tables, connectors, external integrations, governance, and operations.
@@ -40,7 +40,6 @@ The repository currently contains 28 top-level `clickzetta-*` skills and one off
 | SDK and integrations | [clickzetta-zettapark](./clickzetta-zettapark/) | ZettaPark DataFrame API, Session setup, reads, transformations, writes, file operations, and SQL execution. |
 | SDK and integrations | [clickzetta-spark-flink-connector](./clickzetta-spark-flink-connector/) | Spark Connector reads/writes and Flink Write Connector CDC or append-only writes. |
 | SDK and integrations | [clickzetta-external-function](./clickzetta-external-function/) | External Functions, Python/Java UDF packaging, cloud function integration, and built-in AI function usage. |
-| SDK and integrations | [clickzetta-external-catalog](./clickzetta-external-catalog/) | External Catalog read access for Hive, Iceberg, Databricks Unity Catalog, and Snowflake Open Catalog. |
 | Operations and governance | [clickzetta-volume-manager](./clickzetta-volume-manager/) | External Volume, User Volume, Table Volume, object storage mounting, file operations, import, and export. |
 | Operations and governance | [clickzetta-table-lineage](./clickzetta-table-lineage/) | Table lineage and cost visualization based on `information_schema.job_history` and generated HTML artifacts. |
 
@@ -65,7 +64,7 @@ Use the table below when deciding which skill should handle a user request.
 | Investigate query performance, `EXPLAIN`, Result Cache, `OPTIMIZE`, small files, or execution plans. | `lakehouse-doc-en` |
 | Manage users, roles, grants, masking policy, network policy, lifecycle, data sharing, SDK, BI, or Java/Python application docs. | `lakehouse-doc-en` |
 | Manage Volumes, object storage mounts, file upload/download, import, or export. | `clickzetta-volume-manager` |
-| Work with Spark, Flink, ZettaPark, External Functions, or External Catalogs. | `clickzetta-spark-flink-connector` / `clickzetta-zettapark` / `clickzetta-external-function` / `clickzetta-external-catalog` |
+| Work with Spark, Flink, ZettaPark, External Functions, or External Catalogs. | `clickzetta-spark-flink-connector` / `clickzetta-zettapark` / `clickzetta-external-function` / `lakehouse-doc-en` |
 
 ## Repository Layout
 

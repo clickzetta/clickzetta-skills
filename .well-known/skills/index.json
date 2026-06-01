@@ -57,15 +57,7 @@
         "references/ai-function-ddl.md"
       ]
     },
-    {
-      "name": "clickzetta-external-catalog",
-      "description": "配置和使用 ClickZetta Lakehouse External Catalog，实现对 Hive、Iceberg、Databricks、",
-      "files": [
-        "SKILL.md",
-        "references/external-catalog-ddl.md"
-      ]
-    },
-    {
+{
       "name": "clickzetta-external-function",
       "description": "Create and use External Functions (custom UDFs) in ClickZetta Lakehouse using Python or Java, deployed on Alibaba Cloud FC / Tencent Cloud SCF / AWS Lambda. Covers CREATE API CONNECTION (TYPE CLOUD_FUNCTION), CREATE EXTERNAL FUNCTION, Python/Java UDF code structure and packaging.",
       "files": [
