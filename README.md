@@ -6,7 +6,7 @@
 
 ## Skills 总览
 
-当前仓库包含 30 个顶层 `clickzetta-*` skills，另有官方文档知识库 `lakehouse-doc-en`：
+当前仓库包含 29 个顶层 `clickzetta-*` skills，另有官方文档知识库 `lakehouse-doc-en`：
 
 | 类别 | Skill | 适用场景 |
 |---|---|---|
@@ -14,7 +14,6 @@
 | 基础与连接 | [clickzetta-overview](./clickzetta-overview/) | ClickZetta 产品全貌、对象模型、架构、Studio 模块、品牌与服务地址 |
 | 基础与连接 | [clickzetta-lakehouse-connect](./clickzetta-lakehouse-connect/) | Python SDK、ZettaPark、SQLAlchemy、JDBC 等连接配置 |
 | 基础与连接 | [clickzetta-sql-migration](./clickzetta-sql-migration/) | 从 Snowflake / Databricks / Spark SQL 迁移到 ClickZetta 的语法差异、函数对照、隐式转换规则 |
-| 基础与连接 | [clickzetta-metadata](./clickzetta-metadata/) | SHOW/DESC 命令族、INFORMATION_SCHEMA 元数据、费用和用量统计 |
 | 数据导入与管道 | [clickzetta-data-ingest-pipeline](./clickzetta-data-ingest-pipeline/) | 数据导入方案路由，根据数据源、实时性、范围选择最佳导入方式 |
 | 数据导入与管道 | [clickzetta-file-import-pipeline](./clickzetta-file-import-pipeline/) | URL、本地文件、Volume 文件导入，格式推断、建表、COPY INTO |
 | 数据导入与管道 | [clickzetta-oss-ingest-pipeline](./clickzetta-oss-ingest-pipeline/) | OSS/S3/COS 对象存储批量导入或 PIPE 持续导入 |
@@ -59,7 +58,7 @@
 | 诊断管道质量、任务失败、链路缺陷 | `clickzetta-pipeline-review` |
 | 写 ClickZetta 原生 SQL、查函数或语法 | `lakehouse-doc-en` |
 | 从 Snowflake / Databricks / Spark SQL 迁移 | `clickzetta-sql-migration` |
-| 查询元数据、表结构、作业历史、成本归因 | `clickzetta-metadata` / `lakehouse-doc-en` |
+| 查询元数据、表结构、作业历史、成本归因 | `lakehouse-doc-en` |
 | 查询慢、作业慢、小文件、缓存、执行计划 | `clickzetta-query-optimizer` |
 | 用户、角色、授权、脱敏、网络策略 | `lakehouse-doc-en` |
 | 集群、恢复、生命周期、数据共享 | `lakehouse-doc-en` |
@@ -97,12 +96,6 @@ Skill 内包含本地配置文件读取、连接参数说明、国内版与国�
 ClickZetta Lakehouse SQL 迁移指南，专注于从 Snowflake、Databricks、Spark SQL 迁移到 ClickZetta 时的语法差异、函数对照、隐式类型转换规则。原生 ClickZetta SQL 语法请参考 ClickZetta Lakehouse 官方文档。
 
 适用于查询“ClickZetta 怎么写某个 SQL”“Snowflake/Databricks 语法怎么迁移”“日期/JSON/BOOLEAN/集合运算怎么写”“某个函数是否支持”等问题。
-
-#### [clickzetta-metadata](./clickzetta-metadata/)
-
-ClickZetta 元数据查询入口，统一覆盖 SHOW/DESC 命令族和 INFORMATION_SCHEMA 视图。SHOW/DESC 适合实时查看单个对象状态，INFORMATION_SCHEMA 适合跨对象统计、作业分析、权限审计、费用归因和用量分析。
-
-适用于查看表列表、字段、分区、权限、Volume、作业历史、对象成本、工作空间级或实例级元数据等只读场景。权限变更和授权操作请参考 `lakehouse-doc-en` 官方文档。
 
 ### 数据导入与管道
 
