@@ -18,7 +18,7 @@ clickzetta-skills/
 ## Skill 目录命名
 
 - 统一前缀：`clickzetta-<功能名>`
-- 使用小写 + 连字符：`clickzetta-dynamic-table`、`clickzetta-vcluster-manager`
+- 使用小写 + 连字符：`clickzetta-dynamic-table`、`clickzetta-volume-manager`
 - 名称应反映功能领域，不要过于具体
 
 ## SKILL.md 规范

@@ -1,39 +1,10 @@
 {
   "skills": [
     {
-      "name": "clickzetta-access-control",
-      "description": "管理 ClickZetta Lakehouse 的用户、角色和权限（RBAC），以及列级动态数据脱敏。",
-      "files": [
-        "SKILL.md",
-        "references/dynamic-masking.md",
-        "references/grant-revoke.md",
-        "references/role-management.md",
-        "references/user-management.md"
-      ]
-    },
-    {
-      "name": "clickzetta-app-python-sdk",
-      "description": "在 Python 应用程序中集成 ClickZetta Lakehouse 的官方 SDK 用法。",
-      "files": [
-        "SKILL.md",
-        "references/bulkload.md",
-        "references/connector.md",
-        "references/realtime.md"
-      ]
-    },
-    {
       "name": "clickzetta-batch-sync-pipeline",
       "description": "创建和管理 ClickZetta Lakehouse 离线同步（批量同步）任务，支持单表离线同步和多表离线同步两种模式。",
       "files": [
         "SKILL.md"
-      ]
-    },
-    {
-      "name": "clickzetta-bi-connect",
-      "description": "将 BI 工具和数据库客户端连接到 ClickZetta Lakehouse。覆盖 Apache Superset、",
-      "files": [
-        "SKILL.md",
-        "references/bi-tools.md"
       ]
     },
     {
@@ -51,14 +22,6 @@
       ]
     },
     {
-      "name": "clickzetta-data-retention",
-      "description": "管理 ClickZetta Lakehouse 数据生命周期（TTL 自动回收）和数据恢复（Time Travel / UNDROP / RESTORE）。",
-      "files": [
-        "SKILL.md",
-        "references/lifecycle-reference.md"
-      ]
-    },
-    {
       "name": "clickzetta-data-science",
       "description": "数据科学家使用 ClickZetta Lakehouse 的端到端工作流指南。按工作阶段组织：",
       "files": [
@@ -69,21 +32,6 @@
         "references/stats-functions.md",
         "references/write-and-infer.md",
         "references/zettapark-api.md"
-      ]
-    },
-    {
-      "name": "clickzetta-data-sharing",
-      "description": "管理 ClickZetta Lakehouse 跨账户/跨实例数据分享（Share）。无需复制数据，",
-      "files": [
-        "SKILL.md",
-        "references/share-ddl.md"
-      ]
-    },
-    {
-      "name": "clickzetta-dba-guide",
-      "description": "ClickZetta Lakehouse DBA 日常运维操作手册。集中覆盖 DBA 最常用的 6 类操作：",
-      "files": [
-        "SKILL.md"
       ]
     },
     {
@@ -133,26 +81,6 @@
       ]
     },
     {
-      "name": "clickzetta-index-manager",
-      "description": "管理 ClickZetta Lakehouse 的三类索引：Bloom Filter 索引（等值查询加速）、",
-      "files": [
-        "SKILL.md",
-        "references/bloomfilter-index.md",
-        "references/index-management.md",
-        "references/inverted-index.md",
-        "references/vector-index.md"
-      ]
-    },
-    {
-      "name": "clickzetta-java-sdk",
-      "description": "Use the ClickZetta Java SDK to write data to Lakehouse tables in batch or in real time.",
-      "files": [
-        "SKILL.md",
-        "references/bulkload.md",
-        "references/realtime.md"
-      ]
-    },
-    {
       "name": "clickzetta-kafka-ingest-pipeline",
       "description": "搭建 ClickZetta Lakehouse Kafka 数据接入管道，覆盖从连接验证、数据探查、目标表创建",
       "files": [
@@ -170,33 +98,6 @@
         "references/python-sdk.md",
         "references/sqlalchemy.md",
         "references/zettapark-session.md"
-      ]
-    },
-    {
-      "name": "clickzetta-manage-comments",
-      "description": "",
-      "files": [
-        "SKILL.md"
-      ]
-    },
-    {
-      "name": "clickzetta-metadata",
-      "description": "查询 ClickZetta Lakehouse 元数据，覆盖两种方式：",
-      "files": [
-        "SKILL.md",
-        "references/instance-views-reference.md",
-        "references/metering-views-reference.md",
-        "references/show-desc-reference.md",
-        "references/views-reference.md"
-      ]
-    },
-    {
-      "name": "clickzetta-monitoring",
-      "description": "监控和分析 ClickZetta Lakehouse 作业运行状态、性能和资源使用情况，",
-      "files": [
-        "SKILL.md",
-        "references/job-history-analysis.md",
-        "references/show-jobs.md"
       ]
     },
     {
@@ -307,15 +208,6 @@
       "description": "搭建和管理 ClickZetta Table Stream 变更数据捕获管道，覆盖从源表配置、Stream 创建、",
       "files": [
         "SKILL.md"
-      ]
-    },
-    {
-      "name": "clickzetta-vcluster-manager",
-      "description": "管理 ClickZetta Lakehouse 计算集群（VCluster）的完整生命周期。",
-      "files": [
-        "SKILL.md",
-        "references/vc-cache.md",
-        "references/vcluster-ddl.md"
       ]
     },
     {

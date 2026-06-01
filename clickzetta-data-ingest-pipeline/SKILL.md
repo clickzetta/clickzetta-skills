@@ -46,8 +46,8 @@ Routes users to the correct ingestion skill based on data source, latency requir
 | MySQL/PG/SQL Server/TiDB | Real-time CDC | Multiple tables / Entire DB | `clickzetta-cdc-sync-pipeline` |
 | MySQL/PG/SQL Server | Offline batch | Single table | `clickzetta-batch-sync-pipeline` |
 | MySQL/PG/SQL Server | Offline batch | Multiple tables / Entire DB | `clickzetta-batch-sync-pipeline` |
-| Java application | Real-time/Batch | Programmatic write | `clickzetta-java-sdk` |
-| Python/ZettaPark | Batch | DataFrame write | `clickzetta-zettapark` / `clickzetta-app-python-sdk` |
+| Java application | Real-time/Batch | Programmatic write | `lakehouse-doc-en` |
+| Python/ZettaPark | Batch | DataFrame write | `clickzetta-zettapark` / `clickzetta-lakehouse-connect` |
 | Small data (manual) | One-time | Few rows | Direct SQL INSERT (see below) |
 
 ### How to Choose Between Similar Options

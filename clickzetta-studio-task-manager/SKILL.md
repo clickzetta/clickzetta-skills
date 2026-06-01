@@ -632,7 +632,7 @@ question({
 - [ ] No redundant scheduled tasks for DWS/ADS layer
 - [ ] Scheduling DAG has no circular dependencies
 - [ ] **ETL task dependency chain is complete** (`cz-cli task deps <task>` to verify, `task_dependencies` is not empty)
-- [ ] Key tables and fields have comments (load `clickzetta-manage-comments`)
+- [ ] Key tables and fields have comments; use ClickZetta comment syntax from `lakehouse-doc-en`
 
 ---
 

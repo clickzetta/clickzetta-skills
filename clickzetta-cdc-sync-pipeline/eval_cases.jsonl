@@ -1,5 +1,0 @@
-{"case_id":"001","type":"should_call","user_input":"How do I sync an entire MySQL database to Lakehouse in real time?","expected_skill":"clickzetta-cdc-sync-pipeline","expected_output_contains":["full database mirror","Binlog","CDC"]}
-{"case_id":"002","type":"should_call","user_input":"How do I merge sharded tables into a single Lakehouse table during sync?","expected_skill":"clickzetta-cdc-sync-pipeline","expected_output_contains":["sharded table merge","merge"]}
-{"case_id":"003","type":"should_call","user_input":"The CDC sync task has a Binlog position expired error, what should I do?","expected_skill":"clickzetta-cdc-sync-pipeline","expected_output_contains":["Binlog"]}
-{"case_id":"004","type":"should_call","user_input":"How do I configure alerts for multi-table real-time sync? Does it support Feishu notifications?","expected_skill":"clickzetta-cdc-sync-pipeline","expected_output_contains":["alert","webhook"]}
-{"case_id":"005","type":"should_call","user_input":"What source database preparation is needed for PostgreSQL full database CDC sync?","expected_skill":"clickzetta-cdc-sync-pipeline","expected_output_contains":["WAL","PostgreSQL"]}

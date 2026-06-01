@@ -287,7 +287,7 @@ SHOW VCLUSTERS;
 
 - `type = GENERAL`（GP 型）且 `status = RUNNING` → 直接使用该集群名
 - `status = STOPPED` → 先执行 `ALTER VCLUSTER <name> RESUME;` 再建表
-- 无 GP 型集群 → 参考 `clickzetta-vcluster-manager` 创建
+- 无 GP 型集群 → 参考 `lakehouse-doc-en` 创建或调整 VCluster
 
 将查到的集群名替换下方 DDL 中的 `<gp_vcluster_name>`。
 

@@ -6,7 +6,7 @@ description: |
   [Trigger scenarios]
   - General consultation: Dynamic Table introduction, usage, best practices, performance optimization, incremental configuration
   - Creation guidance: DT declaration strategy, SQL support matrix, refresh history queries
-  - Modification operations: detected and automatically delegated to the dynamic-table-alter sub-skill
+  - Modification operations: ALTER DYNAMIC TABLE, suspend/resume, add/drop columns, refresh interval changes
   - SQL conversion: detected and automatically delegated to the sql-to-dt sub-skill
 
   [Trigger keywords]
@@ -16,7 +16,6 @@ description: |
   "dynamic table scheduling", "REFRESH INTERVAL", "dynamic table alerts"
 
   [Non-trigger scenarios]
-  Modification operations ("modify dynamic table", "add column", "change interval", etc.) → use dynamic-table-alter
   SQL conversion ("convert to DT", "INSERT OVERWRITE to DT", etc.) → use sql-to-dt
 ---
 
@@ -49,7 +48,7 @@ This skill is the **knowledge hub and router** for ClickZetta Dynamic Tables. It
 
 ---
 
-### 2. Modify an Existing Dynamic Table (automatically delegated to dynamic-table-alter sub-skill)
+### 2. Modify an Existing Dynamic Table (handled by this skill)
 
 **Applicable scenarios:**
 - Modifying the structure or properties of an existing Dynamic Table
@@ -64,9 +63,7 @@ This skill is the **knowledge hub and router** for ClickZetta Dynamic Tables. It
 - "ALTER DYNAMIC TABLE", "CREATE OR REPLACE DYNAMIC TABLE"
 - "modify DT query definition", "modify AS SELECT"
 
-**Handling:**
-> ⚠️ Modification intent detected — immediately load the dynamic-table-alter sub-skill.
-> That sub-skill provides a complete workflow for 10 types of modification operations:
+**Handling:** Provide the correct ALTER or CREATE OR REPLACE workflow for the requested change:
 > - 5 direct ALTER operations: suspend, resume, set_comment, rename_column, set_column_comment
 > - 5 CREATE OR REPLACE operations: add_column, drop_column, alter_column, set_refresh_interval, set_select
 
@@ -135,7 +132,7 @@ This skill is the **knowledge hub and router** for ClickZetta Dynamic Tables. It
 
 ---
 
-### dynamic-table-alter/ — Dynamic Table Modification Guide
+### Dynamic Table Modification Guide
 
 **Contents:**
 - Complete Dynamic Table modification workflow (10 operation types)
@@ -143,10 +140,6 @@ This skill is the **knowledge hub and router** for ClickZetta Dynamic Tables. It
 - 5 CREATE OR REPLACE operations: add_column, drop_column, alter_column, set_refresh_interval, set_select
 - Platform-specific syntax and limitations (CHANGE COLUMN, RENAME COLUMN, DML restrictions, etc.)
 - Detailed examples and troubleshooting
-
-> ⚠️ This directory corresponds to the independent **dynamic-table-alter sub-skill**. When the user has a clear modification intent, load that sub-skill directly rather than this guide.
-
----
 
 ### sql-to-dt/ — SQL to DT Automatic Conversion
 
@@ -201,7 +194,7 @@ User question
     │
     ├─ Contains modification keywords?
     │   ("modify dynamic table", "add column", "change interval", "suspend", "ALTER DYNAMIC TABLE")
-    │   └─ Yes → immediately load dynamic-table-alter sub-skill
+    │   └─ Yes → use the Dynamic Table modification guidance in this skill
     │
     ├─ Contains SQL conversion keywords?
     │   ("convert to DT", "sql to dt", "INSERT OVERWRITE to DT", "DDL conversion", "create dynamic table")
@@ -218,7 +211,7 @@ User question
 
 1. **First-time learning**: start with dt-creator/ to understand DT declaration strategies and configuration options
 2. **Migration scenarios**: use the sql-to-dt sub-skill to bulk-convert existing ETL
-3. **Day-to-day operations**: use the dynamic-table-alter sub-skill to modify DT structure
+3. **Day-to-day operations**: use this skill to modify DT structure
 4. **Performance tuning**: refer to optimization recommendations and pitfall guides in best-practices/
 5. **Scheduling configuration**: always use Studio Task scheduling when Studio is available; refer to best-practices/scheduling-guide.md
 
@@ -226,5 +219,4 @@ User question
 
 ## Related Skills
 
-- **dynamic-table-alter** — Operational sub-skill for modifying Dynamic Tables (10 modification operation types)
 - **sql-to-dt** — Conversion sub-skill for SQL to DT (6-step automatic conversion workflow)
