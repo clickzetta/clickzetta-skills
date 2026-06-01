@@ -1,102 +1,38 @@
 ---
 name: clickzetta-external-function
 description: |
-  在 ClickZetta Lakehouse 中创建和使用外部函数（External Function / UDF），
-  通过 Python 或 Java 扩展 SQL 计算能力，调用 LLM、图像识别、自定义算法等外部服务。
-  覆盖 CREATE API CONNECTION（阿里云FC/腾讯云SCF/AWS Lambda）、
-  CREATE EXTERNAL FUNCTION、Python UDF 代码结构与打包、
-  内置 AI_COMPLETE 和 AI_EMBEDDING 函数的使用。
-  当用户说"外部函数"、"UDF"、"自定义函数"、"External Function"、
-  "Remote Function"、"调用 LLM"、"AI_COMPLETE"、"AI_EMBEDDING"、
-  "文本向量化"、"调用阿里云函数计算"、"调用云函数"、"Python UDF"、
-  "Java UDF"、"CREATE EXTERNAL FUNCTION"时触发。
-  Keywords: external function, UDF, Python UDF, Java UDF, LLM, custom function
+  Create and use External Functions (custom UDFs) in ClickZetta Lakehouse using Python or Java,
+  deployed on Alibaba Cloud FC / Tencent Cloud SCF / AWS Lambda.
+  Covers CREATE API CONNECTION (TYPE CLOUD_FUNCTION), CREATE EXTERNAL FUNCTION, Python/Java UDF code structure and packaging.
+  Keywords: external function, UDF, Python UDF, Java UDF, custom function, cloud function
 ---
 
-# ClickZetta External Function
+# ClickZetta External Function (Custom UDF)
 
-External Function 让 SQL 可以调用外部计算能力（LLM、图像识别、自定义算法），通过 Python/Java 编写函数逻辑，部署在云函数服务上执行。
+External Functions let SQL call custom compute logic written in Python or Java, deployed on a cloud function service (Alibaba Cloud FC / Tencent Cloud SCF / AWS Lambda).
 
-阅读 [references/external-function-ddl.md](references/external-function-ddl.md) 了解完整语法。
+See [references/external-function-ddl.md](references/external-function-ddl.md) for the full syntax reference.
 
 ---
 
-## 两种使用路径
-
-| 路径 | 适用场景 | 复杂度 |
-|---|---|---|
-| **内置 AI 函数**（AI_COMPLETE / AI_EMBEDDING） | 调用 LLM 生成文本、文本向量化 | 低，只需创建 API Connection |
-| **External Function** | 自定义算法、图像处理、私有模型 | 高，需部署云函数 |
-
----
-
-## 路径一：内置 AI 函数（推荐）
-
-### 1. 创建 AI API Connection
-
-```sql
-CREATE API CONNECTION conn_bailian
-    TYPE ai_function
-    PROVIDER = 'bailian'
-    BASE_URL = 'https://dashscope.aliyuncs.com/api/v1'
-    API_KEY = '<key>';
-```
-
-### 2. AI_COMPLETE — 调用 LLM
-
-```sql
--- 文本摘要
-SELECT id,
-       AI_COMPLETE('connection:conn_bailian', '请用一句话总结：' || content) AS summary
-FROM articles;
-
--- 情感分析
-SELECT id, review,
-       AI_COMPLETE('connection:conn_bailian',
-           '判断以下评论的情感（正面/负面/中性），只返回一个词：' || review) AS sentiment
-FROM user_reviews;
-
--- 通过平台 Endpoint（管理员预配置）
-SELECT AI_COMPLETE('endpoint:my_llm_endpoint', prompt_col) AS result
-FROM my_table;
-```
-
-### 3. AI_EMBEDDING — 文本向量化
-
-```sql
--- 批量生成 embedding
-SELECT id, content,
-       AI_EMBEDDING('connection:conn_bailian', content) AS vec
-FROM documents;
-
--- 语义搜索（结合向量索引）
-SELECT id, content,
-       cosine_distance(vec, AI_EMBEDDING('connection:conn_bailian', '用户查询')) AS dist
-FROM doc_embeddings
-ORDER BY dist
-LIMIT 10;
-```
-
----
-
-## 路径二：External Function（自定义 UDF）
-
-### 整体流程
+## Overall Flow
 
 ```
-1. 开通云函数服务（阿里云FC / 腾讯云SCF / AWS Lambda）
-2. 编写 Python/Java 函数代码
-3. 打包上传到对象存储或 User Volume
-4. 授权 Lakehouse 访问云函数服务（RAM 角色）
-5. CREATE API CONNECTION
+1. Enable a cloud function service (Alibaba Cloud FC / Tencent Cloud SCF / AWS Lambda)
+2. Write Python/Java function code
+3. Package and upload to object storage or User Volume
+4. Grant Lakehouse access to the cloud function service (RAM role)
+5. CREATE API CONNECTION (TYPE CLOUD_FUNCTION)
 6. CREATE EXTERNAL FUNCTION
-7. 在 SQL 中调用
+7. Call the function in SQL
 ```
 
-### 步骤 1：创建云函数 API Connection
+---
+
+## Step 1: Create a Cloud Function API Connection
 
 ```sql
--- 阿里云 FC
+-- Alibaba Cloud FC
 CREATE API CONNECTION IF NOT EXISTS my_fc_conn
   TYPE CLOUD_FUNCTION
   PROVIDER = 'aliyun'
@@ -105,7 +41,7 @@ CREATE API CONNECTION IF NOT EXISTS my_fc_conn
   NAMESPACE = 'default'
   CODE_BUCKET = 'my-oss-bucket';
 
--- 腾讯云 SCF
+-- Tencent Cloud SCF
 CREATE API CONNECTION IF NOT EXISTS my_scf_conn
   TYPE CLOUD_FUNCTION
   PROVIDER = 'tencent'
@@ -115,7 +51,9 @@ CREATE API CONNECTION IF NOT EXISTS my_scf_conn
   CODE_BUCKET = 'my-cos-bucket';
 ```
 
-### 步骤 2：编写 Python UDF
+---
+
+## Step 2: Write a Python UDF
 
 ```python
 # upper.py
@@ -132,31 +70,34 @@ class Upper(object):
         return arg.upper()
 ```
 
-打包上传：
+Package and upload:
 ```bash
 zip -rq upper.zip upper.py
 ```
 
 ```sql
--- 上传到 User Volume（在 ClickZetta Studio 或 CLI 中执行，source_path 使用绝对路径）
+-- Upload to User Volume (run in ClickZetta Studio or CLI; source_path must be an absolute path)
 PUT '/path/to/upper.zip' TO USER VOLUME;
 ```
 
-### 步骤 3：创建 External Function
+---
+
+## Step 3: Create the External Function
 
 ```sql
--- ⚠️ CREATE EXTERNAL FUNCTION 不支持 OR REPLACE，只支持 IF NOT EXISTS
--- ❌ 错误：CREATE OR REPLACE EXTERNAL FUNCTION ...
--- ✅ 正确：
--- 使用 User Volume 存放代码（无需 OSS）
+-- ⚠️ CREATE EXTERNAL FUNCTION does not support OR REPLACE, only IF NOT EXISTS
+-- ❌ Wrong: CREATE OR REPLACE EXTERNAL FUNCTION ...
+-- ✅ Correct:
+
+-- Using User Volume to store code (no object storage required)
 CREATE EXTERNAL FUNCTION IF NOT EXISTS public.str_upper
   AS 'upper.Upper'
   USING FILE = 'volume:user://~/upper.zip'
   CONNECTION = my_fc_conn
   WITH PROPERTIES ('remote.udf.api' = 'python3.mc.v0')
-  COMMENT '字符串转大写';
+  COMMENT 'Convert string to uppercase';
 
--- 使用 OSS 存放代码
+-- Using OSS to store code
 CREATE EXTERNAL FUNCTION IF NOT EXISTS public.str_upper
   AS 'upper.Upper'
   USING FILE = 'oss://my-bucket/functions/upper.zip'
@@ -164,40 +105,41 @@ CREATE EXTERNAL FUNCTION IF NOT EXISTS public.str_upper
   WITH PROPERTIES ('remote.udf.api' = 'python3.mc.v0');
 ```
 
-### 步骤 4：调用函数
+---
+
+## Step 4: Call the Function
 
 ```sql
--- ⚠️ 调用外部函数必须使用完整 Schema 路径，不能省略 schema
--- ❌ 错误：SELECT str_upper(name) FROM my_table;
--- ✅ 正确：
+-- ⚠️ External functions must be called with the full schema-qualified name; the schema cannot be omitted
+-- ❌ Wrong: SELECT str_upper(name) FROM my_table;
+-- ✅ Correct:
 SELECT id, public.str_upper(name) AS upper_name FROM my_table;
 ```
 
 ---
 
-## 管理操作
+## Management
 
 ```sql
--- 查看所有外部函数
+-- List all external functions
 SHOW EXTERNAL FUNCTIONS;
 SHOW EXTERNAL FUNCTIONS LIKE 'str_%';
 
--- 删除函数（注意：用 DROP FUNCTION，不是 DROP EXTERNAL FUNCTION）
+-- Drop a function (use DROP FUNCTION, not DROP EXTERNAL FUNCTION)
 DROP FUNCTION IF EXISTS public.str_upper;
 ```
 
-> ⚠️ **注意**：`CREATE FUNCTION`（SQL 内联函数）只支持 SQL 表达式，不支持 Python/JavaScript 等编程语言。需要编程语言逻辑请使用 `CREATE EXTERNAL FUNCTION`。
+> ⚠️ **Note**: `CREATE FUNCTION` (inline SQL function) only supports SQL expressions — it does not support Python, JavaScript, or other programming languages. Use `CREATE EXTERNAL FUNCTION` when you need full programming language logic.
 
 ---
 
-## 常见问题
+## Troubleshooting
 
-| 问题 | 原因 | 解决方案 |
+| Problem | Cause | Solution |
 |---|---|---|
-| 函数调用超时 | 云函数冷启动或执行慢 | 增大超时配置，或预热函数 |
-| 依赖库 ABI 不兼容 | 在 macOS/Windows 打包 | 用 `quay.io/pypa/manylinux2014_x86_64` 容器打包 |
-| 代码包 > 500MB | 依赖过大 | 改用容器镜像方式部署 |
-| AI_COMPLETE 报错 | API Key 无效或余额不足 | 检查 API Connection 的 API_KEY |
-| ROLE_ARN 权限不足 | RAM 角色未授权 | 参考文档配置 AliyunFCFullAccess + OSS 权限 |
-| 函数调用报"not found" | 省略了 Schema 前缀 | 必须用完整路径：`schema.function_name(...)` |
-| CREATE OR REPLACE 报错 | EXTERNAL FUNCTION 不支持 OR REPLACE | 改用 `CREATE EXTERNAL FUNCTION IF NOT EXISTS` |
+| Function call times out | Cloud function cold start or slow execution | Increase the timeout setting, or pre-warm the function |
+| Dependency ABI incompatibility | Packaged on macOS/Windows | Use the `quay.io/pypa/manylinux2014_x86_64` container to package |
+| Code package > 500 MB | Dependencies too large | Switch to container image deployment |
+| ROLE_ARN permission denied | RAM role not authorized | Configure AliyunFCFullAccess + OSS permissions per the documentation |
+| Function call returns "not found" | Schema prefix omitted | Always use the full path: `schema.function_name(...)` |
+| CREATE OR REPLACE error | EXTERNAL FUNCTION does not support OR REPLACE | Use `CREATE EXTERNAL FUNCTION IF NOT EXISTS` instead |
