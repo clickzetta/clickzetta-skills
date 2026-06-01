@@ -1,311 +1,310 @@
-# ClickZetta Lakehouse 对象模型完整参考
+# ClickZetta Lakehouse Object Model Reference
 
-> 来源：官方产品文档 yunqi.tech
-> 参考：clickzetta-lakehouse-architecture.html
+> Source: Official product documentation at yunqi.tech
+> Reference: clickzetta-lakehouse-architecture.html
 
 ---
 
-## ClickZetta 独特概念速查
+## ClickZetta Unique Concepts Quick Reference
 
-| 概念 | 独特之处 | 常见误区 |
+| Concept | What Makes It Unique | Common Misconceptions |
 |---|---|---|
-| CRU | 跨云统一算力单位，旧规格 XS/S/M/L 已迁移为数字 1/2/4/8 | 不是 Snowflake Credit，不是 DBU |
-| VCluster 三类型 | GP/AP/Integration 各有适用场景，Dynamic Table 必须用 GP | AP 集群不支持小文件合并 |
-| Dynamic Table | CBO 自适应增量/全量，`OR REPLACE` 保留数据 | 最小 1 分钟，非秒级流式 |
-| Table Stream | 需先 `ALTER TABLE SET PROPERTIES ('change_tracking'='true')` | 实时写入数据需等 1 分钟才可读 |
-| Pipe | 每个 Pipe 对应独立 Volume，不可复用 | 不是 Snowflake Snowpipe，无自动触发 |
-| Synonym | 支持跨 Schema 别名，VOLUME/FUNCTION 类型需显式声明关键字 | 不是视图，不复制数据 |
-| 权限体系 | 无超级用户；实例角色与工作空间角色互不影响 | instance_admin 不能直接操作工作空间数据 |
-| Workspace | 连接时必须指定，≈ Snowflake Database | 不是 Databricks Workspace（那个是实例级） |
-| Schema TYPE | MANAGED（内部托管）/ EXTERNAL（外部数据湖） | EXTERNAL Schema 不支持 DML |
+| CRU | Cross-cloud unified compute unit; legacy sizes XS/S/M/L have migrated to numeric 1/2/4/8 | Not Snowflake Credits, not DBUs |
+| VCluster (3 types) | GP/AP/Integration each have distinct use cases; Dynamic Table must use GP | AP clusters do not support small file compaction |
+| Dynamic Table | CBO-adaptive incremental/full refresh; `OR REPLACE` preserves data | Minimum 1 minute, not second-level streaming |
+| Table Stream | Requires `ALTER TABLE SET PROPERTIES ('change_tracking'='true')` first | Newly written data needs ~1 minute before it can be read |
+| Pipe | Each Pipe maps to a dedicated Volume, not reusable | Not Snowflake Snowpipe; no auto-trigger |
+| Synonym | Supports cross-Schema aliases; VOLUME/FUNCTION types require explicit keyword declaration | Not a view; does not copy data |
+| Permission system | No superuser; instance roles and workspace roles are independent | instance_admin cannot directly operate workspace data |
+| Workspace | Must be specified at connection time; ≈ Snowflake Database | Not Databricks Workspace (that is instance-level) |
+| Schema TYPE | MANAGED (platform-managed storage) / EXTERNAL (external data lake) | EXTERNAL Schema does not support DML |
 
 ---
 
-## 完整对象层级
+## Complete Object Hierarchy
 
 ```
-账户 (Account)
-│  全局唯一 · SSO/MFA · 实名认证
+Account
+│  Globally unique · SSO/MFA · identity verification
 │
-└── 服务实例 (Instance)
-    │  资源隔离 · 多云多地域 · Instance Role
+└── Instance
+    │  Resource isolation · multi-cloud multi-region · Instance Role
     │
-    └── 工作空间 (Workspace)
-        │  业务隔离 · Workspace Role · VCluster 绑定 · 任务调度
+    └── Workspace
+        │  Business isolation · Workspace Role · VCluster binding · task scheduling
         │
-        ├── Schema（数据库/命名空间）
-        │   │  MANAGED / EXTERNAL 类型
+        ├── Schema (database/namespace)
+        │   │  MANAGED / EXTERNAL type
         │   │
-        │   ├── 内部表 (Managed Table)     — Iceberg · ACID · Time Travel · 索引
-        │   ├── 外部表 (External Table)    — Delta/Hudi/Kafka · 只读
-        │   ├── 视图 (View)               — 虚拟 · 无存储
-        │   ├── 动态表 (Dynamic Table)    — 声明式增量刷新
-        │   ├── 物化视图 (Materialized View) — 预计算 · 定时刷新
-        │   ├── Volume                    — User/Table/External(OSS/S3/COS)
-        │   ├── Table Stream              — CDC 变更捕获
-        │   ├── Pipe                      — Kafka/OSS 持续导入
-        │   ├── 函数 / External Function  — SQL UDF / Python / Java
-        │   ├── 索引                      — BloomFilter / Inverted / Vector(HNSW)
-        │   └── 同义词 (Synonym)          — 跨 Schema 别名
+        │   ├── Managed Table          — Iceberg · ACID · Time Travel · indexes
+        │   ├── External Table         — Delta/Hudi/Kafka · read-only
+        │   ├── View                   — virtual · no storage
+        │   ├── Dynamic Table          — declarative incremental refresh
+        │   ├── Materialized View      — pre-computed · scheduled refresh
+        │   ├── Volume                 — User/Table/External(OSS/S3/COS)
+        │   ├── Table Stream           — CDC change capture
+        │   ├── Pipe                   — Kafka/OSS continuous ingestion
+        │   ├── Function / External Function  — SQL UDF / Python / Java
+        │   ├── Index                  — BloomFilter / Inverted / Vector(HNSW)
+        │   └── Synonym                — cross-Schema alias
         │
-        ├── Share                         — 跨账户零拷贝数据共享
-        ├── Connection                    — Storage(OSS/COS/S3) / API(云函数)
-        └── External Catalog              — Hive HMS / Iceberg REST / Databricks Unity
+        ├── Share                      — zero-copy cross-account data sharing
+        ├── Connection                 — Storage(OSS/COS/S3) / API(cloud functions)
+        └── External Catalog           — Hive HMS / Iceberg REST / Databricks Unity
 ```
 
 ---
 
-## 工作空间（Workspace）详解
+## Workspace Details
 
-### 核心定位
+### Core Role
 
-Workspace 是 ClickZetta 中**业务隔离的最小单元**，也是连接时必须指定的对象。
+Workspace is the **minimum unit of business isolation** in ClickZetta, and the object that must be specified at connection time.
 
-- 等同于 Snowflake 的 **Database**，或 Databricks 的 **Catalog**
-- 每个 Workspace 有独立的：用户角色、VCluster、任务调度、INFORMATION_SCHEMA
-- 连接参数中的 `workspace` 字段即指定此对象
+- Equivalent to Snowflake's **Database**, or Databricks' **Catalog**
+- Each Workspace has its own: user roles, VClusters, task scheduling, INFORMATION_SCHEMA
+- The `workspace` field in connection parameters refers to this object
 
-### 管理命令
+### Management Commands
 
 ```sql
--- 查看所有工作空间（需 instance_admin）
+-- List all workspaces (requires instance_admin)
 SHOW WORKSPACES;
 
--- 查看工作空间详情
+-- View workspace details
 DESC WORKSPACE my_workspace;
 
--- 修改注释
-ALTER WORKSPACE my_workspace SET COMMENT '生产环境';
+-- Update comment
+ALTER WORKSPACE my_workspace SET COMMENT 'production environment';
 
--- 查看属性
+-- View properties
 SHOW PROPERTIES IN WORKSPACE my_workspace;
 ```
 
-### DESC WORKSPACE 输出字段
+### DESC WORKSPACE Output Fields
 
-| 字段 | 说明 |
+| Field | Description |
 |---|---|
-| name | 工作空间名称 |
-| creator | 创建者 |
-| created_time | 创建时间 |
-| last_modified_time | 最后修改时间 |
-| comment | 注释 |
+| name | Workspace name |
+| creator | Creator |
+| created_time | Creation time |
+| last_modified_time | Last modified time |
+| comment | Comment |
 
 ---
 
-## Schema 详解
+## Schema Details
 
-### 核心定位
+### Core Role
 
-Schema 是 ClickZetta 中的**命名空间**，用于组织数据对象。
+Schema is the **namespace** in ClickZetta, used to organize data objects.
 
-- 等同于传统数据库的 **Database** 或 **Schema**（注意：不同系统叫法不同）
-- 是权限授予的边界（可对整个 Schema 授权）
-- 类型：`MANAGED`（平台托管存储）/ `EXTERNAL`（外部数据湖路径）
+- Equivalent to a traditional database's **Database** or **Schema** (note: naming varies across systems)
+- The boundary for permission grants (permissions can be granted on an entire Schema)
+- Types: `MANAGED` (platform-managed storage) / `EXTERNAL` (external data lake path)
 
-### 管理命令
+### Management Commands
 
 ```sql
--- 创建 Schema
+-- Create a Schema
 CREATE SCHEMA my_schema;
 
--- 创建外部 Schema（指向外部数据湖）
+-- Create an external Schema (pointing to an external data lake)
 CREATE EXTERNAL SCHEMA ext_schema LOCATION 'oss://bucket/path/';
 
--- 切换默认 Schema
+-- Switch default Schema
 USE SCHEMA my_schema;
 
--- 查看所有 Schema
+-- List all Schemas
 SHOW SCHEMAS;
 
--- 查看 Schema 详情
+-- View Schema details
 DESC SCHEMA my_schema;
 
--- 修改 Schema
+-- Modify Schema
 ALTER SCHEMA my_schema RENAME TO new_schema;
-ALTER SCHEMA my_schema SET COMMENT '数据仓库层';
+ALTER SCHEMA my_schema SET COMMENT 'data warehouse layer';
 
--- 删除 Schema（需先删除其中的对象）
+-- Drop Schema (must drop all objects inside first)
 DROP SCHEMA my_schema;
-DROP SCHEMA IF EXISTS my_schema CASCADE;  -- 级联删除所有对象
+DROP SCHEMA IF EXISTS my_schema CASCADE;  -- cascade drop all objects
 ```
 
 ---
 
-## VCluster（计算集群）详解
+## VCluster (Compute Cluster) Details
 
-### 三种类型对比
+### Three Types Comparison
 
-| 属性 | 通用型 (GENERAL) | 分析型 (ANALYTICS) | 同步型 (INTEGRATION) |
+| Attribute | General Purpose (GENERAL) | Analytics (ANALYTICS) | Integration (INTEGRATION) |
 |---|---|---|---|
-| 适用场景 | ETL、批量导入、Ad-Hoc | 高并发 BI、在线查询 | 数据集成、CDC 同步 |
-| 弹性方式 | 纵向（规格扩缩） | 横向（副本数 1-10） | — |
-| 最小规格 | 1 CRU | 1 CRU | 0.25 CRU |
-| 最大规格 | 256 CRU | 256 CRU | 256 CRU |
-| 规格步长 | 1 CRU | 2^n CRU | 0.25 CRU |
-| 本地缓存 | 不支持 | 支持（PRELOAD） | 不支持 |
-| 小文件合并 | 支持（Dynamic Table 推荐） | 不支持 | — |
+| Use Case | ETL, batch ingestion, Ad-Hoc | High-concurrency BI, online queries | Data integration, CDC sync |
+| Scaling | Vertical (resize) | Horizontal (1–10 replicas) | — |
+| Minimum Size | 1 CRU | 1 CRU | 0.25 CRU |
+| Maximum Size | 256 CRU | 256 CRU | 256 CRU |
+| Size Increment | 1 CRU | 1 CRU | 0.25 CRU |
+| Local Cache | Not supported | Supported (PRELOAD) | Not supported |
+| Small File Compaction | Supported (recommended for Dynamic Table) | Not supported | — |
 
-### 任务类型与集群对应
+### Task Type to Cluster Mapping
 
-| 任务类型 | 推荐集群 |
+| Task Type | Recommended Cluster |
 |---|---|
-| SQL ETL / 批量导入 | 通用型 |
-| Ad-Hoc 查询 / BI | 分析型 |
-| Dynamic Table（低频大量） | 通用型 |
-| Dynamic Table（高频小量） | 分析型 |
-| 离线同步 / 实时同步 / CDC | 同步型 |
-| Python / Shell / JDBC 任务 | 不使用 VCluster |
+| SQL ETL / batch ingestion | General Purpose |
+| Ad-Hoc queries / BI | Analytics |
+| Dynamic Table (low-frequency, large volume) | General Purpose |
+| Dynamic Table (high-frequency, small volume) | Analytics |
+| Offline sync / realtime sync / CDC | Integration |
+| Python / Shell / JDBC tasks | No VCluster needed |
 
-### 管理命令
+### Management Commands
 
 ```sql
--- 创建通用型集群
+-- Create a General Purpose cluster
 CREATE VCLUSTER my_gp TYPE GENERAL SIZE 4;
 
--- 创建分析型集群（弹性 1-4 副本）
+-- Create an Analytics cluster (elastic 1–4 replicas)
 CREATE VCLUSTER my_ap TYPE ANALYTICS SIZE 8 MIN_INSTANCE 1 MAX_INSTANCE 4;
 
--- 启动 / 停止
+-- Resume / Suspend
 ALTER VCLUSTER my_gp RESUME;
 ALTER VCLUSTER my_gp SUSPEND;
 
--- 查看所有集群
+-- List all clusters
 SHOW VCLUSTERS;
 ```
 
 ---
 
-## 用户与权限体系
+## User and Permission System
 
-### 用户层级
+### User Hierarchy
 
 ```
-全局账号用户（Global User）
-│  在账户层面管理，user_name 全局唯一
+Global Account User
+│  Managed at account level; user_name is globally unique
 │
-└── 服务实例用户（Instance User）
-    │  全局用户自动同步，默认获得 instance_user 角色（无数据权限）
+└── Instance User
+    │  Auto-synced from global user; gets instance_user role by default (no data permissions)
     │
-    └── 工作空间用户（Workspace User）
-        通过 GRANT ROLE 授予工作空间角色后才能操作数据
+    └── Workspace User
+        Can operate data only after being granted a workspace role via GRANT ROLE
 ```
 
-### 用户类型
+### User Types
 
-| 类型 | 说明 |
+| Type | Description |
 |---|---|
-| 普通用户 | 代表实际人员，可 Web 登录 |
-| 系统服务用户 | 平台内置，默认禁用（如 sysservice_auto_mv） |
-| 自定义服务用户 | 用于自动化程序，不可 Web 登录，可用 JDBC |
+| Regular user | Represents a real person; can log in via web |
+| System service user | Platform built-in, disabled by default (e.g., sysservice_auto_mv) |
+| Custom service user | For automation programs; cannot log in via web; can use JDBC |
 
-### 预置角色
+### Built-in Roles
 
-| 角色 | 级别 | 权限范围 |
+| Role | Level | Permission Scope |
 |---|---|---|
-| instance_admin | 实例级 | 管理所有工作空间、用户、External Catalog |
-| instance_user | 实例级 | 默认角色，无数据权限 |
-| workspace_admin | 工作空间级 | 管理空间内所有对象和用户 |
-| workspace_dev | 工作空间级 | 读写权限 + 任务管理 |
-| workspace_analyst | 工作空间级 | 只读权限 |
+| instance_admin | Instance | Manage all workspaces, users, External Catalogs |
+| instance_user | Instance | Default role; no data permissions |
+| workspace_admin | Workspace | Manage all objects and users within the workspace |
+| workspace_dev | Workspace | Read/write permissions + task management |
+| workspace_analyst | Workspace | Read-only permissions |
 
-### 授权命令
+### Authorization Commands
 
 ```sql
--- 将角色授予用户
+-- Grant a role to a user
 GRANT ROLE workspace_dev TO USER alice;
 
--- 授予表权限
+-- Grant table permissions
 GRANT SELECT ON TABLE my_schema.my_table TO ROLE analyst_role;
 GRANT SELECT ON ALL TABLES IN SCHEMA my_schema TO ROLE analyst_role;
 
--- 授予 information_schema 查询权限
+-- Grant information_schema query permissions
 GRANT ALL ON ALL VIEWS IN SCHEMA information_schema TO ROLE analyst_role;
 
--- 撤销权限
+-- Revoke permissions
 REVOKE SELECT ON TABLE my_schema.my_table FROM ROLE analyst_role;
 
--- 创建自定义角色（仅工作空间级，仅 SQL）
+-- Create a custom role (workspace-level only, SQL only)
 CREATE ROLE my_custom_role;
 ```
 
 ---
 
-## 数据类型速查
+## Data Types Quick Reference
 
-| 分类 | 类型 |
+| Category | Types |
 |---|---|
-| 整数 | TINYINT / SMALLINT / INT / BIGINT |
-| 浮点 | FLOAT / DOUBLE / DECIMAL(p,s) |
-| 字符串 | CHAR(n) / VARCHAR(n) / STRING（最大 16MB） |
-| 时间 | DATE / TIMESTAMP（带时区 LTZ）/ TIMESTAMP_NTZ / INTERVAL |
-| 布尔 | BOOLEAN |
-| 复杂 | ARRAY\<T\> / MAP\<K,V\> / STRUCT\<field:type,...\> |
-| AI 专用 | VECTOR(FLOAT, n)（最大 65535 维）/ VECTOR(TINYINT, n) |
-| 特殊 | JSON / BINARY / BITMAP（Roaring Bitmap） |
+| Integer | TINYINT / SMALLINT / INT / BIGINT |
+| Floating point | FLOAT / DOUBLE / DECIMAL(p,s) |
+| String | CHAR(n) / VARCHAR(n) / STRING (max 16MB) |
+| Datetime | DATE / TIMESTAMP (with timezone LTZ) / TIMESTAMP_NTZ / INTERVAL |
+| Boolean | BOOLEAN |
+| Complex | ARRAY\<T\> / MAP\<K,V\> / STRUCT\<field:type,...\> |
+| AI-specific | VECTOR(FLOAT, n) (max 65535 dimensions) / VECTOR(TINYINT, n) |
+| Special | JSON / BINARY / BITMAP (Roaring Bitmap) |
 
 ---
 
-## 平台架构层次
+## Platform Architecture Layers
 
 ```
-客户端层：Studio IDE · JDBC/ODBC · Python SDK · ZettaPark · BI 工具 · MCP Server
+Client layer:  Studio IDE · JDBC/ODBC · Python SDK · ZettaPark · BI tools · MCP Server
     ↓
-计算层：VCluster（GENERAL / ANALYTICS / INTEGRATION）
+Compute layer: VCluster (GENERAL / ANALYTICS / INTEGRATION)
     ↓
-服务层：SQL 解析优化 · 向量化执行引擎 · Dynamic Table · AI Gateway · Result Cache
+Service layer: SQL parsing & optimization · vectorized execution engine · Dynamic Table · AI Gateway · Result Cache
     ↓
-存储层：内部表(Iceberg) · 外部表 · Volume · Time Travel · External Catalog · Share
+Storage layer: Managed Table (Iceberg) · External Table · Volume · Time Travel · External Catalog · Share
     ↓
-底层对象存储：阿里云 OSS · AWS S3 · 腾讯云 COS
+Object storage: Alibaba Cloud OSS · AWS S3 · Tencent Cloud COS
 ```
 
-**存算分离**：计算层和存储层独立扩展，VCluster 停止时不产生计算费用，存储按 GiB 计费。
+**Storage-compute separation**: compute and storage layers scale independently; VCluster suspension incurs no compute charges; storage is billed per GiB.
 
 ---
 
-## 数据对象横向对比
+## Data Object Comparison
 
 ### Dynamic Table vs Materialized View vs View
 
-| 维度 | 动态表 (Dynamic Table) | 物化视图 (Materialized View) | 视图 (View) |
+| Dimension | Dynamic Table | Materialized View | View |
 |---|---|---|---|
-| 数据存储 | 有（物化） | 有（物化） | 无（虚拟） |
-| 刷新方式 | 自动增量/全量（CBO 决策） | 手动或定时全量 | 每次查询实时执行 |
-| 最小刷新间隔 | 1 分钟 | 无限制（手动） | — |
-| Time Travel | 支持 | 不支持 | 不支持 |
-| UNDROP | 支持 | 不支持 | 不支持 |
-| CREATE OR REPLACE | 支持（保留数据和权限） | 支持 | 支持 |
-| 推荐集群 | GP（通用型） | GP 或 AP | — |
-| 适用场景 | 实时 ETL、多层级联 | BI 加速、固定聚合 | 简单逻辑封装 |
+| Data storage | Yes (materialized) | Yes (materialized) | No (virtual) |
+| Refresh method | Auto incremental/full (CBO decision) | Manual or scheduled full refresh | Executes at query time |
+| Minimum refresh interval | 1 minute | No limit (manual) | — |
+| Time Travel | Supported | Not supported | Not supported |
+| UNDROP | Supported | Not supported | Not supported |
+| CREATE OR REPLACE | Supported (preserves data and permissions) | Supported | Supported |
+| Recommended cluster | GP (General Purpose) | GP or AP | — |
+| Use case | Realtime ETL, multi-level cascading | BI acceleration, fixed aggregations | Simple logic encapsulation |
 
-### Table Stream 两种模式
+### Table Stream Two Modes
 
-| 模式 | 捕获内容 | 典型用途 |
+| Mode | Captured Content | Typical Use |
 |---|---|---|
-| STANDARD | INSERT + UPDATE_BEFORE + UPDATE_AFTER + DELETE | CDC UPSERT，MERGE INTO 消费 |
-| APPEND_ONLY | 仅 INSERT | 日志追加，简单 ETL |
+| STANDARD | INSERT + UPDATE_BEFORE + UPDATE_AFTER + DELETE | CDC UPSERT, MERGE INTO consumption |
+| APPEND_ONLY | INSERT only | Log append, simple ETL |
 
-**STANDARD 模式的 delta 语义**：记录两个 offset 之间的净变化。若一行先 INSERT 后 DELETE，delta 中该行消失（不会出现 INSERT+DELETE 两条记录）。
+**STANDARD mode delta semantics**: records the net change between two offsets. If a row is INSERTed then DELETEd, the delta shows neither record (not INSERT+DELETE).
 
-### Pipe 两种导入模式
+### Pipe Two Ingestion Modes
 
-| 模式 | 触发方式 | 适用场景 | 云支持 |
+| Mode | Trigger | Use Case | Cloud Support |
 |---|---|---|---|
-| LIST_PURGE | 定期扫描 Volume 目录 | 通用，任何对象存储 | 全部 |
-| EVENT_NOTIFICATION | 云消息队列事件触发 | 低延迟，近实时 | 仅阿里云 OSS + AWS S3 |
+| LIST_PURGE | Periodic scan of Volume directory | General, any object storage | All |
+| EVENT_NOTIFICATION | Cloud message queue event trigger | Low latency, near-realtime | Alibaba Cloud OSS + AWS S3 only |
 
 ---
 
-## 地域与连接信息
+## Regions and Connection Information
 
-| 云服务商 | 地域 | 区域代码 | API Endpoint |
+| Cloud Provider | Region | Region Code | API Endpoint |
 |---|---|---|---|
-| 阿里云 | 华东2（上海） | cn-shanghai-alicloud | cn-shanghai-alicloud.api.clickzetta.com |
-| 腾讯云 | 华东（上海） | ap-shanghai-tencentcloud | ap-shanghai-tencentcloud.api.clickzetta.com |
-| 腾讯云 | 华北（北京） | ap-beijing-tencentcloud | ap-beijing-tencentcloud.api.clickzetta.com |
-| 腾讯云 | 华南（广州） | ap-guangzhou-tencentcloud | ap-guangzhou-tencentcloud.api.clickzetta.com |
-| AWS | 北京 | cn-north-1-aws | cn-north-1-aws.api.clickzetta.com |
+| Alibaba Cloud | East China 2 (Shanghai) | cn-shanghai-alicloud | cn-shanghai-alicloud.api.clickzetta.com |
+| Tencent Cloud | East China (Shanghai) | ap-shanghai-tencentcloud | ap-shanghai-tencentcloud.api.clickzetta.com |
+| Tencent Cloud | North China (Beijing) | ap-beijing-tencentcloud | ap-beijing-tencentcloud.api.clickzetta.com |
+| Tencent Cloud | South China (Guangzhou) | ap-guangzhou-tencentcloud | ap-guangzhou-tencentcloud.api.clickzetta.com |
+| AWS | Beijing | cn-north-1-aws | cn-north-1-aws.api.clickzetta.com |
 
-JDBC URL 格式：`jdbc:clickzetta://<instance_name>.<region_id>.api.clickzetta.com/`
-
+JDBC URL format: `jdbc:clickzetta://<instance_name>.<region_id>.api.clickzetta.com/`
