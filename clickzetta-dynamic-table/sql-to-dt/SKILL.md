@@ -1,27 +1,27 @@
 ---
 name: sql-to-dt
-description: 将 Hive/Spark 等任意批处理系统的 CREATE TABLE DDL + INSERT OVERWRITE SQL 自动转换为 Dynamic Table DDL 及配套文件（refresh、prev_refresh、backfill）。当用户提供 DDL 和 INSERT OVERWRITE 要求转换为 DT 时触发，或用户说"创建动态表"时主动引导提供输入。Triggers on: "转换DT", "sql to dt", "convert to dynamic table", "INSERT OVERWRITE 转 DT", "DDL 转换", "创建动态表"
+description: Automatically converts CREATE TABLE DDL + INSERT OVERWRITE SQL from Hive/Spark or any batch processing system into Dynamic Table DDL and companion files (refresh, prev_refresh, backfill). Triggers when the user provides a DDL and INSERT OVERWRITE and requests conversion to DT, or when the user says "create dynamic table" and should be proactively guided to provide input. Triggers on: "convert to DT", "sql to dt", "convert to dynamic table", "INSERT OVERWRITE to DT", "DDL conversion", "create dynamic table"
 ---
 
-# SQL → Dynamic Table 自动转换
+# SQL → Dynamic Table Automatic Conversion
 
-将 Hive/Spark 等任意批处理系统的 ETL SQL（CREATE TABLE + INSERT OVERWRITE）转换为 Dynamic Table DDL 及配套运维文件。
+Converts ETL SQL (CREATE TABLE + INSERT OVERWRITE) from Hive/Spark or any batch processing system into Dynamic Table DDL and companion operation files.
 
-## 使用方式
+## Usage
 
-提供以下输入：
-1. CREATE TABLE DDL（表结构定义）
-2. INSERT OVERWRITE SQL（ETL 查询逻辑）
+Provide the following inputs:
+1. CREATE TABLE DDL (table structure definition)
+2. INSERT OVERWRITE SQL (ETL query logic)
 
-转换工具会自动完成：占位符替换、自引用检测、核心转换、列校验、配套文件生成、转换后改进建议。
+The conversion tool will automatically handle: placeholder replacement, self-reference detection, core conversion, column validation, companion file generation, and post-conversion improvement suggestions.
 
-详细工作流参见 #[[file:references/sql2dt-workflow.md]]
+For the detailed workflow, see #[[file:references/sql2dt-workflow.md]]
 
 ## references/
 
-- **sql2dt-workflow.md** — 完整转换工作流（6 步：预处理、占位符替换、自引用检测、核心转换、列校验、配套文件生成）
-- **sql2dt-conversion-rules.md** — 核心 DDL 转换规则（解析 DDL、解析 INSERT、组装 DT DDL、静态分区注入）
-- **sql2dt-placeholder-rules.md** — 占位符替换规则（${var} → SESSION_CONFIGS()）
-- **sql2dt-self-reference-rules.md** — 自引用表转换规则
-- **sql2dt-column-validation-rules.md** — 列校验规则（schema 列数 = SELECT 列数）
-- **sql2dt-refresh-rules.md** — Refresh 与调度文件生成规则
+- **sql2dt-workflow.md** — Complete conversion workflow (6 steps: pre-processing, placeholder replacement, self-reference detection, core conversion, column validation, companion file generation)
+- **sql2dt-conversion-rules.md** — Core DDL conversion rules (parse DDL, parse INSERT, assemble DT DDL, static partition injection)
+- **sql2dt-placeholder-rules.md** — Placeholder replacement rules (${var} → SESSION_CONFIGS())
+- **sql2dt-self-reference-rules.md** — Self-referencing table conversion rules
+- **sql2dt-column-validation-rules.md** — Column validation rules (schema column count = SELECT column count)
+- **sql2dt-refresh-rules.md** — Refresh and scheduling file generation rules
