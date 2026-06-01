@@ -38,5 +38,5 @@ GROUP BY k;
 
 ## Related Documentation
 
-- [TOPN](sql_functions/aggregate_functions/topn.md) — returns both values and their occurrence counts
-- [APPROX_TOP_K](sql_functions/aggregate_functions/approx_top_k.md) — approximate top K, suitable for large datasets
+- [TOPN](topn.md) — returns both values and their occurrence counts
+- [APPROX_TOP_K](approx_top_k.md) — approximate top K, suitable for large datasets

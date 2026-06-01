@@ -11,7 +11,7 @@ This document helps you quickly understand the core features offered by Lakehous
 ## What You Can Do in Lakehouse Studio
 
 * [Data Management](data.md), create and manage data lake/database objects such as databases, tables, dynamic tables, etc.
-* [Compute Resource Management](Computation.md), create and manage compute resources such as virtual clusters, job history, etc.
+* [Compute Resource Management](computation.md), create and manage compute resources such as virtual clusters, job history, etc.
 * [ELT Pipeline Development and Management](ide.md), create and manage data ELT pipeline objects such as data sources, pipeline definitions, tasks (extraction tasks, transformation tasks, etc.), workflows, alerts, etc. Tasks support the following types:
   * [Data Synchronization Tasks](data-integration.md), ingest data from databases/data warehouses/data lakes and other data sources into Lakehouse, and export data from Lakehouse to other data sources.
   * [SQL Tasks](task-develop.md), write SQL queries and code for data ingestion, discovery, cleaning, and transformation, leveraging auto-completion of database objects and SQL functions within worksheets.

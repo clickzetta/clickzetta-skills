@@ -86,6 +86,6 @@ SELECT * FROM event_gettime TIMESTAMP AS OF '2024-01-31 17:48:11.862';
 
 ## Related Documentation
 
-- [Time Travel Query](TIMETRAVEL.md)
-- [UNDROP TABLE](UNDROP-TABLE.md)
+- [Time Travel Query](timetravel.md)
+- [UNDROP TABLE](undrop-table.md)
 - [RESTORE TABLE](restore.md)

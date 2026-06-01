@@ -21,7 +21,7 @@ CREATE [OR REPLACE] TABLE STREAM [IF NOT EXISTS]
 
 * `TIMESTAMP AS OF timestamp_expression`: (Optional) Specifies the timestamp expression from which the Table Stream should start receiving updates from the underlying table. If this parameter is omitted, the Table Stream will start receiving updates from the current time.
 
-  * The `timestamp_expression` returns a standard timestamp type expression. The earliest timestamp specified by TIMESTAMP AS OF depends on the [TIME TRAVEL](TIMETRAVEL.md)(data\_retention\_days) parameter. If the specified version does not exist, an error will be reported. If not specified, the current timestamp version data will be used, for example:
+  * The `timestamp_expression` returns a standard timestamp type expression. The earliest timestamp specified by TIMESTAMP AS OF depends on the [TIME TRAVEL](timetravel.md)(data\_retention\_days) parameter. If the specified version does not exist, an error will be reported. If not specified, the current timestamp version data will be used, for example:
     * `'2023-11-07 14:49:18'`, a string that can be cast to a timestamp.
     * `cast('2023-11-07 14:49:18 Asia/Shanghai' as timestamp)`.
     * `current_timestamp() - interval '12' hours`.
@@ -44,7 +44,7 @@ CREATE [OR REPLACE] TABLE STREAM [IF NOT EXISTS]
 
 ### Notes
 
-* The earliest timestamp specified by TIMESTAMP AS OF depends on the [TIME TRAVEL](TIMETRAVEL.md)(data\_retention\_days) parameter. If the specified version does not exist, an error will be reported. This parameter defines the length of time that deleted data is retained. By default, Lakehouse retains data for one day. Depending on your business needs, you can extend or shorten the data retention period by adjusting the `data_retention_days` parameter. Please note that adjusting the data retention period may affect storage costs. Extending the retention period will increase storage requirements, which may increase related costs.
+* The earliest timestamp specified by TIMESTAMP AS OF depends on the [TIME TRAVEL](timetravel.md)(data\_retention\_days) parameter. If the specified version does not exist, an error will be reported. This parameter defines the length of time that deleted data is retained. By default, Lakehouse retains data for one day. Depending on your business needs, you can extend or shorten the data retention period by adjusting the `data_retention_days` parameter. Please note that adjusting the data retention period may affect storage costs. Extending the retention period will increase storage requirements, which may increase related costs.
 * Data written through real-time uploads can only be read after one minute, and Table Stream can only read committed data. Data written by real-time tasks needs to wait for 1 minute to be confirmed, so Table Stream also needs to wait for 1 minute to see it.
 
 ### Usage Examples

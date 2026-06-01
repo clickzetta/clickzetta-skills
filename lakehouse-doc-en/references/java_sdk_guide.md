@@ -31,5 +31,5 @@
 
 | Document | Description |
 |----------|-------------|
-| [JDBC Driver](JDBC-Driver.md) | Connect BI tools and database clients via JDBC |
+| [JDBC Driver](jdbc-driver.md) | Connect BI tools and database clients via JDBC |
 | [Data Ingestion: Java SDK Bulk and Real-time Loading](comprehensive_guide_to_ingesting_javasdk_bulkload_realtime.md) | Complete Java SDK data ingestion practice guide |

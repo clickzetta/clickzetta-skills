@@ -139,7 +139,7 @@ Browse and manage table schemas, column comments, and data lineage. Supports per
 | Scenario | Approach | Reference |
 |------|------|---------|
 | Interactive SQL queries | Workspace | [Workspace](worksheet.md) |
-| Visualize query results | Analysis (Notebook) | [Analysis](Notebook.md) |
+| Visualize query results | Analysis (Notebook) | [Analysis](notebook.md) |
 | View and manage table schemas | Data Catalog | [Data Catalog](data_catalog.md) |
 
 ---
@@ -167,6 +167,6 @@ Browse and manage table schemas, column comments, and data lineage. Supports per
 
 Follow this sequence to get started:
 
-1. [Lakehouse Studio Quick Tour](LakehouseStudio-tour.md) — 5-minute overview of the interface layout
+1. [Lakehouse Studio Quick Tour](lakehousestudio-tour.md) — 5-minute overview of the interface layout
 2. [Lakehouse Studio Getting Started Guide](lakehouse-studio-101.md) — complete your first end-to-end workflow
 3. [Studio Overview](studio_overview.md) — deep dive into each module's capabilities

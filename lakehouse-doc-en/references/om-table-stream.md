@@ -162,7 +162,7 @@ SELECT order_id, status, __change_type FROM orders_stream ORDER BY __change_type
 - Stream queries consume VCluster CRU, proportional to the amount of data queried
 - STANDARD mode has higher overhead than APPEND_ONLY mode (all changes must be tracked)
 
-> 💡 **Tip**: For detailed billing rules, refer to the [Billing Documentation](Billing.md).
+> 💡 **Tip**: For detailed billing rules, refer to the [Billing Documentation](billing.md).
 
 ## Lifecycle Management
 

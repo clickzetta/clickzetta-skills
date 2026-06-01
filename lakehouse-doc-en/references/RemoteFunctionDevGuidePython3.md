@@ -9,7 +9,7 @@ The objective of this document is to help developers master writing custom funct
 > * Only supports Python 3.10 version
 > * If relying on native libraries (libraries containing .so), they need to be compatible with Python 3.10 ABI
 > * Supports zip format program packages
-> * If the program and dependency files exceed 500M after compression, you need to create the function using a container image. Please refer to [Practice: Using Hugging Face Image Recognition Model to Process Image Data](RemoteFunctionOnACR.md)
+> * If the program and dependency files exceed 500M after compression, you need to create the function using a container image. Please refer to [Practice: Using Hugging Face Image Recognition Model to Process Image Data](remotefunctiononacr.md)
 
 ## Code Structure:
 
@@ -70,13 +70,13 @@ cd ./deps
 zip -rq code.zip ./*
 ```
 
-Upload `code.zip` to the cloud object storage and authorize the corresponding path to be accessible by the cloud role of Singdata Lakehouse; the authorization process is not described in the development guide, please refer to [Usage Process: External Function](RemoteFunctionBestPractice.md).
+Upload `code.zip` to the cloud object storage and authorize the corresponding path to be accessible by the cloud role of Singdata Lakehouse; the authorization process is not described in the development guide, please refer to [Usage Process: External Function](remotefunctionbestpractice.md).
 
 ### Upload via Image:
 
 Only applicable for functions larger than 500M after packaging, or functions using GPU resources; you need to enable Alibaba Cloud Container Image Service (free).
 
-Please refer to the document: [Practice: Using Hugging Face Image Recognition Model to Process Image Data](RemoteFunctionOnACR.md)
+Please refer to the document: [Practice: Using Hugging Face Image Recognition Model to Process Image Data](remotefunctiononacr.md)
 
 ^
 

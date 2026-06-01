@@ -77,7 +77,7 @@ CREATE    TABLE pk_table (
 ```
 #### Auto-increment Column (IDENTITY\[(seed)])
 
-* **IDENTITY\[(seed**)]: Supports specifying auto-increment. It cannot guarantee that the values in the sequence are continuous (gapless), nor can it guarantee that the sequence values are allocated in a specific order. This is because other concurrent inserts may occur in the table. These limitations are part of the design to improve performance. For specific usage, refer to the [IDENTITY Column documentation](IDENTITY-Column.md)
+* **IDENTITY\[(seed**)]: Supports specifying auto-increment. It cannot guarantee that the values in the sequence are continuous (gapless), nor can it guarantee that the sequence values are allocated in a specific order. This is because other concurrent inserts may occur in the table. These limitations are part of the design to improve performance. For specific usage, refer to the [IDENTITY Column documentation](identity-column.md)
 ```
 CREATE    TABLE identity_test (id bigint IDENTITY(1), col string);
 ```
@@ -107,7 +107,7 @@ INDEX index_name (col_name) index_type [COMMENT 'xxxxxx'] [PROPERTIES('key'='val
 
 **column\_name**: The name of the field that needs to be indexed
 
-**index\_type**: Index type, currently supports [bloomfilter](CREATE-BLOOMFILTER-INDEX.md), [inverted](inverted-index.md), [vector](create-vector-index.md)
+**index\_type**: Index type, currently supports [bloomfilter](create-bloomfilter-index.md), [inverted](inverted-index.md), [vector](create-vector-index.md)
 
 **COMMENT**: Specifies the description information of the index
 
@@ -357,7 +357,7 @@ Users can create indexes on multiple columns when creating a table. Indexes can 
 
 | Document | Description |
 |------|------|
-| [SQL CREATE TABLE Usage Guide](SQL_CREATE_TABLE_GUIDE.md) | Complete guide for table creation options, column types, partitioning, sort columns, and property configuration |
+| [SQL CREATE TABLE Usage Guide](sql_create_table_guide.md) | Complete guide for table creation options, column types, partitioning, sort columns, and property configuration |
 | [Table Design Best Practices](lakehouse_table_design_guide.md) | Comprehensive selection recommendations for partitioning, bucketing, and indexing |
 | [Generated Columns Usage Guide](generated_columns_guide.md) | Definition and usage scenarios for virtual and stored columns |
 | [Data Types](data-type.md) | Descriptions and usage examples for all supported column types |
@@ -385,6 +385,6 @@ Users can create indexes on multiple columns when creating a table. Indexes can 
 | Document | Description |
 |------|------|
 | [Data Lifecycle](data-lifecycle.md) | `data_lifecycle` parameter, automatically expire and delete historical data |
-| [ALTER TABLE](ALTER-TABLE.md) | Modify table structure, properties, partitions, and other operations |
+| [ALTER TABLE](alter-table.md) | Modify table structure, properties, partitions, and other operations |
 | [Table Stream](tablestream_summary.md) | Capture incremental changes to a table based on `change_tracking` |
 | [Time Travel](timetravel-summary.md) | `data_retention_days` parameter, query and restore historical data |

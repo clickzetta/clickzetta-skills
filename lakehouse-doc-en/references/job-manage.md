@@ -9,7 +9,7 @@ Job management commands are used to view, describe, and cancel running or comple
 | Page | Description |
 |------|-------------|
 | [SHOW JOBS](show-jobs.md) | List jobs; supports filtering by status, time, cluster, and other conditions |
-| [DESC JOB](DESC-JOB.md) | View detailed information for a single job, including the execution plan and error messages |
+| [DESC JOB](desc-job.md) | View detailed information for a single job, including the execution plan and error messages |
 | [CANCEL JOB](cancel-job.md) | Cancel a job that is currently running |
 
 ---

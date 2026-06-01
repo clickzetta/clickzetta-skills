@@ -6,11 +6,11 @@ Singdata AI Gateway is an enterprise-grade AI gateway service that provides unif
 
 | Goal | Where to go |
 |------|-------------|
-| Learn about AI Gateway's features and positioning | [Product Introduction](Introduction.md) |
+| Learn about AI Gateway's features and positioning | [Product Introduction](introduction.md) |
 | Complete setup and call your first model in 10 minutes | [Quick Start](quickstart.md) |
 | View supported models and pricing | [Model Pricing](modelprice.md) |
-| Connect your own third-party model (BYOK) | [Product Introduction → BYOK](Introduction.md) |
-| Manage API Keys and set usage limits | [Product Introduction → API Key Management](Introduction.md) |
+| Connect your own third-party model (BYOK) | [Product Introduction → BYOK](introduction.md) |
+| Manage API Keys and set usage limits | [Product Introduction → API Key Management](introduction.md) |
 
 ## Core Capabilities at a Glance
 

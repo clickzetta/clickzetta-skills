@@ -159,7 +159,7 @@ Main function class: `com.clickzetta.nlp.GenericUDFSentiment`
 There are two methods to upload files to the specified path:
 
 * Directly upload via the OSS client
-* Use the [PUT command](PUT.md) in the Lakehouse JDBC client (Lakehouse Web UI does not support using the PUT command) to upload the package to the [Volume object](datalake_volume.md), and reference the volume path in the function creation DDL. For example:
+* Use the [PUT command](put.md) in the Lakehouse JDBC client (Lakehouse Web UI does not support using the PUT command) to upload the package to the [Volume object](datalake_volume.md), and reference the volume path in the function creation DDL. For example:
 
 ```
 -- Upload the file to the Volume object named fc_volume:
@@ -214,7 +214,7 @@ WITH PROPERTIES (
 **Parameter Explanation**:
 
 1. `AS` is followed by the main class name of the Java function.
-2. `USING`: Only supports compiled Java programs. The parameter： `ARCHIVE` indicates that the package is a zip file; `JAR` indicates that the Java program is a jar file. The file can be directly applied using the OSS path; if the file has been uploaded to the [Volume object](datalake_volume.md) via the [PUT command](PUT.md), the function file can also be directly referenced through the Volume path, for example: `USING ARCHIVE 'volume://fc_volume/udfs/SentimentAnalysis.zip'`
+2. `USING`: Only supports compiled Java programs. The parameter： `ARCHIVE` indicates that the package is a zip file; `JAR` indicates that the Java program is a jar file. The file can be directly applied using the OSS path; if the file has been uploaded to the [Volume object](datalake_volume.md) via the [PUT command](put.md), the function file can also be directly referenced through the Volume path, for example: `USING ARCHIVE 'volume://fc_volume/udfs/SentimentAnalysis.zip'`
 3. `CONNECTION`: Represents the connection object used in the program, such as udf\_sentiment\_bj; the attribute information:
 
 * `remote.udf.api`: For Java UDF, please fill in `java8.hive2.v0`

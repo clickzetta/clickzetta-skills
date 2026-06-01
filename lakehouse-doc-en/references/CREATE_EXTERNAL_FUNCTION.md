@@ -35,7 +35,7 @@ PROPERTIES (
 
 * FUNCTION\_NAME: Specifies the name of the function.
 * CLASS\_NAME: For JAVA functions, it is the main class name of the JAVA function; for Python functions, it is a combination of the main class name and module name. For example, if the main program file is video\_contents.py and the main class name is image\_to\_text, the parameter after AS would be `'video_contents.image_to_text'`.
-* CONNECTION: Specifies the authentication information for connecting to function computation. For details, please refer to [Create Connection](CREATECONNECTION.md).
+* CONNECTION: Specifies the authentication information for connecting to function computation. For details, please refer to [Create Connection](createconnection.md).
 * RESOURCE\_URI: Resource connection, referring to the resource files required for UDF operation. The OSS file address must be specified, and the authentication information of the connection must have read permission for the file.
 
 ### Optional Parameters
@@ -212,7 +212,7 @@ For example: `oss://hz-oss-lakehouse/functions/sentiment/UDF_code/my_upper.zip`
 Function main class: `com.clickzetta.my_upper`
 There are two ways to upload files to the specified path:
 * Directly upload via OSS client
-* Use the [PUT command](PUT.md) to upload the package to the [Volume object](datalake_volume.md) via the Lakehouse JDBC client (Lakehouse Web UI does not support using the PUT command), and reference the volume path and the API CONNECTION created above in the function DDL creation. For example:
+* Use the [PUT command](put.md) to upload the package to the [Volume object](datalake_volume.md) via the Lakehouse JDBC client (Lakehouse Web UI does not support using the PUT command), and reference the volume path and the API CONNECTION created above in the function DDL creation. For example:
 ```
 -- Upload file to the Volume object named fc_volume:
 PUT ./my_upper.zip to volume fc_volume/udfs/my_upper.zip;

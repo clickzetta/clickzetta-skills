@@ -8,11 +8,26 @@ Full code on GitHub: [spark2lakehouse-medallion](https://github.com/clickzetta/s
 
 ---
 
-## The Original Project
+## Original Project
 
 [spark2lakehouse-medallion](https://github.com/clickzetta/spark2lakehouse-medallion) is adapted from [DataWithBaraa/databricks_bootcamp_2026](https://github.com/DataWithBaraa/databricks_bootcamp_2026). It demonstrates how to use the Medallion architecture on Databricks to integrate data from two systems — CRM and ERP — and produce a dimensional model ready for BI analysis. The project includes 6 source tables (3 from CRM + 3 from ERP), which are processed through three layers to produce 2 dimension tables (`dim_customers`, `dim_products`) and 1 fact table (`fact_sales`).
 
 The migrated code lives in the `03_lakehouse/` directory. The original Databricks Notebooks are preserved in `01_spark/` for side-by-side comparison.
+
+## Conclusion First
+
+**Business logic requires zero changes.** All 4 changes are mechanical replacements with no modeling logic involved: import paths, Session creation, method naming (`withColumn` → `with_column`), and write syntax. The Bronze/Silver/Gold processing logic, dimensional modeling, Window functions, and multi-source JOINs all carry over directly.
+
+| Change | Effort | Notes |
+|---|---|---|
+| Import paths | Very low | `pyspark.sql` → `clickzetta.zettapark` |
+| Session creation | Very low | `spark` (globally injected) → `Session.builder.configs({}).create()` |
+| Method naming | Very low | `withColumn` → `with_column`, `withColumnRenamed` → `with_column_renamed` |
+| Write syntax | Very low | `df.write.mode("overwrite").saveAsTable(t)` → `df.write.save_as_table(t, mode="overwrite")` |
+
+If the original project doesn't rely on Databricks' globally injected `spark`, compatibility approaches 100%.
+
+---
 
 ## Technology Stack Comparison
 
@@ -30,7 +45,7 @@ The migrated code lives in the `03_lakehouse/` directory. The original Databrick
 
 The main changes are in the runtime environment — switching from Databricks Notebook to local Jupyter, and from DBFS to Volume. The core data processing and modeling logic is completely unchanged: cleansing, deduplication, multi-source JOINs, Window functions, dimensional modeling — all of these work the same way in ZettaPark as in PySpark. Business logic (`F.when().otherwise()`, `Window.partition_by().order_by()`, `df.join()`, `df.filter()`) is fully compatible — not a single line needs to change.
 
-This project achieves roughly 90% code compatibility. Changes are concentrated in four areas: import paths, Session creation, method naming, and write syntax — all mechanical substitutions. If the original project doesn't rely on Databricks' globally injected `spark` (i.e., it runs with local PySpark), compatibility can approach 100%. Projects that use Python UDFs or `df.write.partitionBy()` will see somewhat lower compatibility.
+You don't need to redesign the data architecture or rewrite the Bronze/Silver/Gold processing logic. All 4 changes are mechanical replacements (import paths, Session creation, method naming, write syntax) — no business logic is involved. If the original project doesn't rely on Databricks' globally injected `spark` (i.e., it runs with local PySpark), compatibility can approach 100%. Projects that use Python UDFs or `df.write.partitionBy()` will see somewhat lower compatibility.
 
 ---
 
@@ -110,7 +125,11 @@ This project generates surrogate keys using `F.row_number().over(Window.order_by
 Before running any notebook, create the schemas and Volume, then upload the CSV files. This only needs to be done once.
 
 ```python
-# init_lakehouse.ipynb
+```
+
+init_lakehouse.ipynb:
+
+```python
 from clickzetta.zettapark.session import Session
 import os
 from dotenv import load_dotenv
@@ -126,16 +145,28 @@ session = Session.builder.configs({
     "vcluster":  os.environ["CLICKZETTA_VCLUSTER"],
 }).create()
 
-# Create the three-layer schemas
+```
+
+Create the three-layer schemas:
+
+```python
 for schema in ["bronze", "silver", "gold"]:
     session.sql(f"CREATE SCHEMA IF NOT EXISTS {schema}").collect()
 
-# Create Volume (to store raw CSVs)
+```
+
+Create the Volume (to store raw CSVs):
+
+```python
 vol_schema = os.environ["CLICKZETTA_SCHEMA"]
 vol_name   = os.environ.get("CLICKZETTA_VOLUME", "medallion_vol")
 session.sql(f"CREATE VOLUME IF NOT EXISTS {vol_schema}.{vol_name}").collect()
 
-# Upload local CSVs to Volume
+```
+
+Upload local CSVs to the Volume:
+
+```python
 import pathlib
 datasets_dir = pathlib.Path("../datasets")
 vol_base = f"vol://{vol_schema}.{vol_name}"
@@ -152,7 +183,7 @@ for csv_file in datasets_dir.rglob("*.csv"):
 ```
 CLICKZETTA_USERNAME=your_username
 CLICKZETTA_PASSWORD=your_password
-CLICKZETTA_SERVICE=cn-shanghai-alicloud.api.singdata.com
+CLICKZETTA_SERVICE=cn-shanghai-alicloud.api.clickzetta.com
 CLICKZETTA_INSTANCE=your_instance_id
 CLICKZETTA_WORKSPACE=your_workspace
 CLICKZETTA_SCHEMA=public
@@ -167,7 +198,11 @@ CLICKZETTA_VOLUME=medallion_vol
 The Bronze layer principle is **no business transformations** — just read the CSVs and write them as tables. The benefit: if something goes wrong downstream, you can rerun from Bronze without re-downloading the raw data.
 
 ```python
-# 03_lakehouse/01_bronze/bronze.ipynb
+```
+
+03_lakehouse/01_bronze/bronze.ipynb:
+
+```python
 
 VOL_SCHEMA = os.environ.get("CLICKZETTA_SCHEMA", "public")
 VOLUME     = os.environ.get("CLICKZETTA_VOLUME", "medallion_vol")
@@ -199,19 +234,31 @@ The Silver layer does three things: **remove nulls, standardize enum values, ren
 ### Customer Info Cleansing (crm_cust_info → silver.crm_customers)
 
 ```python
-# 03_lakehouse/02_silver/crm/silver_crm_cust_info.ipynb
+```
+
+03_lakehouse/02_silver/crm/silver_crm_cust_info.ipynb:
+
+```python
 
 from clickzetta.zettapark.types import StringType
 from clickzetta.zettapark import functions as F
 
 df = session.table("bronze.crm_cust_info")
 
-# 1. Trim leading/trailing whitespace from all string columns
+```
+
+1. Trim leading/trailing whitespace from all string columns:
+
+```python
 for field in df.schema.fields:
     if isinstance(field.datatype, StringType):
         df = df.with_column(field.name, F.trim(F.col(field.name)))
 
-# 2. Standardize enum values
+```
+
+2. Standardize enum values:
+
+```python
 df = (
     df
     .with_column(
@@ -228,10 +275,18 @@ df = (
     )
 )
 
-# 3. Filter out rows with null primary keys
+```
+
+3. Filter out rows with null primary keys:
+
+```python
 df = df.filter(F.col("cst_id").is_not_null())
 
-# 4. Rename columns (apply business semantics)
+```
+
+4. Rename columns (apply business semantics):
+
+```python
 RENAME_MAP = {
     "cst_id":             "customer_id",
     "cst_key":            "customer_number",
@@ -254,11 +309,19 @@ Note that `with_column_renamed` follows ZettaPark's snake_case naming convention
 When source data contains duplicate IDs, a simple `drop_duplicates` isn't enough — you need to decide which record to keep based on business rules. Here, `row_number()` ranks records by creation date descending, keeping only the most recent:
 
 ```python
-# 03_lakehouse/02_silver/crm/silver_crm_prd_info.ipynb
+```
+
+03_lakehouse/02_silver/crm/silver_crm_prd_info.ipynb:
+
+```python
 
 from clickzetta.zettapark.window import Window
 
-# Partition by prd_id, keep the row with the latest prd_start_dt
+```
+
+Partition by prd_id, keep the row with the latest prd_start_dt:
+
+```python
 window = Window.partition_by("prd_id").order_by(F.col("prd_start_dt").desc())
 df = (
     df
@@ -275,7 +338,11 @@ This pattern is common in multi-source integration: the same product may exist i
 6 notebooks run in dependency order:
 
 ```python
-# 03_lakehouse/02_silver/silver_orchestration.ipynb
+```
+
+03_lakehouse/02_silver/silver_orchestration.ipynb:
+
+```python
 
 import subprocess, sys
 
@@ -313,7 +380,11 @@ The Gold layer's core work is **multi-source integration** and **surrogate key g
 CRM customer info is the primary source; ERP customer info and location data serve as supplements, integrated via LEFT JOIN:
 
 ```python
-# 03_lakehouse/03_gold/gold_dim_customers.ipynb
+```
+
+03_lakehouse/03_gold/gold_dim_customers.ipynb:
+
+```python
 
 from clickzetta.zettapark.window import Window
 
@@ -326,8 +397,11 @@ joined = (
       .join(la, ci["customer_number"] == la["customer_number"], "left")
 )
 
-# After a multi-table JOIN, always specify the source DataFrame for each column
-# to avoid ambiguity with identically named columns
+```
+
+After a multi-table JOIN, always specify the source DataFrame for each column to avoid ambiguity with identically named columns:
+
+```python
 df = joined.select(
     ci["customer_id"].alias("customer_id"),
     ci["customer_number"].alias("customer_number"),
@@ -342,11 +416,19 @@ df = joined.select(
     ci["created_date"].alias("create_date"),
 )
 
-# Generate surrogate key (globally unique integer primary key)
+```
+
+Generate the surrogate key (globally unique integer primary key):
+
+```python
 w = Window.order_by(F.col("customer_id"))
 df = df.with_column("customer_key", F.row_number().over(w))
 
-# Reorder columns, surrogate key first
+```
+
+Reorder columns, surrogate key first:
+
+```python
 df = df.select(
     "customer_key", "customer_id", "customer_number",
     "first_name", "last_name", "country",
@@ -365,13 +447,21 @@ df.write.save_as_table("gold.dim_customers", mode="overwrite")
 The fact table joins to dimension tables via surrogate keys and stores no redundant business attributes:
 
 ```python
-# 03_lakehouse/03_gold/gold_fact_sales.ipynb
+```
+
+03_lakehouse/03_gold/gold_fact_sales.ipynb:
+
+```python
 
 sd = session.table("silver.crm_sales")
 dp = session.table("gold.dim_products")
 dc = session.table("gold.dim_customers")
 
-# Join to dimension tables using surrogate keys
+```
+
+Join to dimension tables using surrogate keys:
+
+```python
 joined = (
     sd.join(dp, sd["sls_prd_key"] == dp["product_number"], "left")
       .join(dc, sd["sls_cust_id"] == dc["customer_id"], "left")
@@ -399,7 +489,11 @@ df.write.save_as_table("gold.fact_sales", mode="overwrite")
 After the pipeline runs, `04_validate.ipynb` performs 22 automated checks. The validation logic uses ZettaPark queries directly, with no external framework required:
 
 ```python
-# 04_validate.ipynb (excerpt)
+```
+
+04_validate.ipynb (excerpt):
+
+```python
 
 def check(label, condition_sql, expect_zero=True):
     """Run a SQL query and check whether the result meets expectations."""
@@ -409,7 +503,11 @@ def check(label, condition_sql, expect_zero=True):
     print(f"  {status}  {label}: {result}")
     return passed
 
-# Bronze → Silver row count consistency
+```
+
+Bronze → Silver row count consistency:
+
+```python
 check(
     "silver.crm_customers row count matches bronze.crm_cust_info (after null filter)",
     """
@@ -421,14 +519,22 @@ check(
     expect_zero=True
 )
 
-# No nulls in key columns
+```
+
+No nulls in key columns:
+
+```python
 check(
     "dim_customers.customer_key has no nulls",
     "SELECT COUNT(*) FROM gold.dim_customers WHERE customer_key IS NULL",
     expect_zero=True
 )
 
-# Surrogate key uniqueness
+```
+
+Surrogate key uniqueness:
+
+```python
 check(
     "dim_customers.customer_key has no duplicates",
     """
@@ -442,7 +548,11 @@ check(
     expect_zero=True
 )
 
-# Foreign key integrity
+```
+
+Foreign key integrity:
+
+```python
 check(
     "All customer_key values in fact_sales resolve to dim_customers",
     """
@@ -489,10 +599,22 @@ The integer key generated by `row_number().over(Window.order_by("customer_id"))`
 ### Why must you explicitly specify column sources after a multi-table JOIN?
 
 ```python
-# This is problematic: joined.select("customer_id", "country", ...)
-# because ci, ca, and la all have a customer_number column — ZettaPark doesn't know which to use
+```
 
-# Correct: specify the source DataFrame for every column
+This is problematic: joined.select("customer_id", "country", ...):
+
+```python
+```
+
+Because ci, ca, and la all have a customer_number column — ZettaPark doesn't know which to use:
+
+```python
+
+```
+
+Correct approach: specify the source DataFrame for every column:
+
+```python
 df = joined.select(
     ci["customer_id"].alias("customer_id"),
     la["country"].alias("country"),
@@ -507,20 +629,40 @@ This isn't a ZettaPark limitation — PySpark requires the same treatment after 
 ## Full Execution Order
 
 ```bash
-# 1. Install dependencies
+```
+
+1. Install dependencies:
+
+```bash
 pip install clickzetta_zettapark_python python-dotenv jupyter
 
-# 2. Configure connection
-cp .env.sample .env
-# Edit .env and fill in your Singdata connection details
+```
 
-# 3. Run notebooks in order
+2. Configure the connection:
+
+```bash
+cp .env.sample .env
+```
+
+Edit .env and fill in the Singdata connection details:
+
+```bash
+
+```
+
+3. Run notebooks in order:
+
+```bash
 jupyter nbconvert --to notebook --execute 03_lakehouse/init_lakehouse.ipynb --output 03_lakehouse/init_lakehouse.ipynb
 jupyter nbconvert --to notebook --execute 03_lakehouse/01_bronze/bronze.ipynb --output 03_lakehouse/01_bronze/bronze.ipynb
 jupyter nbconvert --to notebook --execute 03_lakehouse/02_silver/silver_orchestration.ipynb --output 03_lakehouse/02_silver/silver_orchestration.ipynb
 jupyter nbconvert --to notebook --execute 03_lakehouse/03_gold/gold_orchestration.ipynb --output 03_lakehouse/03_gold/gold_orchestration.ipynb
 
-# 4. Validate results
+```
+
+4. Validate results:
+
+```bash
 jupyter nbconvert --to notebook --execute 04_validate.ipynb --output 04_validate.ipynb
 ```
 
@@ -574,5 +716,5 @@ With 20/22 validations passing (the 2 warnings are source data quality issues, n
 - Spark SQL syntax migration: [Spark SQL Syntax Migration Guide](migration-spark-sql.md)
 - Volume usage guide: [Volume Usage Guide](zettapark-volume-guide.md)
 - Data type compatibility: [Data Type Compatibility Reference](migration-sql-compatibility.md)
-- Custom functions: [SQL Function](create-sql-function.md) · [External Function](CREATE_EXTERNAL_FUNCTION.md)
+- Custom functions: [SQL Function](create-sql-function.md) · [External Function](om-external-function.md)
 - Spark Connector: [Using Spark Connector](spark-connector-use.md)

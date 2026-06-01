@@ -26,7 +26,7 @@ This solution supports storing text data, vector data, inverted indexes, and vec
 * [Vector Index](create-table-ddl.md): Build indexes on Vector type fields to accelerate vector search speed.
 * [Inverted Index](create-table-ddl.md): Build inverted indexes on text fields to accelerate text search speed.
 * [Bloom Filter Index](create-table-ddl.md): Build indexes on ID fields to accelerate ID filtering.
-* [Zettapark](ZettaparkQuickStart.md)
+* [Zettapark](zettaparkquickstart.md)
 
 ### Model Service
 
@@ -79,6 +79,6 @@ This article provides Notebook-based source code on GitHub:
 
 [Vector Data Type](vector-type.md)
 [Create Index](create-table-ddl.md)
-[Zettapark Quick Start](ZettaparkQuickStart.md)
+[Zettapark Quick Start](zettaparkquickstart.md)
 
 ^

@@ -144,7 +144,7 @@ Users need `SELECT` permission on the table.
 
 ## Related Documentation
 
-- [UNDROP TABLE](UNDROP-TABLE.md): Restore a dropped table
+- [UNDROP TABLE](undrop-table.md): Restore a dropped table
 - [RESTORE TABLE](restore.md): Roll back a table to a specific point in time
 - [Data Lifecycle](data-lifecycle.md): Configure automatic data cleanup
-- [Time Travel Guide](SQL_Time_Travel_Guide.md): Typical Time Travel use cases including data recovery, historical snapshot comparison, and RESTORE operations
+- [Time Travel Guide](sql_time_travel_guide.md): Typical Time Travel use cases including data recovery, historical snapshot comparison, and RESTORE operations

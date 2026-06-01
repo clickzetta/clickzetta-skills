@@ -20,6 +20,8 @@ A virtual cluster's specification defines the amount of compute resources availa
 | Analytics (AP VCluster)               | 1                      | 256                    | 1                 | Powers of 2. Examples: 1, 2, 4, 8, 16, 32, 64, 128, 256                                  |
 | Integration (Integration VCluster)    | 0.25                   | 256                    | 0.5               | Supports any decimal specification. Examples: 0.25, 0.5, 0.75, 1, 1.25...256             |
 
+> ⚠️ **Note**: Analytics cluster specifications must be a power of 2 (1, 2, 4, 8, 16, 32, 64, 128, 256). Setting any other value will result in an error.
+
 The compute resources consumed by a cluster per hour equal its CRU specification × 1 hour (unit: CRU·hour). For example, an Analytics cluster with a 3 CRU specification running for 1 hour consumes 3 CRU × 1 hour = 3 CRU·hours. Costs are calculated based on the "CRU·hour" unit price for the region where the cluster is located.
 
 ### Cluster Types
@@ -178,7 +180,7 @@ Virtual cluster instances can be woken up by submitted jobs while stopped, start
 * **Configure auto-suspend and auto-resume**: In the cluster creation or modification window, find the "Auto Resume" and "Auto Suspend" configuration options. These two settings are typically configured together: enable "Auto Resume" and set an "Auto Suspend" time.
 * **Set an appropriate timeout**: The "Auto Suspend" time can be set from 1 minute to 3 hours. Consider the impact of cluster start/stop on your jobs when choosing:
   1. For offline jobs, set "Auto Suspend" as short as possible — for example, 1 minute — so the cluster stops quickly after jobs complete, avoiding idle resource waste.
-  2. For online query services, extend "Auto Suspend" appropriately — for example, 30 minutes. This minimizes query latency caused by the cluster transitioning from stopped to running, and extends the cache lifetime for Analytics clusters, improving query performance.
+  2. For online query services, extend "Auto Suspend" appropriately — for example, 30 minutes. This minimizes query latency caused by the cluster transitioning from stopped to running, and extends the cache lifetime for Analytics clusters, improving query performance. To proactively preload hot tables into the cluster cache for further query acceleration, see [Compute Cluster Cache](vc_cache.md).
   3. It is strongly discouraged to set "Auto Suspend" to less than 1 minute. Since billing is per second and any run under 60 seconds is billed as 60 seconds, a very short auto-suspend time combined with very short jobs could cause the cluster to start and stop multiple times within a minute, each time incurring a 60-second charge. Only set auto-suspend below 1 minute if you are certain the jobs on that cluster will not cause multiple start/stop cycles within a minute.
 
 #### Scaling Cluster Specifications Up or Down

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is an tutorial of feature engineering code using the [TPCH tables](sample-data-using.md) with [Zettapark](ZettaparkQuickStart.md). In this tutorial, we illustrate how to build derived (aggregated and transformed) features that could support several machine learning tasks. For instance, you could build:
+This is an tutorial of feature engineering code using the [TPCH tables](sample-data-using.md) with [Zettapark](zettaparkquickstart.md). In this tutorial, we illustrate how to build derived (aggregated and transformed) features that could support several machine learning tasks. For instance, you could build:
 
 **Customer Segmentation / Churn Prediction**:
 

@@ -20,6 +20,6 @@ Singdata Lakehouse supports multiple index types for accelerating query filterin
 ## Index Management Commands
 
 - [BUILD INDEX](build-index.md)
-- [DROP INDEX](DROP-INDEX.md)
-- [SHOW INDEX](SHOW-INDEX.md)
-- [DESC INDEX](DESC-INDEX.md)
+- [DROP INDEX](drop-index.md)
+- [SHOW INDEX](show-index.md)
+- [DESC INDEX](desc-index.md)

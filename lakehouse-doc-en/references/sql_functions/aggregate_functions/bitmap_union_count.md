@@ -36,5 +36,5 @@ GROUP BY k;
 
 ## Related Documentation
 
-- [BITMAP_UNION](sql_functions/aggregate_functions/bitmap_union.md) — returns a BITMAP object instead of the cardinality
-- [BITMAP_AGG](sql_functions/aggregate_functions/bitmap_agg.md)
+- [BITMAP_UNION](bitmap_union.md) — returns a BITMAP object instead of the cardinality
+- [BITMAP_AGG](bitmap_agg.md)

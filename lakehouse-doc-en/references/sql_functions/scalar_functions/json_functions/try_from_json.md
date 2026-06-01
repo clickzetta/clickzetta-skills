@@ -35,5 +35,5 @@ SELECT (try_from_json('{"a":1}', 'STRUCT<a:INT>')).a AS val;
 
 ## Related Documentation
 
-- [FROM_JSON](sql_functions/scalar_functions/json_functions/from_json.md) — version that throws an error on parse failure
-- [PARSE_JSON](sql_functions/scalar_functions/json_functions/json_parse.md)
+- [FROM_JSON](from_json.md) — version that throws an error on parse failure
+- [PARSE_JSON](json_parse.md)

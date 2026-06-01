@@ -38,5 +38,5 @@ GROUP BY k;
 
 ## Related Documentation
 
-- [TOPN_ARRAY](sql_functions/aggregate_functions/topn_array.md) — returns only the top N value list without counts
-- [APPROX_TOP_K](sql_functions/aggregate_functions/approx_top_k.md) — approximate top K, suitable for large datasets
+- [TOPN_ARRAY](topn_array.md) — returns only the top N value list without counts
+- [APPROX_TOP_K](approx_top_k.md) — approximate top K, suitable for large datasets

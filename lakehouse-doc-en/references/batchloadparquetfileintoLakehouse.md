@@ -54,7 +54,7 @@ Note that the full import process might take several hours or possibly even over
 
 # Load Script Example
 
-[Complete Script](https://github.com/clickzetta/nyc-taxi-data-clickzetta/blob/master/README.md)
+[Complete Script](https://github.com/clickzetta/nyc-taxi-data-clickzetta/blob/master/readme.md)
 
 ```
 #!/bin/bash

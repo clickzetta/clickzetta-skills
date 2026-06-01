@@ -1,12 +1,12 @@
 # Map Join Optimization
 
-## Overview
+## Introduction
 
-Map Join is an efficient JOIN optimization technique in Lakehouse, especially suitable for **small table to large table** JOIN scenarios. Map Join broadcasts the small table to each compute node and completes the JOIN directly in the Map phase, avoiding expensive Shuffle and Reduce processes, thereby saving resources and improving query performance.
+Map Join is an efficient JOIN optimization in Lakehouse, particularly suited for **small table and large table** JOIN scenarios. Map Join broadcasts the small table to each compute node and completes the JOIN directly in the Map phase, avoiding expensive Shuffle and Reduce operations, thereby saving resources and improving query performance.
 
 ## Syntax
 
-Add the `/*+ MAPJOIN(table_alias) */` hint to the query, where `table_alias` is the alias of the small table to broadcast into memory:
+Add the `/*+ MAPJOIN(table_alias) */` hint to the query, where `table_alias` is the alias of the small table to be broadcast into memory:
 
 ```SQL
 SELECT /*+ MAPJOIN(small_table_alias) */
@@ -19,19 +19,19 @@ ON large_alias.key = small_table_alias.key;
 ## Advantages
 
 1. Eliminates the Shuffle phase, reducing network transfer and disk I/O overhead.
-2. Avoids data skew issues since data does not need to be distributed by the JOIN column.
-3. Significantly improves query performance for small-table-to-large-table JOIN scenarios.
+2. Avoids data skew issues, since data does not need to be distributed by JOIN column.
+3. Significantly improves query speed for small table JOIN large table scenarios.
 
-## Limitations
+## Notes
 
-1. The small table must fit entirely in memory; otherwise, an out-of-memory error may occur. Currently, Lakehouse limits the small table size to **1 GB**.
-2. Only applicable to small-table-to-large-table JOINs, not suitable for large-table-to-large-table scenarios.
+1. The small table must fit entirely in memory; otherwise it may cause out-of-memory errors. Lakehouse currently limits the small table size to **1 GB**.
+2. Only suitable for small table and large table JOINs; not appropriate for large table and large table scenarios.
 
-## Examples
+## Usage Examples
 
-### Example 1: Employee and department association query
+### Example 1: Employee and Department Join Query
 
-The `departments` table (3 rows) is a small table, and the `employees` table (5 rows) is a large table. Broadcast `departments` to each node to complete the JOIN.
+The `departments` table (3 rows) is the small table; the `employees` table (5 rows) is the large table. Broadcast `departments` to each node to complete the JOIN.
 
 ```SQL
 SELECT /*+ MAPJOIN(d) */
@@ -59,9 +59,9 @@ Result:
 +----+-------+----------+-------------+---------+
 ```
 
-### Example 2: Order and product association query
+### Example 2: Order and Product Join Query
 
-The `products` table (5 rows) is a small table, and the `orders` table is a large table.
+The `products` table (5 rows) is the small table; the `orders` table is the large table.
 
 ```SQL
 SELECT /*+ MAPJOIN(p) */
@@ -76,9 +76,9 @@ JOIN doc_test.products p
 ON o.product = p.name;
 ```
 
-### Example 3: Multi-table JOIN with multiple broadcast tables
+### Example 3: Specifying Multiple Broadcast Tables in a Multi-Table JOIN
 
-You can specify multiple small tables in a single hint:
+Multiple small tables can be specified in the same hint:
 
 ```SQL
 SELECT /*+ MAPJOIN(d, p) */
@@ -92,7 +92,7 @@ JOIN doc_test.products p    ON p.category = 'Electronics';
 
 ## Notes
 
-- The table name in the `MAPJOIN` hint is the **query alias**, not the original table name.
-- If the small table exceeds 1 GB, Lakehouse ignores the hint and automatically falls back to a regular JOIN.
-- Map Join does not support FULL OUTER JOIN and RIGHT OUTER JOIN (the small table must be on the right side).
-- In Lakehouse, the optimizer can also automatically select Map Join based on statistics, so manual hints are not always required.
+- The table name in the `MAPJOIN` hint is the **alias used in the query**, not the original table name.
+- If the small table exceeds 1 GB, Lakehouse will ignore the hint and automatically fall back to a regular JOIN.
+- Map Join does not support FULL OUTER JOIN or RIGHT OUTER JOIN (the small table must be on the right side).
+- In Lakehouse, the optimizer also automatically selects Map Join based on statistics, so you don't need to add the hint manually every time.

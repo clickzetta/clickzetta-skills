@@ -166,6 +166,6 @@ DROP TABLE IF EXISTS phone_products;
 
 ## Related Documentation
 
-* [INSERT INTO](INSERT.md)
+* [INSERT INTO](insert.md)
 * [COPY INTO Import](copy-into-table.md)
 * [Data Import Overview](data-load-summary.md)

@@ -12,8 +12,8 @@ If you already understand the concept of workspaces and need to collaborate with
 Before reading this guide, it is recommended to first read and understand the following documents:
 
 * [Lakehouse Product Introduction](what_is_clickzetta_lakehouse.md)
-* [Key Concepts](Key_Concepts.md)
-* [Lakehouse Studio Quick Tour](LakehouseStudioTour.md)
+* [Key Concepts](key_concepts.md)
+* [Lakehouse Studio Quick Tour](lakehousestudiotour.md)
 * [Getting Started: Create and Use a Workspace](quick_start_create_workspace.md)
 
 ## Operation Guide

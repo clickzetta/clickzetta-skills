@@ -127,6 +127,8 @@ LIMIT 10;
 | [Full-Text Search](full-text-search.md) | Inverted index, tokenizers, MATCH queries |
 | [Hybrid Search Best Practices](rrf-fulltext-vector-hybrid-search-best-practices.md) | Complete RRF fusion ranking example |
 | [Multi-modal Data Retrieval](vector-and-scalar-retrieval-in-same-table.md) | Vector + structured filtering combination |
-| [AI Functions](AI_function_in_SQL.md) | Built-in SQL AI functions such as AI_EMBEDDING and AI_COMPLETE |
+| [AI Functions](ai_function_in_sql.md) | Built-in SQL AI functions such as AI_EMBEDDING and AI_COMPLETE |
 | [Vector Index](vector-search.md) | Vector index DDL syntax reference |
 | [Inverted Index](inverted-index.md) | Inverted index DDL syntax reference |
+
+^

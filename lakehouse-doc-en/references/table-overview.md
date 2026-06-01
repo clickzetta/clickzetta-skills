@@ -63,6 +63,6 @@ Lakehouse tables use **Parquet** columnar storage by default:
 - [Table](om-table.md) — Standard columnar storage table
 - [Dynamic Table](om-dynamic-table.md) — Query result table with automatic incremental refresh
 - [View](om-view.md) — Virtual table
-- [Materialized View](MATERIALIZEDVIEW.md) — Pre-computed query results
+- [Materialized View](materializedview.md) — Pre-computed query results
 - [External Table](external-table-guide.md) — Maps external data sources
 - [Semantic View](om-semantic-view.md) — AI semantic layer

@@ -637,4 +637,4 @@ View Task Instances:
 
 [Table Stream](table_stream.md)
 
-[Merge Into](MERGE.md)
+[Merge Into](merge.md)

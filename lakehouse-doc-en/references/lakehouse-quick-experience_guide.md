@@ -1,7 +1,7 @@
 # Lakehouse Quick Start Experience
 
 ## Overview
-
+ 
 Welcome to Lakehouse! This guide has designed a series of carefully orchestrated experience projects to guide you step by step through the core features and advantages of Lakehouse.
 
 This guide includes the following experience content:
@@ -973,7 +973,7 @@ Now you can start applying Lakehouse to actual business scenarios and enjoy a si
 
 ## References
 
-[Key Concepts](Key_Concepts.md)
+[Key Concepts](key_concepts.md)
 [Virtual Compute Cluster](getting_started_with_vcluster_for_processing_analytics.md)
 [Volume](datalake_volume.md)
 [Vector Index](create-vector-index.md)

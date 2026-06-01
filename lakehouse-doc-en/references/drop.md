@@ -63,7 +63,7 @@ Executing a `DROP` operation requires one of the following permissions:
 - [DROP VIEW](drop-view.md)
 - [DROP EXTERNAL TABLE](drop-external-table.md)
 - [DROP TABLE STREAM](drop-table-stream.md)
-- [UNDROP TABLE](UNDROP-TABLE.md)
+- [UNDROP TABLE](undrop-table.md)
 
 ### Schema Related
 - [DROP SCHEMA](drop-schema.md)
@@ -75,7 +75,7 @@ Executing a `DROP` operation requires one of the following permissions:
 - [DROP SHARE](drop-share.md)
 
 ### Index and Function
-- [DROP INDEX](DROP-INDEX.md)
+- [DROP INDEX](drop-index.md)
 - [DROP FUNCTION](drop-function.md)
 
 ### Other Objects

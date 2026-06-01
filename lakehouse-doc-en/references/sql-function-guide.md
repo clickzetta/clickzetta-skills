@@ -230,5 +230,5 @@ DROP FUNCTION IF EXISTS public.order_tier;
 - [CREATE SQL FUNCTION](create-sql-function.md)
 - [DROP FUNCTION](drop-function.md)
 - [DESC FUNCTION](desc-function.md)
-- [Developing External Functions](RemoteFunction-as-udf.md)
+- [Developing External Functions](remotefunction-as-udf.md)
 - [SET (session parameters)](set-command.md)

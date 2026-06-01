@@ -29,5 +29,5 @@ SELECT general_murmurhash3(3.14);
 
 ## Related Documentation
 
-- [GENERAL_COMPLEXHASH2](sql_functions/scalar_functions/hash_functions/general_complexhash2.md) — variant that automatically selects the algorithm
-- [MURMURHASH3_64](sql_functions/scalar_functions/hash_functions/murmurhash3_64.md)
+- [GENERAL_COMPLEXHASH2](general_complexhash2.md) — variant that automatically selects the algorithm
+- [MURMURHASH3_64](murmurhash3_64.md)

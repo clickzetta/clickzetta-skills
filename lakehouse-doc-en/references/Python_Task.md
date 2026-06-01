@@ -21,7 +21,7 @@ For many data analysis and processing scenarios, especially for BI + AI analysis
 For practical usage on how to install dependency packages, customize the environment, import data, etc., in Python tasks, you can refer to the following documents:
 
 * [Practical Use of Python Tasks](practice_python_task.md)
-* [Python Task Development: Periodically Sync Data Files from gharchive Website to Cloud Object Storage](PythonSample_put_gharchive2oss.md)
-* [Python Task Development: Real-time Fetch GitHub Events and Bulk Load into Lakehouse Table](PythonSample_put_github_rt_events.md)
+* [Python Task Development: Periodically Sync Data Files from gharchive Website to Cloud Object Storage](pythonsample_put_gharchive2oss.md)
+* [Python Task Development: Real-time Fetch GitHub Events and Bulk Load into Lakehouse Table](pythonsample_put_github_rt_events.md)
 
 ^

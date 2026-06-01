@@ -31,4 +31,4 @@ SELECT sort_array(array(2, 1, 3), false);
 ## Related Documentation
 
 - [ARRAY_SORT](array_sort.md) — alias with identical functionality
-- [REVERSE](reverse.md) — reverses the order of array elements
+- [REVERSE](../string_functions/reverse.md) — reverses the order of array elements

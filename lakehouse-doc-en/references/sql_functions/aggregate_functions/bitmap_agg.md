@@ -25,6 +25,6 @@ FROM (VALUES (1),(2),(3),(2)) t(v);
 
 ## Related Documentation
 
-- [BITMAP_UNION](sql_functions/aggregate_functions/bitmap_union.md) — performs a union aggregation over multiple BITMAP objects
-- [TO_BITMAP](sql_functions/scalar_functions/bitmap_functions/to_bitmap.md)
-- [BITMAP_TO_STRING](sql_functions/scalar_functions/bitmap_functions/bitmap_to_string.md)
+- [BITMAP_UNION](bitmap_union.md) — performs a union aggregation over multiple BITMAP objects
+- [TO_BITMAP](../scalar_functions/bitmap_functions/to_bitmap.md)
+- [BITMAP_TO_STRING](../scalar_functions/bitmap_functions/bitmap_to_string.md)

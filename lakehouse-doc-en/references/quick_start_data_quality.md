@@ -9,8 +9,8 @@ Data quality rules are used to verify whether the quality of data objects meets 
 Before reading this guide, it is recommended to complete reading and understanding the following documents:
 
 * [Lakehouse Product Introduction](what_is_clickzetta_lakehouse.md)
-* [Key Concepts](Key_Concepts.md)
-* [Lakehouse Studio Quick Tour](LakehouseStudioTour.md)
+* [Key Concepts](key_concepts.md)
+* [Lakehouse Studio Quick Tour](lakehousestudiotour.md)
 
 ## Operation Guide
 
@@ -62,11 +62,11 @@ You can use the "Data Quality" feature provided by Lakehouse Studio to configure
    * In "Data Quality" > "Verification Results", you can see the newly added verification record, with the trigger method being "Periodic Task Triggered".
      ![](.topwrite/assets/image_1749450124984.png)
 
-9. At this point, the configuration of quality rules and observation of verification execution have been completed. After completing the data quality rule configuration, if you need to promptly receive monitoring and alerting information when quality rule verification fails, you also need to configure monitoring. The specific operations are omitted here. For details, see the [Data Quality](DataQuality.md) help document.
+9. At this point, the configuration of quality rules and observation of verification execution have been completed. After completing the data quality rule configuration, if you need to promptly receive monitoring and alerting information when quality rule verification fails, you also need to configure monitoring. The specific operations are omitted here. For details, see the [Data Quality](dataquality.md) help document.
 
 ## Related Documents
 
-* You can read the [Data Quality](DataQuality.md) help document to understand the complete usage guide for the Data Quality module.
+* You can read the [Data Quality](dataquality.md) help document to understand the complete usage guide for the Data Quality module.
 
 ## Next Steps
 

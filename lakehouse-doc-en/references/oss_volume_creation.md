@@ -34,6 +34,6 @@ SHOW VOLUME DIRECTORY sh_image_volume;
 
 #### 4. Displaying Images in the Volume Path in Lakehouse Studio
 
-When in the Lakehouse Studio development interface, you can directly click the URL -> **Preview** to open the image after obtaining the access URL of the image through the [get\_presigned\_url](GET_PRESIGNED_URL.md) function:
+When in the Lakehouse Studio development interface, you can directly click the URL -> **Preview** to open the image after obtaining the access URL of the image through the [get\_presigned\_url](get_presigned_url.md) function:
 
 ![](.topwrite/assets/20250219-153030.jpeg)

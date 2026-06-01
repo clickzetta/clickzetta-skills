@@ -76,7 +76,7 @@ SHOW VCLUSTERS;
 - Virtual clusters themselves do not incur storage costs; data is stored in object storage
 - `PRELOAD_TABLES` on Analytics clusters uses local SSD cache space (temporary storage)
 
-> 💡 **Tip**: For detailed billing rules, refer to the [Billing Documentation](Billing.md).
+> 💡 **Tip**: For detailed billing rules, refer to the [Billing Documentation](billing.md).
 
 ## Lifecycle Management
 

@@ -43,4 +43,4 @@ SELECT try_element_at(map('a',1,'b',2), 'c');
 
 ## Related Documentation
 
-- [ELEMENT_AT](sql_functions/scalar_functions/high_order_functions/element_at.md) — version that throws an error on out-of-bounds access
+- [ELEMENT_AT](../high_order_functions/element_at.md) — version that throws an error on out-of-bounds access

@@ -27,4 +27,4 @@ SELECT map_concat_array(array(map('a',1,'b',2), map('b',3,'c',4)));
 
 ## Related Documentation
 
-- [MAP_CONCAT](sql_functions/scalar_functions/nested_functions/map_concat.md) — merges multiple MAP arguments passed directly
+- [MAP_CONCAT](map_concat.md) — merges multiple MAP arguments passed directly

@@ -217,4 +217,4 @@ CREATE EXTERNAL CATALOG catalog_name
 
 ## Related Guides
 
-- [Federated Query](SQL_External_Catalog_Guide.md): Complete examples for querying external data sources such as Hive and Databricks through External Catalog.
+- [Federated Query](sql_external_catalog_guide.md): Complete examples for querying external data sources such as Hive and Databricks through External Catalog.

@@ -159,7 +159,7 @@ Main function class: `com.clickzetta.nlp.GenericUDFSentiment`
 There are two ways to upload files to the specified path:
 
 * Upload directly via an OSS client
-* In the Lakehouse JDBC client (the Lakehouse Web UI does not support file uploads via the PUT command), upload the package to a [Volume object](datalake_volume.md) using the [PUT command](PUT.md), and reference the volume path in the function creation DDL. For example:
+* In the Lakehouse JDBC client (the Lakehouse Web UI does not support file uploads via the PUT command), upload the package to a [Volume object](datalake_volume.md) using the [PUT command](put.md), and reference the volume path in the function creation DDL. For example:
 
 ```
 -- Upload file to a Volume object named fc_volume:
@@ -228,7 +228,7 @@ with properties (
 **Parameter Explanation**:
 
 1. **as**: Followed by the main class name of the Java function
-2. **using**: Only supports compiled Java programs. The parameter **archive** indicates the package is a zip-format file; **jar** indicates a Java Jar package file. You can directly reference the file's OSS path; if the file has been uploaded to a [Volume object](datalake_volume.md) via the [PUT command](PUT.md), you can also directly reference the function file via the Volume path, for example: `USING ARCHIVE 'volume://fc_volume/udfs/SentimentAnalysis.zip' `
+2. **using**: Only supports compiled Java programs. The parameter **archive** indicates the package is a zip-format file; **jar** indicates a Java Jar package file. You can directly reference the file's OSS path; if the file has been uploaded to a [Volume object](datalake_volume.md) via the [PUT command](put.md), you can also directly reference the function file via the Volume path, for example: `USING ARCHIVE 'volume://fc_volume/udfs/SentimentAnalysis.zip' `
 3. **connection**: Represents the connection object used in the program, e.g., udf\_sentiment\_bj; with the following property:
 
 * remote.udf.api: For Java UDF, fill in java8.hive2.v0

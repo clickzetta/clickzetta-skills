@@ -474,7 +474,7 @@ dagster implements a software-defined, ETL pipeline complete data workflow DAG d
 
 So far, we have reviewed the differences between the modern data stack and the traditional data stack, discussed the differences between ETL and ELT, and how to build a complete ELT-oriented modern data stack based on Singdata Lakehouse, Airbyte, DBT, and Dagster.
 
-  Once the data enters the Singdata Lakehouse, the next step is how to analyze the data. Please read: [Building an Analytics-Oriented Modern Data Stack Based on Singdata Lakehouse](AnalyticsModernDataStack.md)
+  Once the data enters the Singdata Lakehouse, the next step is how to analyze the data. Please read: [Building an Analytics-Oriented Modern Data Stack Based on Singdata Lakehouse](analyticsmoderndatastack.md)
 
 ## Appendix
 

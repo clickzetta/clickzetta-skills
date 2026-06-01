@@ -8,7 +8,7 @@ To learn more about DataGPT concepts and technical architecture, refer to [DataG
 
 ## Supported Data Sources
 
-Lakehouse GPT can analyze data already stored in [Lakehouse tables](TABLE.md). This means users can directly engage in conversational data analysis with Lakehouse GPT, extending Lakehouse's use cases from data engineering and SQL/Python-based analysis to interactive, visual data analysis experiences. This provides users with an easier way to explore data, allowing them to quickly obtain data results and corresponding SQL code through simple Q&A interactions.
+Lakehouse GPT can analyze data already stored in [Lakehouse tables](table.md). This means users can directly engage in conversational data analysis with Lakehouse GPT, extending Lakehouse's use cases from data engineering and SQL/Python-based analysis to interactive, visual data analysis experiences. This provides users with an easier way to explore data, allowing them to quickly obtain data results and corresponding SQL code through simple Q&A interactions.
 
 Additionally, Lakehouse GPT supports directly loading files such as Excel, CSV, and PDF, with the loaded data stored in Lakehouse. This way, users no longer need to worry about Lakehouse-specific concepts (such as schemas, tables, or SQL), significantly lowering the barrier to entry for data analysis.
 

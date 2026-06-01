@@ -1,10 +1,10 @@
 # Data Transformation with CTE
 
-Let's first understand the basic concepts, advantages, and common use cases of using [Common Table Expression (CTE)](WITH.md) with Lakehouse SQL for data transformation.
+Let's first understand the basic concepts, advantages, and common use cases of using [Common Table Expression (CTE)](with.md) with Lakehouse SQL for data transformation.
 
 ## Basic Concepts
 
-A Common Table Expression (CTE) is an expression that defines a temporary result set that exists within the execution scope of a SQL query. It is typically used to simplify complex queries, perform recursive queries, or break down query steps. CTEs are usually introduced by the [WITH keyword](WITH.md) and can be used in subsequent `SELECT`, `INSERT`, `UPDATE`, and `DELETE` statements.
+A Common Table Expression (CTE) is an expression that defines a temporary result set that exists within the execution scope of a SQL query. It is typically used to simplify complex queries, perform recursive queries, or break down query steps. CTEs are usually introduced by the [WITH keyword](with.md) and can be used in subsequent `SELECT`, `INSERT`, `UPDATE`, and `DELETE` statements.
 
 Basic syntax:
 ```sql
@@ -161,6 +161,6 @@ ORDER BY
 
 ## Resources
 
-[Common Table Expression (CTE)](WITH.md)
+[Common Table Expression (CTE)](with.md)
 
 ^

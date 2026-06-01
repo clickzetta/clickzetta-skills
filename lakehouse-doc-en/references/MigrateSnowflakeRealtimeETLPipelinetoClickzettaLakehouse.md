@@ -77,7 +77,7 @@ After developing the project, you can schedule the Airflow DAG to run as needed,
 
 ### Singdata Lakehouse and Snowflake Object Concept Mapping
 
-| [Singdata Lakehouse Concepts](Key_Concepts.md) | Snowflake Concepts    |
+| [Singdata Lakehouse Concepts](key_concepts.md) | Snowflake Concepts    |
 | ---------------------------------------------- | --------------------- |
 | WORSPACE                                       | DATABASE              |
 | SCHEMA                                         | SCHEMA                |
@@ -761,7 +761,7 @@ Streams and Pipes will run automatically after creation, no scheduling is requir
 
 ### Analyzing Data in Singdata Lakehouse with Tableau
 
-Refer to [this article](TableauConnectToLakehouse.md) to connect Tableau to Singdata Lakehouse via JDBC, explore and analyze the data in the Lakehouse, and create BI reports.
+Refer to [this article](tableauconnecttolakehouse.md) to connect Tableau to Singdata Lakehouse via JDBC, explore and analyze the data in the Lakehouse, and create BI reports.
 
 #### Periodic Task Maintenance
 
@@ -828,11 +828,11 @@ ORDER BY table_type;
 
 ## Documentation
 
-[Singdata Lakehouse Basic Concepts](Key_Concepts.md)
+[Singdata Lakehouse Basic Concepts](key_concepts.md)
 
-[Singdata Lakehouse JDBC Driver](JDBC-Driver.md)
+[Singdata Lakehouse JDBC Driver](jdbc-driver.md)
 
-[Singdata Lakehouse Python Tasks](Python_Task.md)
+[Singdata Lakehouse Python Tasks](python_task.md)
 
 [Singdata Lakehouse Scheduling and Operations](taskdevelop.md)
 

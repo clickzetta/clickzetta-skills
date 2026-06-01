@@ -63,9 +63,9 @@ CREATE TABLE test_vector1 (
 ## Reference Documentation
 
 * [Build Index](build-index.md)
-* [Drop Index](DROP-INDEX.md)
-* [List All Indexes](SHOW-INDEX.md)
-* [View Index Details](DESC-INDEX.md)
+* [Drop Index](drop-index.md)
+* [List All Indexes](show-index.md)
+* [View Index Details](desc-index.md)
 ## User Guide
 [Vector Index User Guide](vector-search.md)
 

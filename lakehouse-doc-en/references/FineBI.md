@@ -12,7 +12,7 @@ Please refer to the [FineBI official website](https://www.finebi.com/). If you h
 
 ### Download Singdata Lakehouse JDBC Driver
 
-Please refer to the Singdata Lakehouse [JDBC Driver](JDBC-Driver.md).
+Please refer to the Singdata Lakehouse [JDBC Driver](jdbc-driver.md).
 
 Download the latest version of the JDBC driver to your local machine for subsequent use.
 

@@ -427,4 +427,4 @@ LIMIT
 
 [Window Functions](window-function-summary.md)
 
-[Window Function List](WINDOWFUNCTION.md)
+[Window Function List](windowfunction.md)

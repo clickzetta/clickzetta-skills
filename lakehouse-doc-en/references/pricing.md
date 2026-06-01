@@ -190,7 +190,7 @@ When Singdata Lakehouse performs metadata management, parses SQL statements, gen
 | AWS            | Beijing   | Enterprise Edition | 15 RMB/CRU\* hour   |
 |                | Singapore | Enterprise Edition | 1.86 USD/CRU\* hour |
 
-Note: In addition to the Standard Edition, the platform also offers an Enterprise Edition with enhanced data governance and security capabilities. The CRU hour unit price for the Enterprise Edition is higher than that of the Standard Edition. For a detailed comparison of features between the two editions, please refer to the product documentation at [Editions Overview](EditionsOverview.md).
+Note: In addition to the Standard Edition, the platform also offers an Enterprise Edition with enhanced data governance and security capabilities. The CRU hour unit price for the Enterprise Edition is higher than that of the Standard Edition. For a detailed comparison of features between the two editions, please refer to the product documentation at [Editions Overview](editionsoverview.md).
 
 ### 2.Storage Capacity Price
 

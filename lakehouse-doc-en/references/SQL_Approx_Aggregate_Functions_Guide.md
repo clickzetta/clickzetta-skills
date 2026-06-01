@@ -368,4 +368,4 @@ GROUP BY endpoint;
 * [approx_top_k](sql_functions/aggregate_functions/approx_top_k.md)
 * [approx_histogram](sql_functions/aggregate_functions/approx_histogram.md)
 * [approx_percentile](sql_functions/aggregate_functions/approx_percentile.md)
-* [Data Sampling and Exploration](SQL_Sampling_Guide.md)
+* [Data Sampling and Exploration](sql_sampling_guide.md)

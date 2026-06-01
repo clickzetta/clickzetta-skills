@@ -65,11 +65,11 @@ Top-up method comparison:
 
 | Scenario | Action | Reference |
 |------|------|---------|
-| View today's / yesterday's / this month's spending summary | Billing Center -> Billing Statements -> Billing Overview | [Billing Statements](Billing.md) |
-| Break down costs by workspace, instance, or time period | Billing Center -> Billing Statements -> Statement Overview -> Filter | [Billing Statements](Billing.md) |
-| View daily details (list price, discount, discounted price) | Billing Center -> Billing Statements -> Statement Details | [Billing Statements](Billing.md) |
-| Export billing data (XLSX) | Statement Details -> Export Details | [Billing Statements](Billing.md) |
-| View historical annual statements | Billing Center -> Billing Statements -> Statement History | [Billing Statements](Billing.md) |
+| View today's / yesterday's / this month's spending summary | Billing Center -> Billing Statements -> Billing Overview | [Billing Statements](billing.md) |
+| Break down costs by workspace, instance, or time period | Billing Center -> Billing Statements -> Statement Overview -> Filter | [Billing Statements](billing.md) |
+| View daily details (list price, discount, discounted price) | Billing Center -> Billing Statements -> Statement Details | [Billing Statements](billing.md) |
+| Export billing data (XLSX) | Statement Details -> Export Details | [Billing Statements](billing.md) |
+| View historical annual statements | Billing Center -> Billing Statements -> Statement History | [Billing Statements](billing.md) |
 | Understand unit prices and calculation formulas for each billing item | — | [Pricing and Billing](pricing.md) |
 
 Billing update frequency: compute and network items update hourly; storage items update the previous day's data in the early hours of the following day.

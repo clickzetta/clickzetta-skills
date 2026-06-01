@@ -61,4 +61,4 @@ CREATE VOLUME IF NOT EXISTS my_schema.shared_vol
 - [Data Lake Storage Management: Volume](datalake_volume.md)
 - [External Volume](external_volume.md)
 - [Using Internal Volume](internal_volume.md)
-- [Volume File Management](SQL_Volume_Guide.md): Complete usage scenarios for uploading, querying, importing, and exporting Volume files
+- [Volume File Management](sql_volume_guide.md): Complete usage scenarios for uploading, querying, importing, and exporting Volume files

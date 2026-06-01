@@ -77,7 +77,7 @@ CREATE TABLE customers_cdc (
 | [Partition](partition_table.md) | Partition by time or other fields to accelerate partition pruning |
 | [Bucket](cluster-table.md) | Hash-bucket by column values to optimize JOIN and aggregation |
 | [Primary Key](primary-key.md) | Define primary key constraints for CDC real-time deduplication writes |
-| [Identity Column](IDENTITY-Column.md) | Columns that auto-generate unique incrementing integer values |
+| [Identity Column](identity-column.md) | Columns that auto-generate unique incrementing integer values |
 | [Generated Column](generated-column.md) | Columns automatically computed from expressions on other columns |
 | [Default Value](default-value.md) | Default value definition when a column value is not specified on insert |
 | [CREATE...CLONE](clone-doc.md) | Quickly clone table structure (and optionally data) into a new table |
@@ -85,7 +85,7 @@ CREATE TABLE customers_cdc (
 | [ALTER TABLE COLUMN](alter-table-column.md) | Add, rename, modify column types, or drop columns |
 | [DROP TABLE](drop-table.md) | Delete a table and its data |
 | [RESTORE TABLE](restore.md) | Roll back a table to a historical version |
-| [UNDROP TABLE](UNDROP-TABLE.md) | Recover a deleted table (within the data retention period) |
+| [UNDROP TABLE](undrop-table.md) | Recover a deleted table (within the data retention period) |
 | [DESC TABLE](desc-table.md) | View a table's column definitions, types, and constraints |
 | [DESC HISTORY TABLE](desc-history-table.md) | View a table's list of historical versions |
 | [SHOW TABLES](show-tables.md) | List all tables under the current schema |
@@ -94,7 +94,7 @@ CREATE TABLE customers_cdc (
 | [SHOW PARTITIONS](list-partition.md) | List all partitions of a partitioned table |
 | [SHOW TABLES HISTORY](show-tables-history.md) | List deleted tables (available for UNDROP) |
 | [ANALYZE TABLE](analyze-table.md) | Collect table statistics to help the optimizer generate better execution plans |
-| [OPTIMIZE](OPTIMIZE.md) | Merge small files to improve query performance |
+| [OPTIMIZE](optimize.md) | Merge small files to improve query performance |
 
 ---
 

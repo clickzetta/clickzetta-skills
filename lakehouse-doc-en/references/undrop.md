@@ -30,7 +30,7 @@ Objects such as views, external tables, schemas, and VClusters do not support UN
 
 ## Syntax Reference
 
-- [UNDROP TABLE](UNDROP-TABLE.md)
+- [UNDROP TABLE](undrop-table.md)
 - [UNDROP DYNAMIC TABLE](undrop-dynamic-table.md)
 - [UNDROP MATERIALIZED VIEW](undrop-materialized-view.md)
 - [Time Travel](time-travel-concept.md)

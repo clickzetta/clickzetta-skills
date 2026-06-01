@@ -2,7 +2,7 @@
 
 Through this lab, experience how to quickly use the Singdata Lakehouse COPY command to load a local CSV file into a table and perform basic data exploration and analysis.
 
-The code in this lab runs in [Zeppelin Notebook](eco_integration/Zeppelin.md), and the appendix provides related guidance. Additionally, the lab code can also run in various local [database management tools](data-mamager-tool.md) (which support COPY command access to local files).
+The code in this lab runs in [Zeppelin Notebook](eco_integration/zeppelin.md), and the appendix provides related guidance. Additionally, the lab code can also run in various local [database management tools](data-mamager-tool.md) (which support COPY command access to local files).
 
 ## Create a New Schema for This Lab
 
@@ -74,6 +74,6 @@ Enjoy and continue learning!
 
 ### Download Zeppelin Notebook Source File
 
-The code in this document is also available to run in [Zeppelin](eco_integration/Zeppelin.md). If you want to run the code directly, please follow the documentation instructions to install [Zeppelin](eco_integration/Zeppelin.md).
+The code in this document is also available to run in [Zeppelin](eco_integration/zeppelin.md). If you want to run the code directly, please follow the documentation instructions to install [Zeppelin](eco_integration/zeppelin.md).
 
 [Quick Start with Copy command.ipynb](https://github.com/yunqiqiliang/clickzetta_quickstart/blob/main/zeppelin_notebook/01.Quick%20Start%20with%20Copy%20command.ipynb)

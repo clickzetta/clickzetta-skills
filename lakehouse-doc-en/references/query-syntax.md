@@ -28,7 +28,7 @@ FROM table_reference
 ## Parameter Description
 
 **1. WITH cte** (Optional)
-[Common Table Expression](WITH.md), used to define a temporary result set in the query.
+[Common Table Expression](with.md), used to define a temporary result set in the query.
 
 **2. ALL | DISTINCT** (Optional): Filters the result set. `all` returns all rows; `distinct` filters out duplicate rows. Default is `all`.
 
@@ -165,7 +165,7 @@ SELECT * FROM orders ORDER BY amount DESC NULLS FIRST; -- NULL sorted first
 ## Query Historical Version Data
 
 In addition to the standard `SELECT` options, Lakehouse also supports users accessing historical data at any point within a defined time period, including changed or deleted data. Supports querying tables, dynamic tables, and materialized views.
-**Note**: The historical query of objects depends on the data retention period. The current version has a default data retention period of 1 day. You can adjust the retention period by executing the [ALTER command](TIMETRAVEL.md). Note that modifying the retention period may increase storage costs. For specific usage, refer to [TIME TRAVEL](TIMETRAVEL.md).
+**Note**: The historical query of objects depends on the data retention period. The current version has a default data retention period of 1 day. You can adjust the retention period by executing the [ALTER command](timetravel.md). Note that modifying the retention period may increase storage costs. For specific usage, refer to [TIME TRAVEL](timetravel.md).
 
 ```sql
 SELECT 
@@ -262,7 +262,7 @@ FROM      server_logs;
    ```
 
 10. Join Example
-    Refer to [Join](JOIN.md) for related usage
+    Refer to [Join](join.md) for related usage
 
 ## Best Practices
 

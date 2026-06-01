@@ -77,7 +77,7 @@ You can view connections via `show connections`.
 
 ### 3.1 Create Commonly Used Geospatial Functions
 
-Below are the creation scripts for the most commonly used geospatial functions in production environments. For detailed information, see [CREATE EXTERNAL FUNCTION](CREATE_EXTERNAL_FUNCTION.md):
+Below are the creation scripts for the most commonly used geospatial functions in production environments. For detailed information, see [CREATE EXTERNAL FUNCTION](create_external_function.md):
 
 ```
 -- ========================================

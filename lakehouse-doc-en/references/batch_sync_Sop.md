@@ -31,7 +31,7 @@ Answer: If the data source is in a VPC environment, the network environment wher
 * Enable public network access on the source side and configure the public network access address in the data source.
 * Use SSH Tunnel: [Data Source Management](config-datasource.md)&#x20;
 * Use Private Link:
-* Combine Private Link and SSH: [Synchronizing RDS Data in VPC via Private Link and SSH](StudioDI_PrivateLinkVPC_fromRDS.md)
+* Combine Private Link and SSH: [Synchronizing RDS Data in VPC via Private Link and SSH](studiodi_privatelinkvpc_fromrds.md)
 
 ### Question: If the source database has a whitelist restriction, how can you ensure the data sync task can connect to the data source?
 

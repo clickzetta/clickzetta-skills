@@ -256,6 +256,6 @@ SELECT array_distinct([1, NULL, 2, NULL, 3]);
 
 ## Related Documents
 
-- [MAP](MAP.md): key-value pair type
-- [STRUCT](STRUCT.md): named structure with multiple fields and types
+- [MAP](map.md): key-value pair type
+- [STRUCT](struct.md): named structure with multiple fields and types
 - [Data Type Conversion](datatype-conversion.md): complex type conversion rules

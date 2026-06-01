@@ -60,7 +60,7 @@ ai_complete(<model>, (<prompt> AS prompt, <image_url> AS image) [, json '{}'])
 - The qwen3 series models have thinking mode enabled by default. For batch processing, it is recommended to disable it via options: `json '{"model.params":{"enable_thinking":false}}'`
 - Returns NULL when `prompt` is NULL or an empty string.
 
-Full documentation: [AI_COMPLETE](AI_COMPLETE.md)
+Full documentation: [AI_COMPLETE](ai_complete.md)
 
 ---
 
@@ -236,7 +236,7 @@ AI_EMBEDDING(<model>, <input> [, <model_parameters>])
 - Returns NULL for NULL input; raises an error for empty string input — filter before calling.
 - Input length limit is 8,192 tokens; a maximum of 10 items can be processed per call.
 
-Full documentation: [AI_EMBEDDING](AI_EMBEDDING.md)
+Full documentation: [AI_EMBEDDING](ai_embedding.md)
 
 ---
 
@@ -318,7 +318,7 @@ JSON'{"model.params":{"enable_thinking":false},"response.timeout":"300","task.co
 ## Related Documentation
 
 - [AI Functions Overview](ai_functions_overview.md)
-- [AI_COMPLETE](AI_COMPLETE.md)
+- [AI_COMPLETE](ai_complete.md)
 - [AI_CLASSIFY](ai_classify.md)
 - [AI_EXTRACT](ai_extract.md)
 - [AI_SENTIMENT](ai_sentiment.md)
@@ -326,7 +326,7 @@ JSON'{"model.params":{"enable_thinking":false},"response.timeout":"300","task.co
 - [AI_TRANSLATE](ai_translate.md)
 - [AI_FIX_GRAMMAR](ai_fix_grammar.md)
 - [AI_MASK](ai_mask.md)
-- [AI_EMBEDDING](AI_EMBEDDING.md)
+- [AI_EMBEDDING](ai_embedding.md)
 - [AI_SIMILARITY](ai_similarity.md)
 - [AI_TRANSCRIBE](ai_transcribe.md)
 
@@ -347,9 +347,9 @@ Singdata Lakehouse stores the connection and access information for external fun
 
 After receiving prior user authorization, the Lakehouse platform automatically deploys the function to the function compute service under the customer's account when the external function is created. When you use an external function in a SQL query, the external function handles the secure connection to the external compute service, data processing, and returns the query results.
 
-**Main process for creating external functions**: [Usage Process: External Function](RemoteFunction-best-practice.md)
+**Main process for creating external functions**: [Usage Process: External Function](remotefunction-best-practice.md)
 
 **Development guides**:
 
-- [External Function (Python3)](RemoteFunction-dev-guide-python3.md)
+- [External Function (Python3)](remotefunction-dev-guide-python3.md)
 - [External Function (Java)](external-function-dev-guide-java.md)

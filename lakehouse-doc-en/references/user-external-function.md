@@ -21,7 +21,7 @@ For a detailed introduction, see [Function Object Model](function-overview.md).
 
 | Page | Description |
 |------|-------------|
-| [CREATE EXTERNAL FUNCTION](CREATE_EXTERNAL_FUNCTION.md) | Create a function that calls an external service (Python/Java) |
+| [CREATE EXTERNAL FUNCTION](create_external_function.md) | Create a function that calls an external service (Python/Java) |
 | [DROP FUNCTION](drop-function.md) | Drop an external function |
 | [SHOW EXTERNAL FUNCTIONS](show-external-functions.md) | List all external functions |
 
@@ -52,5 +52,5 @@ DROP FUNCTION public.area;
 | Document | Description |
 |----------|-------------|
 | [Function Object Model](function-overview.md) | Function type comparison, permission notes, complete examples |
-| [External Function Workflow](RemoteFunction-best-practice.md) | Complete process from development to deployment |
+| [External Function Workflow](remotefunction-best-practice.md) | Complete process from development to deployment |
 | [SQL Function Reference](functions.md) | Complete list of built-in functions |

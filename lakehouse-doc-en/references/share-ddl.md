@@ -50,4 +50,4 @@ SELECT * FROM my_shared_data.orders;
 
 | Document | Description |
 |----------|-------------|
-| [Cross-Instance Data Sharing Guide](SQL_Share_Guide.md) | Complete operation guide organized by business scenario, including permission configuration and FAQs |
+| [Cross-Instance Data Sharing Guide](sql_share_guide.md) | Complete operation guide organized by business scenario, including permission configuration and FAQs |

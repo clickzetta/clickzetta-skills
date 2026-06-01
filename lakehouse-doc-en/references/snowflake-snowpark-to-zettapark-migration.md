@@ -1,8 +1,8 @@
 # Snowpark → ZettaPark Migration in Practice: Frostbyte Data Engineering Pipeline
 
-If you have built a data engineering pipeline on Snowflake using Snowpark Python, migrating to Singdata Lakehouse involves changes in 3 main areas: data loading (Stage → Volume), stored procedures (replaced by Python scripts), and task scheduling (TASK → cz-cli task). The DataFrame API itself is highly compatible — business logic does not need to be rewritten.
+If you have built a data engineering pipeline on Snowflake using Snowpark Python, migrating to Singdata Lakehouse involves work in 3 areas: data loading (Stage → Volume), stored procedures (replaced by Python scripts), and task scheduling (TASK → cz-cli task). The DataFrame API itself is highly compatible — business logic does not need to be rewritten.
 
-This guide demonstrates the complete process using a real migration project: migrating the official Snowflake Frostbyte Data Engineering Lab (`sfguide-data-engineering-with-snowpark-python`, 150 stars) to Singdata Lakehouse, using the original Frostbyte S3 public dataset as the data source. All code has been validated with actual runs.
+This article demonstrates the complete migration process with a real project: migrating the official Snowflake Frostbyte Data Engineering Lab (`sfguide-data-engineering-with-snowpark-python`, 150 stars) to Singdata Lakehouse, using the original Frostbyte S3 public dataset. All code has been validated with actual runs.
 
 Full code on GitHub: [snowflake2lakehouse-data-engineering](https://github.com/clickzetta/snowflake2lakehouse-data-engineering)
 
@@ -10,23 +10,37 @@ Full code on GitHub: [snowflake2lakehouse-data-engineering](https://github.com/c
 
 ## Original Project
 
-[snowflake2lakehouse-data-engineering](https://github.com/clickzetta/snowflake2lakehouse-data-engineering) is adapted from [Snowflake-Labs/sfguide-data-engineering-with-snowpark-python](https://github.com/Snowflake-Labs/sfguide-data-engineering-with-snowpark-python) and demonstrates how to build a complete data engineering pipeline on Snowflake using Snowpark Python: loading Frostbyte food truck order data from S3, cleansing it, flattening it with JOINs, merging it incrementally, and ultimately producing daily city-level sales metrics.
+[snowflake2lakehouse-data-engineering](https://github.com/clickzetta/snowflake2lakehouse-data-engineering) is adapted from [Snowflake-Labs/sfguide-data-engineering-with-snowpark-python](https://github.com/Snowflake-Labs/sfguide-data-engineering-with-snowpark-python), demonstrating how to build a complete data engineering pipeline on Snowflake using Snowpark Python: loading Frostbyte food truck order data from S3, cleaning, JOIN flattening, incremental merging, and finally outputting daily city sales metrics.
 
-The migrated code lives in the `03_lakehouse/` directory. The original Snowflake code is preserved in `01_snowflake/` for comparison.
+The migrated code is in `03_lakehouse/`; the original Snowflake code is preserved in `01_snowflake/` for comparison.
+
+## Conclusion First
+
+**DataFrame business logic does not need a single line changed.** All 3 changes are platform infrastructure replacements: data loading from S3 Stage to Volume, stored procedures replaced by regular Python scripts, and task scheduling from TASK to cz-cli. `with_column`, `join`, `group_by`, `merge`, Window functions — these core operations are identical in ZettaPark and Snowpark.
+
+| Change | Effort | Notes |
+|---|---|---|
+| Data loading | Low | S3 External Stage → Volume, `session.file.put()` + `save_as_table()` |
+| Stored procedures | Low | `CREATE PROCEDURE` → regular Python scripts, logic unchanged |
+| Task scheduling | Low | `CREATE TASK` → `cz-cli task create/deploy/execute` |
+
+Python UDFs and Stream on View have additional limitations (see migration steps), but they do not affect the core data processing logic.
+
+---
 
 ## Technology Stack Comparison
 
-| | Original (Snowflake) | Migrated (Lakehouse) |
+| | Original (Snowflake) | After Migration (Lakehouse) |
 |---|---|---|
 | Data loading | S3 External Stage + `COPY INTO` | Volume + `session.file.put()` + `save_as_table()` |
-| DataFrame API | `snowflake.snowpark` | `clickzetta.zettapark` (import path; API is identical) |
-| Stored procedures | Python Stored Procedure (`CREATE PROCEDURE`) | Plain Python scripts (logic unchanged) |
-| Python UDF | Snowpark Python UDF (depends on scipy) | SQL UDF (`RETURN expr` syntax) |
-| Stream on View | `CREATE STREAM ON VIEW` | Not supported; materialize the View as a Table first, then create a Stream on the Table |
+| DataFrame API | `snowflake.snowpark` | `clickzetta.zettapark` (import path; API identical) |
+| Stored procedures | Python Stored Procedure (`CREATE PROCEDURE`) | Regular Python scripts (logic unchanged) |
+| Python UDF | Snowpark Python UDF (supports scipy) | SQL UDF (`RETURN expr` syntax) |
+| Stream on View | `CREATE STREAM ON VIEW` | Not supported; materialize View as Table first, then create Stream |
 | Task scheduling | `CREATE TASK ... WHEN SYSTEM$STREAM_HAS_DATA(...)` | `cz-cli task create/deploy/execute` |
 | Compute resource | `WAREHOUSE = HOL_WH` | `VCLUSTER default` |
 
-The core DataFrame operations (`with_column`, `join`, `group_by`, `agg`, `merge`, Window functions) are fully identical between ZettaPark and Snowpark — not a single line of business logic needs to change.
+The core DataFrame operations (`with_column`, `join`, `group_by`, `agg`, `merge`, Window functions) are identical in ZettaPark and Snowpark — business logic does not need a single line changed.
 
 ---
 
@@ -75,30 +89,30 @@ git clone https://github.com/clickzetta/snowflake2lakehouse-data-engineering.git
 cd snowflake2lakehouse-data-engineering/03_lakehouse
 
 cp .env.example .env
-# Fill in the connection details in .env
+# Fill in connection info in .env
 
 pip install clickzetta_zettapark_python python-dotenv
 
-# Download Frostbyte data (public S3, no AWS account required)
+# Download Frostbyte data (public S3, no AWS account needed)
 aws s3 sync s3://sfquickstarts/data-engineering-with-snowpark-python/ ./datasets/ \
   --no-sign-request \
   --exclude "pos/order_header/*" --exclude "pos/order_detail/*"
-# Take one year=2021 file each for order_header and order_detail (about 90 MB)
+# Take one year=2021 file each for order_header and order_detail (~90MB)
 aws s3 cp s3://sfquickstarts/data-engineering-with-snowpark-python/pos/order_header/year=2021/data_01a91b48-0605-6a9c-0000-711101079122_005_4_0.snappy.parquet \
   ./datasets/pos/order_header/ --no-sign-request
 aws s3 cp s3://sfquickstarts/data-engineering-with-snowpark-python/pos/order_detail/year=2021/data_01a91b50-0605-721e-0000-71110107a166_008_0_0.snappy.parquet \
   ./datasets/pos/order_detail/ --no-sign-request
 
-# Run the full pipeline end-to-end and validate (24 data checks)
+# Run full pipeline and validate (24 data checks)
 python e2e.py --teardown
 
 # Or run step by step:
-python setup.py                          # Create schemas/volume, upload data, register cz-cli profile
+python setup.py                          # Create schema/volume, upload data, register cz-cli profile
 python steps/02_load_raw.py              # Load raw data into Lakehouse
 python steps/04_create_pos_view.py       # Create View + Table Stream
 cz-cli sql -f steps/05_udf.sql --profile frostbyte --sync --write  # Create SQL UDF
 python steps/06_orders_update.py         # Merge order data
-python steps/07_daily_city_metrics.py    # Compute daily city metrics
+python steps/07_daily_city_metrics.py    # Calculate daily city metrics
 export $(grep -v '^#' .env | xargs) && bash steps/08_orchestrate_tasks.sh  # Deploy scheduled tasks
 
 # Clean up all objects (Studio task + SQL objects + Volume)
@@ -111,9 +125,9 @@ bash steps/11_teardown.sh
 
 ### Step 1: Data Loading (Stage → Volume)
 
-This is the first difference in the migration and the most straightforward.
+This is the first difference in the migration, and the most straightforward.
 
-Snowflake uses an External Stage pointing to S3 and loads data with `COPY INTO`:
+Snowflake uses External Stage pointing to S3, loading via `COPY INTO`:
 
 ```sql
 CREATE STAGE FROSTBYTE_RAW_STAGE
@@ -125,7 +139,7 @@ FILE_FORMAT = (FORMAT_NAME = PARQUET_FORMAT)
 MATCH_BY_COLUMN_NAME = CASE_SENSITIVE;
 ```
 
-Lakehouse uses a Volume as managed storage. Files are uploaded via ZettaPark and then loaded with `save_as_table`:
+Lakehouse uses Volume as managed storage, uploading files via ZettaPark then loading with `save_as_table`:
 
 ```python
 # Upload to Volume (replaces S3 Stage)
@@ -139,11 +153,11 @@ df = session.read.option("compression", "snappy").parquet(
 df.write.save_as_table("frostbyte_raw_pos.order_header", mode="overwrite")
 ```
 
-> ⚠️ **Note**: A Volume must be created under an existing schema. `setup.py` first creates the `frostbyte_raw_pos` schema via `cz-cli`, then creates the Volume, so the Volume can be placed under `frostbyte_raw_pos` rather than `public`. The ZettaPark session connects using the `public` schema (which always exists), but `session.file.put()` can write to a Volume under any existing schema.
+> ⚠️ **Note**: Volume must be created under an existing schema. `setup.py` first creates the `frostbyte_raw_pos` schema via `cz-cli`, then creates the Volume, so the Volume can be placed in `frostbyte_raw_pos` rather than `public`. The ZettaPark session connects using the `public` schema (always exists), but `session.file.put()` can write to a Volume under any existing schema.
 
-### Step 2: DataFrame API (Almost No Changes Needed)
+### Step 2: DataFrame API (Almost No Changes)
 
-The Snowpark and ZettaPark DataFrame APIs are highly compatible. Only the import paths need to change:
+The Snowpark and ZettaPark DataFrame APIs are highly compatible — only the import paths need to change:
 
 ```python
 # Snowflake
@@ -151,7 +165,7 @@ from snowflake.snowpark import Session
 from snowflake.snowpark import functions as F
 from snowflake.snowpark.window import Window
 
-# Lakehouse (only change the imports; everything else stays the same)
+# Lakehouse (only change imports; rest of code unchanged)
 from clickzetta.zettapark.session import Session
 from clickzetta.zettapark import functions as F
 from clickzetta.zettapark.window import Window
@@ -187,10 +201,10 @@ CREATE STREAM HARMONIZED.POS_FLATTENED_V_STREAM
 ON VIEW HARMONIZED.POS_FLATTENED_V;
 ```
 
-Lakehouse Table Streams only support `ON TABLE` — `ON VIEW` is not supported. The solution is to first materialize the View as a Table, then create a Stream on the Table:
+Lakehouse Table Stream only supports `ON TABLE`, not `ON VIEW`. The solution is to materialize the View as a Table first, then create a Stream on the Table:
 
 ```python
-# 1. Create the View (using SQL to ensure persistence)
+# 1. Create View (SQL approach, ensures persistence)
 session.sql("""
     CREATE OR REPLACE VIEW frostbyte_harmonized.pos_flattened_v AS
     SELECT od.order_detail_id, oh.order_ts, m.truck_brand_name, ...
@@ -199,13 +213,13 @@ session.sql("""
     ...
 """).collect()
 
-# 2. Materialize as a Table (Stream can only be created on a Table)
+# 2. Materialize as Table (Stream can only be created on a Table)
 session.sql("""
     CREATE TABLE IF NOT EXISTS frostbyte_harmonized.pos_flattened_v_table
     AS SELECT * FROM frostbyte_harmonized.pos_flattened_v
 """).collect()
 
-# 3. Create a Stream on the Table (TABLE_STREAM_MODE must be specified)
+# 3. Create Stream on Table (TABLE_STREAM_MODE is required)
 session.sql("""
     CREATE TABLE STREAM IF NOT EXISTS frostbyte_harmonized.pos_flattened_v_stream
     ON TABLE frostbyte_harmonized.pos_flattened_v_table
@@ -213,12 +227,12 @@ session.sql("""
 """).collect()
 ```
 
-> ⚠️ **Note**: Lakehouse `CREATE TABLE STREAM` requires `WITH PROPERTIES ('TABLE_STREAM_MODE' = 'STANDARD')`. Omitting it will cause a syntax error.
+> ⚠️ **Note**: Lakehouse `CREATE TABLE STREAM` requires `WITH PROPERTIES ('TABLE_STREAM_MODE' = 'STANDARD')`; omitting it causes a syntax error.
 
-When consuming from a Stream, Lakehouse Table Streams append metadata columns (`__change_type`, `__commit_version`, etc.) alongside the data columns. When inserting, you must explicitly specify column names to exclude these metadata columns:
+When consuming from a Stream, Lakehouse Table Stream appends metadata columns (`__change_type`, `__commit_version`, etc.) alongside the data columns. When inserting, explicitly specify column names to exclude these metadata columns:
 
 ```python
-# When consuming data from a stream, use SQL INSERT with explicit column names
+# When consuming from stream, use SQL INSERT with explicit column names
 session.sql("""
     INSERT INTO frostbyte_harmonized.orders
     SELECT
@@ -241,21 +255,21 @@ PACKAGES = ('snowflake-snowpark-python')
 HANDLER = 'main'
 AS $$
 def main(session):
-    # business logic
+    # Business logic
     ...
 $$;
 
 CALL HARMONIZED.ORDERS_UPDATE_SP();
 ```
 
-Lakehouse does not support stored procedures, but the logic can be converted directly to a plain Python script:
+Lakehouse does not support stored procedures, but the logic can be converted to a regular Python script that runs directly:
 
 ```python
-# 06_orders_update.py — identical logic to the stored procedure, just a different execution model
+# 06_orders_update.py — identical logic to the stored procedure, just a different execution method
 from clickzetta.zettapark.session import Session
 
 def merge_order_updates(session):
-    # The business logic from the original stored procedure, unchanged
+    # Business logic from the original stored procedure, unchanged
     ...
 
 if __name__ == "__main__":
@@ -275,11 +289,11 @@ def main(temp_f: float) -> float:
     return convert_temperature(float(temp_f), 'F', 'C')
 ```
 
-Lakehouse Python UDFs require configuring an External Function service (cloud function deployment). For simple mathematical calculations, a SQL UDF is much simpler:
+Lakehouse Python UDFs require configuring an External Function service (cloud function deployment). For simple mathematical calculations, a SQL UDF is simpler:
 
 ```sql
 -- Lakehouse SQL UDF
--- Note: use RETURN expr syntax (not AS $$ ... $$), and use DOUBLE type (to avoid DECIMAL precision overflow)
+-- Note: use RETURN expr syntax (not AS $$ ... $$), use DOUBLE type (avoids DECIMAL precision overflow)
 CREATE OR REPLACE FUNCTION frostbyte_analytics.fahrenheit_to_celsius_udf(temp_f DOUBLE)
 RETURNS DOUBLE
 RETURN (temp_f - 32.0) * 5.0 / 9.0;
@@ -299,17 +313,17 @@ ALTER TASK DAILY_CITY_METRICS_UPDATE_TASK RESUME;
 EXECUTE TASK ORDERS_UPDATE_TASK;
 ```
 
-Lakehouse uses `cz-cli task` to create scheduled tasks, with the script content embedded directly in the task:
+Lakehouse uses `cz-cli task` to create scheduled tasks, with script content embedded directly in the task:
 
 ```bash
-# Create the task
+# Create task
 cz-cli task create orders_update_task --type PYTHON --profile frostbyte
 
-# Save the script content (connection info is embedded; Studio tasks run in an isolated environment)
+# Save script content (connection info embedded; Studio task runs in isolated environment)
 cz-cli task save-content orders_update_task \
   --content "$(cat orders_script.py)" --profile frostbyte
 
-# Set a cron schedule (replaces SYSTEM$STREAM_HAS_DATA trigger)
+# Set cron schedule (replaces SYSTEM$STREAM_HAS_DATA trigger)
 cz-cli task save-cron orders_update_task \
   --cron "*/5 * * * *" --profile frostbyte
 
@@ -318,20 +332,20 @@ cz-cli task deploy orders_update_task -y --profile frostbyte
 cz-cli task execute orders_update_task --profile frostbyte
 ```
 
-> ⚠️ **Note**: Studio tasks run in an isolated environment and cannot read local `.env` files. Connection information must be embedded in the script, or expanded in the shell via `export $(grep -v '^#' .env | xargs)` before being passed in via a heredoc.
+> ⚠️ **Note**: Studio tasks run in an isolated environment and cannot read local `.env` files. Connection info must be embedded in the script, or passed via heredoc after expanding with `export $(grep -v '^#' .env | xargs)` in the shell.
 
 ---
 
 ## Validation Results
 
-All code was validated end-to-end with `python e2e.py`. All 24/24 data checks passed:
+All code has been validated end-to-end with `python e2e.py`, with 24/24 data checks passing:
 
-| Layer | Table | Row count | Check |
-|-------|-------|-----------|-------|
-| Raw | `order_header` | 7,336,341 | Row count matches |
-| Raw | `order_detail` | 6,230,167 | Row count matches |
-| Raw | `customer_loyalty` | 222,540 | Row count matches |
-| Raw | `menu / truck / location / ...` | 100 / 450 / 13,093 / ... | Row count matches |
+| Layer | Table | Row Count | Check |
+|---|---|---|---|
+| Raw | `order_header` | 7,336,341 | Row count match |
+| Raw | `order_detail` | 6,230,167 | Row count match |
+| Raw | `customer_loyalty` | 222,540 | Row count match |
+| Raw | `menu / truck / location / ...` | 100 / 450 / 13,093 / ... | Row count match |
 | Harmonized | `pos_flattened_v` | 378,941 | Row count, 15 brands, 58 menu items |
 | Harmonized | `orders` | 378,941 | Row count, no null primary keys, top brand Freezing Point |
 | Harmonized | `orders` | — | Total revenue $5,547,817.75, date range 2021-01-01 ~ 2022-01-01 |
@@ -341,25 +355,25 @@ All code was validated end-to-end with `python e2e.py`. All 24/24 data checks pa
 
 ---
 
-## Migration Conclusions
+## Migration Conclusion
 
-ZettaPark and Snowpark's DataFrame APIs are highly compatible. This project validates the following conclusions:
+ZettaPark and Snowpark DataFrame APIs are highly compatible. This project validates the following conclusions:
 
 **Fully compatible (no changes needed):**
 
 - DataFrame chaining: `with_column`, `join`, `group_by`, `agg`, `filter`, `select`
 - Function library: `F.when().otherwise()`, `F.current_timestamp()`, `F.row_number()`, `F.sum()`, `F.coalesce()`
-- Window functions: `Window.partition_by().order_by()`, behavior is fully identical
+- Window functions: `Window.partition_by().order_by()`, behavior identical
 - `target.merge()` MERGE INTO semantics
 - SQL UDF syntax (`RETURN expr`)
 - Table Stream (`ON TABLE`)
 
-**4 differences that require handling:**
+**4 differences that need handling:**
 
 | Difference | Snowflake | Lakehouse |
-|------------|-----------|-----------|
+|--------|-----------|-----------|
 | Data loading | S3 Stage + `COPY INTO` | Volume + `session.file.put()` + `save_as_table()` |
-| Stream on View | `CREATE STREAM ON VIEW` | Not supported; materialize View as Table, then create Stream |
+| Stream on View | `CREATE STREAM ON VIEW` | Not supported; materialize View as Table then create Stream |
 | Python UDF | Snowpark Python UDF (third-party packages) | SQL UDF (`RETURN expr`, `DOUBLE` type) |
 | Stored procedure + Task | `CREATE PROCEDURE` + `CREATE TASK` | Python script + `cz-cli task` |
 
@@ -369,8 +383,8 @@ ZettaPark and Snowpark's DataFrame APIs are highly compatible. This project vali
 
 - GitHub project: [snowflake2lakehouse-data-engineering](https://github.com/clickzetta/snowflake2lakehouse-data-engineering)
 - Original project: [Snowflake-Labs/sfguide-data-engineering-with-snowpark-python](https://github.com/Snowflake-Labs/sfguide-data-engineering-with-snowpark-python)
-- [Volume Usage Guide](volume-guide.md)
+- [Volume Usage Guide](zettapark-volume-guide.md)
 - [Table Stream](table_stream.md)
 - [CREATE SQL FUNCTION](create-sql-function.md)
 - [ZettaPark DataFrame API Guide](zettapark-dataframe-guide.md)
-- [Snowflake Dynamic Tables Migration Guide](snowflake-dynamic-tables-to-lakehouse.md)
+- [Snowflake Dynamic Tables Migration in Practice](snowflake-dynamic-tables-to-lakehouse.md)

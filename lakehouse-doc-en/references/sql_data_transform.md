@@ -50,8 +50,8 @@ Singdata Lakehouse covers four data transformation patterns: auto-incremental re
 
 | Scenario | Approach | Reference |
 |------|------|---------|
-| Pre-compute high-frequency complex queries | Materialized View | [Materialized View Overview](MATERIALIZEDVIEW.md) · [Create Materialized View](create-materialized-view.md) |
-| Query rewriting (transparent acceleration) | Materialized View + query rewriting | [Query Rewriting](MATERIALIZEDVIEW.md) |
+| Pre-compute high-frequency complex queries | Materialized View | [Materialized View Overview](materializedview.md) · [Create Materialized View](create-materialized-view.md) |
+| Query rewriting (transparent acceleration) | Materialized View + query rewriting | [Query Rewriting](materializedview.md) |
 
 ---
 
@@ -62,17 +62,17 @@ Singdata Lakehouse covers four data transformation patterns: auto-incremental re
 | SQL transformation basics | [SQL Data Transformation Basics](sql_data_transform_basic.md) |
 | Window functions (YoY / MoM / ranking) | [Data Transformation with Window Functions](sql_data_transform_windows.md) |
 | Complex queries with CTEs | [Data Transformation with CTEs](sql_data_transform_cte.md) |
-| Nested data types (Array / Map / Struct) | [Nested Data Type Transformation](sql_data_transfom_NestedDataTypes.md) |
+| Nested data types (Array / Map / Struct) | [Nested Data Type Transformation](sql_data_transfom_nesteddatatypes.md) |
 | JSON data processing | [JSON Processing Guide for Complex Business Cases](json_guide_for_complex_biz_cases.md) |
 | Practical tips | [SQL Transformation Tips](sql_data_transform_tips.md) |
-| Funnel analysis and user behavior | [Funnel Analysis Guide](SQL_Funnel_Analysis_Guide.md) |
-| Session analysis (Sessionization) | [Session Analysis Guide](SQL_Sessionization_Guide.md) |
-| Retention and cohort analysis | [Retention and Cohort Analysis Guide](SQL_Retention_Cohort_Guide.md) |
-| Marketing attribution analysis | [Attribution Analysis Guide](SQL_Attribution_Guide.md) |
-| Hierarchical queries (org charts / BOM) | [Hierarchical Query Workaround](SQL_Hierarchy_Workaround_Guide.md) |
-| Data deduplication | [Data Deduplication Guide](SQL_Deduplication_Guide.md) |
-| Data pivoting (rows to columns / columns to rows) | [Data Pivot and Transpose Guide](SQL_Pivot_Guide.md) |
-| Cumulative calculations and running totals | [Running Total Guide](SQL_Running_Total_Guide.md) |
+| Funnel analysis and user behavior | [Funnel Analysis Guide](sql_funnel_analysis_guide.md) |
+| Session analysis (Sessionization) | [Session Analysis Guide](sql_sessionization_guide.md) |
+| Retention and cohort analysis | [Retention and Cohort Analysis Guide](sql_retention_cohort_guide.md) |
+| Marketing attribution analysis | [Attribution Analysis Guide](sql_attribution_guide.md) |
+| Hierarchical queries (org charts / BOM) | [Hierarchical Query Workaround](sql_hierarchy_workaround_guide.md) |
+| Data deduplication | [Data Deduplication Guide](sql_deduplication_guide.md) |
+| Data pivoting (rows to columns / columns to rows) | [Data Pivot and Transpose Guide](sql_pivot_guide.md) |
+| Cumulative calculations and running totals | [Running Total Guide](sql_running_total_guide.md) |
 
 ---
 

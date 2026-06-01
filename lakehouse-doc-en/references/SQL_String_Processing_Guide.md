@@ -659,5 +659,5 @@ DROP TABLE IF EXISTS doc_str_logs;
 
 * [String Functions](string_function.md)
 * [Regex Functions](regexp-function.md)
-* [LATERAL VIEW](LATERALVIEW.md)
+* [LATERAL VIEW](lateralview.md)
 * [Aggregate Functions](agg_function.md)

@@ -25,7 +25,7 @@ If you need to retain historical versions for a longer period, you can set diffe
     ```
 ## Restore Deleted Objects
 
-Please refer to the [Restore Deleted Data](UNDROP-TABLE.md) document to learn how to use the undrop command to restore deleted tables.
+Please refer to the [Restore Deleted Data](undrop-table.md) document to learn how to use the undrop command to restore deleted tables.
 
 ## Restore Data to a Specified Version
 
@@ -33,7 +33,7 @@ Please refer to the [RESTORE Command](restore.md) document to learn how to use t
 
 ## Query Historical Data
 
-Please refer to the [TIME TRAVEL](TIMETRAVEL.md) document to learn how to query data from tables or dynamic tables before they were updated or deleted.
+Please refer to the [TIME TRAVEL](timetravel.md) document to learn how to query data from tables or dynamic tables before they were updated or deleted.
 
 ## View Object Version History
 

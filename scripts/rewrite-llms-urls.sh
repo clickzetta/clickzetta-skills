@@ -27,9 +27,9 @@ override_for() {
 content=$(cat)
 
 slugs=$(printf '%s' "$content" \
-  | grep -oE 'https://www\.singdata\.com/documents/[A-Za-z0-9_-]+' \
+  | grep -oE 'https://(www\.)?singdata\.com/documents/[A-Za-z0-9_-]+' \
   | sed 's|.*/||' \
-  | sort -u)
+  | sort -u || true)
 
 while IFS= read -r slug; do
   [[ -z "$slug" ]] && continue
@@ -48,7 +48,7 @@ while IFS= read -r slug; do
     fi
   fi
   esc_target=${target//\//\\/}
-  content=$(printf '%s' "$content" | sed "s|https://www\.singdata\.com/documents/${slug}|${esc_target}|g")
+  content=$(printf '%s' "$content" | sed "s|https://\(www\.\)\{0,1\}singdata\.com/documents/${slug}|${esc_target}|g")
 done <<< "$slugs"
 
 printf '%s' "$content"

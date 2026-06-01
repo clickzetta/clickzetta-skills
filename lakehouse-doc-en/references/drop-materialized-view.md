@@ -70,4 +70,4 @@ SELECT * FROM analytics.order_stats_mv;
 ## Related Documents
 
 - [CREATE MATERIALIZED VIEW](create-materialized-view.md): Create a materialized view
-- [UNDROP TABLE](UNDROP-TABLE.md): Restore a dropped table / dynamic table / materialized view
+- [UNDROP TABLE](undrop-table.md): Restore a dropped table / dynamic table / materialized view

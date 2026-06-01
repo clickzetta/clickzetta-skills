@@ -34,4 +34,4 @@ Currently, JDBC tasks support the following data sources and their corresponding
 
 ## Practical Guide
 
-[Connecting to MindsDB via JDBC Node for Data Analysis Based on ML and LLM](JDBC_MindsDB_ML_LLM.md)
+[Connecting to MindsDB via JDBC Node for Data Analysis Based on ML and LLM](jdbc_mindsdb_ml_llm.md)

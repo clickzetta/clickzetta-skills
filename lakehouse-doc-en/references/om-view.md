@@ -168,7 +168,7 @@ SELECT * FROM v_sales_north;
 - Every query against a view re-executes the underlying SQL, consuming VCluster CRU
 - Complex views (multi-table JOINs, aggregations) are fully recomputed on every query, which can be costly
 
-> 💡 **Tip**: For detailed billing rules, refer to the [Billing Documentation](Billing.md).
+> 💡 **Tip**: For detailed billing rules, refer to the [Billing Documentation](billing.md).
 
 ## Lifecycle Management
 
@@ -193,7 +193,7 @@ DROP VIEW my_view;
 
 ## Related Documentation
 
-- [CREATE VIEW](view.md) — Complete syntax
-- [Materialized View](MATERIALIZEDVIEW.md) — When you need to store pre-computed results
+- [CREATE VIEW](create-view.md) — Complete syntax
+- [Materialized View](materializedview.md) — When you need to store pre-computed results
 - [Dynamic Table](om-dynamic-table.md) — When you need incremental computation with automatic refresh
 - [Semantic View](om-semantic-view.md) — Semantic layer for business analysis

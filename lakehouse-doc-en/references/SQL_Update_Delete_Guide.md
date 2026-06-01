@@ -223,7 +223,7 @@ DROP TABLE IF EXISTS salary_adjustments;
 
 ## Related Documentation
 
-* [UPDATE](UPDATE.md)
-* [DELETE](DELETE.md)
-* [TRUNCATE](TRUNCATE.md)
-* [MERGE INTO](MERGE.md)
+* [UPDATE](update.md)
+* [DELETE](delete.md)
+* [TRUNCATE](truncate.md)
+* [MERGE INTO](merge.md)

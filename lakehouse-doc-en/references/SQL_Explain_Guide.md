@@ -137,6 +137,6 @@ DROP TABLE IF EXISTS orders_explain;
 
 ## Related Documentation
 
-* [EXPLAIN](EXPLAIN.md)
+* [EXPLAIN](explain.md)
 * [Query Performance Optimization](performance_optimization.md)
-* [Query Acceleration Indexes](SQL_Index_Guide.md)
+* [Query Acceleration Indexes](sql_index_guide.md)

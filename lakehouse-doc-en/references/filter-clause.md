@@ -72,5 +72,5 @@ FROM doc_orders;
 ## Related Documentation
 
 - [GROUP BY](groupby.md)
-- [Window Functions](WINDOWFUNCTION.md)
+- [Window Functions](windowfunction.md)
 - [COUNT_IF](sql_functions/aggregate_functions/count_if.md)

@@ -332,6 +332,6 @@ SELECT id, tokenize(content) FROM search_docs WHERE content LIKE '%data%';
 ## Related Documentation
 
 * [Inverted Index](index_guide.md)
-* [String Processing](SQL_String_Processing_Guide.md)
-* [Array Explode and Flatten Guide](SQL_Array_Explode_Guide.md)
+* [String Processing](sql_string_processing_guide.md)
+* [Array Explode and Flatten Guide](sql_array_explode_guide.md)
 * [Search Functions Reference](sql_functions/scalar_functions/search_functions/)

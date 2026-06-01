@@ -59,3 +59,5 @@ cz-cli -p prod datasource sample <datasource_name> <catalog_name> <table_name>
 - [Data Integration Overview](data-integration.md) — Data sync feature overview
 - [Real-time Sync Tasks](realtime_sync.md) — CDC real-time sync configuration
 - [Batch Sync Tasks](batch_sync.md) — Batch offline sync configuration
+
+^

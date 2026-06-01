@@ -35,5 +35,5 @@ SELECT milliseconds_diff(NULL, '2024-01-01');
 
 ## Related Documentation
 
-- [DATEDIFF](sql_functions/scalar_functions/datetime_functions/datediff.md) — general date difference function supporting multiple time units
-- [SECONDS_DIFF](sql_functions/scalar_functions/datetime_functions/seconds_diff.md), [MINUTES_DIFF](sql_functions/scalar_functions/datetime_functions/minutes_diff.md)
+- [DATEDIFF](datediff.md) — general date difference function supporting multiple time units
+- [SECONDS_DIFF](seconds_diff.md), [MINUTES_DIFF](minutes_diff.md)

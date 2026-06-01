@@ -61,5 +61,5 @@ Singdata Lakehouse security capabilities cover six areas: user permissions, data
 |------|---------|
 | View historical versions of a table | [Time Travel Concept](time-travel-concept.md) |
 | Restore to a specific point in time | [RESTORE TABLE](restore.md) |
-| Recover a dropped table | [UNDROP TABLE](UNDROP-TABLE.md) |
+| Recover a dropped table | [UNDROP TABLE](undrop-table.md) |
 | Data backup and recovery overview | [Backup and Recovery](data-recover.md) |

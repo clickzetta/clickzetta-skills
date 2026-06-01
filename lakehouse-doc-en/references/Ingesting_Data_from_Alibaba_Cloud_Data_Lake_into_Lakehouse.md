@@ -915,6 +915,6 @@ Note that each file PUT to the Volume will be automatically deleted after being 
 
 [Table Stream](table_stream.md)
 
-[Merge Into](MERGE.md)
+[Merge Into](merge.md)
 
 [Dynamic Table](dynamic_table_summary.md)

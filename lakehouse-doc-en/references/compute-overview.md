@@ -102,7 +102,7 @@ SHOW VCLUSTERS;
 - VClusters themselves incur no storage costs; data is stored in object storage.
 - The `PRELOAD_TABLES` feature on Analytics clusters preloads data into local SSD cache (temporary storage, no additional charge).
 
-> 💡 For detailed billing rules, see the [Billing Documentation](Billing.md).
+> 💡 For detailed billing rules, see the [Billing Documentation](billing.md).
 
 ## Lifecycle Management
 

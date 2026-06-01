@@ -34,9 +34,9 @@ Materialized views are similar to tables in some ways and similar to regular (no
 ## Materialized View Management
 
 Singdata Lakehouse provides the following DDL commands to create and maintain materialized views:
-* [Create Materialized View](CREATEMATERIALIZEDVIEW.md): Creating a materialized view requires specifying the base table, query statement, and other related parameters. Once created successfully, the materialized view will be stored in the database for subsequent queries.
-* [Drop Materialized View](DROPMATERIALIZEDVIEW.md): When a materialized view is no longer needed, it can be dropped to release related resources.
-* [Refresh Materialized View](REFRESH.md): When the data in a materialized view needs to be updated, the refresh operation can be executed to update the data in the materialized view.
+* [Create Materialized View](create-materialized-view.md): Creating a materialized view requires specifying the base table, query statement, and other related parameters. Once created successfully, the materialized view will be stored in the database for subsequent queries.
+* [Drop Materialized View](drop-materialized-view.md): When a materialized view is no longer needed, it can be dropped to release related resources.
+* [Refresh Materialized View](refresh-materialized-view.md): When the data in a materialized view needs to be updated, the refresh operation can be executed to update the data in the materialized view.
 
 For more operations, please refer to [Materialized View Command Details](<materialized_ddl.md>).
 

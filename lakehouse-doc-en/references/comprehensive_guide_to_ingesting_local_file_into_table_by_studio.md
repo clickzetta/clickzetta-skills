@@ -57,7 +57,7 @@ At this point, we have loaded local files into the table via Singdata Lakehouse 
 
 #### Resources
 
-[Data Source](DataSourceConfigGuide.md)
+[Data Source](datasourceconfigguide.md)
 
 [Data Synchronization](data-integration.md)
 

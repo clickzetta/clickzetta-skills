@@ -310,5 +310,5 @@ DROP TABLE IF EXISTS doc_dim_products;
 ## Related Documentation
 
 - [MERGE INTO](merge.md)
-- [Upsert Operations Guide](SQL_Upsert_Guide.md)
-- [SQL DML Usage Guide](SQL_DML_Considerations.md)
+- [Upsert Operations Guide](sql_upsert_guide.md)
+- [SQL DML Usage Guide](sql_dml_considerations.md)

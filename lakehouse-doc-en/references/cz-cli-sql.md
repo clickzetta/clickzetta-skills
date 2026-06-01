@@ -9,7 +9,7 @@ This page covers cz-cli commands for SQL execution, schema and table management,
 ```bash
 ```
 
-Synchronous execution, returns results immediately (default):
+Synchronous execution, returns results directly (default):
 
 ```bash
 cz-cli -p prod sql "SELECT current_timestamp()"
@@ -29,14 +29,14 @@ Read SQL from a file:
 cz-cli -p prod sql -f query.sql
 ```
 
-### Synchronous vs Asynchronous
+### Sync vs Async
 
-`cz-cli sql` runs synchronously by default (`--sync`), waiting for results before exiting. For long-running queries, submit asynchronously to get a job_id and retrieve results later:
+`cz-cli sql` executes synchronously by default (`--sync`), waiting for results before exiting. For long-running queries, you can submit asynchronously, get the job\_id, and then retrieve results:
 
 ```bash
 ```
 
-Async submit, returns job_id immediately:
+Submit asynchronously, returns job\_id immediately:
 
 ```bash
 cz-cli -p prod sql "SELECT * FROM huge_table" --async
@@ -59,7 +59,7 @@ cz-cli -p prod job result <job_id>
 
 ### Write Protection
 
-INSERT, UPDATE, DELETE, CREATE, DROP, and other write operations require the explicit `--write` flag to prevent accidental changes:
+Write operations such as INSERT, UPDATE, DELETE, CREATE, and DROP require the explicit `--write` flag to prevent accidental modifications:
 
 ```bash
 cz-cli -p prod sql --write -e "CREATE TABLE IF NOT EXISTS public.demo (id INT, name STRING)"
@@ -67,7 +67,7 @@ cz-cli -p prod sql --write -e "INSERT INTO public.demo VALUES (1, 'test')"
 cz-cli -p prod sql --write -e "DROP TABLE public.demo"
 ```
 
-### Batch Execution
+### Batch Execution of Multiple Statements
 
 Use `--batch` to execute multiple semicolon-separated statements in sequence:
 
@@ -81,7 +81,7 @@ INSERT INTO ods.events VALUES (2, current_timestamp(), 'view');
 
 ### Variable Substitution
 
-Use `--variable KEY=VALUE` to inject variables; reference them in SQL with `%(KEY)s`. Useful for templated queries:
+Use `--variable KEY=VALUE` to inject variables, referenced in SQL with `%(KEY)s`, suitable for templated queries:
 
 ```bash
 cz-cli -p prod sql "SELECT %(col)s FROM public.orders LIMIT 10" \
@@ -93,16 +93,16 @@ cz-cli -p prod sql "SELECT * FROM public.orders WHERE dt = '%(dt)s'" \
 
 ### Query Hints
 
-Use `--set KEY=VALUE` to pass query-level hints, such as setting the timezone:
+Use `--set KEY=VALUE` to pass query-level hints, such as specifying a timezone:
 
 ```bash
 cz-cli -p prod sql "SELECT current_timestamp()" \
   --set cz.sql.timezone=UTC
 ```
 
-### Dry Run
+### Pre-execution Validation (dry-run)
 
-Validate syntax and run EXPLAIN without actually executing — useful for pre-deployment checks:
+Performs only syntax checking and EXPLAIN without actually executing, suitable for pre-deployment validation:
 
 ```bash
 cz-cli -p prod sql --dry-run -f deploy.sql
@@ -120,14 +120,14 @@ cz-cli -p prod sql "SELECT * FROM public.orders" --no-truncate
 
 ```
 
-Remove row limit (default is 100 rows):
+Remove row limit (default 100 rows):
 
 ```bash
 cz-cli -p prod sql "SELECT * FROM public.orders" --no-limit
 
 ```
 
-Suppress column headers:
+Do not output column names:
 
 ```bash
 cz-cli -p prod sql "SELECT id, name FROM public.orders" --no-header
@@ -144,25 +144,25 @@ cz-cli -p prod sql "SELECT * FROM public.orders LIMIT 5" -o csv
 ### Full Parameter Reference
 
 | Parameter | Description | Default |
-|------|------|--------|
+|-----------|-------------|---------|
 | `--sync` / `--no-sync` | Wait synchronously for results | `true` |
-| `--async` | Async submit, returns job_id immediately | `false` |
-| `--write` | Allow write operations (DDL/DML) | off |
-| `--batch` / `-B` | Execute multiple semicolon-separated statements | `false` |
-| `--variable KEY=VALUE` | Variable substitution; use `%(KEY)s` in SQL | — |
+| `--async` | Submit asynchronously, returns job\_id immediately | `false` |
+| `--write` | Allow write operations (DDL/DML) | Off |
+| `--batch` / `-B` | Execute multiple semicolon-separated statements in batch | `false` |
+| `--variable KEY=VALUE` | Variable substitution, referenced in SQL with `%(KEY)s` | — |
 | `--set KEY=VALUE` | Query hint | — |
 | `--dry-run` | EXPLAIN only, no actual execution | `false` |
 | `--timeout` | Job timeout in seconds | `300` |
 | `--limit` / `--no-limit` | Auto-truncate to 100 rows | `true` |
-| `--truncate` / `--no-truncate` | Truncate long fields (3000 chars) | `true` |
-| `--header` / `--no-header` / `-N` | Output column headers | `true` |
-| `-f, --file` | Read SQL from a file | — |
+| `--truncate` / `--no-truncate` | Truncate long fields (3000 characters) | `true` |
+| `--header` / `--no-header` / `-N` | Whether to output column names | `true` |
+| `-f, --file` | Read SQL from file | — |
 | `-e, --execute` | SQL string (equivalent to positional argument) | — |
 | `--stdin` | Read SQL from stdin | `false` |
-| `--job-profile` | Retrieve execution profile for a completed job | — |
-| `--schema-context` | Attach schema information to the response (for agent use) | `false` |
+| `--job-profile` | Query execution profile of a completed job | — |
+| `--schema-context` | Attach schema information to response (for Agent use) | `false` |
 
----
+***
 
 ## cz-cli schema — Schema Management
 
@@ -196,7 +196,7 @@ Drop a schema (requires confirmation):
 cz-cli -p prod schema drop old_schema
 ```
 
----
+***
 
 ## cz-cli table — Table Management and Data Exploration
 
@@ -217,7 +217,7 @@ cz-cli -p prod -s dwd table list
 
 ```
 
-View table structure (columns, types, comments):
+View table structure (column names, types, comments):
 
 ```bash
 cz-cli -p prod table describe public.orders
@@ -231,7 +231,7 @@ cz-cli -p prod table preview public.orders
 
 ```
 
-View row count and recent job statistics:
+View table row count and recent job statistics:
 
 ```bash
 cz-cli -p prod table stats public.orders
@@ -258,11 +258,11 @@ Drop a table (requires confirmation):
 cz-cli -p prod table drop public.test
 ```
 
----
+***
 
 ## cz-cli job — SQL Job Diagnostics
 
-Asynchronously submitted queries return a job_id. Use the `job` command to track them:
+Asynchronously submitted queries return a job\_id; use the `job` command to track them:
 
 ```bash
 ```
@@ -274,7 +274,7 @@ cz-cli -p prod job status <job_id>
 
 ```
 
-Retrieve job query results (waits if still running):
+Get job query results (waits if still running):
 
 ```bash
 cz-cli -p prod job result <job_id>
@@ -287,7 +287,7 @@ View job execution profile (analyze performance bottlenecks):
 cz-cli -p prod sql --job-profile <job_id>
 ```
 
----
+***
 
 ## cz-cli workspace — Workspace Switching
 
@@ -308,24 +308,24 @@ cz-cli -p prod workspace list
 
 ```
 
-Temporarily switch workspace (this command only):
+Temporarily switch workspace (current command only):
 
 ```bash
 cz-cli -p prod workspace use analytics
 
 ```
 
-Persist the switch (save to profile):
+Persistent switch (saved to profile):
 
 ```bash
 cz-cli -p prod workspace use analytics --persist
 ```
 
----
+***
 
 ## Common Use Cases
 
-**Case 1: Explore a new table**
+**Scenario 1: Exploring a new table**
 
 ```bash
 cz-cli -p prod table describe public.orders
@@ -333,7 +333,7 @@ cz-cli -p prod table preview public.orders
 cz-cli -p prod table stats public.orders
 ```
 
-**Case 2: Debug a slow query**
+**Scenario 2: Debugging a slow query**
 
 ```bash
 ```
@@ -344,14 +344,14 @@ Submit asynchronously first:
 cz-cli -p prod sql "SELECT * FROM huge_table GROUP BY ..." --async
 ```
 
-Note the job_id, then check execution details:
+Note the job\_id and view execution details:
 
 ```bash
 cz-cli -p prod job status <job_id>
 cz-cli -p prod sql --job-profile <job_id>
 ```
 
-**Case 3: Execute DDL in CI/CD**
+**Scenario 3: Executing DDL in CI/CD**
 
 ```bash
 ```
@@ -369,7 +369,7 @@ Execute after confirming no issues:
 cz-cli -p prod sql --write --batch -f migrations/v2.sql
 ```
 
-**Case 4: Templated queries (agent scenario)**
+**Scenario 4: Templated queries (Agent scenario)**
 
 ```bash
 cz-cli -p prod sql \
@@ -382,13 +382,15 @@ cz-cli -p prod sql \
 
 **cz-cli Documentation**
 
-- [Installation and Configuration Guide](setup_cz_cli.md) — Installation, profile configuration
-- [Studio Task Development and Operations](cz-cli-studio-tasks.md) — Task management, runs
-- [AI Agent Integration](cz-cli-agent.md) — Agent LLM configuration, natural language operations
+* [Installation and Configuration Guide](setup_cz_cli.md) — Installation, profile configuration
+* [Studio Task Development and Operations](cz-cli-studio-tasks.md) — Task management, runs
+* [AI Agent Integration](cz-cli-agent.md) — Agent LLM configuration, natural language operations
 
-**Lakehouse Documentation**
+**Lakehouse Related Documentation**
 
-- [Workspace](workspace-introduction.md) — Workspace concepts, user management, permission model
-- [Compute Cluster](virtual-cluster.md) — VCluster type selection, spec configuration
-- [Schema](schema.md) — Schema creation and management
-- [Time Travel](timetravel-summary.md) — Historical version queries (the underlying mechanism behind `table history`)
+* [Workspace](workspace-introduction.md) — Workspace concepts, user management, permission system
+* [Compute Cluster](virtual-cluster.md) — VCluster type selection, specification configuration
+* [Schema](schema.md) — Schema creation and management
+* [Time Travel](timetravel-summary.md) — Historical version queries (the underlying mechanism of the `table history` command)
+
+^

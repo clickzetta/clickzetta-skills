@@ -4,7 +4,7 @@
 
 #### Overview
 
-Singdata Lakehouse provides [Zettapark](ZettaparkQuickStart.md) compatible with PySpark, allowing data to be loaded into Singdata Lakehouse tables through Python and SQL programming in popular IDEs (such as VS Code).
+Singdata Lakehouse provides [Zettapark](zettaparkquickstart.md) compatible with PySpark, allowing data to be loaded into Singdata Lakehouse tables through Python and SQL programming in popular IDEs (such as VS Code).
 
 #### Use Cases
 
@@ -116,6 +116,6 @@ Optimization: This is not an efficient method for loading large amounts of data.
 
 #### Resources
 
-[SQL Insert Into](INSERT.md)
+[SQL Insert Into](insert.md)
 
-[Zettapark Quick Start](ZettaparkQuickStart.md)
+[Zettapark Quick Start](zettaparkquickstart.md)

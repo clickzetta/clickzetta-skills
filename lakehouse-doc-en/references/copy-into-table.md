@@ -438,5 +438,5 @@ SELECT * FROM events ORDER BY id;
 
 ## Related Guides
 
-- [Bulk File Import and Export](SQL_Copy_Into_Guide.md): Complete usage scenarios for COPY INTO, including CSV/Parquet/JSON formats, regex matching, and error handling
-- [Bulk Data Insertion](SQL_Batch_Insert_Guide.md): Comparison of multiple data write methods to help choose the appropriate import approach
+- [Bulk File Import and Export](sql_copy_into_guide.md): Complete usage scenarios for COPY INTO, including CSV/Parquet/JSON formats, regex matching, and error handling
+- [Bulk Data Insertion](sql_batch_insert_guide.md): Comparison of multiple data write methods to help choose the appropriate import approach

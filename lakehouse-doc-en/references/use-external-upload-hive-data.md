@@ -4,7 +4,7 @@ With EXTERNAL SCHEMA, you can directly federate query data from other databases,
 
 ## EXTERNAL SCHEMA
 
-[Introduction to EXTERNAL SCHEMA](EXTERNALSCHMEA.md)
+[Introduction to EXTERNAL SCHEMA](externalschmea.md)
 
 ## Usage Restrictions
 

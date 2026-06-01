@@ -1,6 +1,6 @@
 # Singdata Lakehouse Data Engineering Handbook
 
-This document provides data engineers and architects with a comprehensive guide covering **data ingestion method selection**, **performance tuning pitfalls**, and **production operations diagnostics** for Singdata Lakehouse. The content is distilled from production environment best practices and real-world lessons learned.
+This document provides data engineers and architects with a comprehensive guide covering **data ingestion method selection**, **performance tuning**, and **production operations diagnostics** for Singdata Lakehouse. The content is distilled from production environment best practices.
 
 > **Scope**: This document includes some internal tuning parameters (with the `cz.*` prefix) that are configured at the session level via the `SET` command. Some parameters may be superseded by adaptive mechanisms as the product evolves — always refer to the official documentation.
 
@@ -34,12 +34,12 @@ When importing external data into Lakehouse, there are five typical paths depend
 
 Studio provides a visual "Upload Data" feature that uses a synchronous call mechanism internally.
 
-**⚠️ Key limitations and pitfalls:**
+**⚠️ Key limitations:**
 *   **File size**: Recommended not to exceed **2 GiB**.
 *   **Column count limit**: Recommended to stay within **100–200 columns**.
-    *   **Pitfall 1: Schema inference timeout**. When the column count exceeds 1000, Studio will error out when reading the first 1000 rows to infer field types, as this exceeds the 1-minute timeout.
-    *   **Pitfall 2: Case sensitivity**. Importing table names or field names containing **uppercase letters** may trigger compatibility issues in the Lakehouse SDK, causing the import to fail.
-    *   **Pitfall 3: Dirty data is hard to locate**. If a row contains dirty data, Studio may abort with an unclear error message.
+    *   **Note 1: Schema inference timeout**. When the column count exceeds 1000, Studio will error out when reading the first 1000 rows to infer field types, as this exceeds the 1-minute timeout.
+    *   **Note 2: Case sensitivity**. Importing table names or field names containing **uppercase letters** may trigger compatibility issues in the Lakehouse SDK, causing the import to fail.
+    *   **Note 3: Dirty data is hard to locate**. If a row contains dirty data, Studio may abort with an unclear error message.
 
 #### Method 2: Loading Data from Volume (Large Scale)
 
@@ -137,7 +137,7 @@ ON_ERROR = 'CONTINUE';
 > *   **Volume Load**: Execute `COPY INTO` once manually — suitable for bulk historical data ingestion
 > *   **Object Storage Pipe**: Runs continuously, automatically detects new files and imports them — suitable for continuously generated data files
 >
-> See also: [Using Pipe for Continuous Object Storage Ingestion](pipe-storage-object.md), [Pipe Continuous Ingestion Introduction](pipe-introduction.md)
+> 📖 See also: [Using Pipe for Continuous Object Storage Ingestion](pipe-storage-object.md), [Pipe Continuous Ingestion Introduction](pipe-introduction.md)
 
 #### Method 4: Kafka Pipe for Real-Time Ingestion
 
@@ -181,9 +181,9 @@ FROM (
 
 ---
 
-## Part 2: Core Object Performance Tuning and Pitfall Guide
+## Part 2: Core Object Performance Tuning Guide
 
-In production environments, Lakehouse provides a rich set of parameters (Flags/Properties) for performance tuning. The following organizes high-frequency **best practices** and **pitfall records** by component.
+In production environments, Lakehouse provides a rich set of parameters (Flags/Properties) for performance tuning. The following organizes high-frequency **best practices** and **notes** by component.
 
 > **Parameter configuration notes**:
 > * **Session level**: Configure via `SET parameter_name = value;` — applies only to the current session
@@ -218,7 +218,7 @@ ALTER TABLE dim_users SET PROPERTIES ('cz.compaction.strategy' = 'dml');
 ALTER TABLE logs SET PROPERTIES ('data_lifecycle' = '14');
 ```
 
-#### Pitfalls and Notes
+#### Notes
 *   **Parquet Block Size**: If a particular column is very large (e.g., `exps_arr`), the default Row Group will be small, increasing query IO. Try increasing `cz.storage.parquet.block.size` (e.g., to 2GB).
 *   **File Slice Cache**: If the upstream table of a DT is updated frequently, the cache version may be too new, causing Cache Misses. Configure `file_slice_cache_refresh_delay_sec='1800'` to retain the version from 30 minutes ago.
 
@@ -230,7 +230,7 @@ ALTER TABLE logs SET PROPERTIES ('data_lifecycle' = '14');
 *   **Automatic Compaction**: MV and DT have Compaction enabled by default — no additional configuration needed.
 *   **Multi-SQL jobs**: For large tables, enabling `cz.compaction.server.multi.sql.job='true'` can split partitions for concurrent processing (subject to available resources).
 
-#### Pitfall Records
+#### Common Issues
 1.  **Global Shuffle Blocking (Severe)**
     *   **Symptom**: A DT refresh generates a huge, complex incremental plan, causing massive EPH Shuffle consumption globally and degrading the performance of other incremental tasks in production.
     *   **Cause**: Backfill was not correctly enabled, or the dimension table scope was not restricted.
@@ -251,7 +251,7 @@ ALTER TABLE logs SET PROPERTIES ('data_lifecycle' = '14');
     *   `SET cz.sql.split.kafka.strategy = 'size';`
     *   `SET cz.mapper.kafka.message.size = '200000';` (adjusts split count based on the configured size)
 
-#### Kafka Pipe Pitfall Records
+#### Kafka Pipe Notes
 *   **Delta File Merge**: For UBT tables, it is recommended to disable Delta file merging: `SET cz.sql.enable.dml.delta.file.merge = false;`. This is generally only needed for Merge Into on partitioned tables.
 
 #### Object Storage Pipe Best Practices
@@ -259,18 +259,18 @@ ALTER TABLE logs SET PROPERTIES ('data_lifecycle' = '14');
 *   **EVENT_NOTIFICATION mode**: Suitable for near real-time scenarios (second to minute level). Triggered by object storage event notifications (e.g., OSS EventBridge), no polling required.
 *   **File format selection**: Parquet format has better import performance than CSV (no text parsing needed, reads columnar data directly).
 
-#### Object Storage Pipe Pitfall Records
+#### Object Storage Pipe Notes
 *   **The COPY statement in a Pipe does not support `FILES`, `REGEXP`, or `SUBDIRECTORY` parameters**: The Pipe automatically scans all files in the Volume root directory — you cannot specify particular files.
 *   **Each Pipe requires a dedicated Volume**: You cannot reuse the same Volume for multiple Pipes, as this will cause file conflicts.
 *   **Small file problem**: If the source generates a large number of small files, set `cz.table.target.file.size` in the Pipe's COPY statement to control output file size.
 
-> See also: [Using Pipe for Continuous Object Storage Ingestion](pipe-storage-object.md), [Pipe Continuous Ingestion Introduction](pipe-introduction.md)
+> 📖 See also: [Using Pipe for Continuous Object Storage Ingestion](pipe-storage-object.md), [Pipe Continuous Ingestion Introduction](pipe-introduction.md)
 
 ---
 
 ### 2.4 Query and UDF Tuning
 
-#### Pitfall Case: UDF Concurrency Explosion
+#### Note: UDF Concurrency Explosion
 *   **Symptom**: A UDF spawned 40,000 Tasks, resulting in terrible performance.
 *   **Cause**: The parameter threshold was set too small, bypassing automatic DOP.
     *   Example of incorrect configuration: `SET cz.sql.dag.shuffle.vertex.manager.desired.task.input.size = 4194304;` (4MB is too small)
@@ -302,7 +302,7 @@ EXPLAIN EXTENDED SELECT * FROM large_table WHERE status = 'active';
 *   **Identify Broadcast Join**: `PhysicalBroadcastJoin` in the execution plan indicates a small table is broadcast to a large table — this is best practice.
 *   **Identify full table scans**: Check whether predicate pushdown and partition pruning are in effect.
 
-> See also: [EXPLAIN Command](EXPLAIN.md)
+> 📖 See also: [EXPLAIN Command](explain.md)
 
 **Step 2: Check job status (`SHOW JOBS`)**
 
@@ -320,7 +320,7 @@ SHOW JOBS IN VCLUSTER default WHERE status = 'FAILED';
 *   **Queued** (`QUEUED`): Insufficient resources, job is waiting in the queue. Consider scaling up the VCluster or adjusting job priority.
 *   **Running slowly** (`RUNNING` but taking a long time): SQL or data issue — proceed to Step 3.
 
-> See also: [SHOW JOBS](show-jobs.md)
+> 📖 See also: [SHOW JOBS](show-jobs.md)
 
 **Step 3: Check job details (`DESC JOB`)**
 
@@ -334,7 +334,7 @@ DESC JOB '2026051922541032000079660';
 *   `output_tables`: Output result rows and bytes
 *   `vcluster_type`: Compute resource type (`GENERAL` / `ANALYTICS`)
 
-> See also: [DESC JOB](DESC-JOB.md)
+> 📖 See also: [DESC JOB](desc-job.md)
 
 ---
 
@@ -373,7 +373,7 @@ DESC EXTENDED my_table;
 
 If the file count is much larger than the data volume (e.g., 10,000 files for 10GB of data), the small file problem is severe.
 
-> See also: [OPTIMIZE Command](OPTIMIZE.md)
+> 📖 See also: [OPTIMIZE Command](optimize.md)
 
 ---
 
@@ -394,7 +394,7 @@ Key field explanations:
 *   `stats`: Rows processed incrementally (e.g., `rows_inserted=1000:rows_deleted=50`)
 *   `duration`: Refresh duration
 
-> See also: [SHOW REFRESH HISTORY](refresh-history.md)
+> 📖 See also: [SHOW REFRESH HISTORY](refresh-history.md)
 
 **How to determine whether a DT is using incremental refresh**
 
@@ -408,7 +408,7 @@ EXPLAIN REFRESH DYNAMIC TABLE my_dt;
 -- CanBeIncrementalized = Yes in the output means incremental is supported
 ```
 
-> See also: [Using EXPLAIN to View Dynamic Table Refresh Mode](dynamic-table-incre.md)
+> 📖 See also: [Using EXPLAIN to View Dynamic Table Refresh Mode](dynamic-table-incre.md)
 
 **What operations cause a DT to fall back to full refresh?**
 
@@ -437,7 +437,7 @@ SET dt.args.order_date = '2024-01-15';
 REFRESH DYNAMIC TABLE dws_daily_orders PARTITION (order_date = '2024-01-15');
 ```
 
-> See also: [Dynamic Table Parameterized Definition](dynamic-table-parameters.md), [Dynamic Table Scheduling and Deployment Standards](dynamic-table-scheduling.md)
+> 📖 See also: [Dynamic Table Parameterized Definition](dynamic-table-parameters.md), [Dynamic Table Scheduling and Deployment Standards](dynamic-table-scheduling.md)
 
 ---
 
@@ -453,7 +453,7 @@ ALTER VCLUSTER etl_cluster SET AUTO_SUSPEND_IN_SECOND = 60;
 ALTER VCLUSTER bi_cluster SET AUTO_SUSPEND_IN_SECOND = 1800;
 ```
 
-> See also: [Compute Cluster Cache](vc_cache.md)
+> 📖 See also: [Compute Cluster Cache](vc_cache.md)
 
 **DT Refresh Frequency Tuning**
 
@@ -478,7 +478,7 @@ ALTER TABLE logs SET PROPERTIES ('data_lifecycle' = '90');
 ALTER TABLE temp_logs SET PROPERTIES ('data_lifecycle' = '7', 'data_lifecycle_delete_meta' = 'true');
 ```
 
-> See also: [Data Lifecycle](data-lifecycle.md)
+> 📖 See also: [Data Lifecycle](data-lifecycle.md)
 
 ---
 
@@ -496,7 +496,7 @@ Lakehouse has several features that are enabled by default but not widely known:
 *   Retained for 24 hours by default; extended by 24 hours if reused
 *   Can be disabled via `SET cz.sql.enable.shortcut.result.cache = false;`
 
-> See also: [Understanding and Using Result Cache](result_cache.md)
+> 📖 See also: [Understanding and Using Result Cache](result_cache.md)
 
 **Metadata Cache**
 
@@ -516,4 +516,4 @@ SHOW PRELOAD CACHED STATUS;
 ALTER VCLUSTER bi_cluster SET PRELOAD_TABLES = 'dws.daily_sales,dws.user_profile';
 ```
 
-> See also: [Compute Cluster Cache](vc_cache.md)
+> 📖 See also: [Compute Cluster Cache](vc_cache.md)

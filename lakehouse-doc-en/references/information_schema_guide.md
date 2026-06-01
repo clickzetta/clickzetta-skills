@@ -1,6 +1,6 @@
-# INFORMATION_SCHEMA
+# INFORMATION SCHEMA
 
-INFORMATION_SCHEMA is Lakehouse's built-in metadata query interface, based on the ANSI SQL-92 standard. It lets you query metadata such as tables, views, job history, and permissions using standard SQL, with no additional tools required.
+INFORMATION SCHEMA is Lakehouse's built-in metadata query interface, based on the ANSI SQL-92 standard. It lets you query metadata such as tables, views, job history, and permissions using standard SQL, with no additional tools required.
 
 ---
 
@@ -8,8 +8,8 @@ INFORMATION_SCHEMA is Lakehouse's built-in metadata query interface, based on th
 
 | Page | Description |
 |------|------|
-| [Instance-level INFORMATION_SCHEMA](instance-information_schema.md) | Instance-level metadata across workspaces; requires INSTANCE ADMIN permission; accessed via `SYS.information_schema` |
-| [Workspace-level INFORMATION_SCHEMA](workspace-informationschema-summary.md) | Metadata for tables, views, job history, etc. in the current workspace; requires the workspace_admin role |
+| [Instance-level INFORMATION SCHEMA](instance-information_schema.md) | Instance-level metadata across workspaces; requires INSTANCE ADMIN permission; accessed via `SYS.information_schema` |
+| [Workspace-level INFORMATION SCHEMA](workspace-informationschema-summary.md) | Metadata for tables, views, job history, etc. in the current workspace; requires the workspace_admin role |
 
 ---
 
@@ -20,15 +20,17 @@ INFORMATION_SCHEMA is Lakehouse's built-in metadata query interface, based on th
 | Instance-level | SYS.information_schema.&lt;view_name&gt; | INSTANCE ADMIN | View metadata across all workspaces; view records of deleted objects |
 | Workspace-level | information_schema.&lt;view_name&gt; | workspace_admin | View table schemas, job history, and permission assignments in the current workspace |
 
-## Choosing Between INFORMATION_SCHEMA and SHOW / DESC
+## Choosing Between INFORMATION SCHEMA and SHOW / DESC
 
 | Scenario | Recommended Approach | Notes |
 |----------|----------------------|-------|
-| View real-time status of a single object | `SHOW` / `DESC` | Returns results immediately; suitable for checking current state of tables, columns, clusters, and jobs |
-| Aggregate statistics or cross-object analysis | `information_schema` | Supports standard SQL with `JOIN`, `GROUP BY`, `ORDER BY` |
+| View real-time status of a single object | `SHOW` / `DESC` | **Returns results immediately**; suitable for checking current state of tables, columns, clusters, and jobs |
+| Aggregate statistics or cross-object analysis | `information_schema` | Supports standard SQL with `JOIN`, `GROUP BY`, `ORDER BY`; **data has ~15-minute delay** |
 | View deleted objects | Instance-level `SYS.information_schema` or `SHOW TABLES HISTORY` | Instance-level views use `delete_time` to identify deleted objects |
 | Cost analysis | `SYS.information_schema.instance_usage` / `storage_metering` | Includes CRU, storage, network, and other billing fields |
 | File deduplication and tracking for imports | `load_history('schema.table')` | View COPY/Pipe file import history; retained for 7 days |
+
+> ⚠️ **Note**: `information_schema` view data has approximately a 15-minute delay and does not reflect the latest state. To check the current real-time state of an object, use commands such as `SHOW TABLES`, `DESC TABLE`, or `SHOW JOBS`.
 
 ---
 
@@ -165,7 +167,7 @@ ORDER BY amount DESC;
 
 ## Notes
 
-- View data has approximately a 15-minute delay; for real-time metadata use commands such as `SHOW TABLES` and `SHOW JOBS`
+- View data has approximately a 15-minute delay and is not suitable for real-time monitoring (see the selection guide above)
 - All views are read-only and cannot be modified or deleted
 - Avoid `SELECT *` in scheduled tasks; specify explicit columns to prevent errors caused by view schema changes
 - Deleted objects in instance-level views are retained for 60 days; use `delete_time IS NULL` to filter for existing objects

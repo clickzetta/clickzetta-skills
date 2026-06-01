@@ -100,6 +100,6 @@ Result:
 ## Related Commands
 
 - [CREATE EXTERNAL TABLE](create-external-table.md): Create an external table
-- [CREATE VIEW](CREATEVIEW.md): Create a view
-- [CREATE MATERIALIZED VIEW](CREATEMATERIALIZEDVIEW.md): Create a materialized view
+- [CREATE VIEW](create-view.md): Create a view
+- [CREATE MATERIALIZED VIEW](create-materialized-view.md): Create a materialized view
 - [SHOW TABLES WHERE is_external=true](show-external-table.md): List all external tables

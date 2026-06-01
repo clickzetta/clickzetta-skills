@@ -235,7 +235,7 @@ This article discusses the problems and challenges of traditional development ap
 * [Singdata Lakehouse Dynamic Table](dynamic_table_summary.md)
 * [Singdata Lakehouse Studio Task Development and Scheduling](task-develop.md)
 * [Data Backfill Tasks](backfilling_data.md)
-* [Singdata Lakehouse JSON Data Type](JSON.md)
+* [Singdata Lakehouse JSON Data Type](json.md)
 * [Singdata Lakehouse Vector Data Type](vector-type.md)
 
 ^

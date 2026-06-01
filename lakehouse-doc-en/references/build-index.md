@@ -72,4 +72,4 @@ BUILD INDEX order_year_index ON public.t
 - Building an index on a table with a large data volume consumes significant compute resources. It is recommended to execute during off-peak hours.
 - For partitioned tables, it is recommended to build indexes in batches by partition to avoid oversized single tasks.
 - Index names must be unique within a schema. The `index_name` used with `BUILD INDEX` does not require a schema prefix, but ensure that the current schema matches the table's schema, or switch schemas using `USE SCHEMA`.
-- Related commands: [Create Inverted Index](create-inverted-index.md), [Show Index](SHOW-INDEX.md), [Drop Index](DROP-INDEX.md)
+- Related commands: [Create Inverted Index](create-inverted-index.md), [Show Index](show-index.md), [Drop Index](drop-index.md)

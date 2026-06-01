@@ -83,6 +83,6 @@ SELECT * FROM central_park_weather_observations LIMIT 10;
 | USW00094728 | NY CITY CENTRAL PARK, NY US | 2009-01-10 | 7             | 0           | 1        | 0                | 30               | 23                   |
 ## Reference Cases
 
-* [Load files into Singdata via the copy command in the script](batchloadparquetfileintoLakehouse.md).
+* [Load files into Singdata via the copy command in the script](batchloadparquetfileintolakehouse.md).
 
 ^

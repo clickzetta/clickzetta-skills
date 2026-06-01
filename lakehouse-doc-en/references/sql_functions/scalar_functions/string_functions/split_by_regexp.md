@@ -29,6 +29,6 @@ SELECT split_by_regexp('a  b   c', '[[:space:]]+');
 
 ## Related Documentation
 
-- [REGEXP_SPLIT_TO_ARRAY](sql_functions/scalar_functions/string_functions/regexp_split_to_array.md) — alias with identical behavior
-- [SPLIT_BY_STRING](sql_functions/scalar_functions/string_functions/split_by_string.md) — splits by a literal string (no regex interpretation)
-- [SPLIT](sql_functions/scalar_functions/string_functions/split.md)
+- [REGEXP_SPLIT_TO_ARRAY](regexp_split_to_array.md) — alias with identical behavior
+- [SPLIT_BY_STRING](split_by_string.md) — splits by a literal string (no regex interpretation)
+- [SPLIT](split.md)

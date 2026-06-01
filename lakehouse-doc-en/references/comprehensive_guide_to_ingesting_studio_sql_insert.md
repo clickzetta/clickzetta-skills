@@ -169,6 +169,6 @@ Besides CSV and JSON formats, Singdata Lakehouse also supports querying open for
 
 #### Documentation
 
-[SQL Insert Into](INSERT.md)
+[SQL Insert Into](insert.md)
 
 [Create Table As](create-table-ddl.md)

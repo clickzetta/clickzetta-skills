@@ -168,6 +168,6 @@ DROP TABLE IF EXISTS orders_history;
 
 ## Related Documentation
 
-* [Time Travel](TIMETRAVEL.md)
-* [UNDROP TABLE](UNDROP-TABLE.md)
+* [Time Travel](timetravel.md)
+* [UNDROP TABLE](undrop-table.md)
 * [RESTORE TABLE](restore.md)
