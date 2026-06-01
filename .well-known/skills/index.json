@@ -125,18 +125,6 @@
       ]
     },
     {
-      "name": "clickzetta-query-optimizer",
-      "description": "诊断和优化 ClickZetta Lakehouse SQL 查询性能。覆盖执行计划分析、慢查询排查、",
-      "files": [
-        "SKILL.md",
-        "references/explain.md",
-        "references/hints-and-sortkey.md",
-        "references/optimize.md",
-        "references/result-cache.md",
-        "references/show-jobs.md"
-      ]
-    },
-    {
       "name": "clickzetta-realtime-sync-pipeline",
       "description": "创建和管理 ClickZetta Lakehouse 实时同步任务（单表），将外部数据源的数据实时同步到 Lakehouse。",
       "files": [

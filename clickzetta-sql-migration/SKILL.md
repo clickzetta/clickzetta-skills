@@ -123,6 +123,6 @@ This skill focuses on **SQL syntax compatibility**. A complete migration involve
 4. **SQL rewrites** — see this skill's reference documents
 5. **Application/driver layer** — JDBC, Python connector, BI tool reconnection; refer to `clickzetta-lakehouse-connect` skill
 6. **Permission migration** — RBAC concept comparison; refer to `lakehouse-doc-en` official permission, GRANT, masking policy, and network policy docs
-7. **Performance tuning re-mapping** — Snowflake CLUSTER BY / Databricks ZORDER → ClickZetta partitioning + indexes; refer to `clickzetta-query-optimizer` skill
+7. **Performance tuning re-mapping** — Snowflake CLUSTER BY / Databricks ZORDER → ClickZetta partitioning, indexes, and official optimization docs in `lakehouse-doc-en`
 
 For end-to-end migration planning, combine this skill with the skills listed above.
