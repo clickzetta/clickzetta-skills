@@ -1,5 +1,0 @@
-{"case_id":"001","type":"should_call","user_input":"What is the object hierarchy in ClickZetta? What is the relationship between Workspace and Schema?","expected_skill":"clickzetta-overview","expected_output_contains":["Workspace","Schema"]}
-{"case_id":"002","type":"should_call","user_input":"How many types of VCluster are there? What billing unit is CRU?","expected_skill":"clickzetta-overview","expected_output_contains":["General","Analytics","CRU"]}
-{"case_id":"003","type":"should_call","user_input":"What is the relationship between Yunqi, ClickZetta, and Singdata?","expected_skill":"clickzetta-overview","expected_output_contains":["Yunqi","ClickZetta"]}
-{"case_id":"004","type":"should_call","user_input":"What functional modules does Studio have? How do I configure task scheduling?","expected_skill":"clickzetta-overview","expected_output_contains":["Studio","task"]}
-{"case_id":"005","type":"should_call","user_input":"What are the key conceptual differences between ClickZetta and Snowflake?","expected_skill":"clickzetta-overview","expected_output_contains":["Snowflake"]}

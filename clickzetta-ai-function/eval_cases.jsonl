@@ -1,4 +1,0 @@
-{"case_id":"001","type":"should_call","user_input":"How do I use AI_COMPLETE to summarize text in SQL?","expected_skill":"clickzetta-ai-function","expected_output_contains":["AI_COMPLETE","connection"]}
-{"case_id":"002","type":"should_call","user_input":"How do I generate text embeddings with AI_EMBEDDING?","expected_skill":"clickzetta-ai-function","expected_output_contains":["AI_EMBEDDING","connection"]}
-{"case_id":"003","type":"should_call","user_input":"How do I create an AI API Connection for Bailian?","expected_skill":"clickzetta-ai-function","expected_output_contains":["API CONNECTION","ai_function"]}
-{"case_id":"004","type":"should_call","user_input":"How do I do semantic search using vector embeddings in ClickZetta?","expected_skill":"clickzetta-ai-function","expected_output_contains":["AI_EMBEDDING","cosine_distance"]}

@@ -1,4 +1,0 @@
-{"case_id":"001","type":"should_call","user_input":"How do I create an external function to call a custom algorithm?","expected_skill":"clickzetta-external-function","expected_output_contains":["API CONNECTION","EXTERNAL FUNCTION"]}
-{"case_id":"002","type":"should_call","user_input":"What is the Python UDF code structure and how do I package it?","expected_skill":"clickzetta-external-function","expected_output_contains":["annotate","evaluate"]}
-{"case_id":"003","type":"should_call","user_input":"How do I create an API Connection for Alibaba Cloud Function Compute?","expected_skill":"clickzetta-external-function","expected_output_contains":["API CONNECTION","CLOUD_FUNCTION"]}
-{"case_id":"004","type":"should_call","user_input":"How do I call a UDF in SQL with the correct schema prefix?","expected_skill":"clickzetta-external-function","expected_output_contains":["schema","function_name"]}

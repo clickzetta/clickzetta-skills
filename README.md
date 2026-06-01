@@ -283,7 +283,6 @@ DBA 日常运维手册，集中覆盖计算集群运维、作业监控与诊断�
 clickzetta-xxx/
 ├── SKILL.md              # 触发条件、工作流、关键语法和执行步骤
 ├── references/           # 细分参考文档、SQL 片段、API 说明或模板
-├── eval_cases.jsonl      # 评测样例，用于验证 skill 是否能被正确触发和执行
 └── evals/                # 可选，结构化评测数据
 ```
 

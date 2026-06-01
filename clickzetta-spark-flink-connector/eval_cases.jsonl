@@ -1,8 +1,0 @@
-{"case_id":"001","type":"should_call","user_input":"怎么用 Spark DataFrame 写入 ClickZetta Lakehouse？","expected_skill":"clickzetta-spark-flink-connector","expected_output_contains":["format(\"clickzetta\")","write"]}
-{"case_id":"002","type":"should_call","user_input":"Flink CDC 写入 ClickZetta 支持 UPDATE 和 DELETE 吗？","expected_skill":"clickzetta-spark-flink-connector","expected_output_contains":["igs-dynamic-table","CDC"]}
-{"case_id":"003","type":"should_call","user_input":"Spark Connector 支持写入主键表吗？","expected_skill":"clickzetta-spark-flink-connector","expected_output_contains":["不支持","Flink"]}
-{"case_id":"004","type":"should_call","user_input":"Flink 写入 ClickZetta 需要什么版本？","expected_skill":"clickzetta-spark-flink-connector","expected_output_contains":["1.15"]}
-{"case_id":"005","type":"should_call","user_input":"Flink 写入主键表的 sink.parallelism 有什么限制？","expected_skill":"clickzetta-spark-flink-connector","expected_output_contains":["1"]}
-{"case_id":"006","type":"should_call","user_input":"Flink 写入无主键表时，igs-dynamic-table-append-only 适合什么场景？","expected_skill":"clickzetta-spark-flink-connector","expected_output_contains":["append-only","无主键"]}
-{"case_id":"007","type":"should_call","user_input":"Flink connector 的 Maven 依赖和 Flink provided scope 应该怎么配置？","expected_skill":"clickzetta-spark-flink-connector","expected_output_contains":["Maven","provided"]}
-{"case_id":"008","type":"should_call","user_input":"Flink 写入 Lakehouse 连接超时，curl、properties、isInternal、isDirect 应该怎么排查？","expected_skill":"clickzetta-spark-flink-connector","expected_output_contains":["curl","isInternal"]}
