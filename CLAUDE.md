@@ -1,70 +1,87 @@
-# ClickZetta Skills 开发规范
+# ClickZetta Skills Development Specification
 
-本文档为 AI Agent（Claude Code、czcode 等）和人类开发者提供 Skill 开发指南。
+This document provides Skill development guidelines for AI Agents (Claude Code, cz-cli, etc.) and human developers.
 
-## 仓库结构
+## Repository Structure
 
 ```
 clickzetta-skills/
-├── .well-known/skills/index.json   ← Skill 注册表（必须同步更新）
-├── clickzetta-<name>/              ← 每个 Skill 一个目录
-│   ├── SKILL.md                    ← 主入口（必须存在）
-│   └── references/                 ← 参考文档（可选）
+├── .well-known/skills/index.json   ← Skill registry (must be kept in sync)
+├── clickzetta-<name>/              ← One directory per Skill
+│   ├── SKILL.md                    ← Main entry point (required)
+│   └── references/                 ← Reference documents (optional)
 │       └── *.md
-├── CLAUDE.md                       ← 本文件（开发规范）
-└── README.md                       ← 仓库说明
+├── CLAUDE.md                       ← This file (development spec)
+└── README.md                       ← Repository README
 ```
 
-## Skill 目录命名
+## Skill Directory Naming
 
-- 统一前缀：`clickzetta-<功能名>`
-- 使用小写 + 连字符：`clickzetta-dynamic-table`、`clickzetta-volume-manager`
-- 名称应反映功能领域，不要过于具体
+- Unified prefix: `clickzetta-<feature-name>`
+- Use lowercase + hyphens: `clickzetta-dynamic-table`, `clickzetta-volume-manager`
+- Names should reflect the functional domain, not be overly specific
 
-## SKILL.md 规范
+## SKILL.md Specification
 
-### Front-matter（必须）
+### Front-matter (Required)
 
 ```yaml
 ---
 name: clickzetta-<name>
 description: |
-  一段话描述 Skill 的功能范围。
-  当用户说"关键词1"、"关键词2"、"关键词3"时触发。
+  One paragraph describing the Skill's scope (≤ 1024 chars).
+  Triggered when the user says "keyword1", "keyword2".
   Keywords: english, keywords, for, LLM, matching
 ---
 ```
 
-**要求：**
-- `name` 必须与目录名一致
-- `description` 包含中文触发词和英文 Keywords 行
-- 触发词要覆盖用户可能的各种表述方式
+**Field Specification:**
 
-### 内容结构（建议）
+| Field | Constraint | Description |
+|---|---|---|
+| `name` | ≤ 64 chars, required | Must match directory name; lowercase letters, digits, hyphens only |
+| `description` | ≤ 1024 chars, required | Includes summary + trigger scenarios + Keywords line |
 
-1. **快速入门** — 3-5 行最常用的 SQL 示例
-2. **核心概念** — 简要说明关键概念
-3. **详细参考** — 放在 `references/` 子目录
-4. **常见问题** — 排障表（问题 | 原因 | 解决方案）
+**name rules:**
+- Format: `clickzetta-<feature-name>` (unified prefix)
+- Only `[a-z0-9-]` allowed — no underscores or uppercase letters
+- Length includes the prefix, e.g. `clickzetta-dynamic-table` = 25 chars
+- If the feature name is too long, shorten it rather than omitting the prefix
 
-## SQL 示例规范
+**description rules:**
+- **≤ 1024 characters** (including newlines and spaces); excess will be truncated by the platform
+- Three-section structure, separated by blank lines:
+  1. **Summary** (1-3 sentences): what this Skill does and its scope
+  2. **Trigger scenarios** (optional): `Trigger when the user says: "..."` or `当用户说"…"时触发`
+  3. **Keywords line** (required): `Keywords: comma, separated, english, words` — for LLM semantic matching
+- Cover various user phrasings in triggers, but don't list so many that you exceed the limit
+- When space is tight, prioritize the Keywords line and summary; trim trigger scenarios first
 
-### 必须遵守
+### Content Structure (Recommended)
 
-1. **所有 SQL 必须经过实际环境验证** — 不要凭记忆或推断写 SQL
-2. **使用 ClickZetta 特有语法** — 不要用 Snowflake/Spark/MySQL 语法
-3. **VCluster 名称用 `default`** — 不要用 `default_ap`（AP 型不支持小文件合并）
-4. **REFRESH 语法**：`REFRESH INTERVAL 10 MINUTE vcluster default`（不是 TARGET_LAG）
-5. **COMMENT 语法**：CREATE VCLUSTER 用 `COMMENT '...'`（不带等号）
-6. **COPY INTO VOLUME 导出**：用 `FILE_FORMAT = (TYPE = CSV)`（不是 `USING CSV`）
-7. **SHOW 命令不支持**：ORDER BY、子查询、SHOW TBLPROPERTIES
-8. **SHOW TABLES 列名**：`table_name`（不是 `name`）
-9. **information_schema.columns**：没有 `ordinal_position` 列
+1. **Quick Start** — 3-5 most common SQL examples
+2. **Core Concepts** — brief explanations of key concepts
+3. **Detailed Reference** — placed in `references/` subdirectory
+4. **FAQ** — troubleshooting table (Issue | Cause | Solution)
 
-### 格式要求
+## SQL Example Guidelines
+
+### Must Follow
+
+1. **All SQL must be verified in an actual environment** — do not write SQL from memory or inference
+2. **Use ClickZetta-specific syntax** — do not use Snowflake/Spark/MySQL syntax
+3. **Use `default` for VCluster names** — do not use `default_ap` (AP type doesn't support small-file merging)
+4. **REFRESH syntax**: `REFRESH INTERVAL 10 MINUTE vcluster default` (not TARGET_LAG)
+5. **COMMENT syntax**: Use `COMMENT '...'` in CREATE VCLUSTER (no equals sign)
+6. **COPY INTO VOLUME export**: Use `FILE_FORMAT = (TYPE = CSV)` (not `USING CSV`)
+7. **SHOW commands do not support**: ORDER BY, subqueries, SHOW TBLPROPERTIES
+8. **SHOW TABLES column name**: `table_name` (not `name`)
+9. **information_schema.columns**: has no `ordinal_position` column
+
+### Formatting Requirements
 
 ```sql
--- 注释说明用途
+-- Comment describing the purpose
 CREATE DYNAMIC TABLE my_schema.my_dt
 REFRESH INTERVAL 10 MINUTE vcluster default
 AS
@@ -72,66 +89,47 @@ SELECT col1, col2
 FROM source_table;
 ```
 
-- SQL 关键字大写：`CREATE`、`SELECT`、`FROM`、`WHERE`
-- 表名/列名小写
-- 每个示例前加注释说明用途
-- 不要在 SHOW/DESC 命令后加 LIMIT（部分不支持）
+- SQL keywords in uppercase: `CREATE`, `SELECT`, `FROM`, `WHERE`
+- Table/column names in lowercase
+- Add a comment before each example describing its purpose
+- Do not add LIMIT after SHOW/DESC commands (some don't support it)
 
-## 新增 Skill 流程
+## Adding a New Skill
 
-1. 创建目录 `clickzetta-<name>/SKILL.md`
-2. 编写内容，确保 SQL 经过验证
-3. 更新 `.well-known/skills/index.json`，添加条目：
+1. Create directory `clickzetta-<name>/SKILL.md`
+2. Write content, ensuring all SQL is verified
+3. **Validate front-matter**:
+   - `name` ≤ 64 chars and matches directory name
+   - `description` ≤ 1024 chars and includes a Keywords line
+   - Quick check command: `head -20 clickzetta-<name>/SKILL.md | grep -c "^---"`
+4. Update `.well-known/skills/index.json` with a new entry:
    ```json
    {
      "name": "clickzetta-<name>",
-     "description": "简短描述",
+     "description": "Brief description (matching SKILL.md description)",
      "files": ["SKILL.md", "references/xxx.md"]
    }
    ```
-4. 更新 `README.md` 的 Skills 总览表，添加新 Skill 到对应类别
-5. 提交并推送
+5. Update `README.md` Skills overview table, adding the new Skill to the appropriate category
+6. Commit and push
 
-## 修改现有 Skill
+## Modifying an Existing Skill
 
-- 修改后确保不引入错误语法
-- 如果不确定语法是否正确，先在 Lakehouse 环境验证
-- 提交时说明修改原因（关联 issue 编号）
+- Ensure no incorrect syntax is introduced after modification
+- If unsure whether syntax is correct, verify in the Lakehouse environment first
+- Include the reason for the change in the commit message (reference issue number)
 
-## 常见错误模式（避免）
+## Common Error Patterns (Avoid)
 
-| ❌ 错误 | ✅ 正确 | 说明 |
+| ❌ Wrong | ✅ Correct | Note |
 |---|---|---|
-| `REFRESH AUTO EVERY '1 hours'` | `REFRESH INTERVAL 60 MINUTE vcluster default` | MV/DT 刷新语法 |
-| `USING CSV` (在 COPY INTO) | `FILE_FORMAT = (TYPE = CSV)` | USING 仅用于 SELECT FROM VOLUME |
-| `COMMENT = '...'` (在 CREATE VCLUSTER) | `COMMENT '...'` | VCLUSTER 不带等号 |
-| `SHOW TBLPROPERTIES table` | `SHOW CREATE TABLE table` | 不存在 SHOW TBLPROPERTIES |
-| `WHERE name = 'x'` (在 SHOW TABLES) | `WHERE table_name = 'x'` | 列名是 table_name |
-| `ORDER BY ordinal_position` | `ORDER BY column_name` | 不存在 ordinal_position |
-| `SHOW ... ORDER BY ...` | 不支持 | SHOW 命令不支持 ORDER BY |
-| `SELECT FROM (SHOW ...)` | 不支持 | SHOW 不能作为子查询 |
-| `ALTER DYNAMIC TABLE ... SET REFRESH` | `CREATE OR REPLACE DYNAMIC TABLE ...` | 修改刷新需重建 |
-| `vcluster default_ap` | `vcluster default` | 通用型 VC 默认名是 default |
-
-## 测试验证
-
-修改 Skill 后，建议用 czcode 实际执行一遍相关操作验证：
-
-```bash
-# 启动 czcode 连接 Lakehouse
-czcode
-
-# 切换到数据工程师角色（有写权限）
-/cz_role → 选择"数据工程师"
-
-# 让 agent 按 skill 执行操作，观察是否报错
-```
-
-如果 agent 生成了错误 SQL，czcode 会自动创建 GitHub Issue（通过 `/cz_skill-fix` 命令），方便追踪和修复。
-
-## 发布
-
-Skills 通过 GitHub Pages 分发：
-- 推送到 main 分支后自动部署到 https://clickzetta.github.io/clickzetta-skills/
-- czcode 通过 `.well-known/skills/index.json` 发现和下载 skills
-- czcode 发布新版本时也会打包最新 skills 到二进制中
+| `REFRESH AUTO EVERY '1 hours'` | `REFRESH INTERVAL 60 MINUTE vcluster default` | MV/DT refresh syntax |
+| `USING CSV` (in COPY INTO) | `FILE_FORMAT = (TYPE = CSV)` | USING is only for SELECT FROM VOLUME |
+| `COMMENT = '...'` (in CREATE VCLUSTER) | `COMMENT '...'` | VCLUSTER doesn't use equals sign |
+| `SHOW TBLPROPERTIES table` | `SHOW CREATE TABLE table` | SHOW TBLPROPERTIES doesn't exist |
+| `WHERE name = 'x'` (in SHOW TABLES) | `WHERE table_name = 'x'` | Column name is table_name |
+| `ORDER BY ordinal_position` | `ORDER BY column_name` | ordinal_position doesn't exist |
+| `SHOW ... ORDER BY ...` | Not supported | SHOW commands don't support ORDER BY |
+| `SELECT FROM (SHOW ...)` | Not supported | SHOW cannot be used as a subquery |
+| `ALTER DYNAMIC TABLE ... SET REFRESH` | `CREATE OR REPLACE DYNAMIC TABLE ...` | Changing refresh requires rebuild |
+| `vcluster default_ap` | `vcluster default` | General-purpose VC default name is default |
