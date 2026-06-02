@@ -102,11 +102,6 @@ This skill is the **knowledge hub and router** for ClickZetta Dynamic Tables. It
 ### dt-creator/ — Dynamic Table Creation Reference
 
 **Contents:**
-- **dt-declaration-strategy.md** — Declaration strategy and selection between static partition DT and dynamic partition DT
-  - Static partition DT: uses SESSION_CONFIGS() to pass partition parameters; each partition refreshes independently
-  - Dynamic partition DT: no partition parameters; processes all incremental data in one pass
-  - Decision tree: choose the appropriate partition strategy based on data patterns
-
 - **sql-limitations.md** — SQL patterns supported by incremental computation (support status for JOIN, aggregation, window functions, etc., and limitations such as VIEW/external tables not supporting incremental)
 
 - **incremental-config-reference.md** — Complete reference for incremental refresh configuration options
@@ -118,16 +113,9 @@ This skill is the **knowledge hub and router** for ClickZetta Dynamic Tables. It
   - Backfill: historical partition data correction
   - Partitioned table write behavior: overwrite vs append mode
 
-- **refresh-history-guide.md** — 3 ways to query refresh history
-  - SHOW DYNAMIC TABLE REFRESH HISTORY: job-level info, includes refresh_mode (INCREMENTAL/FULL/NO_DATA)
-  - DESC HISTORY: version-level history, includes row count, bytes, operation type
-  - information_schema.materialized_view_refresh_history: batch analysis, monitoring, CRU statistics
-
 **Applicable questions:**
-- "What is the difference between static partition DT and dynamic partition DT?"
 - "What SQL syntax does Dynamic Table support?"
 - "What configuration options are available for incremental computation?"
-- "How do I view the refresh history of a Dynamic Table?"
 - "What triggers a full refresh?"
 
 ---
@@ -170,20 +158,13 @@ See the sql-to-dt sub-skill for detailed conversion rules.
   - Three risks: unbounded storage growth, archiving causes performance disaster, cannot filter archive-generated deletes
   - Recommended alternative: MERGE INTO + Table Stream (archive-immune, independent lifecycle management)
 
-- **scheduling-guide.md** — Scheduling method selection guide
-  - Comparison of two methods: DDL built-in scheduling (REFRESH INTERVAL) vs Studio Task scheduling
-  - Always recommend Studio Task when Studio is available: supports upstream/downstream dependencies, unified alerts, visual monitoring
-  - Drawbacks of DDL built-in scheduling: no alerts, no dependency orchestration, refresh status can only be checked via manual SQL
-  - Studio Task configuration: must enable self-dependency, configure failure/timeout alerts, configure upstream dependencies as needed
-  - Scheduling orchestration for multi-level DT pipelines
+- **medallion-and-stream-patterns.md** — Medallion architecture and streaming patterns for Dynamic Tables
 
 **Applicable questions:**
 - "How do I optimize Dynamic Table performance?"
 - "How do I configure dimension table JOIN?"
 - "What are the risks of non-partitioned Dynamic Tables?"
 - "When should I not use Dynamic Tables?"
-- "Should I use REFRESH INTERVAL or Studio Task for Dynamic Table scheduling?"
-- "How do I receive alerts when a Dynamic Table refresh fails?"
 
 ---
 
@@ -209,11 +190,10 @@ User question
 
 ## Usage Recommendations
 
-1. **First-time learning**: start with dt-creator/ to understand DT declaration strategies and configuration options
+1. **First-time learning**: start with dt-creator/ to understand DT configuration options
 2. **Migration scenarios**: use the sql-to-dt sub-skill to bulk-convert existing ETL
 3. **Day-to-day operations**: use this skill to modify DT structure
 4. **Performance tuning**: refer to optimization recommendations and pitfall guides in best-practices/
-5. **Scheduling configuration**: always use Studio Task scheduling when Studio is available; refer to best-practices/scheduling-guide.md
 
 ---
 

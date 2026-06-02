@@ -1,12 +1,12 @@
-# Table Stream（表流）SQL 参考
+# Table Stream SQL Reference
 
-> **⚠️ ClickZetta 特有语法**
-> - 创建语法是 `CREATE TABLE STREAM`，参数放在 `WITH PROPERTIES (...)` 里
-> - 元数据字段是 `__change_type`（双下划线），值：`INSERT` / `UPDATE_BEFORE` / `UPDATE_AFTER` / `DELETE`
-> - UPDATE 产生两条记录：`UPDATE_BEFORE`（更新前）和 `UPDATE_AFTER`（更新后）
-> - 通常只需要 `UPDATE_AFTER` 和 `INSERT`，忽略 `UPDATE_BEFORE`
+> **⚠️ ClickZetta-specific Syntax**
+> - Creation syntax is `CREATE TABLE STREAM`, parameters placed in `WITH PROPERTIES (...)`
+> - Metadata field is `__change_type` (double underscore), values: `INSERT` / `UPDATE_BEFORE` / `UPDATE_AFTER` / `DELETE`
+> - UPDATE produces two records: `UPDATE_BEFORE` (before update) and `UPDATE_AFTER` (after update)
+> - Usually only need `UPDATE_AFTER` and `INSERT`, ignore `UPDATE_BEFORE`
 
-Table Stream 捕获源表的变更数据（INSERT / UPDATE / DELETE），是构建 CDC 管道的核心对象。通常与 Dynamic Table 或 SQL 任务配合消费变更数据。
+Table Stream captures change data (INSERT / UPDATE / DELETE) from source table, is the core object for building CDC pipelines. Usually consumed with Dynamic Table or SQL tasks.
 
 ## CREATE TABLE STREAM
 
@@ -21,48 +21,48 @@ CREATE [ OR REPLACE ] TABLE STREAM [ IF NOT EXISTS ] <stream_name>
   );
 ```
 
-**关键参数：**
-- `TABLE_STREAM_MODE = STANDARD`（默认）：捕获 INSERT、UPDATE、DELETE 所有变更，每行附带 `__change_type` 字段（`INSERT` / `UPDATE_BEFORE` / `UPDATE_AFTER` / `DELETE`）
-- `TABLE_STREAM_MODE = APPEND_ONLY`：只捕获 INSERT，性能更好，适合仅追加写入的源表
-- `SHOW_INITIAL_ROWS = TRUE`：首次消费返回建 Stream 时表中已有行；`FALSE`（默认）仅返回建 Stream 后的新变更
-- `TIMESTAMP AS OF`：指定 Stream 从哪个时间点开始捕获变更
+**Key Parameters:**
+- `TABLE_STREAM_MODE = STANDARD` (default): Captures all changes INSERT, UPDATE, DELETE, each row has `__change_type` field (`INSERT` / `UPDATE_BEFORE` / `UPDATE_AFTER` / `DELETE`)
+- `TABLE_STREAM_MODE = APPEND_ONLY`: Only captures INSERT, better performance, suitable for append-only source tables
+- `SHOW_INITIAL_ROWS = TRUE`: First consumption returns existing rows when Stream created; `FALSE` (default) only returns new changes after Stream creation
+- `TIMESTAMP AS OF`: Specify which timestamp Stream starts capturing changes from
 
-**示例：**
+**Examples:**
 ```sql
--- 在普通表上创建标准流（捕获所有变更，需先开启 change_tracking）
+-- Create standard stream on regular table (captures all changes, need to enable change_tracking first)
 ALTER TABLE ods.orders SET PROPERTIES ('change_tracking' = 'true');
 
 CREATE TABLE STREAM orders_stream
   ON TABLE ods.orders
   WITH PROPERTIES ('TABLE_STREAM_MODE' = 'STANDARD');
 
--- 仅追加流
+-- Append-only stream
 CREATE TABLE STREAM events_stream
   ON TABLE dw.events
-  COMMENT '事件流，仅追加'
+  COMMENT 'Event stream, append only'
   WITH PROPERTIES ('TABLE_STREAM_MODE' = 'APPEND_ONLY');
 
--- 从指定时间点开始捕获
+-- Start capturing from specified timestamp
 CREATE TABLE STREAM orders_stream_from_ts
   ON TABLE ods.orders
   TIMESTAMP AS OF '2024-01-01 00:00:00'
   WITH PROPERTIES ('TABLE_STREAM_MODE' = 'STANDARD', 'SHOW_INITIAL_ROWS' = 'TRUE');
 ```
 
-## 消费 Table Stream
+## Consuming Table Stream
 
-Table Stream 的 offset 通过 DML 操作移动。**仅 SELECT 不会移动 offset**，可以反复查询预览。执行 DML（INSERT INTO / MERGE INTO / UPDATE / DELETE）消费数据后，offset 前进。
+Table Stream offset moves through DML operations. **SELECT only does not move offset**, can be queried repeatedly for preview. After executing DML (INSERT INTO / MERGE INTO / UPDATE / DELETE) to consume data, offset advances.
 
 ```sql
--- 查看当前未消费的变更数据（不移动 offset）
+-- View current unconsumed change data (does not move offset)
 SELECT * FROM orders_stream;
 
--- 变更数据包含的系统字段
+-- System fields included in change data
 -- __change_type: INSERT | UPDATE_BEFORE | UPDATE_AFTER | DELETE
--- __commit_version: 变更版本号
--- __commit_timestamp: 变更发生时间
+-- __commit_version: Change version number
+-- __commit_timestamp: Change occurrence time
 
--- 典型用法：将变更数据 MERGE 到目标表（过滤掉 UPDATE_BEFORE）
+-- Typical usage: MERGE change data into target table (filter out UPDATE_BEFORE)
 MERGE INTO dw.orders_dim AS target
 USING (
   SELECT * FROM orders_stream
@@ -73,7 +73,7 @@ WHEN MATCHED AND src.__change_type = 'UPDATE_AFTER' THEN UPDATE SET target.statu
 WHEN MATCHED AND src.__change_type = 'DELETE' THEN DELETE
 WHEN NOT MATCHED AND src.__change_type IN ('INSERT', 'UPDATE_AFTER') THEN INSERT (order_id, status, amount) VALUES (src.order_id, src.status, src.amount);
 
--- 配合 Dynamic Table 自动消费（推荐）
+-- Auto-consume with Dynamic Table (recommended)
 CREATE OR REPLACE DYNAMIC TABLE dw.orders_processed
   REFRESH INTERVAL 1 MINUTE vcluster default
 AS
@@ -91,35 +91,35 @@ DROP TABLE STREAM [ IF EXISTS ] <stream_name>;
 ## SHOW / DESC
 
 ```sql
--- 列出当前 schema 下所有 Table Stream
+-- List all Table Streams in current schema
 SHOW TABLE STREAMS;
 
--- 列出指定 schema 下的 Table Stream
+-- List Table Streams in specified schema
 SHOW TABLE STREAMS IN <schema_name>;
 
--- 按名称过滤
+-- Filter by name
 SHOW TABLE STREAMS LIKE 'orders%';
 
--- 查看 Table Stream 详情（源表、模式、创建时间）
+-- View Table Stream details (source table, mode, creation time)
 DESC TABLE STREAM <stream_name>;
 ```
 
-## 注意事项
+## Important Notes
 
-- 仅 SELECT 不会移动 offset，可反复查询预览
-- DML 操作（INSERT INTO / MERGE INTO / UPDATE / DELETE）会移动 offset
-- ⚠️ 即使 DML 带 WHERE 条件过滤了部分行，**所有行的 offset 都会移动**
-- 若长时间不消费，超出源表的 `data_retention_days` 后数据会丢失
-- `STANDARD` 模式下 UPDATE 会产生两条记录：`UPDATE_BEFORE`（更新前）和 `UPDATE_AFTER`（更新后）
-- 消费时通常过滤 `__change_type != 'UPDATE_BEFORE'`，忽略旧值
-- 源表需先开启 `change_tracking`：`ALTER TABLE name SET PROPERTIES ('change_tracking' = 'true')`
+- SELECT only does not move offset, can query repeatedly for preview
+- DML operations (INSERT INTO / MERGE INTO / UPDATE / DELETE) move offset
+- ⚠️ Even if DML has WHERE condition filtering some rows, **offset for all rows will move**
+- If not consumed for long time, data will be lost after exceeding source table's `data_retention_days`
+- In `STANDARD` mode UPDATE produces two records: `UPDATE_BEFORE` (before update) and `UPDATE_AFTER` (after update)
+- When consuming usually filter `__change_type != 'UPDATE_BEFORE'`, ignore old values
+- Source table needs to enable `change_tracking` first: `ALTER TABLE name SET PROPERTIES ('change_tracking' = 'true')`
 
-## 参考文档
+## Reference Documentation
 
 - [CREATE TABLE STREAM](https://www.yunqi.tech/documents/create-table-stream)
 - [DESC TABLE STREAM](https://www.yunqi.tech/documents/desc-table-stream)
 - [SHOW TABLE STREAMS](https://www.yunqi.tech/documents/show-table-streams)
 - [DROP TABLE STREAM](https://www.yunqi.tech/documents/drop-table-stream)
-- [TABLE STREAM 简介](https://www.yunqi.tech/documents/tablestream_summary)
-- [Table Stream 变化数据捕获](https://www.yunqi.tech/documents/table_stream)
-- [Table Stream 最佳实践](https://www.yunqi.tech/documents/lakehouse-table-stream-best-practices)
+- [TABLE STREAM Introduction](https://www.yunqi.tech/documents/tablestream_summary)
+- [Table Stream Change Data Capture](https://www.yunqi.tech/documents/table_stream)
+- [Table Stream Best Practices](https://www.yunqi.tech/documents/lakehouse-table-stream-best-practices)
