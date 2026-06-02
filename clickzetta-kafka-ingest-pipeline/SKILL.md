@@ -184,7 +184,7 @@ COPY INTO ods.kafka_orders FROM (
 ```sql
 DESC PIPE EXTENDED kafka_orders_pipe;
 SELECT COUNT(*) FROM ods.kafka_orders;
-SELECT * FROM load_history('ods.kafka_orders') ORDER BY last_load_time DESC LIMIT 10;
+SELECT * FROM load_history('ods.kafka_orders') ORDER BY last_copy_time DESC LIMIT 10;
 ```
 
 ---

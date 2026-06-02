@@ -118,6 +118,7 @@ SELECT * FROM DIRECTORY(VOLUME my_oss_volume);
 
 > ⚠️ **语法限制**：ClickZetta 不支持 `@volume_name` 简写（Snowflake Stage 语法），必须使用 `FROM VOLUME name USING format` 完整语法。
 > ⚠️ **多格式文件处理**：如果 Volume 中包含多种格式的文件（如 .csv 和 .json 混合），不指定 `FILES()` 或 `SUBDIRECTORY` 时会尝试读取所有文件，可能因格式不匹配而报错。建议使用 `FILES('xxx.csv')` 指定文件或 `SUBDIRECTORY 'csv_data/'` 指定子目录。
+> ⚠️ **CSV 查询列名**：`SELECT * FROM VOLUME ... USING CSV` 不带 schema 定义时，返回列名为 `f0, f1, f2, ...`（不是原始表头）。要获得有意义的列名，需在 `USING CSV` 后显式指定列定义：`FROM VOLUME vol (col1 STRING, col2 INT) USING CSV OPTIONS('header'='true')`。
 > ⚠️ **JSON 嵌套字段访问**：使用 `data['key']` 语法（不是 Snowflake 的 `data:key` 语法）。
 
 ```sql
@@ -235,6 +236,7 @@ FILE_FORMAT = (TYPE = PARQUET);
 
 > ⚠️ `COPY INTO VOLUME` 导出使用 `FILE_FORMAT = (TYPE = CSV/PARQUET)`，不是 `USING CSV`。
 > `USING` 关键字仅用于 `SELECT FROM VOLUME` 查询文件。
+> ⚠️ **`SUBDIRECTORY` 是必填项**：`COPY INTO VOLUME` 不带 `SUBDIRECTORY` 会报 syntax error，必须指定输出子目录，例如 `SUBDIRECTORY 'export/'`。
 
 ### 导出到本地（GET 命令）
 
@@ -268,6 +270,8 @@ DROP VOLUME IF EXISTS my_oss_volume;
 |---|---|---|
 | SHOW VOLUME DIRECTORY 无文件 | 目录未刷新 | 执行 `ALTER VOLUME name REFRESH` |
 | SELECT FROM VOLUME 报错 | 格式不匹配 | 确认 USING 后的格式与实际文件格式一致；使用 `FILES()` 指定文件 |
+| CSV 查询结果列名为 f0, f1, f2 | 未指定 schema，`SELECT *` 无法推断列名 | 改为 `FROM VOLUME vol (col1 STRING, col2 INT) USING CSV OPTIONS('header'='true')` 显式定义列 |
+| COPY INTO VOLUME 报 syntax error | 缺少 `SUBDIRECTORY` 子句 | `COPY INTO VOLUME` 必须带 `SUBDIRECTORY 'path/'`，不可省略 |
 | COPY INTO 读取多格式文件失败 | Volume 中有混合格式文件 | 使用 `FILES('xxx.csv')` 指定文件或 `SUBDIRECTORY` 指定子目录 |
 | PUT 命令失败 | 本地路径不存在 | 确认本地文件路径正确 |
 | COPY INTO 报错 | 权限不足 | 检查 STORAGE CONNECTION 的访问密钥权限 |
