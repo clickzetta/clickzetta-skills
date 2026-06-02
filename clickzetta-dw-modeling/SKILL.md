@@ -1,19 +1,15 @@
 ---
 name: clickzetta-dw-modeling
 description: |
-  ClickZetta Lakehouse data warehouse modeling wizard. Autonomously explores the user's
-  data landscape first, then presents justified recommendations for the user to choose from —
-  never asks questionnaire-style questions.
+  ClickZetta Lakehouse data warehouse modeling wizard. Autonomously explores data landscape,
+  then presents justified recommendations — never asks questionnaire-style questions.
   Covers three layering patterns: Traditional DW (ODS/DWD/DWS/ADS), Medallion (Bronze/Silver/Gold),
-  and hybrid. Pipeline and modeling are designed together — DDL and pipeline config are output simultaneously.
+  and hybrid. Pipeline and modeling designed together — DDL and pipeline config output simultaneously.
   Core principle: use Dynamic Table for aggregation layers, not Materialized View.
-
-  Trigger when the user says: "data warehouse modeling", "layering design", "modeling plan",
-  "ODS/DWD/DWS", "Medallion", "Bronze/Silver/Gold", "fact table", "dimension table",
-  "wide table design", "star schema", "snowflake schema", "layered architecture",
-  "data layering", "modeling wizard", "how to design table structure", "DW architecture",
-  "pipeline design", "data flow", "end-to-end DW setup", "build a data warehouse",
-  "design my data layers", "how should I structure my data".
+  Trigger when the user says: "data warehouse modeling", "layering design", "ODS/DWD/DWS",
+  "Medallion", "Bronze/Silver/Gold", "fact table", "dimension table", "star schema",
+  "layered architecture", "modeling wizard", "build a data warehouse", "DW architecture",
+  "design my data layers".
   Keywords: data warehouse, modeling, star schema, medallion, ODS, DWD, DWS, ADS, layering
 ---
 

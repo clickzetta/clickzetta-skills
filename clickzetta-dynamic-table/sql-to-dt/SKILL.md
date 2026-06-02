@@ -1,6 +1,12 @@
 ---
 name: sql-to-dt
-description: Automatically converts CREATE TABLE DDL + INSERT OVERWRITE SQL from Hive/Spark or any batch processing system into Dynamic Table DDL and companion files (refresh, prev_refresh, backfill). Triggers when the user provides a DDL and INSERT OVERWRITE and requests conversion to DT, or when the user says "create dynamic table" and should be proactively guided to provide input. Triggers on: "convert to DT", "sql to dt", "convert to dynamic table", "INSERT OVERWRITE to DT", "DDL conversion", "create dynamic table"
+description: |
+  Automatically converts CREATE TABLE DDL + INSERT OVERWRITE SQL from Hive/Spark or any batch
+  processing system into Dynamic Table DDL and companion files (refresh, prev_refresh, backfill).
+  Trigger when the user provides DDL and INSERT OVERWRITE and requests conversion, or says
+  "convert to DT", "sql to dt", "convert to dynamic table", "INSERT OVERWRITE to DT",
+  "DDL conversion", "create dynamic table".
+  Keywords: sql-to-dt, convert to DT, INSERT OVERWRITE, DDL conversion, dynamic table
 ---
 
 # SQL → Dynamic Table Automatic Conversion

@@ -1,6 +1,11 @@
 ---
 name: lakehouse-doc-en
-description: "Singdata/Clickzetta Lakehouse official documentation knowledge base (English). Consult references/ when writing SQL or answering questions about query syntax, functions, data types, DDL/DML, dynamic tables, permissions, vclusters, data lake, AI functions, external catalog federation queries, and other Lakehouse topics."
+description: |
+  Singdata/Clickzetta Lakehouse official documentation knowledge base (English). Consult references/
+  when writing SQL or answering questions about query syntax, functions, data types, DDL/DML,
+  dynamic tables, permissions, vclusters, data lake, AI functions, external catalog federation queries,
+  and other Lakehouse topics.
+  Keywords: documentation, SQL syntax, functions, DDL, DML, data types, permissions, vcluster, reference
 ---
 
 # lakehouse-doc-en

@@ -5,17 +5,10 @@ description: |
   environment setup (Python 3.10+, Jupyter, ZettaPark), project structure,
   data discovery and quality assessment, feature engineering (SQL + ZettaPark),
   and model inference deployment (BITMAP profiling, UDF batch inference, vector search).
-
-  Trigger this skill whenever the user wants to do data science, ML, or analytical
-  work using ClickZetta Lakehouse as the data backend — even if they don't mention
-  ZettaPark or specific ML frameworks. Typical scenarios:
-  - Wants to connect Jupyter Notebook or a Python environment to Lakehouse
-  - Doing EDA, data exploration, or data quality checks on Lakehouse tables
-  - Building features or training datasets from Lakehouse data
-  - Running ML model inference and writing results back to Lakehouse
-  - Asks "how do I use pandas / scikit-learn with ClickZetta data"
-  - Wants to do user profiling, audience segmentation, or batch scoring
-  - Gets a SQL syntax error in a data science context (ZettaPark / %%sql magic)
+  Trigger when the user wants to do data science, ML, or analytical work using
+  ClickZetta Lakehouse — connecting Jupyter to Lakehouse, doing EDA, building features,
+  running ML inference, user profiling, audience segmentation, or batch scoring.
+  Keywords: data science, ML, ZettaPark, Jupyter, feature engineering, EDA, profiling, inference
 ---
 
 # clickzetta-data-science

@@ -2,29 +2,12 @@
 name: clickzetta-overview
 description: |
   ClickZetta Lakehouse product overview: core concepts, object model, architecture, and Studio module introduction.
-  Covers: Account/Instance/Workspace/Schema object hierarchy, Workspace vs Database/Catalog mapping,
-  VCluster three types and CRU billing, Dynamic Table incremental refresh mechanism, Table Stream CDC,
-  three-tier cache system, Pipe continuous ingestion, Synonym cross-Schema alias, permission system (RBAC/ACL),
-  key differences vs Snowflake/Databricks, storage-compute separation architecture,
-  brand relationships (ClickZetta = Yunqi = Singdata) and service endpoints per environment,
-  Studio six modules (Data Development IDE, Task Scheduling, Data Integration, Data Catalog, Data Quality, Operations Monitoring).
-  Trigger when user asks: "what is a workspace", "what is the relationship between Schema and Database", "what is a Catalog",
-  "what is a VCluster", "what is CRU", "difference between internal and external tables", "Lakehouse architecture",
-  "object hierarchy", "permission system", "compare concepts with Snowflake", "compare concepts with Databricks",
-  "storage-compute separation", "what is Yunqi", "what is Singdata", "relationship between ClickZetta and Yunqi",
-  "what is Studio", "what features does Studio have", "how to use task scheduling", "how to use data integration",
-  "data catalog", "data quality", "operations monitoring".
-  当用户说"工作空间是什么"、"工作空间和 Schema 什么关系"、"Schema 和 Database 什么关系"、
-  "Catalog 是什么"、"VCluster 是什么"、"CRU 是什么"、"CRU 怎么计费"、
-  "内部表和外部表区别"、"Lakehouse 架构"、"对象层级"、"对象模型"、
-  "权限体系"、"权限怎么管理"、"和 Snowflake 概念对比"、"和 Databricks 概念对比"、
-  "存算分离"、"云器是什么"、"Singdata 是什么"、"ClickZetta 和云器什么关系"、
-  "Studio 是什么"、"Studio 有哪些功能"、"Studio 有哪些模块"、
-  "任务调度怎么用"、"数据集成怎么用"、"数据目录"、"数据质量"、"运维监控"、
-  "Dynamic Table 是什么"、"Table Stream 是什么"、"Pipe 是什么"、"Synonym 是什么"、
-  "三层缓存"、"Time Travel"、"ClickZetta 介绍"、"产品介绍"时触发。
-  Not suitable for: specific SQL syntax (use sql-syntax-guide), specific metadata queries (use metadata),
-  specific data ingestion operations (use pipeline skill), specific permission operations (use access-control).
+  Covers: Account/Instance/Workspace/Schema hierarchy, VCluster types and CRU billing, Dynamic Table,
+  Table Stream CDC, Pipe, Synonym, permission system (RBAC/ACL), storage-compute separation,
+  brand relationships (ClickZetta = Yunqi = Singdata), and Studio six modules.
+  Trigger when user asks: "what is a workspace", "what is a VCluster", "what is CRU",
+  "Lakehouse architecture", "object hierarchy", "permission system", "compare concepts with Snowflake",
+  "what is Studio", "storage-compute separation", "ClickZetta introduction".
   Keywords: concepts, architecture, workspace, schema, VCluster, Studio, overview, object model
 ---
 

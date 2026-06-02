@@ -1,22 +1,14 @@
 ---
 name: clickzetta-dynamic-table
 description: |
-  ClickZetta Dynamic Table usage guide and routing hub.
-
-  [Trigger scenarios]
-  - General consultation: Dynamic Table introduction, usage, best practices, performance optimization, incremental configuration
-  - Creation guidance: DT declaration strategy, SQL support matrix, refresh history queries
-  - Modification operations: ALTER DYNAMIC TABLE, suspend/resume, add/drop columns, refresh interval changes
-  - SQL conversion: detected and automatically delegated to the sql-to-dt sub-skill
-
-  [Trigger keywords]
-  "how to use dynamic table", "DT introduction", "dynamic table best practices", "dynamic table performance optimization",
-  "incremental computation configuration", "dimension table JOIN", "dynamic table refresh history", "static partition DT",
-  "dynamic partition DT", "state table management", "non-partitioned table risks", "create dynamic table",
-  "dynamic table scheduling", "REFRESH INTERVAL", "dynamic table alerts"
-
-  [Non-trigger scenarios]
-  SQL conversion ("convert to DT", "INSERT OVERWRITE to DT", etc.) → use sql-to-dt
+  ClickZetta Dynamic Table usage guide and routing hub. Covers general consultation (introduction,
+  best practices, performance, incremental configuration), creation guidance (SQL support matrix,
+  refresh history), and modification (ALTER, suspend/resume, add/drop columns).
+  SQL conversion requests are delegated to the sql-to-dt sub-skill.
+  Trigger when the user says: "dynamic table", "DT introduction", "dynamic table best practices",
+  "dynamic table performance", "incremental computation", "REFRESH INTERVAL", "create dynamic table",
+  "dynamic table scheduling", "dynamic table alerts", "ALTER DYNAMIC TABLE".
+  Keywords: dynamic table, DT, REFRESH INTERVAL, incremental, suspend, resume, sql-to-dt
 ---
 
 # Dynamic Table Usage Guide — Routing & Index

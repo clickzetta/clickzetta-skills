@@ -2,20 +2,13 @@
 name: clickzetta-dbt-studio-pipeline
 description: |
   Publish all dbt models to Studio as assets and configure scheduled execution.
-  All dbt model SQL code is centrally managed in Studio (code asset management);
-  models that need periodic execution get additional scheduling configuration.
-  Reads dbt manifest.json, Agent rewrites incremental SQL to inject scheduling parameters,
-  guides user confirmation, then fully automated deployment.
-
-  Trigger this skill whenever the user wants dbt models to run or be scheduled in Studio,
-  even if they don't use the word "asset". Typical scenarios:
-  - Explicitly mentions publishing/scheduling (publish dbt to Studio, dbt scheduling, dbt asset management,
-    dbt manifest, dbt model scheduling, dbt Studio tasks, dbt pipeline deployment,
-    publish dbt models as Studio tasks, dbt code assets, Studio unified dbt management)
-  - Wants dbt models to run automatically every day / every hour
-  - Asks "how do I schedule dbt after it runs"
-  - Wants to see dbt SQL code in Studio
-  - Wants to configure dependencies or retry policies for dbt models
+  All dbt model SQL code is centrally managed in Studio; models needing periodic execution
+  get scheduling configuration. Reads dbt manifest.json, rewrites incremental SQL for
+  scheduling parameters, guides user confirmation, then deploys automatically.
+  Trigger when the user wants dbt models to run or be scheduled in Studio — mentions
+  "publish dbt to Studio", "dbt scheduling", "dbt asset management", "dbt manifest",
+  "dbt Studio tasks", "dbt pipeline deployment", or asks "how do I schedule dbt".
+  Keywords: dbt Studio, publish dbt, dbt scheduling, dbt manifest, Studio asset, dbt deployment
 ---
 
 # clickzetta-dbt-studio-pipeline

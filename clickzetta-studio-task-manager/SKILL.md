@@ -1,17 +1,13 @@
 ---
 name: clickzetta-studio-task-manager
 description: |
-  Manage ClickZetta Lakehouse Studio tasks, covering task type descriptions (batch sync/multi-table batch sync/
-  real-time sync/multi-table real-time sync/data development), task folder organization, task type differentiation,
-  cz-cli task command family, scheduling configuration, dependency management, and common issue troubleshooting.
-  Implements the "separation of DDL and pipeline management" engineering standard: DDL tasks as drafts,
-  ETL tasks with scheduling, Dynamic Tables with auto-refresh.
+  Manage ClickZetta Lakehouse Studio tasks: task types (batch sync/multi-table batch sync/real-time sync/
+  multi-table real-time sync/data development), folder organization, cz-cli task commands, scheduling,
+  dependency management, and troubleshooting. Implements "separation of DDL and pipeline management".
   Triggered when the user says "create Studio task", "task folder", "task scheduling", "cz-cli task",
-  "task dependency", "task failed", "task status", "full database sync task", "ETL task orchestration",
-  "task management", "separation of DDL and pipeline", "DDL task", "scheduling DAG", "task folder",
-  "Studio task", "batch sync", "real-time sync", "multi-table real-time sync", "data development task",
-  "task types", "which sync to choose", "sync task differences".
-  Keywords: Studio task, task management, cz-cli task, scheduling, DAG, DDL draft, ETL pipeline, task folder, offline sync, realtime sync, CDC, task types
+  "task dependency", "task failed", "task status", "ETL task orchestration", "task management",
+  "DDL task", "scheduling DAG", "Studio task", "task types", "which sync to choose".
+  Keywords: Studio task, task management, cz-cli task, scheduling, DAG, DDL draft, ETL pipeline, task folder, task types
 ---
 
 # ClickZetta Studio Task Management
