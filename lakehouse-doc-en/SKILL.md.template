@@ -1,48 +1,83 @@
 ---
 name: lakehouse-doc-en
-description: "Singdata Lakehouse official documentation knowledge base (English). Consult references/ when writing SQL or answering questions about query syntax, functions, data types, DDL/DML, dynamic tables, permissions, vclusters, data lake, AI functions, and other Lakehouse topics."
+description: "ClickZetta Lakehouse comprehensive knowledge base: official documentation, SQL reference, data pipelines, dbt, connectors, modeling, migration, and all operational skills. Load the appropriate references/skills/<name>/SKILL.md for task-specific guidance."
 ---
 
 # lakehouse-doc-en
 
-Singdata Lakehouse official documentation (English). Locate docs by filename under `references/` based on the user's question.
+ClickZetta Lakehouse comprehensive knowledge base (English). This skill contains:
+1. **Official documentation** — SQL syntax, functions, DDL/DML, data types, etc. under `references/*.md`
+2. **Operational skills** — Task-specific guides under `references/skills/<name>/SKILL.md`
+
+## How to use
+
+- For **SQL syntax, functions, data types, DDL/DML questions** → read from `references/*.md` (see Document Index below)
+- For **operational tasks** (pipelines, modeling, migration, etc.) → load the matching skill's SKILL.md from the table below
+
+## Operational Skills (references/skills/)
+
+When the user's task matches one of these, load `references/skills/<name>/SKILL.md` for detailed instructions.
+
+| Skill | Use when |
+|-------|----------|
+| clickzetta-overview | Product overview, concepts, architecture, Studio introduction |
+| clickzetta-data-ingest-pipeline | Choosing the best data ingestion method (router) |
+| clickzetta-batch-sync-pipeline | Batch sync tasks (single/multi-table) |
+| clickzetta-cdc-sync-pipeline | Multi-table real-time CDC sync (MySQL/PostgreSQL) |
+| clickzetta-realtime-sync-pipeline | Single-table real-time sync |
+| clickzetta-kafka-ingest-pipeline | Kafka-to-Lakehouse ingestion (Pipe or External Table) |
+| clickzetta-oss-ingest-pipeline | Object storage (OSS/S3/COS) ingestion pipelines |
+| clickzetta-file-import-pipeline | Import from URLs, local files, or Volumes |
+| clickzetta-table-stream-pipeline | Table Stream CDC pipelines |
+| clickzetta-dynamic-table | Dynamic Table usage, creation, conversion |
+| clickzetta-sql-pipeline-manager | SQL pipeline objects: DT, MV, Pipe, Table Stream |
+| clickzetta-studio-task-manager | Studio task management (all task types) |
+| clickzetta-pipeline-review | Pipeline review and diagnosis |
+| clickzetta-dbt-modeling | dbt data modeling |
+| clickzetta-dbt-project-setup | dbt project initialization |
+| clickzetta-dbt-studio-pipeline | Publish dbt models to Studio |
+| clickzetta-dw-modeling | Data warehouse modeling |
+| clickzetta-data-science | Data science workflows |
+| clickzetta-sql-migration | SQL migration from Snowflake/Hive/Spark/BigQuery |
+| clickzetta-lakehouse-connect | SDK/JDBC connections (Python, ZettaPark, SQLAlchemy, JDBC) |
+| clickzetta-spark-flink-connector | Spark/Flink write connectors |
+| clickzetta-zettapark | ZettaPark Python DataFrame API |
+| clickzetta-volume-manager | Volume management (OSS/COS/S3 mounting) |
+| clickzetta-external-catalog | External Catalog federation (Hive/Iceberg/Databricks) |
+| clickzetta-external-function | External Functions (custom UDFs in Python/Java) |
+| clickzetta-ai-function | AI functions: AI_COMPLETE, AI_EMBEDDING |
+| clickzetta-semantic-view | Semantic Views |
+| clickzetta-table-lineage | Table lineage visualization |
+| clickzetta-query-optimizer | SQL query performance optimization |
 
 ## references/ layout
 
 ```
 references/
-├── *.md                          # Main topic docs (named by topic, see index below)
+├── *.md                          # Official documentation (named by topic)
+├── skills/                       # Operational skill guides
+│   ├── clickzetta-overview/      # Each skill keeps its original structure
+│   │   ├── SKILL.md
+│   │   └── references/
+│   ├── clickzetta-dynamic-table/
+│   │   ├── SKILL.md
+│   │   ├── best-practices/
+│   │   ├── dt-creator/
+│   │   └── sql-to-dt/
+│   └── ...                       # 27 skills total
 ├── eco_integration/              # Ecosystem integrations
-│   ├── dbt.md, superset.md, datagrip-lakehouse.md, trino.md ...
 ├── java_reference/               # Java SDK
-│   ├── java-sdk-summary.md, jdbc.md, realtime-upload.md, client.md ...
 ├── python_reference/             # Python SDK
-│   ├── connector.md, sqlalchemy.md, python-sdk-summary.md
-├── opensource/                   # Open-source tools
-│   └── travel.md
-├── aggregate_functions/          # Top-level aggregate function docs
 └── sql_functions/                # SQL function reference
-    ├── aggregate_functions/      # count.md, sum.md, avg.md ...
-    ├── window_functions/         # row_number.md, rank.md, lag.md ...
-    ├── table_functions/          # table_changes.md ...
-    ├── context_functions/        # current_user.md ...
+    ├── aggregate_functions/
+    ├── window_functions/
+    ├── table_functions/
+    ├── context_functions/
     └── scalar_functions/
-        ├── datetime_functions/   # date/time
-        ├── string_functions/     # string
-        ├── math_functions/       # numeric
-        ├── nested_functions/     # array/map/struct
-        ├── bitmap_functions/     # bitmap
-        ├── json_functions/       # JSON
-        ├── conditional_functions/# conditional
-        ├── high_order_functions/ # high-order
-        ├── vector_functions/     # vector
-        ├── ip_functions/         # IP
-        ├── search_functions/     # search
-        ├── hash_functions/       # hash
-        ├── geo_functions/        # geo
-        ├── bitwise_functions/    # bitwise
-        ├── file_functions/       # file
-        └── partition/            # partition
+        ├── datetime_functions/
+        ├── string_functions/
+        ├── math_functions/
+        └── ...
 ```
 
 ## Document Index (llms.txt)

@@ -1,0 +1,75 @@
+{
+  "skill_name": "clickzetta-pipeline-review",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "帮我全量 Review 一下 shenyu_gateway 这条管道，我有读写权限，发现问题可以直接修复。",
+      "expected_output": "Agent 应先通过向导确认 Review 范围和权限（或识别到用户已提供足够信息直接跳过向导），然后走完五阶段流程：探索 Studio 任务目录、列出各层 Lakehouse 表、查运行记录、读任务脚本分析依赖配置，识别出 P0/P1/P2 问题并给出优先级排序的修复建议，最终输出 Review 结论（发现问题数、已修复项、验证结果）。",
+      "files": [],
+      "expectations": [
+        "Agent 识别到用户已提供足够信息（全量 Review + 可读写），直接进入第一阶段而不重复询问",
+        "Agent 探索了 Studio 任务层（使用 cz-cli task list 或类似命令）",
+        "Agent 探索了 Lakehouse 对象层（使用 SHOW TABLES 或 SHOW SCHEMAS）",
+        "Agent 查询了运行记录层（使用 cz-cli runs list 或类似命令）",
+        "Agent 检查了 task_dependencies 字段以识别依赖缺失问题",
+        "Agent 输出了包含 P0/P1/P2 分级的问题列表",
+        "Agent 输出了 Review 结论摘要（发现问题数、修复情况、验证结果）"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "我们的 dws_order 层有几张 Dynamic Table 最近一直刷新失败，帮我做个专项诊断，只读权限。",
+      "expected_output": "Agent 应识别这是专项诊断（DT 刷新失败），只执行相关检查步骤。应查询 SHOW DYNAMIC TABLE REFRESH HISTORY 获取失败记录，分析失败原因（DDL 竞态、类型冲突、SQL 错误等），输出诊断报告但不执行修复操作（因为只读权限）。",
+      "files": [],
+      "expectations": [
+        "Agent 识别这是专项诊断场景，聚焦 DT 刷新失败问题",
+        "Agent 使用 SHOW DYNAMIC TABLE REFRESH HISTORY 查询刷新历史",
+        "Agent 使用 SHOW CREATE TABLE 检查 DT 定义",
+        "Agent 分析了可能的失败原因（DDL 竞态、类型冲突、ORDER BY 等）",
+        "Agent 因只读权限未执行任何修复操作（未调用 cz-cli task save-config 或 CREATE OR REPLACE）",
+        "Agent 输出了诊断报告和修复建议"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "快速帮我看一下 user_behavior 管道有没有 P0 问题，5 分钟内给我结论，我可以修复。",
+      "expected_output": "Agent 应识别这是快速健康检查模式，只检查 P0 问题（依赖缺失、DT 持续失败），快速给出结论。不应深入检查 P1/P2 问题，不应做完整的五阶段 Review。",
+      "files": [],
+      "expectations": [
+        "Agent 识别这是快速健康检查模式（5 分钟内出结论）",
+        "Agent 重点检查 P0 问题：task_dependencies 是否为空、DT 是否持续失败",
+        "Agent 没有深入展开 P1/P2 检查（如 ORDER BY、跳层等非紧急问题）",
+        "Agent 在较少的步骤内给出了 P0 问题结论",
+        "Agent 输出了明确的 P0 健康状态结论"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "我刚发现 dwd_schema 下有几张 DT 的 Studio 任务脚本用的是 DROP + CREATE 两步，不是 CREATE OR REPLACE，帮我修复一下，我有写权限。",
+      "expected_output": "Agent 应识别这是 DDL 幂等性问题（P1），读取相关任务脚本确认问题，将 DROP + CREATE 改为 CREATE OR REPLACE，注意检查字段类型变更风险，修复后同步 Studio 任务脚本，并验证 DT 刷新状态。",
+      "files": [],
+      "expectations": [
+        "Agent 读取了相关 Studio 任务脚本（使用 cz-cli task content）",
+        "Agent 使用 SHOW CREATE TABLE 确认当前 DT 字段类型，避免类型变更报错",
+        "Agent 将 DROP + CREATE 改为 CREATE OR REPLACE 原子操作",
+        "Agent 使用 cz-cli task save-content 同步了 Studio 任务脚本",
+        "Agent 执行了 REFRESH DYNAMIC TABLE 触发首次刷新",
+        "Agent 验证了修复后的 DT 刷新状态（SHOW DYNAMIC TABLE REFRESH HISTORY）"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "数据不对，ads_summary 表的数据比昨天少了很多，帮我查一下是哪里出了问题。",
+      "expected_output": "Agent 应从症状（数据减少）出发，向上游追溯：检查写入 ads_summary 的任务运行记录、查看上游 DWS/DWD 层数据量、检查依赖链是否完整、查看 DT 刷新历史。识别根因后给出修复建议。",
+      "files": [],
+      "expectations": [
+        "Agent 从 ads_summary 表出发，向上游追溯数据链路",
+        "Agent 查询了各层行数（SELECT COUNT(*) 对比上下游）",
+        "Agent 检查了写入 ads_summary 的任务运行记录",
+        "Agent 检查了上游任务的 task_dependencies 配置",
+        "Agent 识别出根因（依赖缺失、DT 刷新失败、数据量异常等）",
+        "Agent 给出了有针对性的修复建议"
+      ]
+    }
+  ]
+}
