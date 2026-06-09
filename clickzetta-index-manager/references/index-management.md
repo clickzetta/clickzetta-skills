@@ -1,7 +1,5 @@
 # 索引管理命令参考
 
-> 来源：https://www.yunqi.tech/documents/build-inverted-index、DROP-INDEX、SHOW-INDEX、DESC-INDEX
-
 ---
 
 ## BUILD INDEX（为存量数据构建索引）

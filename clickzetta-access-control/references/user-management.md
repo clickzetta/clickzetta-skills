@@ -1,7 +1,5 @@
 # 用户管理参考
 
-> 来源：https://www.yunqi.tech/documents/CREAREUSER、ALTER USER、DROP USER、SHOW USERS
-
 ## CREATE USER（将用户添加到工作空间）
 
 > ⚠️ `CREATE USER` 不是创建新账户，而是将已在账户管理系统中存在的用户添加到当前工作空间。
