@@ -1,6 +1,6 @@
 # OPTIMIZE 命令参考
 
-> 来源：https://www.yunqi.tech/documents/OPTIMIZE 和 https://www.yunqi.tech/documents/small_file_optimization
+> 来源：https://www.yunqi.tech/documents/optimize 和 https://www.yunqi.tech/documents/small_file_optimization
 
 ## 语法
 

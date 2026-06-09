@@ -530,7 +530,7 @@ WHERE CAST(attributes['color'] AS STRING) = '红色';
 
 - [云器 Lakehouse JSON 查询语法](https://www.yunqi.tech/documents/query-json-sy)
 - [半结构化数据分析](https://www.yunqi.tech/documents/json_analyze)
-- [建表语法参考](https://www.yunqi.tech/documents/CREATETABLE)
+- [建表语法参考](https://www.yunqi.tech/documents/create-table-ddl)
 
 ---
 

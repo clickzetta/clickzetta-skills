@@ -120,10 +120,10 @@ SHOW CREATE TABLE <name>;
 
 ## 参考文档
 
-- [CREATE MATERIALIZED VIEW](https://www.yunqi.tech/documents/CREATEMATERIALIZEDVIEW)
+- [CREATE MATERIALIZED VIEW](https://www.yunqi.tech/documents/create-materialized-view)
 - [ALTER MATERIALIZED VIEW](https://www.yunqi.tech/documents/alter-materialzied-view)
-- [REFRESH MATERIALIZED VIEW](https://www.yunqi.tech/documents/REFRESH)
-- [DROP MATERIALIZED VIEW](https://www.yunqi.tech/documents/DROPMATERIALIZEDVIEW)
+- [REFRESH MATERIALIZED VIEW](https://www.yunqi.tech/documents/refresh-materialized-view)
+- [DROP MATERIALIZED VIEW](https://www.yunqi.tech/documents/drop-materialized-view)
 - [SHOW MATERIALIZED VIEWS](https://www.yunqi.tech/documents/show-materialized-view)
-- [物化视图概念与场景](https://www.yunqi.tech/documents/MATERIALIZEDVIEW)
+- [物化视图概念与场景](https://www.yunqi.tech/documents/materialized_ddl)
 - [物化视图 DDL 汇总](https://www.yunqi.tech/documents/materialized_ddl)

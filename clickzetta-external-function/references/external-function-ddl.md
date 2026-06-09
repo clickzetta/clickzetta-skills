@@ -1,6 +1,6 @@
 # External Function DDL 参考
 
-> 来源：https://www.yunqi.tech/documents/CREATE_EXTERNATL_FUNCTION 等
+> 来源：https://www.yunqi.tech/documents/create_external_function 等
 
 ## 概念
 

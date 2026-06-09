@@ -131,10 +131,10 @@ DROP INDEX IF EXISTS index_name;
 
 ## 参考文档
 
-- [CREATE BLOOMFILTER INDEX](https://www.yunqi.tech/documents/CREATE-BLOOMFILTER-INDEX)
+- [CREATE BLOOMFILTER INDEX](https://www.yunqi.tech/documents/create-bloomfilter-index)
 - [CREATE INVERTED INDEX](https://www.yunqi.tech/documents/create-inverted-index)
 - [CREATE VECTOR INDEX](https://www.yunqi.tech/documents/create-vector-index)
 - [BUILD INDEX](https://www.yunqi.tech/documents/build-inverted-index)
-- [DROP INDEX](https://www.yunqi.tech/documents/DROP-INDEX)
-- [SHOW INDEX](https://www.yunqi.tech/documents/SHOW-INDEX)
-- [DESC INDEX](https://www.yunqi.tech/documents/DESC-INDEX)
+- [DROP INDEX](https://www.yunqi.tech/documents/drop-index)
+- [SHOW INDEX](https://www.yunqi.tech/documents/show-index)
+- [DESC INDEX](https://www.yunqi.tech/documents/desc-index)

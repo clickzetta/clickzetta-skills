@@ -147,10 +147,10 @@ ANALYZE TABLE schema.table_name;
 
 ## 参考文档
 
-- [EXPLAIN](https://www.yunqi.tech/documents/EXPLAIN)
+- [EXPLAIN](https://www.yunqi.tech/documents/explain)
 - [SHOW JOBS](https://www.yunqi.tech/documents/show-jobs)
 - [Result Cache](https://www.yunqi.tech/documents/result_cache)
-- [OPTIMIZE](https://www.yunqi.tech/documents/OPTIMIZE)
+- [OPTIMIZE](https://www.yunqi.tech/documents/optimize)
 - [小文件优化](https://www.yunqi.tech/documents/small_file_optimization)
 - [Map Join](https://www.yunqi.tech/documents/mapjoin)
 - [推荐排序列](https://www.yunqi.tech/documents/auto-index)

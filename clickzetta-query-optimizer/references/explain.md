@@ -1,6 +1,6 @@
 # EXPLAIN 命令参考
 
-> 来源：https://www.yunqi.tech/documents/EXPLAIN
+> 来源：https://www.yunqi.tech/documents/explain
 
 ## 语法
 

@@ -1,6 +1,6 @@
 # Studio 各模块详细说明
 
-> 来源：https://www.yunqi.tech/documents/LakehouseStudioTour 等官方文档
+> 来源：https://www.yunqi.tech/documents/LakehouseStudio-tour 等官方文档
 
 ---
 

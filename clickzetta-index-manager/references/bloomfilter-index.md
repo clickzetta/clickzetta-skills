@@ -1,6 +1,6 @@
 # Bloom Filter 索引参考
 
-> 来源：https://www.yunqi.tech/documents/CREATE-BLOOMFILTER-INDEX
+> 来源：https://www.yunqi.tech/documents/create-bloomfilter-index
 
 ## 适用场景
 

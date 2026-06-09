@@ -1,6 +1,6 @@
 # ZettaPark 快速参考
 
-> 来源：https://www.yunqi.tech/documents/ZettaparkQuickStart
+> 来源：https://www.yunqi.tech/documents/zettapark-quick-start
 
 ## 安装
 
