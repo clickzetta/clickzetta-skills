@@ -191,7 +191,7 @@ Massive device data continuously written via Kafka; Dynamic Tables aggregate dev
 
 ## Ecosystem Compatibility
 
-Singdata Lakehouse natively supports Apache Iceberg format and supports direct read/write of Delta Lake, Hudi, and Paimon as external tables — existing data lake assets can be onboarded without migration. On the compute ecosystem side, [Spark Connector](spark-connector-summary.md), [Flink Connector](flink-write-connector.md), and Trino Connector are provided for smooth integration with existing big data pipelines. On the BI side, FineBI, Tableau, Superset, Metabase, and PowerBI have all completed integration certification.
+Singdata Lakehouse natively supports Apache Iceberg format and supports direct read/write of Delta Lake, Hudi, and Paimon as external tables — existing data lake assets can be onboarded without migration. On the compute ecosystem side, [Spark Connector](spark-connector-summary.md) and [Flink Connector](flink-write-connector.md) are provided for smooth integration with existing big data pipelines. On the BI side, FineBI, Tableau, Superset, Metabase, and PowerBI have all completed integration certification.
 
 ## Start Here
 

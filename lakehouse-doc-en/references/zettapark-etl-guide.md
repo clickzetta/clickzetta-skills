@@ -14,11 +14,11 @@ from clickzetta.zettapark.window import Window
 session = Session.builder.configs({
     "username": "your_username",
     "password": "your_password",
-    "service":  "cn-shanghai-alicloud.api.singdata.com",
+    "service":  "cn-shanghai-alicloud.api.clickzetta.com",
     "instance": "your_instance",
     "workspace": "your_workspace",
     "schema":   "public",
-    "vcluster": "default"
+    "vcluster": "DEFAULT"
 }).create()
 ```
 
@@ -28,8 +28,9 @@ session = Session.builder.configs({
 
 All examples in this guide use the following two tables. Run this setup before proceeding:
 
+Create tables
+
 ```python
-# Create tables
 session.sql("""
     CREATE TABLE IF NOT EXISTS orders (
         order_id   BIGINT,
@@ -49,8 +50,11 @@ session.sql("""
         level   STRING
     )
 """).collect()
+```
 
-# Insert test data
+Insert test data
+
+```python
 session.sql("""
     INSERT INTO orders VALUES
     (1001, 101, 'iPhone',  7999.00, 'paid',      '2024-01-15'),
@@ -80,9 +84,11 @@ Join the orders and users tables, compute per-user spending summaries, and write
 ```python
 orders = session.table("orders")   # order_id, user_id, product, amount, status, order_date
 users  = session.table("users")    # user_id, name, city, level
+```
 
-# Note: when joining tables with a shared column name (user_id),
-# rename it before joining to avoid ambiguity
+Note: when joining tables with a shared column name (user_id), rename it before joining to avoid ambiguity
+
+```python
 paid = orders.filter(F.col("status") == "paid") \
     .select(
         F.col("order_id"),
@@ -101,15 +107,21 @@ result = paid.join(users, paid["o_user_id"] == users["user_id"]) \
     .sort(F.col("total_amount").desc())
 
 result.show()
-# +-------+-----+---------+------+-----------+------------+---------------+
-# |user_id| name|     city| level|order_count|total_amount|last_order_date|
-# +-------+-----+---------+------+-----------+------------+---------------+
-# |    101|Alice|  Beijing|  gold|          2|    22998.00|     2024-01-17|
-# |    102|  Bob| Shanghai|silver|          1|    14999.00|     2024-01-15|
-# |    103|Carol|Guangzhou|bronze|          1|     8999.00|     2024-01-16|
-# +-------+-----+---------+------+-----------+------------+---------------+
+```
 
-# Write to result table
+```Plain
++-------+-----+---------+------+-----------+------------+---------------+
+|user_id| name|     city| level|order_count|total_amount|last_order_date|
++-------+-----+---------+------+-----------+------------+---------------+
+|    101|Alice|  Beijing|  gold|          2|    22998.00|     2024-01-17|
+|    102|  Bob| Shanghai|silver|          1|    14999.00|     2024-01-15|
+|    103|Carol|Guangzhou|bronze|          1|     8999.00|     2024-01-16|
++-------+-----+---------+------+-----------+------------+---------------+
+```
+
+Write to result table
+
+```python
 result.write.save_as_table("user_order_summary", mode="overwrite")
 ```
 
@@ -121,11 +133,17 @@ result.write.save_as_table("user_order_summary", mode="overwrite")
 
 ```python
 summary = session.table("user_order_summary")
+```
 
-# Rank by spending amount descending
+Rank by spending amount descending
+
+```python
 w_rank = Window.order_by(F.col("total_amount").desc())
+```
 
-# Running total by city
+Running total by city
+
+```python
 w_city = Window.partition_by("city").order_by(F.col("total_amount").desc())
 
 result = summary \
@@ -134,21 +152,25 @@ result = summary \
     .with_column("running_total",  F.sum("total_amount").over(w_city))
 
 result.show()
-# +-------+-----+------+-----------+------------+----+---------+-------------+
-# |user_id| name| level|order_count|total_amount|rank|city_rank|running_total|
-# +-------+-----+------+-----------+------------+----+---------+-------------+
-# |    101|Alice|  gold|          2|    22998.00|   1|        1|     22998.00|
-# |    102|  Bob|silver|          1|    14999.00|   2|        1|     14999.00|
-# |    103|Carol|bronze|          1|     8999.00|   3|        1|      8999.00|
-# +-------+-----+------+-----------+------------+----+---------+-------------+
+```
+
+```Plain
++-------+-----+------+-----------+------------+----+---------+-------------+
+|user_id| name| level|order_count|total_amount|rank|city_rank|running_total|
++-------+-----+------+-----------+------------+----+---------+-------------+
+|    101|Alice|  gold|          2|    22998.00|   1|        1|     22998.00|
+|    102|  Bob|silver|          1|    14999.00|   2|        1|     14999.00|
+|    103|Carol|bronze|          1|     8999.00|   3|        1|      8999.00|
++-------+-----+------+-----------+------------+----+---------+-------------+
 ```
 
 ---
 
 ## Scenario 3: Create a View for BI
 
+Create a paid orders view with year/month dimensions for BI analysis
+
 ```python
-# Create a paid orders view with year/month dimensions for BI analysis
 orders.filter(F.col("status") == "paid") \
     .select(
         F.col("order_id"),
@@ -159,8 +181,11 @@ orders.filter(F.col("status") == "paid") \
         F.year(F.to_date(F.col("order_date"))).alias("year"),
         F.month(F.to_date(F.col("order_date"))).alias("month"),
     ).create_or_replace_view("v_paid_orders")
+```
 
-# BI tools can query the view directly
+BI tools can query the view directly
+
+```python
 session.table("v_paid_orders").show()
 ```
 
@@ -170,15 +195,19 @@ session.table("v_paid_orders").show()
 
 Process only new data after a given point in time — suitable for scheduled incremental ETL:
 
+Process only new orders from 2024-01-16 onwards
+
 ```python
-# Process only new orders from 2024-01-16 onwards
 cutoff = "2024-01-16"
 new_orders = orders.filter(F.col("order_date") >= cutoff)
 
 print(f"New orders: {new_orders.count()}")
 new_orders.show()
+```
 
-# Append new paid orders to the archive table
+Append new paid orders to the archive table (append mode)
+
+```python
 new_orders.filter(F.col("status") == "paid") \
     .write.save_as_table("paid_orders_archive", mode="append")
 ```
@@ -189,21 +218,28 @@ new_orders.filter(F.col("status") == "paid") \
 
 Check data quality before writing:
 
+Check for NULL values
+
 ```python
-# Check for NULL values
 null_counts = orders.select(
     F.count(F.lit(1)).alias("total"),
     F.sum(F.iff(F.is_null(F.col("amount")), F.lit(1), F.lit(0))).alias("null_amount"),
     F.sum(F.iff(F.is_null(F.col("user_id")), F.lit(1), F.lit(0))).alias("null_user_id"),
 )
 null_counts.show()
+```
 
-# Check status distribution
+Check status distribution
+
+```python
 orders.group_by("status").agg(
     F.count(F.lit(1)).alias("cnt")
 ).sort("cnt", ascending=False).show()
+```
 
-# Check for anomalous amounts (negative or excessively large)
+Check for anomalous amounts (negative or excessively large)
+
+```python
 anomalies = orders.filter(
     (F.col("amount") <= 0) | (F.col("amount") > 100000)
 )
@@ -216,8 +252,9 @@ print(f"Anomalous orders: {anomalies.count()}")
 
 Complex logic can be executed directly with `session.sql()`. The result is still a DataFrame and can continue to be chained:
 
+Execute a complex query with SQL, return a DataFrame for further processing
+
 ```python
-# Execute a complex query with SQL, return a DataFrame for further processing
 df = session.sql("""
     SELECT
         user_id,
@@ -227,8 +264,11 @@ df = session.sql("""
     WHERE status = 'paid'
     GROUP BY user_id, DATE_TRUNC('month', TO_DATE(order_date))
 """)
+```
 
-# Continue processing with the DataFrame API
+Continue processing with the DataFrame API
+
+```python
 w = Window.partition_by("user_id").order_by("month")
 df.with_column("cumulative", F.sum("monthly_amount").over(w)).show()
 ```

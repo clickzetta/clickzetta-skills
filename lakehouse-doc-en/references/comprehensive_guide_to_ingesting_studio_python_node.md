@@ -18,7 +18,6 @@ Navigate to Development -> Tasks, click "+", and create a new Python task.
 
 Task Name: 05_Loading Files from the Web into the Lakehouse via Studio's Built-in Python Node.
 
-:-: ![](.topwrite/assets/image_1736148972084.png =427)
 
 ##### Develop Python Task Code
 
@@ -82,25 +81,21 @@ There are two parameters:
 
 ACCESS\_KEY\_ID = '${ak}'ACCESS\_KEY\_SECRET = '${sk}'
 
-Click on the schedule to fill in the default values for the parameters:
+Click on the schedule to fill in the default values for the parameters.
 
-:-: ![](.topwrite/assets/image_1736148983636.png =435)
 
-Click "Load Parameters from Code" and fill in the corresponding values:
+Click "Load Parameters from Code" and fill in the corresponding values.
 
-:-: ![](.topwrite/assets/image_1736148989712.png =431)
 
 ##### Run the Test
 
 Click "Run" to execute the Python code.
 
-:-: ![](.topwrite/assets/image_1736148997078.png =427)
 
 ##### Check the Upload Results
 
 Log in to Alibaba Cloud Object Storage to view the uploaded files.
 
-:-: ![](.topwrite/assets/image_1736149004171.png =415)
 
 #### Next Steps
 

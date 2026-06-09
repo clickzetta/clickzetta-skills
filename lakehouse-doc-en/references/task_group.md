@@ -24,7 +24,7 @@ This article covers how to create, edit, and submit task groups, as well as how 
 
 When you need to batch-copy a group of tasks that have dependencies and recreate those dependencies in the new tasks, you can use the task group copy feature.
 
-![](.topwrite/assets/91c6efc6cd/3c6fcb545a6b507a072943955259ae593b4f1892.jpeg =700)
+^
 
 Add the tasks you want to copy (along with their dependencies) to Task Group 1. After copying Task Group 1, the resulting Task Group 2 will contain:
 
@@ -36,7 +36,7 @@ Add the tasks you want to copy (along with their dependencies) to Task Group 1. 
 
 When you need to refactor a branch in the current task pipeline and batch-update custom variables across tasks, you can combine the downstream link copy feature with task groups.
 
-![](.topwrite/assets/91c6efc6cd/f8dfd42b7ace23593c3f7d3d79bff8eb46d2a1f9.jpeg =751)
+^
 
 On any node (whether it belongs to a task group or is standalone), clicking "Copy Downstream Link" will batch-copy that node and all its downstream nodes.
 
@@ -54,7 +54,7 @@ Before creating a task group, plan and design a business process that fits your 
 
 3. Click OK.
 
-![](.topwrite/assets/image_1722251763584.png =434)
+^
 
 After creation:
 
@@ -65,7 +65,7 @@ After creation:
 
 You can design and manage task nodes and dependencies within a task group in either list mode or DAG mode.
 
-![](.topwrite/assets/image_1722251928404.png)
+^
 
 1. **Create/Add nodes**: Both modes support creating new task nodes or adding existing tasks to the task group.
 
@@ -92,7 +92,7 @@ After successfully creating or adding a node, enter the node's editing interface
 * Click the "Parameters" tab in the task group operation area to open the parameter configuration interface.
 * Click the New button and enter the parameter name and value in the dialog. For details on built-in parameter values, see [Task Parameters](task_param.md). For the full syntax, see [Task Parameter Syntax Reference](task_param_reference.md).
 
-  ![](.topwrite/assets/image_1722252018555.png =497)
+  ^
 
 After creating task group parameters, use them as follows:
 
@@ -102,7 +102,7 @@ After creating task group parameters, use them as follows:
 
 * In the "Value Source" dropdown, select the task group parameter.
 
-  ![](.topwrite/assets/image_1722252102342.png =472)
+  ^
 
 After creating and referencing a task group parameter:
 
@@ -116,12 +116,12 @@ You can use the batch edit scheduling time feature to update the scheduling time
 1. Click "Batch Edit Scheduling Time."
 
 * In DAG editing mode: Hover over the batch button and select "Edit Scheduling Time."
-  ![](.topwrite/assets/image_1736303777548.png =498)
+
 * In list mode: Select the target tasks you want to update, then click "Edit Scheduling Time."
 
 2. Batch edit the scheduling time.
    Select the scheduling time for the batch update. The operation is the same as the scheduling configuration in task scheduling. For details, see [Task Development and Scheduling](task-develop.md).
-   ![](.topwrite/assets/image_1736303843406.png =499)
+
 
 3. Confirm and submit the batch operation.
 
@@ -135,7 +135,7 @@ After editing and creating the task group, you need to submit it to the producti
 
 ## FAQ
 
-**Q1: Why can't I click the Submit button again after the task group has been submitted?**
+**Q1: Why can't I click the Submit button again after the task group has been submitted**?
 
 After a task group is submitted, if no changes have been made (i.e., the status has not changed to "Submitted with modifications"), it cannot be submitted again. To batch-submit task information within the task group, use one of these two approaches:
 
@@ -148,11 +148,13 @@ Task group status changes when:
 * Tasks are added to or removed from the task group.
 * Task group parameters are added, deleted, modified, or queried.
 
----
+***
 
 ## Related Documentation
 
-- [Task Parameters](task_param.md) — Task-level parameter concepts and configuration, and how they differ from task group parameters
-- [Task Parameter Syntax Reference](task_param_reference.md) — Full syntax for built-in parameters and time expressions
-- [Composite Task](composite_task.md) — How composite task parameters and task group parameters work together
-- [Task Development and Scheduling](task-develop.md) — Referencing task group parameters in individual tasks
+* [Task Parameters](task_param.md) — Task-level parameter concepts and configuration, and how they differ from task group parameters
+* [Task Parameter Syntax Reference](task_param_reference.md) — Full syntax for built-in parameters and time expressions
+* [Composite Task](composite_task.md) — How composite task parameters and task group parameters work together
+* [Task Development and Scheduling](task-develop.md) — Referencing task group parameters in individual tasks
+
+^

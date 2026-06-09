@@ -8,10 +8,10 @@ This document provides a concise overview of the multi-table sync task's feature
 
 ## Supported Data Source Types and Versions
 
-| **Type**      | **Incremental Read Mode** | **Database Version** |
-| ------------- | ------------------------- | -------------------- |
-| MySQL         | Binlog                    | 5.6 and above, 8.x   |
-| PostgreSQL    | WAL logs                  | 14 and above         |
+| **Type**   | **Incremental Read Mode** | **Database Version** |
+| ---------- | ------------------------- | -------------------- |
+| MySQL      | Binlog                    | 5.6 and above, 8.x   |
+| PostgreSQL | WAL logs                  | 14 and above         |
 
 ## Source Database Preparation
 
@@ -21,22 +21,22 @@ This document provides a concise overview of the multi-table sync task's feature
 
 Note: Modifying the following parameters requires restarting the PostgreSQL server to take effect.
 
-| Configuration              | Description                                                                                                                                                                                                                                                                                                                                 | Default Value (Unit) |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
+| Configuration              | Description                                                                                                                                                                                                                                                                                                                                     | Default Value (Unit) |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
 | wal\_level                 | WAL level — determines how much information is written to the WAL. `replica`: writes enough data for WAL archiving and replication, including read-only queries on standby servers. `minimal`: records only what is needed to recover from a crash. `logical`: adds information needed for logical decoding. Real-time sync requires `logical`. | replica              |
-| max\_replication\_slots    | Maximum number of replication slots allowed on the server.                                                                                                                                                                                                                                                                                  | 10                   |
-| max\_wal\_senders          | Maximum number of WAL sender processes that can run simultaneously, which determines how many real-time sync tasks can run at the same time.                                                                                                                                                                                                 | 10                   |
-| max\_slot\_wal\_keep\_size | Size of WAL retained per slot. `-1` means unlimited.                                                                                                                                                                                                                                                                                       | -1 (MB)              |
-| wal\_sender\_timeout       | Replication connections idle longer than this value will be terminated.                                                                                                                                                                                                                                                                     | 60000 (ms)           |
+| max\_replication\_slots    | Maximum number of replication slots allowed on the server.                                                                                                                                                                                                                                                                                      | 10                   |
+| max\_wal\_senders          | Maximum number of WAL sender processes that can run simultaneously, which determines how many real-time sync tasks can run at the same time.                                                                                                                                                                                                    | 10                   |
+| max\_slot\_wal\_keep\_size | Size of WAL retained per slot. `-1` means unlimited.                                                                                                                                                                                                                                                                                            | -1 (MB)              |
+| wal\_sender\_timeout       | Replication connections idle longer than this value will be terminated.                                                                                                                                                                                                                                                                         | 60000 (ms)           |
 
 #### MySQL
 
-| Attribute                     | Description                                                                                                                                                                                                                                                                                                                                                                                                                   | Required Setting                                                          | Query Method                                    |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- | ----------------------------------------------- |
-| log\_bin                      | Whether binlog is enabled.                                                                                                                                                                                                                                                                                                                                                                                                    | ON                                                                        | SHOW GLOBAL VARIABLES LIKE 'log\_bin'           |
-| binlog\_format                | Binlog format. Three options: `statement` records SQL statements (compact but can cause inaccurate replication when non-deterministic functions are used); `row` records full before/after row images (accurate but higher volume); `mixed` lets MySQL choose automatically.                                                                                                                                                    | ROW                                                                       | SHOW GLOBAL VARIABLES LIKE 'binlog\_format'     |
-| binlog\_row\_image            | Controls whether full before/after row images are recorded in binlog.                                                                                                                                                                                                                                                                                                                                                         | FULL (record all fields in both images)                                   | SHOW GLOBAL VARIABLES LIKE 'binlog\_row\_image' |
-| binlog\_expire\_logs\_seconds | Binlog automatic cleanup interval.                                                                                                                                                                                                                                                                                                                                                                                            | Configure based on business needs; 86400 seconds (1 day) or more recommended. |                                                 |
+| Attribute                     | Description                                                                                                                                                                                                                                                                  | Required Setting                                                              | Query Method                                    |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------- |
+| log\_bin                      | Whether binlog is enabled.                                                                                                                                                                                                                                                   | ON                                                                            | SHOW GLOBAL VARIABLES LIKE 'log\_bin'           |
+| binlog\_format                | Binlog format. Three options: `statement` records SQL statements (compact but can cause inaccurate replication when non-deterministic functions are used); `row` records full before/after row images (accurate but higher volume); `mixed` lets MySQL choose automatically. | ROW                                                                           | SHOW GLOBAL VARIABLES LIKE 'binlog\_format'     |
+| binlog\_row\_image            | Controls whether full before/after row images are recorded in binlog.                                                                                                                                                                                                        | FULL (record all fields in both images)                                       | SHOW GLOBAL VARIABLES LIKE 'binlog\_row\_image' |
+| binlog\_expire\_logs\_seconds | Binlog automatic cleanup interval.                                                                                                                                                                                                                                           | Configure based on business needs; 86400 seconds (1 day) or more recommended. |                                                 |
 
 ### Database Permission Configuration
 
@@ -46,7 +46,7 @@ When syncing change events from different data sources, appropriate permissions 
 
 When executing grant SQL statements, **ensure the executing account itself has the ability to grant those permissions — using an administrator account is recommended**. To ensure the task runs smoothly, **execute the grants for all scenarios listed below**.
 
-**Scenario: Task configuration (fetching metadata: schema list, table list, field list)**
+**Scenario: Task configuration (fetching metadata: schema list, table list, field list**)
 
 Required permissions:
 
@@ -81,7 +81,7 @@ Grant statement:
 CREATE ROLE <name> REPLICATION LOGIN;
 ```
 
-**Scenario: Sync historical full data (optional)**
+**Scenario: Sync historical full data (optional**)
 
 Required permissions:
 
@@ -121,7 +121,7 @@ Grant statement:
 
 When executing grant SQL statements, **ensure the executing account has the GRANT OPTION privilege — using a superuser account such as root is recommended**. To ensure the task runs smoothly, **execute the grants for all scenarios listed below**.
 
-**Scenario: Task configuration (fetching metadata: database list, table list, field list)**
+**Scenario: Task configuration (fetching metadata: database list, table list, field list**)
 
 Required permissions:
 
@@ -180,7 +180,7 @@ Grant statement:
 
 In the task development interface, click **New** and select the **Multi-table Real-time Sync** task type.
 
-![](.topwrite/assets/image_1742960426271.png =308)
+:-: ![](/.topwrite/assets/image_1780885657238.png =616)
 
 ### Main Steps
 
@@ -195,7 +195,7 @@ Creating a multi-table real-time sync task involves four main steps:
 
 First, select the source and target data source types. Currently supported source types are shown below:
 
-![](/.topwrite/assets/image_1762748306754.png =680)
+:-: ![](/.topwrite/assets/image_1780885709691.png =701)
 
 ### Select Sync Mode
 
@@ -205,7 +205,7 @@ Three sync modes are available — choose based on your scenario:
 * **Multi-table mirror**: Mirrors selected source tables to the target. Configuration is at the table level; supports automatic detection of added and removed fields.
 * **Multi-table merge**: Merges data from sharded databases and tables into a single target table.
 
-  ![](/.topwrite/assets/image_1762757109125.png =680)
+  ![](/.topwrite/assets/image_1780885741932.png =725)
 
 #### Multi-table Mirror
 
@@ -248,9 +248,7 @@ After completing the source and target configuration, you can preview the table 
 
 **Sync rules**
 
-In the sync rules section, configure Schema Evolution rules to define how the task responds to source table and field changes, as well as which source change event types to process.
-
-  ![](/.topwrite/assets/image_1762757310752.png =680)
+In the sync rules section, configure Schema Evolution rules to define how the task responds to source table and field changes, as well as which source change event types to process.![](/.topwrite/assets/image_1780885830847.png =710)
 
 #### Full-database Mirror
 
@@ -285,20 +283,18 @@ In the **Parameters** section of a multi-table real-time sync task, you can set 
 
 > ⚠️ **Note**: These parameters should generally be left at their default values. Only modify them when necessary, and consult your technical support team first.
 
-![](.topwrite/assets/image_1756200956528.png =680)
-
-| Parameter Name                              | Description                                                       | Default Value |
-| ------------------------------------------- | ----------------------------------------------------------------- | ------------- |
-| step1.taskmanager.memory.process.size       | Total memory for the incremental sync task process                | 1600m         |
-| step1.taskmanager.memory.task.off-heap.size | Off-heap memory for the incremental sync task process             | 256m          |
-| step2.taskmanager.memory.process.size       | Total memory for the full sync task process                       | 2000m         |
-| lh.table.cz.common.output.file.max.size     | Maximum size of individual files written during full sync         | 33554432      |
-| lh.table.cz.common.output.enable.rotate     | Whether to split files during full sync writes                    | true          |
-| pod.limit.memory                            | Memory limit for the client that submits the sync task            | 1Gi           |
+| Parameter Name                              | Description                                               | Default Value |
+| ------------------------------------------- | --------------------------------------------------------- | ------------- |
+| step1.taskmanager.memory.process.size       | Total memory for the incremental sync task process        | 1600m         |
+| step1.taskmanager.memory.task.off-heap.size | Off-heap memory for the incremental sync task process     | 256m          |
+| step2.taskmanager.memory.process.size       | Total memory for the full sync task process               | 2000m         |
+| lh.table.cz.common.output.file.max.size     | Maximum size of individual files written during full sync | 33554432      |
+| lh.table.cz.common.output.enable.rotate     | Whether to split files during full sync writes            | true          |
+| pod.limit.memory                            | Memory limit for the client that submits the sync task    | 1Gi           |
 
 ### Submit
 
-Click **Submit** to publish the task to the production environment. **Note: the task does not start automatically after submission — you must start it manually.**
+Click **Submit** to publish the task to the production environment. **Note: the task does not start automatically after submission — you must start it manually**.
 
 ## Task Operations
 
@@ -324,41 +320,38 @@ Go to the task details page to start the task. Choose one of the following start
 #### Phase Monitoring
 
 After the task starts, it goes through three phases: initialization, full sync, and incremental sync. You can view the status of each phase in the instance monitoring area.
-![](.topwrite/assets/image_1710215195619.png =640)
 
 #### Metrics Monitoring
 
 The metrics monitoring area shows key indicators for both full sync and incremental sync.
-![](.topwrite/assets/image_1710215099675.png =640)
 
-| **Metric**         | **Description**                                                                                                                                                                             |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Data read          | Number of records read from the source during the measurement period.                                                                                                                       |
-| Data written       | Number of records written to the target during the measurement period.                                                                                                                      |
-| Avg. read rate     | Average read rate during the measurement period (total records read / period duration).                                                                                                     |
-| Avg. write rate    | Average write rate during the measurement period (total records written / period duration).                                                                                                 |
-| Failover count     | Number of failovers during the measurement period. This reflects the stability of the sync service itself. Only the most recent 10 failover events are shown by default.                    |
+| **Metric**      | **Description**                                                                                                                                                          |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Data read       | Number of records read from the source during the measurement period.                                                                                                    |
+| Data written    | Number of records written to the target during the measurement period.                                                                                                   |
+| Avg. read rate  | Average read rate during the measurement period (total records read / period duration).                                                                                  |
+| Avg. write rate | Average write rate during the measurement period (total records written / period duration).                                                                              |
+| Failover count  | Number of failovers during the measurement period. This reflects the stability of the sync service itself. Only the most recent 10 failover events are shown by default. |
 
 ### Sync Objects
 
 The sync objects area shows the final sync state for each individual table and provides per-table operations.
-![](.topwrite/assets/image_1710212959106.png =640)
 
-| **Metric**           | **Description**                                                                                                                         |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| **Metric**           | **Description**                                                                                                                             |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | Latest read position | The task reads source data in real time and writes it to the target. The write time of the most recent record is used as the read position. |
-| Latest update time   | The last time a record was written to the target table.                                                                                 |
-| Data latency         | The time between a transaction committing on the source and the data becoming visible on the target.                                    |
+| Latest update time   | The last time a record was written to the target table.                                                                                     |
+| Data latency         | The time between a transaction committing on the source and the data becoming visible on the target.                                        |
 
-| **Operation**       | **Description**                                                                                                                                                                                                                 |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Full sync details   | Opens the full sync task view for this table.                                                                                                                                                                                   |
-| Prioritize          | During the full sync phase, bumps this table's priority so it is processed first.                                                                                                                                               |
-| Cancel run          | Cancels the current sync run for this table.                                                                                                                                                                                    |
-| Force stop          | Force-stops the sync sub-task process for this table. Because multiple tables may share a sub-task, this may also affect other tables — use with caution.                                                                       |
-| Resync              | Re-runs both full sync and incremental sync for this table.                                                                                                                                                                     |
-| View exceptions     | Shows exception details for this table's incremental sync, such as Schema Evolution errors.                                                                                                                                     |
-| Backfill sync       | Runs a targeted full sync for this table using a filter condition — for example, filtering by ID range to sync a subset of data.                                                                                                 |
+| **Operation**     | **Description**                                                                                                                                           |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Full sync details | Opens the full sync task view for this table.                                                                                                             |
+| Prioritize        | During the full sync phase, bumps this table's priority so it is processed first.                                                                         |
+| Cancel run        | Cancels the current sync run for this table.                                                                                                              |
+| Force stop        | Force-stops the sync sub-task process for this table. Because multiple tables may share a sub-task, this may also affect other tables — use with caution. |
+| Resync            | Re-runs both full sync and incremental sync for this table.                                                                                               |
+| View exceptions   | Shows exception details for this table's incremental sync, such as Schema Evolution errors.                                                               |
+| Backfill sync     | Runs a targeted full sync for this table using a filter condition — for example, filtering by ID range to sync a subset of data.                          |
 
 ### Stop the Task
 
@@ -382,20 +375,20 @@ Unpublishing a task is a high-risk operation. The current sync checkpoint is not
 
 * Unsupported field types for MySQL sync:
 
-  | Field type | Behavior after sync     |
-  | ---------- | ----------------------- |
-  | year       | Values are not correct  |
+  | Field type | Behavior after sync    |
+  | ---------- | ---------------------- |
+  | year       | Values are not correct |
 
 * Unsupported field types for PostgreSQL sync:
 
-  | Field type | Behavior after sync                                        |
-  | ---------- | ---------------------------------------------------------- |
-  | varbit     | Values are not correct                                     |
-  | bytea      | Values are not correct                                     |
-  | TIMETZ     | Values are not correct                                     |
-  | interval   | Values are not correct                                     |
-  | NAME       | Values are not correct                                     |
-  | NUMERIC    | Precision mismatch — target-side precision may be higher   |
-  | decimal    | Precision mismatch — target-side precision may be higher   |
+  | Field type | Behavior after sync                                      |
+  | ---------- | -------------------------------------------------------- |
+  | varbit     | Values are not correct                                   |
+  | bytea      | Values are not correct                                   |
+  | TIMETZ     | Values are not correct                                   |
+  | interval   | Values are not correct                                   |
+  | NAME       | Values are not correct                                   |
+  | NUMERIC    | Precision mismatch — target-side precision may be higher |
+  | decimal    | Precision mismatch — target-side precision may be higher |
 
 For more details, see [Multi-Table Real-Time Sync Complete Guide](multitable_realtime_sync_sop.md).

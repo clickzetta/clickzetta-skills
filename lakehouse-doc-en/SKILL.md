@@ -1,16 +1,11 @@
 ---
 name: lakehouse-doc-en
-description: |
-  Singdata/Clickzetta Lakehouse official documentation knowledge base (English). Consult references/
-  when writing SQL or answering questions about query syntax, functions, data types, DDL/DML,
-  dynamic tables, permissions, vclusters, data lake, AI functions, external catalog federation queries,
-  and other Lakehouse topics.
-  Keywords: documentation, SQL syntax, functions, DDL, DML, data types, permissions, vcluster, reference
+description: "Singdata Lakehouse official documentation knowledge base (English). Consult references/ when writing SQL or answering questions about query syntax, functions, data types, DDL/DML, dynamic tables, permissions, vclusters, data lake, AI functions, and other Lakehouse topics."
 ---
 
 # lakehouse-doc-en
 
-Singdata/Clickzetta Lakehouse official documentation (English). Locate docs by filename under `references/` based on the user's question.
+Singdata Lakehouse official documentation (English). Locate docs by filename under `references/` based on the user's question.
 
 ## references/ layout
 
@@ -52,9 +47,9 @@ references/
 
 ## Document Index (llms.txt)
 
-# Singdata/Clickzetta Lakehouse Documentation (LLM Navigation)
+# Singdata Lakehouse Documentation (LLM Navigation)
 
-> Singdata/Clickzetta Lakehouse is a fully managed lakehouse architecture platform built from the ground up on cloud-native design principles. Through **storage-compute separation**, **Serverless elastic architecture**, **open storage formats**, and **AI-optimized tools**, it provides enterprises with a unified platform for data warehousing, data lakes, real-time processing, and BI reporting. [Free Trial](https://www.singdata.com)
+> Singdata Lakehouse is a fully managed lakehouse architecture platform built from the ground up on cloud-native design principles. Through **storage-compute separation**, **Serverless elastic architecture**, **open storage formats**, and **AI-optimized tools**, it provides enterprises with a unified platform for data warehousing, data lakes, real-time processing, and BI reporting. [Free Trial](https://www.singdata.com)
 
 
 ## Quick Start
@@ -106,7 +101,7 @@ references/
 
 ## Practice Tutorials
 
-- [Efficient Object and Data Organization Management](references/data_org.md):
+- [Efficient Object and Data Organization Management](references/data_org.md): 
 - [Data Import and Export Practice](references/practice_data_import_and_export.md): An empty placeholder page with no substantive content.
 - [Data Lake Acceleration](references/datalake-acceleration.md): Brief overview of in-place data lake acceleration, connecting directly to an existing Hive Metastore and object storage via External Schema to replace Spark/Hive ETL and Presto/Trino queries with Serverless compute.
 - [Migration Guide](references/tutorial_migration.md): Migration guide hub mapping source systems (Databricks/PySpark, RDD, Spark SQL, Snowflake, Medallion) to recommended Lakehouse migration paths with links and path-selection advice.
@@ -114,7 +109,7 @@ references/
 - [Building and Maintaining ELT Processes](references/ELT_practice.md): Placeholder page for ELT practice in Singdata Lakehouse; currently empty with no substantive content.
 - [Optimize Computing Resources](references/optimizing-computing-resources.md): Placeholder page for optimizing computing resources in Singdata Lakehouse; currently empty with no substantive content.
 - [Performance Experience](references/performence_test.md): Empty placeholder page intended for performance testing content; no substantive material is present beyond a content marker.
-- [Modern Data Stack with Ecosystem Tools](references/modern-data-stack-with-ecosystem-tools.md):
+- [Modern Data Stack with Ecosystem Tools](references/modern-data-stack-with-ecosystem-tools.md): 
 - [AI Application Development](references/ai_app_dev_practical.md): Brief landing page introducing practical guides for building AI-powered applications on Singdata Lakehouse.
 - [Security Compliance Audit](references/security_compliance_audit_dir_guide.md): A brief section header introducing security and compliance audit topics.
 - [Cost Management](references/cost_management.md): Stub page titled Cost Management for Singdata Lakehouse, intended to cover billing and cost control topics but currently without content.

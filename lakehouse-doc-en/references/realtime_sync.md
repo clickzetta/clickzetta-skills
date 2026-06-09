@@ -26,5 +26,4 @@ Here, we take the real-time sync of Kafka data source to Lakehouse as an example
 
   After submission, you can perform start and stop operations and monitoring of real-time sync tasks in the Operations Center.
 
-
 ^

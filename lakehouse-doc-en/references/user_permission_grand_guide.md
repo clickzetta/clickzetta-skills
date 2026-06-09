@@ -8,7 +8,7 @@ This guide also validates the process through a hands-on experiment.
 
 ^
 
-:-: ![](.topwrite/assets/image_1747735632210.png =796)
+
 
 ^
 

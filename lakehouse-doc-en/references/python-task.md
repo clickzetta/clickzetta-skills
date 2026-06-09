@@ -1,6 +1,6 @@
 # Python Task
 
-> [Preview Release] This feature is currently in the invite-only preview release phase. To use it, please contact our technical support team for assistance.
+> \[Preview Release] This feature is currently in the invite-only preview release phase. To use it, please contact our technical support team for assistance.
 
 In many data analysis and processing scenarios, especially in BI+AI analysis scenarios, combining Python and SQL can greatly improve the efficiency of data analysis and processing. In Singdata Lakehouse, we provide a Python script task type for running Python code.
 

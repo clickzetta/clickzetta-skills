@@ -99,6 +99,6 @@ if st.button('Generate Chart') and sql:
 ## Reference Resources
 
 * [Streamlit Official Documentation](https://docs.streamlit.io/library/get-started)
-* [Singdata Lakehouse Official Documentation](https://docs.singdata.com/lakehouse/)
+* [Singdata Lakehouse Official Documentation](https://singdata.com/documents)
 
 ^

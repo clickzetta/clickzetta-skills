@@ -28,7 +28,7 @@ Choose your onboarding path by role. Most scenarios can be completed in 30 minut
 
 **Step 3 — Build your data processing pipeline**
 
-[Dynamic Table Incremental Computation](incremental-computing.md) · [Studio Task Development and Scheduling](task-develop.md) · [End-to-End CDC Complete Example](czguide-intro-to-cdc-using-clickzetta-rtsync-dynamic-tables.md)
+[Dynamic Table Incremental Computation](incremental-computing.md) · [Studio Task Development and Scheduling](task-develop.md) · [Data Engineering Agent](dataagent.md) (natural language ETL development, task management) · [End-to-End CDC Complete Example](czguide-intro-to-cdc-using-clickzetta-rtsync-dynamic-tables.md)
 
 **Step 4 — Connect external tools**
 
@@ -79,6 +79,7 @@ Choose your onboarding path by role. Most scenarios can be completed in 30 minut
 | Call LLMs in SQL | [AI Functions (AI\_COMPLETE / AI\_EMBEDDING)](ai_function_in_sql.md) |
 | Manage and switch between multiple LLM models | [AI Gateway](aigateway.md) |
 | Natural language conversational data analysis | [Data Analytics Agent](datagpt_introduction.md) |
+| Natural language ETL development, task management, operations diagnostics | [Data Engineering Agent](dataagent.md) |
 | Python data processing + AI inference | [Zettapark Quick Start](zettapark-quick-start.md) |
 
 </td>
@@ -121,6 +122,7 @@ Choose your onboarding path by role. Most scenarios can be completed in 30 minut
 | Python data read/write | [Zettapark](zettapark-quick-start.md) · [clickzetta-connector](python_reference/connector.md) |
 | Business semantic layer queries | [Semantic View](semantic-view-overview.md) |
 | Collaborate with a specialized data sub-agent | [cz-cli agent run](setup_cz_cli.md) |
+| Browser automation Web Agent | [Singclaw](https://www.singclaw.ai/) |
 
 </td>
 </tr>
@@ -159,6 +161,7 @@ Choose your onboarding path by role. Most scenarios can be completed in 30 minut
 | Experience engine performance (TPC-H) | [Experience Performance with TPC-H Sample Data](get-started-with-sample-data.md) |
 | Write complex business analytics SQL | [SQL Usage Guide](considerations-for-using-sql.md) |
 | Use AI to analyze data conversationally | [Data Analytics Agent (DataGPT)](lakehousedatagpt-tour.md) |
+| Use AI for ETL development / task management | [Data Engineering Agent](dataagent.md) |
 | Build vector search / RAG knowledge base | [Vector Search](vector_search_ai.md) |
 | Process data with Python (Zettapark) | [Zettapark Quick Start](zettapark-quick-start.md) |
 | Migrate from Spark to Lakehouse | [Migration Guide](tutorial_migration.md) |

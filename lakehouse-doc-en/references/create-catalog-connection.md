@@ -251,3 +251,4 @@ DROP CONNECTION my_conn;
 - [Create External Schema](create-external-schema.md) — Mount an external database into the current workspace
 - [Create Storage Connection](create-storage-connection.md) — Storage Connection required by HMS
 - [Accessing Iceberg Tables in Snowflake Open Catalog](query-snowflake-open-catalog-iceberg-table.md)
+- [Databricks Unity Catalog Federated Query Practice](databricks-external-catalog-practice.md) — Complete path from Databricks-side configuration to query verification

@@ -9,7 +9,6 @@ In the **Lakehouse** platform, the application scenarios of Private Link mainly 
 **1. User VPC → Lakehouse (Inbound)**
 Within the same region and availability zone of the cloud vendor, access Lakehouse (JDBC gateway, IGS, etc.) services from the user's VPC through the cloud vendor's Private Link service.
 
-:-: ![](.topwrite/assets/Unnamed_Drawing.drawio.png)
 
 For example:
 
@@ -22,7 +21,6 @@ At this time, the Lakehouse Private Link feature is needed to establish an endpo
 **2. Lakehouse → User VPC (Outbound)**
 When it is necessary to connect from Lakehouse (located in Singdata VPC) to user-defined services (such as a self-built MySQL database within the user VPC), Private Link is also used for private network access.
 
-:-: ![](.topwrite/assets/private_link_access_customer.png)
 
 For example:
 A financial company chooses to use Lakehouse for unified data storage and analysis, but its core business database is stored within a private VPC and has strict security policies prohibiting the exposure of database ports to the public internet. Lakehouse needs to read data in real-time for subsequent analysis and risk control model training.

@@ -53,12 +53,10 @@ WHERE     seller_id = '05e107217c7266362fd44b75b2cd4cc4';
 * Log into the Singdata Lakehouse console using an account with the "Instance Administrator" (`instance_admin`) role.
 * In the left navigation, select "Data" → "Data Sharing", and click "+ New Share".
 
-:-: ![](.topwrite/assets/image_1740388043727.png =742)
 
 * In the dialog, fill in the share name (e.g., shipping_detail), and select the workspace where the data to be shared is located.
 * Note: The data to be shared must be in the same workspace. If the data itself is distributed across multiple workspaces, you can create views of the data to be shared from other workspaces within one workspace to centralize all data to be shared into the same workspace.
 
-:-: ![](.topwrite/assets/image_1740388342928.png =438)
 
 **2) Add Data Objects to Share**
 
@@ -66,7 +64,6 @@ Continuing in the Create Share dialog, click "Add" and select the objects to sha
 
 After clicking "Done", the view will be included in the share list.
 
-:-: ![](.topwrite/assets/image_1740388392799.png =537)
 
 ^
 
@@ -74,7 +71,6 @@ After clicking "Done", the view will be included in the share list.
 
 In the same dialog, click the "Add" button below "Recipient Instances", enter Enterprise B's Singdata Lakehouse "Service Instance Name" (which Enterprise B needs to provide; it can be found in the upper right area of the homepage after logging into their service instance), and click Done.
 
-:-: ![](.topwrite/assets/image_1740388438814.png =531)
 
 ^
 
@@ -88,7 +84,6 @@ Subsequently, you can edit this Data Share to add or remove data objects to shar
 
 After creation, you can see the newly created Data Share object in the "Data Sharing" → "Shared by Me" list.
 
-:-: ![](.topwrite/assets/image_1740390203623.png =718)
 
 ^
 

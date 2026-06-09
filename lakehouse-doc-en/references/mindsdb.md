@@ -1,4 +1,4 @@
-# Introduction to MindsDB
+# Connecting MindsDB to Singdata Lakehouse
 
 > ⚠️ **Note:** If your goal with MindsDB is to call AI models on your data, Singdata Lakehouse provides native AI capabilities — no need to deploy or maintain a MindsDB service:
 >

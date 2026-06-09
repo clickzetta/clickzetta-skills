@@ -12,7 +12,7 @@ Answer: The cost of data sync tasks is generally composed of two categories: har
 
 ### Question: What data sources are currently supported for offline sync?
 
-Answer: On the task configuration page, when selecting the source and target, all supported data source types are listed in full. If no data source is available, click the **+** button to create a new one first, then use it. Offline sync data sources can be freely combined in pairs to build a rich variety of sync links. See: [Data Source Management](config-datasource.md)
+Answer: On the task configuration page, when selecting the source and target, all supported data source types are listed in full. If no data source is available, click the + button to create a new one first, then use it. Offline sync data sources can be freely combined in pairs to build a rich variety of sync links. See: [Data Source Management](config-datasource.md)
 
 ^
 
@@ -82,7 +82,7 @@ Solution: Typically, the following solutions are available:
 
 * Refer to the heap memory overflow solution and adjust the `taskmanager.memory.process.size` parameter.
 * Separately adjust the task off-heap memory size by adjusting the `taskmanager.memory.task.off-heap.size` parameter, e.g., 256m or 512m.
-* If the data source supports setting batch size, reduce the configured value appropriately. **However, note that this may lead to reduced sync efficiency.**
+* If the data source supports setting batch size, reduce the configured value appropriately. **However, note that this may lead to reduced sync efficiency**.
 
 ### Question: How to resolve the error `CZLH-67000:Out of Memory undefined: could not allocate block of size 262KB (1.0GB/1.0GB used)`?
 

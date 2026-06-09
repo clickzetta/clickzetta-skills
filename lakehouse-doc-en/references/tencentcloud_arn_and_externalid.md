@@ -10,7 +10,6 @@ When configuring Private Link to access the Lakehouse network, to ensure that th
 
 You need to click "Create Role" on the Tencent Cloud Access Control page (<https://console.cloud.tencent.com/cam/role>) and select the role carrier as: Tencent Cloud Account:
 
-:-: ![](.topwrite/assets/image_1733066596983.png =383)
 
 Select "Other Main Account" for "Account Type";
 
@@ -18,12 +17,9 @@ Fill in the UID displayed on the Lakehouse page in the "Account ID";
 
 Check "Enable Verification" in the "External ID" option, and customize a string of characters for subsequent verification use.
 
-:-: ![](.topwrite/assets/image_1733066790847.png =813)
+
 
 In the "Configure Role Policy", find and check the "Private Network (VPC) Read-Only Access" policy (Lakehouse needs to call the DescribeVpcEndPoint and DescribeVpcEndPointService interfaces through this role);
 
-:-: ![](.topwrite/assets/image_1733067463964.png =753)
 
 Define the role name and click the "Complete" button to complete the role creation.
-
-:-: ![](.topwrite/assets/image_1733067522805.png =747)

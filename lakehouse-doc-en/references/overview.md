@@ -13,7 +13,7 @@ Supports seven global clouds, already live in multiple Asia-Pacific regions, and
 <td style="width:25%; vertical-align:top; overflow-wrap:break-word;"><strong>Lake Acceleration (existing data lake)</strong><br>
 <small><a href="lakehouse-acceleration-guide.md">In-Place Lake Acceleration Guide</a> · <a href="external-catalog-summary.md">External Catalog Federation</a> · <a href="external-table-guide.md">External Tables</a> · <a href="external_volume.md">Object Storage Mount</a> · <a href="benchmark_guide.md">Performance Testing</a></small></td>
 <td style="width:25%; vertical-align:top; overflow-wrap:break-word;"><strong>AI Data Infrastructure</strong><br>
-<small><a href="LakehouseAI-overview.md">Lakehouse AI Overview</a> · <a href="server-data-for-ai.md">AI Data Readiness</a> · <a href="vector_search_ai.md">Vector Search</a> · <a href="AIGateway.md">AI Gateway</a> · <a href="datagpt_introduction.md">Data Analytics Agent</a></small></td>
+<small><a href="LakehouseAI-overview.md">Lakehouse AI Overview</a> · <a href="server-data-for-ai.md">AI Data Readiness</a> · <a href="vector_search_ai.md">Vector Search</a> · <a href="AIGateway.md">AI Gateway</a> · <a href="datagpt_introduction.md">Data Analytics Agent</a> · <a href="dataagent.md">Data Engineering Agent</a></small></td>
 <td style="width:25%; vertical-align:top; overflow-wrap:break-word;"><strong>Cloud Platforms and Deployment</strong><br>
 <small><a href="Supported-Cloud-Platforms.md">Supported Cloud Platforms and Regions</a> · <a href="pricing.md">Pricing and Billing</a></small></td>
 </tr>
@@ -63,7 +63,7 @@ Dedicated paths for data engineers, analysts, AI engineers, and administrators<b
 <td style="width:22%; vertical-align:top; overflow-wrap:break-word;"><strong>Data Engineer</strong><br><small>Build data pipelines, ETL processing, manage data warehouse layers</small></td>
 <td style="vertical-align:top; overflow-wrap:break-word;">
 
-[Dynamic Table Incremental Computation](incremental-computing.md) · [Dynamic Table Overview](dynamic_table_summary.md) · [Real-time Data Pipeline](streaming_data_pipeline_overview.md) · [Studio Task Development and Scheduling](task-develop.md) · [Task Parameters](task_param.md) · [CREATE TABLE Syntax Reference](create-table-ddl.md) · [SQL Syntax Reference](sql-reference.md) · [COPY INTO](copy-into-table.md) · [cz-cli Command-Line Tool](setup_cz_cli.md) · [TPC-DS Performance Testing](tpcds-benchmark.md)
+[Dynamic Table Incremental Computation](incremental-computing.md) · [Dynamic Table Overview](dynamic_table_summary.md) · [Real-time Data Pipeline](streaming_data_pipeline_overview.md) · [Studio Task Development and Scheduling](task-develop.md) · [Task Parameters](task_param.md) · [CREATE TABLE Syntax Reference](create-table-ddl.md) · [SQL Syntax Reference](sql-reference.md) · [COPY INTO](copy-into-table.md) · [cz-cli Command-Line Tool](setup_cz_cli.md) · [Data Engineering Agent](dataagent.md) · [TPC-DS Performance Testing](tpcds-benchmark.md)
 
 </td>
 </tr>
@@ -95,7 +95,7 @@ Dedicated paths for data engineers, analysts, AI engineers, and administrators<b
 <td style="width:22%; vertical-align:top; overflow-wrap:break-word;"><strong>AI Agent / Automation</strong><br><small>Deterministic interface calls, semantic layer queries, automated data pipelines</small></td>
 <td style="vertical-align:top; overflow-wrap:break-word;">
 
-[cz-cli Command-Line Tool](setup_cz_cli.md) (deterministic interface, ideal for Agent calls) · [Semantic View](semantic-view-overview.md) (business semantic layer, natural-language friendly) · [Python SDK (SQL interface)](python_reference/connector.md) · [ZettaPark (DataFrame API)](lakehousepython-zettapark.md) · [Data Analytics Agent](datagpt_introduction.md)
+[cz-cli Command-Line Tool](setup_cz_cli.md) (deterministic interface, ideal for Agent calls) · [Semantic View](semantic-view-overview.md) (business semantic layer, natural-language friendly) · [Python SDK (SQL interface)](python_reference/connector.md) · [ZettaPark (DataFrame API)](lakehousepython-zettapark.md) · [Data Analytics Agent](datagpt_introduction.md) · [Data Engineering Agent](dataagent.md) · [Singclaw](https://www.singclaw.ai/)
 
 </td>
 </tr>
@@ -142,7 +142,7 @@ Define transformation logic with standard SQL. Dynamic Table automatically detec
 
 Vectorized execution engine. Leading industry performance on TPC-DS / TPC-H / SSB benchmarks. Supports OLAP multi-dimensional analysis and ad-hoc queries — up to 10× faster than traditional Spark architectures.
 
-[Performance Testing](benchmark_guide.md) · [SQL Usage Guide](considerations-for-using-sql.md) · [TPC-H Sample Experience](get-started-with-sample-data.md)
+[Performance Testing](benchmark_guide.md) · [SQL Usage Guide](considerations-for-using-sql.md)
 
 </td>
 </tr>
@@ -151,9 +151,9 @@ Vectorized execution engine. Leading industry performance on TPC-DS / TPC-H / SS
 
 **AI-Native**
 
-Vector indexes, full-text search, AI Functions (AI\_COMPLETE / AI\_EMBEDDING), and Semantic Views are built into the data platform. Build RAG knowledge bases and AI-enhanced analytics without external services. Data Analytics Agent supports natural language conversational data queries.
+Vector indexes, full-text search, AI Functions (AI\_COMPLETE / AI\_EMBEDDING), and Semantic Views are built into the data platform. Build RAG knowledge bases and AI-enhanced analytics without external services. Data Analytics Agent supports natural language conversational data queries; Data Engineering Agent supports natural language ETL development, task management, and operations diagnostics.
 
-[Lakehouse AI Overview](lakehouseai-overview.md) · [Vector Search](vector_search_ai.md) · [AI Functions](ai_function_in_sql.md) · [Semantic View](semantic-view-overview.md) · [Data Analytics Agent](datagpt_introduction.md)
+[Lakehouse AI Overview](lakehouseai-overview.md) · [Vector Search](vector_search_ai.md) · [AI Functions](ai_function_in_sql.md) · [Semantic View](semantic-view-overview.md) · [Data Analytics Agent](datagpt_introduction.md) · [Data Engineering Agent](dataagent.md) · [Singclaw](https://www.singclaw.ai/)
 
 </td>
 <td style="width:50%; vertical-align:top; padding:0 0 0 16px; overflow-wrap:break-word;">
@@ -183,5 +183,4 @@ Built-in IDE, task scheduling, data integration, data quality, and operations mo
 | [Before You Begin](setup.md) | Ways to access Lakehouse: Studio, CLI, drivers and connectors |
 | [Account Signup and Setup](logging-in.md) | Register an account, activate a service instance, complete initialization |
 | [Supported Cloud Platforms](supported-cloud-platforms.md) | Supported cloud providers and available regions |
-| [Pricing and Billing](pricing.md) | Billing model and cost breakdown |
 | [Trial Account Quotas and Limits](trial-account-quotas-and-limits.md) | Resource quota limits during the trial period |

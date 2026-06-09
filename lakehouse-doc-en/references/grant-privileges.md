@@ -1,3 +1,5 @@
+# GRANT
+
 ## Function Description
 
 Grants specified privileges to a role or user, enabling fine-grained access control for workspace resources.

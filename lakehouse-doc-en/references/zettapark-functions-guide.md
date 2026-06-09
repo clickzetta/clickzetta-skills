@@ -11,11 +11,11 @@ from clickzetta.zettapark.session import Session
 session = Session.builder.configs({
     "username": "your_username",
     "password": "your_password",
-    "service":  "cn-shanghai-alicloud.api.singdata.com",
+    "service":  "cn-shanghai-alicloud.api.clickzetta.com",
     "instance": "your_instance",
     "workspace": "your_workspace",
     "schema":   "public",
-    "vcluster": "default"
+    "vcluster": "DEFAULT"
 }).create()
 ```
 
@@ -25,8 +25,9 @@ Examples in each section use `create_dataframe` to create DataFrames directly fr
 
 ## String Functions
 
+Create sample data
+
 ```python
-# Create sample data
 df = session.create_dataframe(
     [(1, "Alice"), (2, "  hello world  "), (3, "bob")],
     schema=["id", "name"]
@@ -70,13 +71,16 @@ df.select(
     F.replace(F.col("name"), "world", "Lakehouse").alias("replaced"),
     F.regexp_replace(F.col("name"), r"\s+", "_").alias("no_space"),
 ).show()
-# +---+---------------+------------+---+------------------+---------------+
-# | id|          upper|        trim|len|          replaced|       no_space|
-# +---+---------------+------------+---+------------------+---------------+
-# |  1|  HELLO WORLD  | hello world| 11|  hello Lakehouse |_hello_world_  |
-# |  2|          ALICE|       Alice|  5|             Alice|          Alice|
-# |  3|            BOB|         bob|  3|               bob|            bob|
-# +---+---------------+------------+---+------------------+---------------+
+```
+
+```Plain
++---+---------------+------------+---+------------------+---------------+
+| id|          upper|        trim|len|          replaced|       no_space|
++---+---------------+------------+---+------------------+---------------+
+|  1|  HELLO WORLD  | hello world| 11|  hello Lakehouse |_hello_world_  |
+|  2|          ALICE|       Alice|  5|             Alice|          Alice|
+|  3|            BOB|         bob|  3|               bob|            bob|
++---+---------------+------------+---+------------------+---------------+
 ```
 
 ---
@@ -112,12 +116,15 @@ df.select(
     F.greatest(F.col("a"), F.col("b")).alias("max_ab"),
     F.least(F.col("a"), F.col("b")).alias("min_ab"),
 ).show()
-# +-----+----+-----+-------+------+------+
-# |round|ceil|floor|    abs|max_ab|min_ab|
-# +-----+----+-----+-------+------+------+
-# | 3.14|   4|    3|3.14159|   200|   100|
-# |-2.72|  -2|   -3|  2.718|   300|    50|
-# +-----+----+-----+-------+------+------+
+```
+
+```Plain
++-----+----+-----+-------+------+------+
+|round|ceil|floor|    abs|max_ab|min_ab|
++-----+----+-----+-------+------+------+
+| 3.14|   4|    3|3.14159|   200|   100|
+|-2.72|  -2|   -3|  2.718|   300|    50|
++-----+----+-----+-------+------+------+
 ```
 
 ---
@@ -162,32 +169,45 @@ df.select(
     F.last_day(F.to_date(F.col("dt_str"))).alias("last_day"),
     F.add_months(F.to_date(F.col("dt_str")), 1).alias("next_month"),
 ).show()
-# +----------+----+-----+----------+-----------+----------+----------+
-# |      date|year|month|   plus_7d|  formatted|  last_day|next_month|
-# +----------+----+-----+----------+-----------+----------+----------+
-# |2024-01-15|2024|    1|2024-01-22|2024/01/15 |2024-01-31|2024-02-15|
-# |2024-03-31|2024|    3|2024-04-07|2024/03/31 |2024-03-31|2024-04-30|
-# +----------+----+-----+----------+-----------+----------+----------+
+```
+
+```Plain
++----------+----+-----+----------+-----------+----------+----------+
+|      date|year|month|   plus_7d|  formatted|  last_day|next_month|
++----------+----+-----+----------+-----------+----------+----------+
+|2024-01-15|2024|    1|2024-01-22|2024/01/15 |2024-01-31|2024-02-15|
+|2024-03-31|2024|    3|2024-04-07|2024/03/31 |2024-03-31|2024-04-30|
++----------+----+-----+----------+-----------+----------+----------+
 ```
 
 ---
 
 ## Conditional Functions
 
+when / otherwise — multi-branch condition (like CASE WHEN)
+
 ```python
-# when / otherwise — multi-branch condition (like CASE WHEN)
 F.when(F.col("score") >= 90, "A") \
  .when(F.col("score") >= 80, "B") \
  .when(F.col("score") >= 60, "C") \
  .otherwise("F")
+```
 
-# iff — simple binary condition (like ternary operator)
+iff — simple binary condition (like ternary operator)
+
+```python
 F.iff(F.col("amount") > 0, "positive", "non-positive")
+```
 
-# coalesce — return the first non-NULL value
+coalesce — return the first non-NULL value
+
+```python
 F.coalesce(F.col("value"), F.col("default_value"), F.lit(0))
+```
 
-# is_null / is_not_null
+is\_null / is\_not\_null
+
+```python
 F.is_null(F.col("name"))
 ```
 
@@ -206,14 +226,17 @@ df.select(
      .otherwise("F").alias("grade"),
     F.iff(F.col("score") >= 60, "pass", "fail").alias("result"),
 ).show()
-# +---+-----+-----+------+
-# | id|score|grade|result|
-# +---+-----+-----+------+
-# |  1|   95|    A|  pass|
-# |  2|   82|    B|  pass|
-# |  3|   67|    C|  pass|
-# |  4|   45|    F|  fail|
-# +---+-----+-----+------+
+```
+
+```Plain
++---+-----+-----+------+
+| id|score|grade|result|
++---+-----+-----+------+
+|  1|   95|    A|  pass|
+|  2|   82|    B|  pass|
+|  3|   67|    C|  pass|
+|  4|   45|    F|  fail|
++---+-----+-----+------+
 ```
 
 ---
@@ -249,12 +272,15 @@ df.group_by("category").agg(
     F.max(F.col("amount")).alias("max"),
     F.min(F.col("amount")).alias("min"),
 ).show()
-# +--------+---+-----+-----+---+---+
-# |category|cnt|total|  avg|max|min|
-# +--------+---+-----+-----+---+---+
-# |       A|  3|  350|116.7|200| 50|
-# |       B|  2|  450|225.0|300|150|
-# +--------+---+-----+-----+---+---+
+```
+
+```Plain
++--------+---+-----+-----+---+---+
+|category|cnt|total|  avg|max|min|
++--------+---+-----+-----+---+---+
+|       A|  3|  350|116.7|200| 50|
+|       B|  2|  450|225.0|300|150|
++--------+---+-----+-----+---+---+
 ```
 
 ---
@@ -279,11 +305,14 @@ df.select(
     F.get_json_object(F.col("data"), "$.age").alias("age"),
     F.get_json_object(F.col("data"), "$.addr.city").alias("city"),
 ).show()
-# +-----+---+-------+
-# | name|age|   city|
-# +-----+---+-------+
-# |Alice| 30|Beijing|
-# +-----+---+-------+
+```
+
+```Plain
++-----+---+-------+
+| name|age|   city|
++-----+---+-------+
+|Alice| 30|Beijing|
++-----+---+-------+
 ```
 
 ---
@@ -318,4 +347,4 @@ F.typeof(F.col("value"))            # Return the data type name of a column
 |------|------|
 | [Zettapark DataFrame API Guide](zettapark-dataframe-guide.md) | Complete DataFrame operations guide |
 | [Zettapark Quick Start](zettapark-quick-start.md) | Installation and basic examples |
-| [SQL Functions Reference](../sql_functions/) | Complete list of Lakehouse built-in SQL functions |
+| [SQL Functions Reference](sql_functions/) | Complete list of Lakehouse built-in SQL functions |

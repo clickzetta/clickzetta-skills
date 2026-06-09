@@ -1,6 +1,6 @@
 # Batch Upload Data Using Python SDK
 
-This document details how to use the BulkloadStream in the Python SDK to batch load data into Lakehouse. This method is suitable for importing large amounts of data at once, supports custom data sources, and provides flexibility for data import. This example uses a local CSV file as an example. If the data source is within the object storage or the data integration range supported by Lakehouse Studio, it is recommended to use the COPY command or data integration.
+This document details how to use the BulkloadStream in the Python SDK to batch load data into Lakehouse. This method is suitable for importing large amounts of data at once, supports custom data sources, and provides flexibility for data import. This example uses a local CSV file. If the data source is in object storage or within the data integration scope supported by Lakehouse Studio, it is recommended to use the COPY command or the data integration feature instead.
 
 # Reference Documentation
 
@@ -9,18 +9,18 @@ This document details how to use the BulkloadStream in the Python SDK to batch l
 ## Application Scenarios
 
 * Suitable for business scenarios that require batch data uploads.
-* Suitable for developers familiar with Python and needing to customize data import logic.
+* Suitable for developers familiar with Python who need to customize data import logic.
 
 ## Usage Restrictions
 
 * BulkloadStream does not support writing to primary key (pk) tables.
 * Not suitable for frequent data upload scenarios with intervals of less than five minutes.
 
-## Use Case
+# Use Case
 
 This example uses the `olist_order_payments_dataset` from the [Brazilian E-commerce](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce?select=olist_order_items_dataset.csv) public dataset.
 
-### Prerequisites
+## Prerequisites
 
 * Create the target table `bulk_order_payments`:
 
@@ -41,15 +41,15 @@ CREATE TABLE bulk_order_payments (
 | ------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | username      | Y            | Username                                                                                                                                                                                           |
 | password      | Y            | Password                                                                                                                                                                                           |
-| service       | Y            | Address to connect to the lakehouse, region_id.api.singdata.com. You can see the JDBC connection string in Lakehouse Studio management -> workspace![](.topwrite/assets/image_1728887857029.png) |
-| instance      | Y            | You can see the JDBC connection string in Lakehouse Studio management -> workspace![](.topwrite/assets/image_1729051500396.png)                                                                 |
+| service       | Y            | Address to connect to the Lakehouse, region\_id.api.clickzetta.com. You can view the JDBC connection string in Lakehouse Studio under Administration -> Workspace ![](../.topwrite/assets/image_1728887857029.png) |
+| instance      | Y            | You can view the JDBC connection string in Lakehouse Studio under Administration -> Workspace ![](../.topwrite/assets/image_1729051500396.png)                                                     |
 | workspace     | Y            | Workspace in use                                                                                                                                                                                   |
-| vcluster      | Y            | VC in use                                                                                                                                                                                          |
+| vcluster      | Y            | Virtual Cluster in use                                                                                                                                                                             |
 | schema        | Y            | Name of the schema to access                                                                                                                                                                       |
 
 ## Develop with Python Code
 
-Use pip to install the Python package dependencies for Lakehouse. Python version 3.6 or above is required:
+Use pip to install the Python package dependencies for Lakehouse. Python version 3.10 or above is required:
 
 ```SQL
 pip install clickzetta-connector
@@ -65,11 +65,11 @@ def get_lakehouse_connect():
     conn = connect(
         username='',
         password='',
-        service='api.singdata.com',
+        service='api.clickzetta.com',
         instance='',
         workspace='',
         schema='public',
-        vcluster='default_ap')
+        vcluster='DEFAULT_AP')
     return conn
 
 conn = get_lakehouse_connect()
@@ -99,5 +99,3 @@ Commit data import completion:
 ```SQL
 bulkload_stream.commit()
 ```
-
-^

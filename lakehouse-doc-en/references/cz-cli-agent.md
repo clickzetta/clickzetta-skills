@@ -55,17 +55,29 @@ If you use an enterprise bot such as Hermes to host an AI Agent, it is recommend
 
 `cz-cli agent run` requires an LLM to be configured before use. LLM configuration is independent of the Lakehouse connection profile and is stored in the `[llm.*]` section of `~/.clickzetta/profiles.toml`.
 
-### Method 1: Use the Singdata Built-in LLM (Recommended for New Users)
+### Method 1: Use the Singdata Built-in LLM (Recommended, provided by AI Gateway)
 
-Complete configuration in one step using the CLI connection string:
+The Singdata built-in LLM is provided uniformly through [AI Gateway](AIGateway.md) — no separate model API Key required. Complete configuration in one step using the CLI connection string:
 
 ```bash
 cz-cli setup --credential <CLI connection string>
 ```
 
-The CLI connection string is available on the LakehouseMCP page in the account console (see the [Installation and Configuration Guide](setup_cz_cli.md)).
+The CLI connection string is available on the LakehouseMCP page in the account console (see the [Installation and Configuration Guide](setup_cz_cli.md)). The connection string already contains the AI Gateway endpoint and authentication information — ready to use once configured.
 
 ### Method 2: Connect an External LLM
+
+Supports any OpenAI-compatible interface. If your enterprise already has an AI Gateway, simply enter its endpoint:
+
+**Use AI Gateway (enterprise self-hosted or Singdata-managed)**
+
+```bash
+cz-cli agent llm add my-gateway \
+  --provider openai-compatible \
+  --base-url https://<your-instance>.singdata.com/gateway/v1 \
+  --api-key <AI-Gateway-API-Key> \
+  --use
+```
 
 **OpenAI / GPT**
 
@@ -88,35 +100,28 @@ cz-cli agent llm add my-relay \
 
 ### Verify and Manage
 
-```bash
-```
-
 View the currently active LLM and all configurations:
 
 ```bash
 cz-cli agent llm show
-
 ```
 
 List all configured LLMs:
 
 ```bash
 cz-cli agent llm list
-
 ```
 
 Test connectivity:
 
 ```bash
 cz-cli agent llm test my-openai
-
 ```
 
 Switch the active LLM:
 
 ```bash
 cz-cli agent llm use my-openai
-
 ```
 
 Remove an LLM configuration:

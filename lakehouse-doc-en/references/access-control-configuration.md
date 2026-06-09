@@ -16,11 +16,9 @@ Service instance-level roles can only be granted via the Web UI. Only users with
 
 In the service instance, navigate to **Admin** -> **Security**, and switch to the **Roles** tab.
 
-:-: ![](.topwrite/assets/image_1734853864093.png =791)
 
 Click on the instance role you want to grant to enter its detail page, then click **Grant to User**:
 
-:-: ![](.topwrite/assets/image_1734853972562.png =793)
 
 In the dialog, select the users to grant, then click the **Grant** button to complete the instance role assignment.
 
@@ -44,13 +42,11 @@ For a user to use compute clusters (VClusters) and execute SQL within a workspac
 
 After entering the service instance, click **Admin** -> **Workspaces** in the menu to go to the workspace list. Click on a workspace name to enter its detail page.
 
-:-: ![](.topwrite/assets/image_1734854163713.png =795)
 
 On the workspace detail page, click the **+ Add User** button, and select users in the dialog. Only users who exist in the service instance and are not currently members of this workspace will be displayed. Select one or more users and click **Add User** or **Add User and Grant Role** to add the selected users to the workspace. After successful addition, you can find the new users in the workspace's **Users** list.
 
 In the workspace's **Users** list, click the **...** menu next to a user and select **Remove User** to remove that user from the workspace. The removed user will immediately lose all granted workspace roles and lose the ability to use compute clusters (VClusters) or execute SQL in that workspace.
 
-:-: ![](.topwrite/assets/image_1734876545148.png =788)
 
 Note that users removed from a workspace will retain any data permissions directly granted to them, meaning they can exercise those data permissions in other workspaces to query or modify data. Therefore, it is recommended to manage permissions through role grants to reduce the complexity of permission management in such scenarios.
 
@@ -116,7 +112,6 @@ To grant permissions to a user, replace `TO ROLE <CUSTOM_ROLE_NAME>` with `TO US
 
 Submitting scheduled tasks in a workspace can only be done through the **Development** feature in the Web UI. The `workspace_admin` and `workspace_dev` roles have the permission to submit job scripts as scheduled tasks.
 
-:-: ![](.topwrite/assets/image_1734876961826.png =802)
 
 ^
 
@@ -146,20 +141,18 @@ You can grant or revoke roles from users via the Web UI or SQL. Only users with 
 
 On the **Security** -> **Roles** page, you can view instance-level and workspace-level roles in the current instance.
 
-:-: ![](.topwrite/assets/image_1734878372389.png =784)
 
 The `instance_admin` role can view all instance-level roles and all workspace-level roles, and manage grants for all instance-level roles.
 
 The `workspace_admin` role can view all roles within their workspace and manage grants for those roles. If a user holds the `workspace_admin` role in multiple workspaces, they can manage role grants across all those workspaces.
 
 To grant a role, click the role name to enter its detail page, where you can view all users currently granted the role. Click **+ Grant to User**, select users in the dialog, and click **Grant** to assign the role to users.
-:-: ![](.topwrite/assets/image_1734878510613.png =798)
+
 
 To revoke a role, click the **...** menu next to a user and select **Remove User** to remove the user's association with that role.
 
 In the **Admin** -> **Workspaces** list, enter a workspace detail page, and on the **Roles** tab you can also view the role list within the workspace and grant or revoke roles using the same process.
 
-:-: ![](.topwrite/assets/image_1734878871234.png =795)
 
 ***
 

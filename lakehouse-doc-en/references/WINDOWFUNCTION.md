@@ -1,8 +1,8 @@
-# Window Function
+# Window Functions
 
 ## Overview
 
-Window Functions are a powerful analytical feature in Singdata Lakehouse SQL that allow you to perform calculations across a set of related rows, rather than just on individual rows. By using the WINDOW clause, you can define one or more named windows and then reference those windows in window functions, avoiding repetitive window specifications and making queries more concise and maintainable.
+Window Functions are a powerful analytical feature in Singdata Lakehouse SQL that allow calculations to be performed across a set of related rows, rather than just on individual rows. By using the WINDOW clause, you can define one or more named windows and then reference those windows in window functions, avoiding repetitive window specifications and making queries more concise and maintainable.
 
 ## Syntax
 
@@ -23,33 +23,29 @@ WINDOW <window_name> AS (<window_specification>, ...)
 1. **ROWS Frame**: Window frame based on row count
 2. **RANGE Frame**: Window frame based on value range
 
-## Environment Preparation
+## Test Data Setup
 
-### Create Test Table
+The following examples use a custom `sales` table (monthly sales data) to demonstrate various window function features. The PARTITION BY example in the Best Practices section uses the `doc_test.employees` table.
 
 ```sql
-CREATE TABLE IF NOT EXISTS sales(
-    month INT,
-    sales INT,
+CREATE TABLE IF NOT EXISTS sales (
+    month  INT,
+    sales  INT,
     profit DOUBLE
 );
-```
 
-### Insert Test Data
-
-```sql
 INSERT INTO sales (month, sales, profit) VALUES
 (1, 100, 0.1),
 (2, 120, 0.15),
-(3, 80, 0.05),
+(3,  80, 0.05),
 (4, 150, 0.2),
-(5, 90, 0.1),
+(5,  90, 0.1),
 (6, 110, 0.12);
 ```
 
 ## Usage Examples
 
-### Example 1: Moving Window Aggregation - Moving Sum and Moving Average
+### Example 1: Moving Window Aggregation — Moving Sum and Moving Average
 
 **Business Scenario**: Calculate the sum and average of sales for the current month and the two preceding months
 
@@ -80,7 +76,7 @@ WINDOW w AS (ORDER BY month ROWS BETWEEN 2 PRECEDING AND CURRENT ROW);
 
 ***
 
-### Example 2: Multi-Window Ranking - Quarterly and Annual Ranking
+### Example 2: Multi-Window Ranking — Quarterly and Annual Ranking
 
 **Business Scenario**: Simultaneously compute ranking within each quarter and across the full year
 
@@ -112,13 +108,13 @@ WINDOW w1 AS (PARTITION BY CEIL(month / 3) ORDER BY sales DESC),
 
 * The w1 window partitions by quarter (every 3 months), computing sales ranking within each quarter
 * The w2 window has no partition, computing sales ranking across the full year
-* CEIL(month/3) divides months into Q1 (months 1-3), Q2 (months 4-6), etc.
+* `CEIL(month/3)` divides months into Q1 (months 1–3), Q2 (months 4–6), etc.
 
 ***
 
-### Example 3: Cumulative Aggregation - Year-to-Date Statistics
+### Example 3: Cumulative Aggregation — Year-to-Date Statistics
 
-**Business Scenario**: Calculate cumulative sales and average profit margin from the beginning of the year to the current month
+**Business Scenario**: Calculate cumulative sales, average profit margin, etc. from the beginning of the year to the current month
 
 ```sql
 SELECT month, sales, profit,
@@ -149,7 +145,7 @@ WINDOW w AS (ORDER BY month ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW);
 
 ***
 
-### Example 4: Time Series Analysis - Period-over-Period Comparison
+### Example 4: Time Series Analysis — Period-over-Period Comparison
 
 **Business Scenario**: View each month's sales compared to the previous and next month, and the period-over-period change
 
@@ -179,9 +175,9 @@ WINDOW w AS (ORDER BY month);
 
 **Explanation**:
 
-* `LAG(sales, 1)`: Gets the sales from the previous row
-* `LEAD(sales, 1)`: Gets the sales from the next row
-* prev\_sales and next\_sales are NULL for the first and last rows, respectively
+* `LAG(sales, 1)`: Gets the sales value from the previous row
+* `LEAD(sales, 1)`: Gets the sales value from the next row
+* `prev_sales` and `next_sales` are NULL for the first and last rows respectively
 
 ***
 
@@ -223,7 +219,7 @@ WINDOW w AS (ORDER BY sales DESC);
 
 ***
 
-### Example 6: Position Functions - Accessing Values at Specific Positions
+### Example 6: Position Functions — Accessing Values at Specific Positions
 
 **Business Scenario**: Get the first, last, and nth values within the window
 
@@ -254,14 +250,53 @@ WINDOW w AS (ORDER BY month ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLO
 **Explanation**:
 
 * `FIRST_VALUE()`: Returns the value of the first row in the window
-* `LAST_VALUE()`: Returns the value of the last row in the window (requires UNBOUNDED FOLLOWING to see the actual last row)
+* `LAST_VALUE()`: Returns the value of the last row in the window (requires `UNBOUNDED FOLLOWING` to see the actual last row)
 * `NTH_VALUE(expr, n)`: Returns the value of the nth row in the window
 
 ***
 
-### Example 7: RANGE Window Frame - Value-Range-Based Windows
+### Example 6.1: IGNORE NULLS — Skip NULL Values When Accessing
 
-**Business Scenario**: Find all records within a sales value range of +/-10 and compute statistics
+**Business Scenario**: Skip NULLs when accessing values, for example to forward-fill gaps with the most recent non-null value
+
+The value access functions `FIRST_VALUE`, `LAST_VALUE`, and `NTH_VALUE` support appending `IGNORE NULLS` after the function call, which skips NULL values during computation. The default behavior is `RESPECT NULLS` (NULLs participate in computation).
+
+```sql
+-- Prepare data containing NULLs
+CREATE TABLE w_nulls (id INT, v INT);
+INSERT INTO w_nulls VALUES (1, 10), (2, NULL), (3, 30), (4, NULL), (5, 50);
+
+SELECT id, v,
+       LAST_VALUE(v) IGNORE NULLS OVER (ORDER BY id) AS fill_down,
+       LAST_VALUE(v) OVER (ORDER BY id)              AS keep_null
+FROM w_nulls
+ORDER BY id;
+```
+
+**Execution Result**:
+
+```
++----+------+-----------+-----------+
+| id | v    | fill_down | keep_null |
++----+------+-----------+-----------+
+| 1  | 10   | 10        | 10        |
+| 2  | NULL | 10        | NULL      |
+| 3  | 30   | 30        | 30        |
+| 4  | NULL | 30        | NULL      |
+| 5  | 50   | 50        | 50        |
++----+------+-----------+-----------+
+```
+
+**Explanation**:
+
+* `IGNORE NULLS`: Skips NULLs; the `fill_down` column fills gaps with the most recent non-null value
+* `RESPECT NULLS` (default): NULLs pass through as-is
+* Functions that support `IGNORE NULLS` / `RESPECT NULLS`: `FIRST_VALUE`, `LAST_VALUE`, `NTH_VALUE`
+* `LAG` and `LEAD` do not currently support `IGNORE NULLS`; using it will raise an error
+
+***
+
+**Business Scenario**: Find all records within a sales value range of ±10 and compute statistics
 
 ```sql
 SELECT month, sales,
@@ -294,7 +329,7 @@ WINDOW w AS (ORDER BY sales RANGE BETWEEN 10 PRECEDING AND 10 FOLLOWING);
 
 ***
 
-### Example 8: Comprehensive Analysis - Multi-Dimensional Business Reports (Advanced)
+### Example 8: Comprehensive Analysis — Multi-Dimensional Business Report (Advanced)
 
 **Business Scenario**: Generate a comprehensive analytical report including ranking, cumulative values, period-over-period comparison, and proportions
 
@@ -340,14 +375,14 @@ WINDOW
 * This example uses 3 different window definitions simultaneously
 * w1: Ordered by month, used for ranking and period-over-period comparison
 * w2: Cumulative window, used for YTD (Year-To-Date) calculations
-* w3: Full window, used for computing total sum and calculating proportions
-* Demonstrates how to achieve complex multi-dimensional analysis in a single query
+* w3: Full window, used for computing the total sum and calculating proportions
+* Demonstrates how to implement complex multi-dimensional analysis in a single query
 
 ***
 
-### Example 9: Data Bucketing - NTILE Function Application
+### Example 9: Data Bucketing — NTILE Function Application
 
-**Business Scenario**: Divide sales data into high, medium, and low tiers based on performance
+**Business Scenario**: Divide sales data into high, medium, and low performance tiers
 
 ```sql
 SELECT 
@@ -382,7 +417,7 @@ WINDOW w AS (ORDER BY sales DESC);
 
 ***
 
-### Example 10: Cumulative Distribution - CUME\_DIST Function Application
+### Example 10: Cumulative Distribution — CUME\_DIST Function Application
 
 **Business Scenario**: Calculate the cumulative distribution percentile of each sales value within the dataset
 
@@ -419,18 +454,18 @@ WINDOW w AS (ORDER BY sales);
 
 ### ROWS vs RANGE
 
-| Frame Type | Description                        | Example                                         |
-| ---------- | ---------------------------------- | ----------------------------------------------- |
-| ROWS       | Based on physical row count        | `ROWS BETWEEN 2 PRECEDING AND CURRENT ROW`      |
-| RANGE      | Based on logical value range       | `RANGE BETWEEN 10 PRECEDING AND 10 FOLLOWING`   |
+| Frame Type | Description | Example |
+| ---------- | ----------- | ------- |
+| ROWS | Based on physical row count | `ROWS BETWEEN 2 PRECEDING AND CURRENT ROW` |
+| RANGE | Based on logical value range | `RANGE BETWEEN 10 PRECEDING AND 10 FOLLOWING` |
 
 ### Boundary Keywords
 
 * `UNBOUNDED PRECEDING`: The first row of the partition
 * `UNBOUNDED FOLLOWING`: The last row of the partition
 * `CURRENT ROW`: The current row
-* `n PRECEDING`: The nth row before the current row (for ROWS) or rows with value - n (for RANGE)
-* `n FOLLOWING`: The nth row after the current row (for ROWS) or rows with value + n (for RANGE)
+* `n PRECEDING`: The nth row before the current row (ROWS) or rows with value − n (RANGE)
+* `n FOLLOWING`: The nth row after the current row (ROWS) or rows with value + n (RANGE)
 
 ***
 
@@ -453,9 +488,11 @@ WINDOW w AS (ORDER BY sales);
 
 * `LAG()`: Access preceding rows
 * `LEAD()`: Access following rows
-* `FIRST_VALUE()`: First value in the window
-* `LAST_VALUE()`: Last value in the window
-* `NTH_VALUE()`: The nth value in the window
+* `FIRST_VALUE()`: First value in the window (supports `IGNORE NULLS`)
+* `LAST_VALUE()`: Last value in the window (supports `IGNORE NULLS`)
+* `NTH_VALUE()`: The nth value in the window (supports `IGNORE NULLS`)
+
+> `IGNORE NULLS` skips NULLs when accessing values; the default is `RESPECT NULLS`. Only `FIRST_VALUE`/`LAST_VALUE`/`NTH_VALUE` support this; `LAG`/`LEAD` do not.
 
 ***
 
@@ -487,29 +524,28 @@ WINDOW w AS (ORDER BY month ROWS BETWEEN 2 PRECEDING AND CURRENT ROW);
 For grouped analysis, use PARTITION BY to perform intra-group calculations without breaking the data structure:
 
 ```sql
--- Example: Calculate ranking separately by category
-SELECT category, month, sales,
-       RANK() OVER w AS rank_in_category
-FROM sales_by_category
-WINDOW w AS (PARTITION BY category ORDER BY sales DESC);
+-- Example: Calculate salary ranking by department
+SELECT dept, name, salary,
+       RANK() OVER w AS rank_in_dept
+FROM doc_test.employees
+WINDOW w AS (PARTITION BY dept ORDER BY salary DESC);
 ```
 
 **Execution Result**:
 
 ```
-+-------------+-------+-------+------------------+
-| category    | month | sales | rank_in_category |
-+-------------+-------+-------+------------------+
-| Clothing    | 2     | 600   | 1                |
-| Clothing    | 3     | 550   | 2                |
-| Clothing    | 1     | 500   | 3                |
-| Electronics | 2     | 1200  | 1                |
-| Electronics | 1     | 1000  | 2                |
-| Electronics | 3     | 900   | 3                |
-+-------------+-------+-------+------------------+
++-------------+-------+----------+--------------+
+| dept        | name  | salary   | rank_in_dept |
++-------------+-------+----------+--------------+
+| Engineering | Alice | 12000.00 | 1            |
+| Engineering | Bob   |  9500.00 | 2            |
+| HR          | Eve   |  6000.00 | 1            |
+| Marketing   | Carol |  8500.00 | 1            |
+| Marketing   | Dave  |  6500.00 | 2            |
++-------------+-------+----------+--------------+
 ```
 
-Explanation: Rankings are computed independently within each category without affecting each other.
+Explanation: Salary rankings are computed independently within each department without affecting each other.
 
 ### 3. Pay Attention to LAST\_VALUE Window Scope
 
@@ -559,3 +595,9 @@ A: You need to explicitly specify `ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDE
 ***
 
 ^
+
+## Related Guides
+
+- [Ranking and Percentile Analysis](SQL_Ranking_Guide.md): Complete usage scenarios for ROW_NUMBER, RANK, DENSE_RANK, NTILE, and PERCENTILE
+- [Cumulative Calculation and Running Total](SQL_Running_Total_Guide.md): Usage patterns for SUM/AVG OVER, moving averages, YTD cumulative values, FIRST_VALUE/LAST_VALUE
+- [Time Series Analysis](SQL_TimeSeries_Guide.md): Implementing rolling windows and period-over-period comparisons using window functions

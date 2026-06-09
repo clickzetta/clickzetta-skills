@@ -1,8 +1,10 @@
-## What is Data Agent
+## What is Data Engineering Agent
 
-Data Agent is an AI-powered agent built on top of Singdata Lakehouse and Studio. It covers the full lifecycle of "development, operations, and governance" and implements intelligent platform upgrades through an Agentic AIOps philosophy — transforming data development from "people operating the platform" to "people directing the agent."
+Data Engineering Agent is an AI-powered agent built on top of Singdata Lakehouse and Studio. It covers the full lifecycle of "development, operations, and governance" and implements intelligent platform upgrades through an Agentic AIOps philosophy — transforming data development from "people operating the platform" to "people directing the agent."
 
 Data Agent is not just a tool that makes data teams more productive. It is a **data intelligence collaboration system** that enables everyone in the company to work with data.
+
+^
 
 ## User Value
 
@@ -42,18 +44,18 @@ For example:
 **High cost of understanding standards** Each business domain has its own layering rules, naming conventions, and field standards, scattered across various documents. Engineers must "catch up" before taking on any new requirement, and even minor oversights get flagged in reviews, keeping rework costs high.
 
 > Example prompt:
-> I need to design a Medallion architecture data warehouse based on this metric requirements spec to support GMV analysis. I've already planned the tables for each layer: [Bronze layer] xxx [Silver layer] xxx [Gold layer] xxx. Based on this table list, please generate a data warehouse modeling standards document.
+> I need to design a Medallion architecture data warehouse based on this metric requirements spec to support GMV analysis. I've already planned the tables for each layer: \[Bronze layer] xxx \[Silver layer] xxx \[Gold layer] xxx. Based on this table list, please generate a data warehouse modeling standards document.
 
-![](/.topwrite/assets/image_1779715425568.png)
+^
 
 ### Scenario 2: Ad-hoc Data Retrieval
 
 **Everything waits in the queue** Exploratory analysis, market research, and other ad-hoc requests are naturally lower priority and get perpetually pushed aside by formal requests. By the time the data finally arrives, the decision window has often closed and the business has already fallen behind the market. The core problem: ad-hoc analysis has no self-service path — it must go through the data team, which simply doesn't have the bandwidth to continuously handle low-priority requests.
 
 > Example prompt:
-> Query brazilianecommerce.olist_orders and count orders by day.
+> Query brazilianecommerce.olist\_orders and count orders by day.
 
-![](/.topwrite/assets/image_1779715858474.png)
+^
 
 ### Scenario 3: Day-to-day Operations
 
@@ -77,4 +79,34 @@ Daily task operations are the most critical routine work on an enterprise data p
 > Please help me analyze which instances failed in the past week.
 > For the task with instance ID xxx, what was the failure reason and which downstream tasks were affected?
 
-![](/.topwrite/assets/image_1779715663695.png)
+^
+
+### Scenario 4: Studio Task Development and Management
+
+Studio tasks are the core scheduling unit of the Lakehouse data pipeline, but traditional management is cumbersome: creating a task requires entering the IDE and configuring step by step, modifying a schedule requires locating the task and opening the schedule panel, and dependency configuration requires manually maintaining task IDs.
+
+Data Agent operates the full lifecycle of Studio tasks directly through natural language:
+
+* **Create tasks**: describe the task logic, and the agent automatically generates SQL or Python code, creates the task, and configures the Virtual Cluster
+* **Schedule configuration**: tell the agent "run at 2 AM every day" and it automatically converts this to a cron expression and applies it
+* **Dependency orchestration**: describe the dependencies between tasks, and the agent automatically configures upstream and downstream dependency chains, avoiding manual task ID lookups
+* **Batch operations**: publish multiple tasks or bulk-update the retry strategy for a category of tasks in a single instruction
+
+> Example prompt:
+> Create a Python task that runs at 3 AM every day, triggers after the ods\_order\_load task completes, and aggregates yesterday's order data into dws\_order\_daily.
+
+### Scenario 5: Data Source Management
+
+Onboarding enterprise data is the first mile of data engineering, involving connection configuration, sync strategy, status monitoring, and more — manual operations are error-prone and hard to track.
+
+Data Agent supports the following data source management operations:
+
+* **Quick onboarding**: describe the database type and connection details, and the agent automatically creates the data source and tests connectivity
+* **Sync configuration**: specify the source and target tables, and the agent selects a full or incremental (CDC) sync strategy based on business needs
+* **Status queries**: ask in a single sentence to get sync delays, recent failure records, and data volume statistics for all data sources
+* **Troubleshooting**: when a sync task fails, the agent automatically pulls error logs, analyzes the root cause, and recommends fix steps
+
+> Example prompt:
+> Help me check which data sources currently have sync delays exceeding 30 minutes, and which ones had sync failures in the last 24 hours.
+
+^

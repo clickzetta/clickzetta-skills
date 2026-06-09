@@ -6,7 +6,7 @@ In the task development module, the Python task provided is a specific task type
 
 ### Runtime Environment and Customization
 
-Python tasks are executed in a system preset Pod environment, with the pre-installed Python version being Python 3 (current version is 3.9.2, which may be updated in the future).
+Python tasks are executed in a system preset Pod environment, with the pre-installed Python version being Python 3 (current version is 3.10, which may be updated in the future).
 
 The default system image includes some commonly used dependency packages to support connection and data access with Singdata Lakehouse, as well as operations on object storage services such as Alibaba Cloud OSS and Tencent Cloud COS. These dependencies include but are not limited to:
 
@@ -111,7 +111,7 @@ conn = connect(
     instance='your_instance',
     workspace='your_workspace',
     schema='public',
-    vcluster='default'
+    vcluster='DEFAULT'
 )
 
 ```
@@ -148,7 +148,7 @@ from sqlalchemy import text
 
 ```
 
-Create an instance of the SQLAlchemy engine for ClickZetta Lakehouse:
+Create an instance of the SQLAlchemy engine for Singdata Lakehouse:
 
 ```py
 engine = create_engine(
@@ -185,7 +185,7 @@ conn = connect(
     instance='your_instance',
     workspace='your_workspace',
     schema='public',
-    vcluster='default'
+    vcluster='DEFAULT'
 )
 
 bulkload_stream = conn.create_bulkload_stream(schema='public', table='bulkload_test')

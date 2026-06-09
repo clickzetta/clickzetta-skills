@@ -4,7 +4,7 @@ This document helps you quickly understand the core features offered by Lakehous
 
 > You can use this document to quickly understand Studio's features. We also strongly recommend referring to the [Getting Started Guide](lakehouse-studio-101.md) series to get started quickly.
 
-![](.topwrite/assets/image_1742438525073.png)
+
 
 ^
 
@@ -53,11 +53,11 @@ Depending on the data source, data format, loading method, and processing type (
 
 ### Import Methods Overview
 
-![](.topwrite/assets/image_1742463415615.png)
+
 
 ### Supported Data Sources
 
-![](.topwrite/assets/image_1742437875252.png)
+
 
 ### Real-time Multi-Table Data Synchronization Tasks (CDC)
 
@@ -66,7 +66,7 @@ Depending on the data source, data format, loading method, and processing type (
 * Submit and run the task, then start the task
 * Task monitoring and maintenance (start, stop, offline)
 
-![](.topwrite/assets/image_1742437920068.png)
+
 
 For details, refer to the following documentation:
 
@@ -89,7 +89,7 @@ Worksheets provide a simple way to write SQL jobs (DML and DDL), view results, a
 
 If you select Worksheets in the navigation menu, you will see the worksheet list and can select one to view and update worksheet content.
 
-![](.topwrite/assets/image_1742437938827.png)
+
 
 For details, refer to the following documentation:
 
@@ -102,13 +102,13 @@ For details, refer to the following documentation:
 
 When running queries in Lakehouse Studio, you can choose to visualize the data profile of the results.
 
-![](.topwrite/assets/image_1742437950526.png)
+
 
 ## Share Data
 
 Achieve collaboration by sharing data with users of other Lakehouse accounts. When sharing data, you can use the automatic delivery (or auto-fulfillment) feature to easily provide data within the same cloud region. As a data consumer, you can access datasets shared with your account, gaining real-time data insights without setting up data pipelines or writing any code.
 
-![](.topwrite/assets/image_1742437962089.png)
+
 
 For details, refer to the following documentation:
 
@@ -120,7 +120,7 @@ For details, refer to the following documentation:
 
 You can monitor and view query details, explore the performance of executed queries, monitor data loading status and errors, view task graphs, and debug and re-run as needed. You can also monitor the refresh status of dynamic tables and view various tags and security policies created for maintaining data governance.
 
-![](.topwrite/assets/image_1742438014544.png)
+
 
 For details, refer to the following documentation:
 
@@ -130,15 +130,15 @@ For details, refer to the following documentation:
 
 The Operations Center provides management operations for tasks and instances. Workflow tasks managed by the Operations Center include manually triggered tasks, periodically scheduled tasks, and their corresponding instances, for centralized management.
 
-![](.topwrite/assets/image_1742438023150.png)
+
 
 Data backfilling involves supplementing historical or future data within a specific time period and writing it to the corresponding time partitions. If the code contains scheduling parameters, those parameters will be automatically filled with appropriate values based on the selected data backfill business time. Combined with business logic, this ensures that data for the corresponding time period is written to the specified partitions. The partition to write to and the code logic executed are determined by the task definitions in the code.
 
-![](.topwrite/assets/image_1742438034252.png)
+
 
 Monitoring functionality allows you to leverage built-in rules or custom configurations to keep a close watch on anomalies (such as task execution failures) and send alert notifications when needed.
 
-![](.topwrite/assets/image_1742438047787.png)
+
 
 For details, refer to the following documentation:
 
@@ -152,15 +152,15 @@ These pages help you understand Lakehouse data usage, manage virtual clusters, m
 
 You can manage and monitor virtual clusters.
 
-![](.topwrite/assets/image_1742438058433.png)
+
 
 Access users and roles.
 
-![](.topwrite/assets/image_1742438325404.png)
+
 
 Perform cost management.
 
-![](.topwrite/assets/image_1742438412611.png)
+
 
 ^
 
@@ -174,12 +174,7 @@ For details, refer to the following documentation:
 * [Managing Service Instances](managing-instance.md)
 * [User and Permission Management](authority-management.md)
 
-## Related Videos
 
-Achieve real-time data ingestion to real-time data analysis using Lakehouse Studio.
 
-```[bilibili]
-https://www.bilibili.com/video/BV1TfYYeEEYg/
-```
 
 ^

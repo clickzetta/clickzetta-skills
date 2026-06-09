@@ -63,6 +63,8 @@ ALTER VCLUSTER my_gp_cluster SUSPEND;
 SHOW VCLUSTERS;
 ```
 
+> ⚠️ **Note**: VCluster names are automatically converted to **uppercase** when stored (unlike table names and schema names, which are lowercased). For example, a cluster created as `my_gp_cluster` will have the actual name `MY_GP_CLUSTER`. References are case-insensitive, but `SHOW VCLUSTERS` always displays uppercase names.
+
 ## Cost Implications
 
 ### Compute Cost

@@ -1,6 +1,5 @@
 # Using Pipe for Continuous Data Import
 
-> \[Preview Release] This feature is currently in public preview.
 
 ## Overview
 
@@ -79,13 +78,24 @@ Parameter Description:
 
 Currently, you can use SQL commands to view the Pipe list and object details.
 
-* Use the SHOW PIPES command to view the PIPE object list
+* Use the `SHOW PIPES` command to view the Pipe object list
 
-```SQL
+```
+-- List all Pipes in the current Schema
 SHOW PIPES;
+-- List all Pipes in a specified Schema
+SHOW PIPES IN SCHEMA schema_name;
+-- List all Pipes in a specified Workspace
+SHOW PIPES IN WORKSPACE workspace_name;
 ```
 
-* Use the DESC PIPE command to view detailed information about the specified PIPE object
+**Notes**
+
+* `SHOW PIPES`: Lists Pipe objects in the current Schema by default.
+* `SHOW PIPES IN SCHEMA schema_name`: Lists all Pipe objects in the specified Schema.
+* `SHOW PIPES IN WORKSPACE workspace_name`: Lists all Pipe objects in the specified Workspace.
+
+* Use the `DESC PIPE` command to view detailed information about the specified Pipe object
 
 ```SQL
 DESC PIPE <name>;

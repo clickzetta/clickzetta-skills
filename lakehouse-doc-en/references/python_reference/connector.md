@@ -1,4 +1,4 @@
-# Singdata Connector Official Python SDK
+# ClickZetta Connector Python SDK
 
 `clickzetta-connector` is the official Python SDK for Singdata Lakehouse. It follows the PEP-249 specification and provides a SQL call interface compliant with the Python Database API style, supporting queries, writes, bulk inserts, and asynchronous execution.
 
@@ -18,7 +18,7 @@
 pip install clickzetta-connector
 ```
 
-Python version >= 3.7 is required.
+Python version >= 3.10 is required.
 
 If an older version is installed, uninstall it first to avoid conflicts:
 
@@ -40,7 +40,7 @@ conn = connect(
     instance='your_instance',                          # Instance name
     workspace='your_workspace',                        # Workspace name
     schema='public',                                   # Default schema
-    vcluster='default'                                 # Compute cluster name
+    vcluster='DEFAULT'                                 # Compute cluster name
 )
 ```
 

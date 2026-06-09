@@ -25,7 +25,7 @@ SHOW GRANTS ON TABLE public.orders;
 SHOW GRANTS ON SCHEMA public;
 
 -- View all grants on a VCluster
-SHOW GRANTS ON VCLUSTER default;
+SHOW GRANTS ON VCLUSTER DEFAULT;
 
 -- View all grants on a workspace
 SHOW GRANTS ON WORKSPACE my_workspace;

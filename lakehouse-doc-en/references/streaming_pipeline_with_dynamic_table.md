@@ -1,5 +1,4 @@
 # Develop Dynamic Tables for Near Real-Time Incremental Processing
-**【Preview Release】This feature is currently in an invited preview stage. To try it out, please contact Singdata Technology through the official website.**
 
 ## Tutorial Overview
 

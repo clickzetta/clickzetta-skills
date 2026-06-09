@@ -252,7 +252,7 @@ By reading data existing in the Lakehouse, use Spark ML to train a recommendatio
   * ```SQL
     create table sample_movie_data(user_id int,movie_id int,rating float);
     ```
-* Install Python package version greater than 3.6
+* Install Python package version 3.10 or above
 
 * Install Pyspark
 ```SQL

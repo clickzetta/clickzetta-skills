@@ -12,27 +12,22 @@ When the existing data source (including databases, data warehouses) has a publi
 
 Navigate to Development -> Tasks, click "+", select "Offline Sync", and create a new "Offline Sync" job.
 
-:-: ![](.topwrite/assets/image_1736147655855.png =464)
 
 Other parameter configurations are as follows:
 
-:-: ![](.topwrite/assets/image_1736147664609.png =470)
 
 Then select to create a new data table: lift\_tickets\_data\_from\_pg\_batch.
 
 In the "Create New Data Table" SQL code, change the table name to "lift\_tickets\_data\_from\_pg\_batch".
 
-:-: ![](.topwrite/assets/image_1736147671728.png =455)
 
 Check if the field mapping meets expectations, then test run the sync task:
 
-:-: ![](.topwrite/assets/image_1736147681157.png =459)
 
 Check the test results:
 
 View the test task logs and check if the number of nubWrite matches the number of rows in the source table.
 
-:-: ![](.topwrite/assets/image_1736147689681.png =469)
 
 #### Next Steps Recommendations
 

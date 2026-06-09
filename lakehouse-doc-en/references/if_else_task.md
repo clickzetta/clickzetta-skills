@@ -6,7 +6,7 @@ A branch task implements conditional routing in workflow scheduling. It dynamica
 
 This article describes the structure and logic of branch tasks.
 
----
+***
 
 ## Use Cases
 
@@ -14,7 +14,7 @@ If you are designing a workflow and need to decide how to proceed based on the o
 
 ## How It Works
 
-![](/.topwrite/assets/image_1778741703249.png)
+^
 
 1. **Upstream task output**: The upstream task (SQL, Python, Shell, etc.) passes a dataset to the downstream branch node via the `$[output]` parameter.
 
@@ -26,7 +26,7 @@ If you are designing a workflow and need to decide how to proceed based on the o
 
 3. **Downstream task reference**: When a downstream task configures its dependency, it must specify which output name of the upstream branch node to associate with.
 
----
+***
 
 ## Steps
 
@@ -51,7 +51,7 @@ The output identifier produced after the branch condition is evaluated. Used to 
 * When the branch condition is met: The downstream node associated with the corresponding output name is triggered.
 * When the branch condition is not met: The downstream node associated with the corresponding output name is not executed, and its status is set to **Ended because branch condition was not met**.
 
-Output name format: Supports Chinese characters, English letters, and underscores `_`. Maximum 128 characters. **Duplicate output names are not allowed within the same branch task.**
+Output name format: Supports Chinese characters, English letters, and underscores `_`. Maximum 128 characters. **Duplicate output names are not allowed within the same branch task**.
 
 **Branch Description**
 
@@ -79,82 +79,84 @@ Example: A branch node has two downstream nodes named `aaa` and `bbb`. When bran
 
 **Currently not supported**: Mathematical operations, date/time functions, JSON Path / object property access, regular expression matching, null coalescing, and similar functions.
 
----
+***
 
 ### Logical Functions
 
-| Function Signature         | Return Type | Description                                                                                                                                    |
-| -------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `and(arg1, arg2, ...)`     | `boolean`   | Returns `true` when all arguments convert to `true`. Supports 1 or more arguments. Example: `and(true, bool(1), equals('a', 'a'))` |
-| `or(arg1, arg2, ...)`      | `boolean`   | Returns `true` when any argument converts to `true`. Supports 1 or more arguments.                                                            |
-| `not(arg)`                 | `boolean`   | Returns the boolean negation of the argument.                                                                                                  |
+| Function Signature     | Return Type | Description                                                                                                                        |
+| ---------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `and(arg1, arg2, ...)` | `boolean`   | Returns `true` when all arguments convert to `true`. Supports 1 or more arguments. Example: `and(true, bool(1), equals('a', 'a'))` |
+| `or(arg1, arg2, ...)`  | `boolean`   | Returns `true` when any argument converts to `true`. Supports 1 or more arguments.                                                 |
+| `not(arg)`             | `boolean`   | Returns the boolean negation of the argument.                                                                                      |
 
----
+***
 
 ### Comparison Functions
 
 When both sides can be converted to numbers, comparison is numeric; otherwise, lexicographic string comparison is used.
 
-| Function Signature               | Return Type | Description                                          |
-| -------------------------------- | ----------- | ---------------------------------------------------- |
-| `equals(left, right)`            | `boolean`   | Returns `true` if the two normalized values are equal. |
-| `greater(left, right)`           | `boolean`   | `left > right`                                       |
-| `greaterOrEquals(left, right)`   | `boolean`   | `left >= right`                                      |
-| `less(left, right)`              | `boolean`   | `left < right`                                       |
-| `lessOrEquals(left, right)`      | `boolean`   | `left <= right`                                      |
+| Function Signature             | Return Type | Description                                            |
+| ------------------------------ | ----------- | ------------------------------------------------------ |
+| `equals(left, right)`          | `boolean`   | Returns `true` if the two normalized values are equal. |
+| `greater(left, right)`         | `boolean`   | `left > right`                                         |
+| `greaterOrEquals(left, right)` | `boolean`   | `left >= right`                                        |
+| `less(left, right)`            | `boolean`   | `left < right`                                         |
+| `lessOrEquals(left, right)`    | `boolean`   | `left <= right`                                        |
 
----
+***
 
 ### Collection Functions
 
 Collection functions apply to arrays (`List` / `Collection` / `JSONArray`) and strings. Some also support dictionaries (`JSONObject` / `Map`).
 
-| Function Signature                   | Return Type        | Description                                                                                                                                    |
-| ------------------------------------ | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `contains(container, expected)`      | `boolean`          | String: checks if the substring is contained. Collection: compares items by normalized value. JSONObject / Map: checks if the key exists.      |
-| `empty(value)`                       | `boolean`          | Returns `true` for `null`, empty string, empty collection, or empty JSONObject / Map.                                                          |
-| `first(value)`                       | First element      | String: returns the first character. List / Collection: returns the first element. Returns `null` when empty.                                  |
-| `last(value)`                        | Last element       | String: returns the last character. List / Collection: returns the last element. Returns `null` when empty.                                    |
-| `length(value)`                      | `integer`          | String: returns character count. Collection / Map: returns element count. Returns `0` for `null`.                                              |
-| `skip(value, count)`                 | Same as input type | Skips the first `count` characters or elements. Returns the original value when `count < 0`, non-integer, or `value` is `null`.               |
-| `take(value, count)`                 | Same as input type | Keeps the first `count` characters or elements. Returns the original value when `count < 0`, non-integer, or `value` is `null`.               |
-| `union(list1, list2, ...)`           | `List`             | Merges multiple lists with deduplication, preserving first-occurrence order. All arguments must be convertible to lists, otherwise returns `null`. |
-| `intersection(list1, list2, ...)`    | `List`             | Returns the intersection of multiple lists, ordered by the first list. All arguments must be convertible to lists, otherwise returns `null`.   |
-| `join(list, separator)`              | `String`           | Joins all list elements with the separator. The first argument must be convertible to a list, otherwise returns `null`.                        |
+| Function Signature                | Return Type        | Description                                                                                                                                        |
+| --------------------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `contains(container, expected)`   | `boolean`          | String: checks if the substring is contained. Collection: compares items by normalized value. JSONObject / Map: checks if the key exists.          |
+| `empty(value)`                    | `boolean`          | Returns `true` for `null`, empty string, empty collection, or empty JSONObject / Map.                                                              |
+| `first(value)`                    | First element      | String: returns the first character. List / Collection: returns the first element. Returns `null` when empty.                                      |
+| `last(value)`                     | Last element       | String: returns the last character. List / Collection: returns the last element. Returns `null` when empty.                                        |
+| `length(value)`                   | `integer`          | String: returns character count. Collection / Map: returns element count. Returns `0` for `null`.                                                  |
+| `skip(value, count)`              | Same as input type | Skips the first `count` characters or elements. Returns the original value when `count < 0`, non-integer, or `value` is `null`.                    |
+| `take(value, count)`              | Same as input type | Keeps the first `count` characters or elements. Returns the original value when `count < 0`, non-integer, or `value` is `null`.                    |
+| `union(list1, list2, ...)`        | `List`             | Merges multiple lists with deduplication, preserving first-occurrence order. All arguments must be convertible to lists, otherwise returns `null`. |
+| `intersection(list1, list2, ...)` | `List`             | Returns the intersection of multiple lists, ordered by the first list. All arguments must be convertible to lists, otherwise returns `null`.       |
+| `join(list, separator)`           | `String`           | Joins all list elements with the separator. The first argument must be convertible to a list, otherwise returns `null`.                            |
 
----
+***
 
 ### String Functions
 
-| Function Signature                      | Return Type    | Description                                                                                                                                                                  |
-| --------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `concat(arg1, arg2, ...)`               | `String`       | Concatenates all arguments in order. `null` arguments are ignored. Supports 1 or more arguments.                                                                            |
-| `guid()`                                | `String`       | Generates a random UUID string. Accepts no arguments.                                                                                                                       |
-| `indexOf(text, search)`                 | `integer`      | Returns the position of the first occurrence of the substring. Returns `-1` if not found.                                                                                   |
-| `lastIndexOf(text, search)`             | `integer`      | Returns the position of the last occurrence of the substring. Returns `-1` if not found.                                                                                    |
-| `replace(text, oldValue, newValue)`     | `String`       | Replaces all matching substrings. Returns empty string if `text` is `null`. Treats `oldValue` or `newValue` as empty string when `null`.                                    |
-| `split(text, separator)`                | `List<String>` | Splits the string by the separator. Splits by single character when separator is empty. Returns empty list if `text` is `null`.                                              |
-| `startsWith(text, prefix)`              | `boolean`      | Checks if the string starts with the specified prefix.                                                                                                                      |
-| `endsWith(text, suffix)`                | `boolean`      | Checks if the string ends with the specified suffix.                                                                                                                        |
-| `substring(text, start, length)`        | `String`       | Extracts `length` characters starting from position `start`. Returns empty string when `start` is out of bounds, arguments are invalid, or negative. Auto-truncates at end. |
-| `toLower(value)`                        | `String`       | Converts to lowercase. Returns empty string for `null`.                                                                                                                     |
-| `toUpper(value)`                        | `String`       | Converts to uppercase. Returns empty string for `null`.                                                                                                                     |
-| `trim(value)`                           | `String`       | Trims leading and trailing whitespace. Returns empty string for `null`.                                                                                                     |
-| `string(value)`                         | `String`       | Converts the value to a string. Returns empty string for `null`.                                                                                                            |
+| Function Signature                  | Return Type    | Description                                                                                                                                                                 |
+| ----------------------------------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `concat(arg1, arg2, ...)`           | `String`       | Concatenates all arguments in order. `null` arguments are ignored. Supports 1 or more arguments.                                                                            |
+| `guid()`                            | `String`       | Generates a random UUID string. Accepts no arguments.                                                                                                                       |
+| `indexOf(text, search)`             | `integer`      | Returns the position of the first occurrence of the substring. Returns `-1` if not found.                                                                                   |
+| `lastIndexOf(text, search)`         | `integer`      | Returns the position of the last occurrence of the substring. Returns `-1` if not found.                                                                                    |
+| `replace(text, oldValue, newValue)` | `String`       | Replaces all matching substrings. Returns empty string if `text` is `null`. Treats `oldValue` or `newValue` as empty string when `null`.                                    |
+| `split(text, separator)`            | `List<String>` | Splits the string by the separator. Splits by single character when separator is empty. Returns empty list if `text` is `null`.                                             |
+| `startsWith(text, prefix)`          | `boolean`      | Checks if the string starts with the specified prefix.                                                                                                                      |
+| `endsWith(text, suffix)`            | `boolean`      | Checks if the string ends with the specified suffix.                                                                                                                        |
+| `substring(text, start, length)`    | `String`       | Extracts `length` characters starting from position `start`. Returns empty string when `start` is out of bounds, arguments are invalid, or negative. Auto-truncates at end. |
+| `toLower(value)`                    | `String`       | Converts to lowercase. Returns empty string for `null`.                                                                                                                     |
+| `toUpper(value)`                    | `String`       | Converts to uppercase. Returns empty string for `null`.                                                                                                                     |
+| `trim(value)`                       | `String`       | Trims leading and trailing whitespace. Returns empty string for `null`.                                                                                                     |
+| `string(value)`                     | `String`       | Converts the value to a string. Returns empty string for `null`.                                                                                                            |
 
----
+***
 
 ### Conversion Functions
 
-| Function Signature | Return Type | Description                                                                          |
-| ------------------ | ----------- | ------------------------------------------------------------------------------------ |
+| Function Signature | Return Type | Description                                                                                                                        |
+| ------------------ | ----------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | `bool(value)`      | `boolean`   | Returns a boolean value according to the built-in boolean conversion rules (see the type description at the top of this document). |
 
----
+***
 
 ## Related Documentation
 
-- [Task Parameters](task_param.md) — Using dynamic parameter values in condition expressions
-- [Task Parameter Syntax Reference](task_param_reference.md) — Full syntax for time expressions and built-in parameters
-- [Composite Task](composite_task.md) — Incorporating branch tasks into a DAG
-- [Task Development and Scheduling](task-develop.md) — Development and scheduling for SQL tasks
+* [Task Parameters](task_param.md) — Using dynamic parameter values in condition expressions
+* [Task Parameter Syntax Reference](task_param_reference.md) — Full syntax for time expressions and built-in parameters
+* [Composite Task](composite_task.md) — Incorporating branch tasks into a DAG
+* [Task Development and Scheduling](task-develop.md) — Development and scheduling for SQL tasks
+
+^

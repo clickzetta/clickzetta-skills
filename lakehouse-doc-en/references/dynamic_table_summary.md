@@ -1,6 +1,6 @@
 # Dynamic Table Overview
 
-> [Preview Release] This feature is currently in an invited preview stage. If you need to use it, please contact our technical support team for assistance.
+
 
 ## What is a Dynamic Table
 

@@ -108,7 +108,7 @@ session = Session.builder.configs({
     "instance":  os.environ["CLICKZETTA_INSTANCE"],
     "workspace": os.environ["CLICKZETTA_WORKSPACE"],
     "schema":    "f1_processed",
-    "vcluster":  os.environ.get("CLICKZETTA_VCLUSTER", "default_ap"),
+    "vcluster":  os.environ.get("CLICKZETTA_VCLUSTER", "DEFAULT_AP"),
 }).create()
 
 df = session.read.option("header", "true").csv("vol://f1_raw.formula1_raw_vol/raw/circuits.csv")

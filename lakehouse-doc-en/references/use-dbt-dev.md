@@ -23,7 +23,7 @@ Enter a number: 1
 service (cn-shanghai-alicloud.api.clickzetta.com): cn-shanghai-alicloud.api.clickzetta.com
 instance (your_instance): <your_instance>
 workspace (your_workspace): <your_workspace>
-vcluster (default_ap): default
+vcluster (default_ap): DEFAULT
 username (your_username): <user_name>
 schema (default schema): dbt_dev
 password (password): <your_passwd>
@@ -49,7 +49,7 @@ cz_dbt_project:
       password: <passwd>
       workspace: <your_workspace_name>
       schema: dbt_prod
-      vcluster: default
+      vcluster: DEFAULT
     dev:
       type: clickzetta
       service: cn-shanghai-alicloud.api.clickzetta.com
@@ -58,7 +58,7 @@ cz_dbt_project:
       password: <passwd>
       workspace: <your_workspace_name>
       schema: dbt_dev
-      vcluster: default
+      vcluster: DEFAULT
 ```
 
 4. Verify the configuration

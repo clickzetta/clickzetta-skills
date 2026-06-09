@@ -16,9 +16,9 @@ Currently supported data source types:
 
 In the configuration panel of a Python/Shell task, you can select one or more data sources to use (make sure the data source has already been created and connection-tested under Management → Data Sources). This configuration applies to both direct runs and scheduled runs of the task:
 
-![](.topwrite/assets/image_1742284598370.png =560)
+^
 
-*Note: The default Lakehouse data source for the current workspace is accessible in code without needing to be added here.*
+*Note: The default Lakehouse data source for the current workspace is accessible in code without needing to be added here*.
 
 ### Accessing a Data Source in Code
 
@@ -144,7 +144,7 @@ import pandas as pd
 
 from clickzetta_dbutils import get_active_lakehouse_engine
 
-engine = get_active_lakehouse_engine(vcluster="default",schema="brazilianecommerce")
+engine = get_active_lakehouse_engine(vcluster="DEFAULT",schema="brazilianecommerce")
 ```
 
 Connect and run a query:
@@ -176,7 +176,7 @@ Sets the schema for the connection.
 def use_schema(self, schema: str) -> 'DatabaseConnectionManager'
 ```
 
-*Note: Due to SQLAlchemy's design, for PostgreSQL, `use_schema` should be set to the database name.*
+*Note: Due to SQLAlchemy's design, for PostgreSQL*, \`\` *should be set to the database name*.
 
 #### use\_vcluster
 
@@ -194,7 +194,7 @@ Sets additional connection options.
 def use_options(self, options: dict) -> 'DatabaseConnectionManager'
 ```
 
-*Note: Due to SQLAlchemy's design, the PostgreSQL schema should be set to `undefined"})`*
+*Note: Due to SQLAlchemy's design, the PostgreSQL schema should be set to* `undefined"})`
 
 #### use\_query
 
@@ -306,21 +306,21 @@ from clickzetta_dbutils import get_active_engine
 
 ```
 
-Option 1: Using get_active_engine:
+Option 1: Using get\_active\_engine:
 
 ```py
 engine = get_active_engine("LAKEHOUSE_source_name", 
-                          vcluster="default", 
+                          vcluster="DEFAULT", 
                           workspace="test-workspace", 
                           schema="public")
 
 ```
 
-Option 2: Using get_active_lakehouse_engine:
+Option 2: Using get\_active\_lakehouse\_engine:
 
 ```py
 from clickzetta_dbutils import get_active_lakehouse_engine
-engine = get_active_lakehouse_engine(vcluster="default", 
+engine = get_active_lakehouse_engine(vcluster="DEFAULT", 
                                    workspace="test-workspace")
 with engine.connect() as conn:
     results = conn.execute(text("select 1"))
@@ -354,3 +354,5 @@ python /tmp/db_utils_demo.py
 3. When using a Lakehouse data source, the `vcluster` parameter is required. The Lakehouse data source uses the built-in Lakehouse data source visible under Management → Data Sources.
 4. Data source connection details are handled securely to prevent plaintext password exposure.
 5. Multiple data sources of different types can be used within the same node.
+
+^

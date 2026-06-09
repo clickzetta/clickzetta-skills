@@ -1,3 +1,5 @@
+# REVOKE
+
 ## Function Description
 
 Revokes previously granted privileges from a role or user. The `REVOKE` statement can revoke permissions at various levels, including workspace, workspace object, Schema, and Schema object levels.
@@ -32,7 +34,7 @@ FROM { ROLE role_name | USER user_name };
 2. Revoke from role `simple_role` the `ALTER` privilege on the VCLUSTER named `default`:
 
    ```SQL
-   REVOKE ALTER VCLUSTER ON VCLUSTER default FROM ROLE simple_role;
+   REVOKE ALTER VCLUSTER ON VCLUSTER DEFAULT FROM ROLE simple_role;
    ```
 
 3. Revoke from role `uat_demo` the privilege to create tables and views in the `public` Schema:

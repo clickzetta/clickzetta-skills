@@ -138,7 +138,7 @@ cz-cli task save-content shell_etl --file shell_etl.sh \
   --profile <your-profile>
 
 # Configure scheduling
-cz-cli task save-config shell_etl --vcluster default --retry-count 1 --profile <your-profile>
+cz-cli task save-config shell_etl --vcluster DEFAULT --retry-count 1 --profile <your-profile>
 cz-cli task save-cron shell_etl --cron "0 1 * * *" --profile <your-profile>
 
 # Publish and run a one-time execution to verify

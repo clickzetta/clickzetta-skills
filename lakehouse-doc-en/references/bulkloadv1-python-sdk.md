@@ -20,7 +20,7 @@ pip uninstall clickzetta-connector clickzetta-connector-python clickzetta-sqlalc
 pip show clickzetta-connector clickzetta-sqlalchemy clickzetta-ingestion-python clickzetta-ingestion-python-v2 clickzetta-connector-python
 ```
 
-Install the latest version (requires Python >= 3.7):
+Install the latest version (requires Python >= 3.10):
 
 ```bash
 pip install clickzetta-connector -U -i https://pypi.org/simple/
@@ -68,7 +68,7 @@ conn = connect(
     instance='your_instance',
     workspace='your_workspace',
     schema='public',
-    vcluster='default'
+    vcluster='DEFAULT'
 )
 
 bulkload_stream = conn.create_bulkload_stream(schema='public', table='bulkload_test')
@@ -96,7 +96,7 @@ bulkload_stream.commit()
        instance='your_instance',
        workspace='your_workspace',
        schema='public',
-       vcluster='default'
+       vcluster='DEFAULT'
    )
    ```
 

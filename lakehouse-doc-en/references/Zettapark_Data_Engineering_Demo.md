@@ -83,7 +83,7 @@ session.use_schema(Schema_Name)
 
 # XSMALL VCLUSTER Creation Ready
 
-Sample config.json file ([Parameter Description](https://doc.clickzetta.com/JDBC-Driver)):
+Sample config.json file ([Parameter Description](jdbc-driver.md)):
 
 ```json
 {

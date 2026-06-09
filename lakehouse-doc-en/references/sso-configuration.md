@@ -67,7 +67,7 @@ After enabling SSO login, select **OAuth 2.0 / OIDC Protocol** in the right-side
 :-: ![](.topwrite/assets/image_1755162417316.png =695)
 
 ```
-https://uat-api.clickzetta.com/clickzetta-portal/sso/oidc/consume?u={code}
+https://api.clickzetta.com/clickzetta-portal/sso/oidc/consume?u={code}
 ```
 
 Use this callback URL to register the Lakehouse application in your IdP service and record the Client\_ID and other configuration values for later use.
@@ -126,7 +126,7 @@ After enabling SSO login, select **SAML 2.0 Protocol** in the right-side pop-up.
 :-: ![](.topwrite/assets/image_1755162706106.png =478)
 
 ```
-https://uat-api.clickzetta.com/clickzetta-portal/sso/saml/consume?u={code}
+https://api.clickzetta.com/clickzetta-portal/sso/saml/consume?u={code}
 ```
 
 Use this address to register the application in the IdP, and record and save the Entity ID and X.509 certificate returned by the IdP.

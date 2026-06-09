@@ -1,6 +1,6 @@
 # Python SDK
 
-`clickzetta-connector` is the official Python SDK for Singdata Lakehouse. It follows the PEP 249 specification and provides four integration methods: SQL queries, SQLAlchemy ORM, bulk writes (Bulkload), and real-time streaming writes. Python 3.7 and above is supported.
+`clickzetta-connector` is the official Python SDK for Singdata Lakehouse. It follows the PEP 249 specification and provides four integration methods: SQL queries, SQLAlchemy ORM, bulk writes (Bulkload), and real-time streaming writes. Python 3.10 and above is supported.
 
 ---
 

@@ -20,13 +20,12 @@ Enterprise business intelligence (BI) generally obtains raw data from the enterp
 
 ### Workflow Diagram
 
-![](.topwrite/assets/image_1692343510673.png =648)
+
 
 ### Business Requirements
 
 The business requirements in this example simulate common BI analysis scenarios in e-commerce, generating a wide table at the detailed layer of the data warehouse by associating user behavior log data with dimension tables such as products, stores, and time zones. This wide table is then provided to downstream data application layers, and BI tools are used for sales and order statistics, funnel conversion models, popular product displays, etc.
 
-![](.topwrite/assets/image_1692975150801.png =704)
 
 ^
 
@@ -54,7 +53,6 @@ Configure task dependencies in the order of data integration tasks first, follow
 
 Deploy all tasks to the production environment.
 
-![](.topwrite/assets/image_1693020935459.png =627)
 
 ^
 
@@ -64,7 +62,7 @@ Refer to the **Preparations** in the previous chapter. Before starting the "Quic
 
 ^
 
-![](.topwrite/assets/9865a42db031a5516b4caf79bf0f4bb.png =715)
+![](/.topwrite/assets/image_1780998919773.png)
 
 ^
 
@@ -78,26 +76,24 @@ In the initialized product environment, you may already have the following objec
 ^
 
 Figure 1 —— User
-
-![](.topwrite/assets/image_1692348046212.png =354)
+![](/.topwrite/assets/image_1780998366942.png)
 
 ^
 
 Figure 2 —— Workspace: QuickStart\_WorkSpace
-
-![](.topwrite/assets/image_1692586908866.png =512)
+![](/.topwrite/assets/image_1780998669158.png)
 
 ^
 
 Figure 3 —— Schema: Public
 
-![](.topwrite/assets/image_1692583856135.png =730)
+![](/.topwrite/assets/image_1780998800756.png)
 
 ^
 
 Figure 4 —— Computing Cluster: Default
 
-![](.topwrite/assets/image_1692586859163.png =728)
+![](/.topwrite/assets/image_1780998850270.png)
 
 ###
 
@@ -117,34 +113,21 @@ Studio provides two ways to create a new data source:
 ^
 
 Figure 1 —— Method 1
-![](.topwrite/assets/image_1692588245122.png =785)
+![](/.topwrite/assets/image_1780999019336.png)
 
 ^
 
 Figure 2 —— Method 2
-![](.topwrite/assets/image_1692588445515.png =719)
-
-^
-
-![](.topwrite/assets/image_1692589881885.png =676)
+![](/.topwrite/assets/image_1780999067659.png)
 
 ^
 
 Select the MySQL type data source on the new data source page and click Next.
 
-![](.topwrite/assets/image_1692605359674.png =399)
-
-^
-
 Enter the database connection information and click connectivity test. If the configuration is correct, a green \[Connection Successful] will be displayed. If the connection test fails, you need to verify the configuration information or change the database's access whitelist policy. \*If you need to add specific IP whitelist entries, please contact Singdata customer service or your account manager.
-
-![](.topwrite/assets/image_1692605303319.png =553)
-
-^
 
 After successful creation, the data source can be seen in the list.
 
-![](.topwrite/assets/image_1692605636158.png =733)
 
 ^
 

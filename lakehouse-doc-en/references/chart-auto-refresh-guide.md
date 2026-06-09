@@ -1,5 +1,3 @@
-^
-
 # Chart Auto-Refresh Settings
 
 ## Feature Overview
@@ -16,10 +14,10 @@ Charts in dashboards support setting an auto-refresh interval. The system will a
 
 ## How to Use
 
-| Step       | Description                                       | Screenshot                                             |
-| ---------- | ------------------------------------------------- | ------------------------------------------------------ |
-| Select chart settings | Click "Dashboard" and select the chart you want to configure | ![](/.topwrite/assets/image_1779185744966.png =237) |
-| Set refresh interval | Default refresh every 24 hours; adjustable based on business needs | ![](/.topwrite/assets/image_1779185773256.png =247) |
+| Step                  | Description                                                        | Screenshot                                          |
+| --------------------- | ------------------------------------------------------------------ | --------------------------------------------------- |
+| Select chart settings | Click "Dashboard" and select the chart you want to configure       | ![](/.topwrite/assets/image_1780901921376.png =241) |
+| Set refresh interval  | Default refresh every 24 hours; adjustable based on business needs | ![](/.topwrite/assets/image_1780901941736.png =251) |
 
 ## **Notes**
 
@@ -28,3 +26,11 @@ Charts in dashboards support setting an auto-refresh interval. The system will a
 2\. During refresh, the system re-executes the query corresponding to that chart to retrieve the latest data
 
 3\. It is recommended to set refresh intervals reasonably based on data update frequency, avoiding excessively frequent refreshes that cause unnecessary resource consumption
+
+## Related Documentation
+
+* [Scheduled Tasks](scheduled_task.md) — Automatically execute analysis on a schedule and push results
+* [Dashboard Version Management](dashboard-version-management-guide.md) — Manage multi-version history of dashboards
+* [Conversational Data Analytics (Analytics Agent)](datagpt_introduction.md) — Return to feature overview
+
+^

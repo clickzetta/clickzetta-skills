@@ -12,22 +12,22 @@ The system provides a set of commonly used parameters that you can use directly 
 
 ### Date and Time Parameters
 
-| Parameter name | Format | Description | Example (reference time: 2023-09-22 18:00:00) |
-| ---- | ---- | ---- | ---- |
-| `bizdate` | yyyyMMdd | Business date (scheduled time minus 1 day) | 20230921 |
-| `sys_biz_day` | yyyy-MM-dd | Business date | 2023-09-21 |
-| `sys_biz_datetime` | yyyy-MM-dd HH:mm:ss | Business datetime | 2023-09-21 18:00:00 |
-| `sys_plan_day` | yyyy-MM-dd | Scheduled date | 2023-09-22 |
-| `sys_plan_datetime` | yyyy-MM-dd HH:mm:ss | Scheduled datetime | 2023-09-22 18:00:00 |
-| `sys_plan_timestamp` | 13-digit timestamp | Scheduled timestamp (milliseconds) | 1695463200000 |
+| Parameter name       | Format               | Description                                | Example (reference time: 2023-09-22 18:00:00) |
+| -------------------- | -------------------- | ------------------------------------------ | --------------------------------------------- |
+| `bizdate`            | yyyyMMdd             | Business date (scheduled time minus 1 day) | 20230921                                      |
+| `sys_biz_day`        | yyyy-MM-dd           | Business date                              | 2023-09-21                                    |
+| `sys_biz_datetime`   | yyyy-MM-dd HH\:mm:ss | Business datetime                          | 2023-09-21 18:00:00                           |
+| `sys_plan_day`       | yyyy-MM-dd           | Scheduled date                             | 2023-09-22                                    |
+| `sys_plan_datetime`  | yyyy-MM-dd HH\:mm:ss | Scheduled datetime                         | 2023-09-22 18:00:00                           |
+| `sys_plan_timestamp` | 13-digit timestamp   | Scheduled timestamp (milliseconds)         | 1695463200000                                 |
 
 ### Task Information Parameters
 
-| Parameter name | Description | Example | Notes |
-| ---- | ---- | ---- | ---- |
-| `sys_task_id` | Task ID | 1002 | Scheduled run only |
-| `sys_task_name` | Task name | demo_task | Scheduled run only |
-| `sys_task_owner` | Task owner | UAT_TEST | Scheduled run only |
+| Parameter name   | Description | Example    | Notes              |
+| ---------------- | ----------- | ---------- | ------------------ |
+| `sys_task_id`    | Task ID     | 1002       | Scheduled run only |
+| `sys_task_name`  | Task name   | demo\_task | Scheduled run only |
+| `sys_task_owner` | Task owner  | UAT\_TEST  | Scheduled run only |
 
 ### Usage Examples
 
@@ -45,12 +45,12 @@ SELECT * FROM table WHERE create_time >= ${start_ts};
 
 ### Usage Recommendations
 
-- **Business date scenarios**: prefer `bizdate` or `sys_biz_day`
-- **When hours, minutes, and seconds are needed**: use `sys_biz_datetime` or `sys_plan_datetime`
-- **Timestamp calculations**: use `sys_plan_timestamp`
-- **Audit logging**: use the `sys_task_*` parameters to record task information
+* **Business date scenarios**: prefer `bizdate` or `sys_biz_day`
+* **When hours, minutes, and seconds are needed**: use `sys_biz_datetime` or `sys_plan_datetime`
+* **Timestamp calculations**: use `sys_plan_timestamp`
+* **Audit logging**: use the `sys_task_*` parameters to record task information
 
----
+***
 
 ## Time Expressions
 
@@ -68,17 +68,17 @@ $[time_format, offset1, offset2, ...]  # Multiple offsets (applied in sequence)
 
 Time expressions follow the **ISO-8601 standard** and are strictly case-sensitive.
 
-| Element | Meaning | Example |
-| ---- | ---- | ---- |
-| `yyyy` | Four-digit year | 2023 |
-| `yy` | Two-digit year | 23 |
-| `MM` | Two-digit month (01-12) | 09 |
-| `dd` | Two-digit day (01-31) | 22 |
-| `HH` | 24-hour hour (00-23) | 18 |
-| `mm` | Minute (00-59) | 59 |
-| `ss` | Second (00-59) | 49 |
-| `.SSS` | Millisecond | 0.377 |
-| `ZZ` | Time zone | +08:00 |
+| Element | Meaning                 | Example |
+| ------- | ----------------------- | ------- |
+| `yyyy`  | Four-digit year         | 2023    |
+| `yy`    | Two-digit year          | 23      |
+| `MM`    | Two-digit month (01-12) | 09      |
+| `dd`    | Two-digit day (01-31)   | 22      |
+| `HH`    | 24-hour hour (00-23)    | 18      |
+| `mm`    | Minute (00-59)          | 59      |
+| `ss`    | Second (00-59)          | 49      |
+| `.SSS`  | Millisecond             | 0.377   |
+| `ZZ`    | Time zone               | +08:00  |
 
 > ⚠️ Common mistakes: `YYYY` (uppercase Y is not supported), `yyyy-mm-dd` (lowercase m is minute, not month), `hh` (lowercase h is 12-hour format). Correct form: `yyyy-MM-dd HH:mm:ss`.
 
@@ -96,16 +96,16 @@ $[yyyy-MM-dd HH:mm:ss.SSSZZ] → 2023-09-22 18:00:00.377+08:00
 
 ### Time Offsets
 
-| Unit | Abbreviation | Full name | Example |
-| ---- | ---- | ---- | ---- |
-| Millisecond | ms | milli/millisecond | 400ms |
-| Second | s | sec/second | 30s |
-| Minute | m | min/minute | 15m |
-| Hour | h | hour | 2h |
-| Day | d | day | -1d |
-| Week | w | week | -1w |
-| Month | mon | month | -1mon |
-| Year | y | year | -1y |
+| Unit        | Abbreviation | Full name         | Example |
+| ----------- | ------------ | ----------------- | ------- |
+| Millisecond | ms           | milli/millisecond | 400ms   |
+| Second      | s            | sec/second        | 30s     |
+| Minute      | m            | min/minute        | 15m     |
+| Hour        | h            | hour              | 2h      |
+| Day         | d            | day               | -1d     |
+| Week        | w            | week              | -1w     |
+| Month       | mon          | month             | -1mon   |
+| Year        | y            | year              | -1y     |
 
 ### Offset Examples
 
@@ -121,7 +121,7 @@ $[yyyy-MM-dd, -1y, -1mon, -1d]  → Last year, last month, yesterday
 $[yyyyMMdd, 1mon, -7d]          → Next month minus 7 days
 ```
 
----
+***
 
 ## Built-in Time Functions
 
@@ -270,53 +270,55 @@ today_start     = biz_timestamp()    → 1695312000000 (2023-09-22 00:00:00)
 yesterday_start = biz_timestamp(-1d) → 1695225600000
 ```
 
----
+***
 
 ## Quick Reference
 
 ### Common Time Requirements
 
-| Requirement | Parameter configuration | Example result (reference: 2023-09-22) |
-| ---- | ---- | ---- |
-| Today | `$[yyyy-MM-dd]` or `sys_plan_day` | 2023-09-22 |
-| Yesterday | `$[yyyy-MM-dd, -1d]` or `sys_biz_day` | 2023-09-21 |
-| Same day last week | `$[yyyy-MM-dd, -7d]` | 2023-09-15 |
-| Same day last month | `$[yyyy-MM-dd, -1mon]` | 2023-08-22 |
-| First day of this month | `first_day_of_month()` | 2023-09-01 |
-| Last day of this month | `last_day_of_month()` | 2023-09-30 |
-| First day of last month | `first_day_of_month('yyyy-MM-dd', '-1mon')` | 2023-08-01 |
-| Last day of last month | `last_day_of_month('yyyy-MM-dd', '-1mon')` | 2023-08-31 |
-| This Monday | `first_day_of_week()` | 2023-09-18 |
-| This Sunday | `last_day_of_week()` | 2023-09-24 |
-| Last Monday | `first_day_of_week('yyyy-MM-dd', '-1w')` | 2023-09-11 |
-| Last Sunday | `last_day_of_week('yyyy-MM-dd', '-1w')` | 2023-09-17 |
-| This Tuesday | `get_day_of_week('yyyy-MM-dd', 2)` | 2023-09-19 |
-| Last year yesterday | `$[yyyy-MM-dd, -1y, -1d]` | 2022-09-21 |
-| Today at 00:00 timestamp | `biz_timestamp()` | 1695312000000 |
-| Current timestamp | `timestamp()` | 1695463200000 |
+| Requirement              | Parameter configuration                     | Example result (reference: 2023-09-22) |
+| ------------------------ | ------------------------------------------- | -------------------------------------- |
+| Today                    | `$[yyyy-MM-dd]` or `sys_plan_day`           | 2023-09-22                             |
+| Yesterday                | `$[yyyy-MM-dd, -1d]` or `sys_biz_day`       | 2023-09-21                             |
+| Same day last week       | `$[yyyy-MM-dd, -7d]`                        | 2023-09-15                             |
+| Same day last month      | `$[yyyy-MM-dd, -1mon]`                      | 2023-08-22                             |
+| First day of this month  | `first_day_of_month()`                      | 2023-09-01                             |
+| Last day of this month   | `last_day_of_month()`                       | 2023-09-30                             |
+| First day of last month  | `first_day_of_month('yyyy-MM-dd', '-1mon')` | 2023-08-01                             |
+| Last day of last month   | `last_day_of_month('yyyy-MM-dd', '-1mon')`  | 2023-08-31                             |
+| This Monday              | `first_day_of_week()`                       | 2023-09-18                             |
+| This Sunday              | `last_day_of_week()`                        | 2023-09-24                             |
+| Last Monday              | `first_day_of_week('yyyy-MM-dd', '-1w')`    | 2023-09-11                             |
+| Last Sunday              | `last_day_of_week('yyyy-MM-dd', '-1w')`     | 2023-09-17                             |
+| This Tuesday             | `get_day_of_week('yyyy-MM-dd', 2)`          | 2023-09-19                             |
+| Last year yesterday      | `$[yyyy-MM-dd, -1y, -1d]`                   | 2022-09-21                             |
+| Today at 00:00 timestamp | `biz_timestamp()`                           | 1695312000000                          |
+| Current timestamp        | `timestamp()`                               | 1695463200000                          |
 
 ### Time Function Quick Reference
 
-| Function | Purpose | Return type |
-| ---- | ---- | ---- |
-| `first_day_of_month()` | First day of the current month | Date string |
-| `last_day_of_month()` | Last day of the current month | Date string |
-| `first_day_of_week()` | First day of the current week (Monday) | Date string |
-| `last_day_of_week()` | Last day of the current week (Sunday) | Date string |
-| `day_of_week()` | Day of the week (1-7) | Integer |
-| `week_of_month()` | Week number within the current month | Integer |
-| `week_of_year()` | Week number within the current year | Integer |
-| `get_day_of_week()` | Date of a specific day of the week | Date string |
-| `timestamp()` | Millisecond timestamp (based on scheduled time) | 13-digit integer |
-| `biz_timestamp()` | Millisecond timestamp (based on 00:00:00) | 13-digit integer |
-| `unix_timestamp()` | Second timestamp | 10-digit integer |
-| `biz_unix_timestamp()` | Business second timestamp | 10-digit integer |
-| `biz_format()` | Business time formatting | String |
+| Function               | Purpose                                         | Return type      |
+| ---------------------- | ----------------------------------------------- | ---------------- |
+| `first_day_of_month()` | First day of the current month                  | Date string      |
+| `last_day_of_month()`  | Last day of the current month                   | Date string      |
+| `first_day_of_week()`  | First day of the current week (Monday)          | Date string      |
+| `last_day_of_week()`   | Last day of the current week (Sunday)           | Date string      |
+| `day_of_week()`        | Day of the week (1-7)                           | Integer          |
+| `week_of_month()`      | Week number within the current month            | Integer          |
+| `week_of_year()`       | Week number within the current year             | Integer          |
+| `get_day_of_week()`    | Date of a specific day of the week              | Date string      |
+| `timestamp()`          | Millisecond timestamp (based on scheduled time) | 13-digit integer |
+| `biz_timestamp()`      | Millisecond timestamp (based on 00:00:00)       | 13-digit integer |
+| `unix_timestamp()`     | Second timestamp                                | 10-digit integer |
+| `biz_unix_timestamp()` | Business second timestamp                       | 10-digit integer |
+| `biz_format()`         | Business time formatting                        | String           |
 
----
+***
 
 ## Related Documentation
 
-- [Task Parameters](task_param.md) — concepts, quick start, parameter types
-- [Task Parameter Examples](task_param_examples.md) — complete business scenarios for daily, monthly, and weekly reports
-- [Task Development and Scheduling](task-develop.md) — creating and scheduling SQL tasks in Studio
+* [Task Parameters](task_param.md) — concepts, quick start, parameter types
+* [Task Parameter Examples](task_param_examples.md) — complete business scenarios for daily, monthly, and weekly reports
+* [Task Development and Scheduling](task-develop.md) — creating and scheduling SQL tasks in Studio
+
+^
