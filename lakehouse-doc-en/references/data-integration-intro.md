@@ -12,7 +12,7 @@ A data synchronization task is a type of task used to collect data from a data s
 
 Lakehouse Studio currently supports two main types of synchronization tasks: offline periodic synchronization and real-time synchronization. In the "Development -> Tasks" section, use the new button to select the appropriate task type as needed.
 
-![](.topwrite/assets/image_1740136964041.png =600)
+:-: ![](.topwrite/assets/image_1740136964041.png =600)
 
 ^
 

@@ -152,7 +152,7 @@ public class Kafka2Lakehouse {
     }
     // Initialize Lakehouse client and realtimeStream
     private static void initialize() throws Exception {
-        String url = MessageFormat.format("jdbc:clickzetta://jnsxwfyr.uat-api.clickzetta.com/{0}?" + "schema={1}&username={2}&password={3}&vcluster={4}", workspace, schema, user, password, vc);
+        String url = MessageFormat.format("jdbc:clickzetta://jnsxwfyr.api.clickzetta.com/{0}?" + "schema={1}&username={2}&password={3}&vcluster={4}", workspace, schema, user, password, vc);
         Options options = Options.builder().withMutationBufferLinesNum(10).build();
         client = ClickZettaClient.newBuilder().url(url).build();
         realtimeStream = client.newRealtimeStreamBuilder().operate(RowStream.RealTimeOperate.APPEND_ONLY).options(options).schema(schema).table(table).build();

@@ -4,7 +4,7 @@ Singdata Lakehouse is a fully managed, cloud-native lakehouse data platform equi
 
 Lakehouse unification solved the fragmentation between data storage and processing, but it did not solve the new challenges of the AI era: vector databases, LLM calls, and unstructured data processing remain outside the data platform, forcing AI teams and data teams to use two separate toolsets on the same data. Singdata defines this direction as **[AI Lakehouse](lakehouse-ai.md)** — GIC-driven incremental refresh allows AI processing results to flow back into the data processing pipeline in real time, rather than sitting in an external system; AI capabilities become native to the data platform, completing the full cycle within the same platform as data processing.
 
-The platform is delivered as SaaS, currently available on Alibaba Cloud (East China Shanghai), Tencent Cloud (East China Shanghai, North China Beijing, South China Guangzhou), Amazon Cloud (Beijing), and more — on-demand activation, no infrastructure management required. See [Supported Cloud Platforms and Regions](Supported-Cloud-Platforms.md).
+The platform is delivered as SaaS, currently available on Alibaba Cloud (East China Shanghai), Tencent Cloud (East China Shanghai, North China Beijing, South China Guangzhou), Amazon Cloud (Beijing), and more — on-demand activation, no infrastructure management required. See [Supported Cloud Platforms and Regions](supported-cloud-platforms.md).
 
 ## Architecture Overview
 
@@ -21,7 +21,7 @@ But AI Agents participating in data work is fundamentally different from humans 
 
 Today, Singdata Lakehouse serves three types of users, each equally important as a first-class citizen:
 
-* **Human**: Operates through the [Studio](lakehouse-studio-101.md) Web interface, covering data development, scheduling, analysis Notebooks, and [DataGPT](LakehouseDataGPT-tour.md) conversational queries
+* **Human**: Operates through the [Studio](lakehouse-studio-101.md) Web interface, covering data development, scheduling, analysis Notebooks, and [DataGPT](lakehousedatagpt-tour.md) conversational queries
 * **App**: Connects via JDBC, Python SDK, MySQL protocol, REST API, using Lakehouse as the data backend for applications
 * **AI Agent**: Connects via [cz-cli](setup_cz_cli.md), autonomously completing data warehouse development, operations, and data consumption
 
@@ -107,7 +107,7 @@ A single SQL can simultaneously filter scalar fields, match keywords, and retrie
 
 **Understanding Layer: AI Reads Business Semantics**
 
-[Semantic Views](semantic-view-overview.md) build a business semantic layer on top of physical tables, centralizing metric definitions and entity relationships. AI understands business concepts like "active users" and "GMV" through Semantic Views, rather than guessing at field meanings from raw table structures. [Data Analytics Agent (DataGPT)](LakehouseDataGPT-tour.md) implements natural language data queries based on Semantic Views — users describe business questions, the Agent generates SQL, executes queries, and interprets results.
+[Semantic Views](semantic-view-overview.md) build a business semantic layer on top of physical tables, centralizing metric definitions and entity relationships. AI understands business concepts like "active users" and "GMV" through Semantic Views, rather than guessing at field meanings from raw table structures. [Data Analytics Agent (DataGPT)](lakehousedatagpt-tour.md) implements natural language data queries based on Semantic Views — users describe business questions, the Agent generates SQL, executes queries, and interprets results.
 
 **Operations Layer: AI Autonomously Completes Warehouse Development**
 
@@ -115,7 +115,7 @@ A single SQL can simultaneously filter scalar fields, match keywords, and retrie
 
 **Governance Layer: Unified Management of AI Model Resources**
 
-[AI Gateway (Model Management)](AI_Gateway.md) is the enterprise's unified LLM access point, aggregating Alibaba Cloud Qwen, OpenAI, self-hosted models, and other sources. It provides RBAC permission isolation, call rate limiting, token usage statistics, and multi-tenant cost allocation — AI Functions and various Agents share the same model governance mechanism.
+[AI Gateway (Model Management)](ai_gateway.md) is the enterprise's unified LLM access point, aggregating Alibaba Cloud Qwen, OpenAI, self-hosted models, and other sources. It provides RBAC permission isolation, call rate limiting, token usage statistics, and multi-tenant cost allocation — AI Functions and various Agents share the same model governance mechanism.
 
 **Overall value**: Data is stored only once; BI reports and AI applications read from the same table with unified permissions and metadata management; AI processing results flow back into the data processing pipeline in real time via GIC incremental refresh, no longer sitting in external systems waiting for batch runs; from data ingestion, processing, AI handling to analytics consumption, the full pipeline closes within a single platform — data teams need not switch tools or maintain multiple systems.
 
@@ -191,7 +191,7 @@ Massive device data continuously written via Kafka; Dynamic Tables aggregate dev
 
 ## Ecosystem Compatibility
 
-Singdata Lakehouse natively supports Apache Iceberg format and supports direct read/write of Delta Lake, Hudi, and Paimon as external tables — existing data lake assets can be onboarded without migration. On the compute ecosystem side, [Spark Connector](spark-connector-summary.md), [Flink Connector](flink-write-connector.md), and Trino Connector are provided for smooth integration with existing big data pipelines. On the BI side, FineBI, Tableau, Superset, Metabase, and PowerBI have all completed integration certification.
+Singdata Lakehouse natively supports Apache Iceberg format and supports direct read/write of Delta Lake, Hudi, and Paimon as external tables — existing data lake assets can be onboarded without migration. On the compute ecosystem side, [Spark Connector](spark-connector-summary.md) and [Flink Connector](flink-write-connector.md) are provided for smooth integration with existing big data pipelines. On the BI side, FineBI, Tableau, Superset, Metabase, and PowerBI have all completed integration certification.
 
 ## Start Here
 
@@ -201,7 +201,7 @@ Singdata Lakehouse natively supports Apache Iceberg format and supports direct r
 | Hands-on with your first complete workflow  | [Quick Start](lakehouse-quick-experience_guide.md)                                                     |
 | Understand the full AI Lakehouse picture    | [AI Lakehouse](lakehouse-ai.md)                                                                        |
 | Build RAG or vector search                  | [Full-Text + Vector Hybrid Search Best Practices](rrf-fulltext-vector-hybrid-search-best-practices.md) |
-| Understand AI data analytics capabilities   | [Data Analytics Agent Tour](LakehouseDataGPT-tour.md)                                                  |
+| Understand AI data analytics capabilities   | [Data Analytics Agent Tour](lakehousedatagpt-tour.md)                                                  |
 | Let AI Agents operate the data warehouse    | [cz-cli Configuration Guide](setup_cz_cli.md)                                                          |
 | Learn common SQL commands                   | [SQL Reference](sql-reference.md)                                                                      |
 | Design data models and object relationships | [Object Model Design](object_model_design.md)                                                          |

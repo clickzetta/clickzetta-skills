@@ -35,5 +35,5 @@ SELECT months_diff(NULL, '2024-01-01');
 
 ## Related Documentation
 
-- [DATEDIFF](sql_functions/scalar_functions/datetime_functions/datediff.md) — general date difference function supporting multiple time units
-- [WEEKS_DIFF](sql_functions/scalar_functions/datetime_functions/weeks_diff.md), [YEARS_DIFF](sql_functions/scalar_functions/datetime_functions/years_diff.md), [DAYS_DIFF](sql_functions/scalar_functions/datetime_functions/days_diff.md)
+- [DATEDIFF](datediff.md) — general date difference function supporting multiple time units
+- [WEEKS_DIFF](weeks_diff.md), [YEARS_DIFF](years_diff.md), [DAYS_DIFF](days_diff.md)

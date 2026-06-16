@@ -33,6 +33,6 @@ GROUP BY grp;
 
 ## Related Documentation
 
-- [JSON_ARRAY_AGG](sql_functions/aggregate_functions/json_array_agg.md) — aggregates into a JSON array
-- [JSON_MERGE_AGG](sql_functions/aggregate_functions/json_merge_agg.md)
-- [MAP_AGG](sql_functions/aggregate_functions/map_agg.md) — aggregates into a MAP type
+- [JSON_ARRAY_AGG](json_array_agg.md) — aggregates into a JSON array
+- [JSON_MERGE_AGG](json_merge_agg.md)
+- [MAP_AGG](map_agg.md) — aggregates into a MAP type

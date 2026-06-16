@@ -17,9 +17,9 @@ If you need to use data resources developed by others, you must apply for permis
 Follow the entry points above, select the target object, and click **Apply for Permission** to open the data object permission application dialog.
 
 \:-:
-![](.topwrite/assets/image_1734438890426.png =501)
 
-1) Application Information
+
+1. Application Information
 
 * Object Permission: The permission points available to apply for on the current object. Different resource object levels provide different permission type options. Available access permissions include three options: All, Read, and Write.
 
@@ -36,8 +36,8 @@ Follow the entry points above, select the target object, and click **Apply for P
 
 * Application Reason: A detailed explanation of why you are applying for resource permissions.
 
-2) You can click **Add Application** to add another resource request. In the additional resource request, you need to re-enter the object permission, grant target, grant duration, and application reason.
+2. You can click **Add Application** to add another resource request. In the additional resource request, you need to re-enter the object permission, grant target, grant duration, and application reason.
 
-3) After applying for permissions, you can view all your submitted work orders under **Approval Center > Applications**, including application content, application status, etc. You can also withdraw or send reminder actions for a work order.
+3. After applying for permissions, you can view all your submitted work orders under **Approval Center > Applications**, including application content, application status, etc. You can also withdraw or send reminder actions for a work order.
 
-![](.topwrite/assets/image_1734438910731.png =344)
+^

@@ -23,7 +23,7 @@ pip install -e ".[dev]"
 ## Dependency Requirements
 
 ### Python Version
-- Python 3.9 or higher
+- Python 3.10 or higher
 
 ### Core Dependencies
 The following dependencies are installed automatically with the package:

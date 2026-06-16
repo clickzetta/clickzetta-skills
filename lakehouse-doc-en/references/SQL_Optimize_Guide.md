@@ -132,6 +132,6 @@ DROP TABLE IF EXISTS logs_optimize;
 
 ## Related Documentation
 
-* [OPTIMIZE](OPTIMIZE.md)
+* [OPTIMIZE](optimize.md)
 * [Small File Optimization](small_file_optimization.md)
 * [ANALYZE TABLE](analyze-table.md)

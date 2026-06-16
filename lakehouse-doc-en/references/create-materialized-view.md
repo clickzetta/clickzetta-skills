@@ -6,7 +6,7 @@ Creates a new materialized view in the current or specified schema based on a qu
 
 A materialized view is like an auto-updating query cache -- the optimizer automatically recognizes and uses it to replace slow queries without requiring any application code changes.
 
-For more details, see [Materialized View](MATERIALIZEDVIEW.md).
+For more details, see [Materialized View](materializedview.md).
 
 ## How to Choose: Materialized View vs Dynamic Table vs View
 
@@ -276,7 +276,7 @@ select * from mv_table;
 
 8. refreshOption: Optional. Refresh options.
    * START WITH timestamp_expr: Specifies the start time, supporting a timestamp expression. If START WITH is not written, the refresh starts from the current time.
-     * `timestamp_expression` returns a result that is a standard timestamp type expression. The earliest timestamp specified by TIMESTAMP AS OF depends on the [TIME TRAVEL](TIMETRAVEL.md)(data_retention_days) parameter. If the specified version does not exist, an error is returned. If not specified, the current timestamp version data is used. For example:
+     * `timestamp_expression` returns a result that is a standard timestamp type expression. The earliest timestamp specified by TIMESTAMP AS OF depends on the [TIME TRAVEL](timetravel.md)(data_retention_days) parameter. If the specified version does not exist, an error is returned. If not specified, the current timestamp version data is used. For example:
        * `'2023-11-07 14:49:18'`, i.e., a string coercible to timestamp.
        * `cast('2023-11-07 14:49:18 Asia/Shanghai' as timestamp)`.
        * `current_timestamp() - interval '12' hours`.
@@ -292,7 +292,7 @@ select * from mv_table;
          SELECT    *
          FROM      mv_base_a;
      ```
-   * interval_time: Specifies the time interval. Supports [interval time types](INTERVAL.md). If interval_time is not written but START WITH is, it will only refresh once at the time specified by START WITH. The interval_time intervals are as follows:
+   * interval_time: Specifies the time interval. Supports [interval time types](interval.md). If interval_time is not written but START WITH is, it will only refresh once at the time specified by START WITH. The interval_time intervals are as follows:
 
 | Syntax                                  | Description                           | Example                                                        |
 | ----------------------------------- | ---------------------------- | --------------------------------------------------------- |
@@ -327,7 +327,7 @@ day: Value range [0, 2147483647]. hour: Value range [0, 23]. minute: Value range
 
 ## Notes
 
-* Incremental refresh of materialized views is based on historical versions of the base table. Historical versions depend on the [TIME TRAVEL](TIMETRAVEL.md)(data_retention_days) parameter; if the specified version does not exist, an error is returned. This parameter defines how long deleted data is retained. The Lakehouse retains data for one day by default. Based on your business requirements, you can adjust the `data_retention_days` parameter to extend or shorten the data retention period. Note that adjusting the data retention period may affect storage costs. Extending the retention period increases storage requirements and may increase associated costs.
+* Incremental refresh of materialized views is based on historical versions of the base table. Historical versions depend on the [TIME TRAVEL](timetravel.md)(data_retention_days) parameter; if the specified version does not exist, an error is returned. This parameter defines how long deleted data is retained. The Lakehouse retains data for one day by default. Based on your business requirements, you can adjust the `data_retention_days` parameter to extend or shorten the data retention period. Note that adjusting the data retention period may affect storage costs. Extending the retention period increases storage requirements and may increase associated costs.
 
 ## Examples
 
@@ -526,4 +526,4 @@ FROM      dept_emp_stats;
 
 ## Related Guides
 
-- [Views and Materialized Views](SQL_View_Guide.md): Comparison of view and materialized view usage scenarios, refresh strategies, and typical query acceleration patterns
+- [Views and Materialized Views](sql_view_guide.md): Comparison of view and materialized view usage scenarios, refresh strategies, and typical query acceleration patterns

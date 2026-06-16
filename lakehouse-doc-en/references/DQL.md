@@ -9,18 +9,18 @@ Query syntax covers the complete syntax for SELECT statements, including JOIN, a
 | Page | Description |
 |------|-------------|
 | [SELECT Basic Syntax](query-syntax.md) | Full syntax for SELECT, FROM, WHERE, ORDER BY, LIMIT |
-| [WITH (Common Table Expressions)](WITH.md) | CTE syntax — name subqueries for reuse and improved readability |
-| [JOIN](JOIN.md) | INNER/LEFT/RIGHT/FULL/CROSS JOIN syntax and examples |
+| [WITH (Common Table Expressions)](with.md) | CTE syntax — name subqueries for reuse and improved readability |
+| [JOIN](join.md) | INNER/LEFT/RIGHT/FULL/CROSS JOIN syntax and examples |
 | [Map Join](mapjoin.md) | JOIN optimization hint to force small-table broadcast |
 | [LATERAL VIEW](lateralview.md) | Expand array or map columns; used with explode/posexplode |
 | [GROUP BY](groupby.md) | Aggregation grouping; supports ROLLUP, CUBE, GROUPING SETS |
-| [Window Functions](WINDOWFUNCTION.md) | OVER clause, PARTITION BY, ORDER BY, window frame definition |
+| [Window Functions](windowfunction.md) | OVER clause, PARTITION BY, ORDER BY, window frame definition |
 | [TABLESAMPLE](tablesample.md) | Random sampling of a table for quick data exploration |
 | [QUALIFY](sql-qualify.md) | Filter window function results; equivalent to wrapping a WHERE around a window function |
 | [Set Operations (UNION/INTERSECT/EXCEPT)](set-operations.md) | Merge, intersect, and subtract results from multiple queries |
 | [VALUES](values.md) | Inline data — construct row sets without creating a table |
-| [TIME TRAVEL](TIMETRAVEL.md) | Query historical versions of a table by timestamp or version number |
-| [EXPLAIN](EXPLAIN.md) | View the query execution plan for performance analysis and optimization |
+| [TIME TRAVEL](timetravel.md) | Query historical versions of a table by timestamp or version number |
+| [EXPLAIN](explain.md) | View the query execution plan for performance analysis and optimization |
 
 ---
 

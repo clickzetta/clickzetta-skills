@@ -30,7 +30,7 @@ According to the above application entry, select the target object, click "Permi
 * Grant to User: Supports authorization in two ways, to roles and to users.
 
   * When selecting **Individual**, you can enter the tenant account keyword and then select other accounts from the dropdown for application, supporting multiple settings.
-  * When selecting **User Group**, you can select roles created by default after instance creation or roles created by user customization from the dropdown (custom roles only support SQL creation, for details refer to [Create Role](CREATEROLE.md)).
+  * When selecting **User Group**, you can select roles created by default after instance creation or roles created by user customization from the dropdown (custom roles only support SQL creation, for details refer to [Create Role](createrole.md)).
 
 * Authorization Time: The authorization time for the current resource object is permanently valid.
 

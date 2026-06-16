@@ -619,7 +619,7 @@ SQL analysis on the data lake combines the ease of use of traditional SQL with t
 
 ## References
 
-[JSON Data Type](JSON.md)
+[JSON Data Type](json.md)
 
 [JSON Functions](json_function.md)
 [External Volume](external_volume.md)

@@ -8,7 +8,6 @@ When configuring Private Link to access the Lakehouse network, to ensure that th
 
 First, go to the Alibaba Cloud Access Control page (<https://ram.console.aliyun.com/roles>) and click "Create Role", then select the feasible entity type as: Alibaba Cloud Account:
 
-:-: ![](.topwrite/assets/image_1733068362672.png =424)
 
 ^
 
@@ -16,25 +15,21 @@ Enter a custom role name in the role name field;
 
 In "Select Trusted Cloud Account", choose "Other Cloud Account", and copy the Lakehouse endpoint service's LakehouseUID content and paste it in.
 
-:-: ![](.topwrite/assets/image_1733068490413.png =769)
 
 ^
 
 After the role is created, click "Authorize Role", and then click "Create Authorization";
 
-:-: ![](.topwrite/assets/image_1733068711869.png =799)
 
 ^
 
 Search for "privatelink", and check: AliyunPrivateLinkReadOnlyAccess and AliyunPrivatelinkEndpointServiceReadOnlyAccess two policies;
 
-:-: ![](.topwrite/assets/image_1733068776650.png =811)
 
 ^
 
 After completing "Confirm New Authorization", switch to the "Trust Policy" tab, and click "Edit Trust Policy":
 
-:-: ![](.topwrite/assets/image_1733068938505.png =812)
 
 Paste the following content between "Action": "sts:AssumeRole", and "Effect": "Allow":
 Sure, here is the translated content:

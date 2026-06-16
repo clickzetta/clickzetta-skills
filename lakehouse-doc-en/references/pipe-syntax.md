@@ -1,183 +1,90 @@
-# Pipe Syntax
+# Pipe
 
-Pipe is a continuous data ingestion object that automates importing data from object storage or Kafka into the Lakehouse. This document provides a complete reference for Pipe-related SQL syntax.
+Pipe is the continuous data ingestion object in the Lakehouse. Once created via SQL DDL, it runs automatically, continuously reading data from object storage (OSS/COS/S3) or Kafka and writing it to a target table.
 
-## Create Pipe
+For a detailed introduction, see [Pipe Object Model](om-pipe.md).
 
-### Import Data from Object Storage
+---
+
+## Chapter Contents
+
+| Page | Description |
+|------|-------------|
+| [CREATE PIPE](create-pipe.md) | Create an object storage Pipe or Kafka Pipe |
+| [ALTER PIPE](alter-pipe.md) | Pause, resume, or modify batch interval and other properties |
+| [DROP PIPE](drop-pipe.md) | Drop a Pipe (does not affect target table data) |
+| [SHOW PIPES](show-pipes.md) | List all Pipes in the current Schema |
+| [SHOW CREATE PIPE](show-create-pipe.md) | View the creation statement of a Pipe |
+| [DESC PIPE](desc-pipe.md) | View Pipe details including status, source, target, and latency |
+
+---
+
+## Common Operations
+
+### Create an Object Storage Pipe
 
 ```SQL
-CREATE PIPE [IF NOT EXISTS] <pipe_name>
-    VIRTUAL_CLUSTER = 'virtual_cluster_name'
-    INGEST_MODE = 'LIST_PURGE' | 'EVENT_NOTIFICATION'
-    [COPY_JOB_HINT = '']
-AS <copy_statement>;
+-- LIST_PURGE mode: periodic polling, deletes source files after import
+CREATE PIPE orders_pipe
+    VIRTUAL_CLUSTER = 'DEFAULT'
+    INGEST_MODE = 'LIST_PURGE'
+AS
+COPY INTO orders FROM VOLUME orders_vol USING CSV OPTIONS('header' = 'true');
 ```
 
-**Parameter Description:**
+> ⚠️ `LIST_PURGE` mode **permanently deletes** source files from OSS after a successful import. This is irreversible. Use `EVENT_NOTIFICATION` mode if you need to retain the files.
 
-| Parameter | Required | Description |
-|-----------|----------|-------------|
-| `pipe_name` | Yes | Name of the Pipe object |
-| `VIRTUAL_CLUSTER` | Yes | Name of the compute cluster used to execute COPY jobs |
-| `INGEST_MODE` | Yes | Data ingestion mode: `LIST_PURGE` (polling scan) or `EVENT_NOTIFICATION` (event notification trigger) |
-| `COPY_JOB_HINT` | No | Lakehouse reserved parameter. Supports `IGNORE_TMP_FILE` (value `true`\|`false`, default `true`), which filters files or directories starting with `.` or `_temporary` |
-| `copy_statement` | Yes | A standard `COPY INTO` statement. Supports the `ON_ERROR=CONTINUE\|ABORT` parameter for error handling strategy |
-
-**Usage Restrictions:**
-
-- COPY statements in a Pipe do not support the `FILES`, `REGEXP`, or `SUBDIRECTORY` parameters.
-- Each Pipe must correspond to an independent Volume; Volumes cannot be reused.
-
-**Reference:** [Import Data Continuously from Object Storage Using Pipe](pipe-storage-object.md)
-
-### Import Data from Kafka
+### Create a Kafka Pipe
 
 ```SQL
-CREATE PIPE [IF NOT EXISTS] <pipe_name>
-    VIRTUAL_CLUSTER = 'virtual_cluster_name'
-    [INITIAL_DELAY_IN_SECONDS = '']
-    [BATCH_INTERVAL_IN_SECONDS = '']
-    [BATCH_SIZE_PER_KAFKA_PARTITION = '']
-    [MAX_SKIP_BATCH_COUNT_ON_ERROR = '']
-    [RESET_KAFKA_GROUP_OFFSETS = '']
-    [COPY_JOB_HINT = '']
-AS <copy_statement>;
+CREATE PIPE kafka_orders_pipe
+    VIRTUAL_CLUSTER = 'DEFAULT'
+    BATCH_INTERVAL_IN_SECONDS = '60'
+AS
+COPY INTO orders_raw
+FROM (
+    SELECT CAST(value AS STRING) AS raw_msg
+    FROM TABLE(READ_KAFKA(
+        'kafka-host:9092', 'orders_topic', '',
+        'pipe_orders_group', '', '', '', '',
+        'raw', 'raw', 0, map()
+    ))
+);
 ```
 
-**Parameter Description:**
-
-| Parameter | Required | Default | Description |
-|-----------|----------|---------|-------------|
-| `VIRTUAL_CLUSTER` | Yes | -- | Name of the compute cluster used to execute COPY jobs |
-| `INITIAL_DELAY_IN_SECONDS` | No | 0 | Initial delay in seconds before the first job is scheduled |
-| `BATCH_INTERVAL_IN_SECONDS` | No | 60 | Batch interval in seconds |
-| `BATCH_SIZE_PER_KAFKA_PARTITION` | No | 500000 | Maximum number of messages per batch for each Kafka partition |
-| `MAX_SKIP_BATCH_COUNT_ON_ERROR` | No | 30 | Maximum number of retries when skipping batches on error |
-| `RESET_KAFKA_GROUP_OFFSETS` | No | none | Initial Kafka offset when starting the Pipe. Possible values: `none` (no action), `valid` (reset expired offsets), `earliest`, `latest`, `${TIMESTAMP_MILLISECONDS}` |
-
-**Reference:**
-
-- [Import Kafka Data Continuously Using read_kafka](pipe-kafka.md)
-- [Import Kafka Data Continuously Using Kafka Table Stream](pipe-kafka-table-stream.md)
-
-## Pause and Resume Pipe
-
-Control the execution state of a Pipe:
+### Pause and Resume
 
 ```SQL
--- Pause Pipe
-ALTER PIPE pipe_name SET PIPE_EXECUTION_PAUSED = true;
+-- Pause
+ALTER PIPE orders_pipe SET PIPE_EXECUTION_PAUSED = TRUE;
 
--- Resume Pipe
-ALTER PIPE pipe_name SET PIPE_EXECUTION_PAUSED = false;
+-- Resume
+ALTER PIPE orders_pipe SET PIPE_EXECUTION_PAUSED = FALSE;
+
+-- Trigger an immediate scan
+ALTER PIPE orders_pipe REFRESH;
 ```
 
-## Modify Pipe Properties
-
-Modify the configuration properties of a Pipe. Only one property can be modified at a time; to modify multiple properties, execute multiple `ALTER` commands.
+### View and Drop
 
 ```SQL
-ALTER PIPE pipe_name SET
-    [VIRTUAL_CLUSTER = 'virtual_cluster_name']
-    | [BATCH_INTERVAL_IN_SECONDS = '']
-    | [BATCH_SIZE_PER_KAFKA_PARTITION = '']
-    | [MAX_SKIP_BATCH_COUNT_ON_ERROR = '']
-    | [COPY_JOB_HINT = ''];
-```
-
-**Examples:**
-
-```SQL
--- Modify the compute cluster
-ALTER PIPE pipe_name SET VIRTUAL_CLUSTER = 'default';
--- Set COPY_JOB_HINT
-ALTER PIPE pipe_name SET COPY_JOB_HINT = '{"cz.mapper.kafka.message.size": "2000000"}';
-```
-
-## View Pipe List
-
-List all Pipe objects within the specified scope:
-
-```SQL
--- List all Pipes in the current schema
+-- View all Pipes
 SHOW PIPES;
--- List all Pipes in a specified schema
-SHOW PIPES IN SCHEMA schema_name;
--- List all Pipes in a specified workspace
-SHOW PIPES IN WORKSPACE workspace_name;
+
+-- View Pipe details
+DESC PIPE orders_pipe;
+
+-- Drop a Pipe
+DROP PIPE orders_pipe;
 ```
 
-**Return Columns:**
+---
 
-| Column Name | Description |
-|-------------|-------------|
-| `pipe_name` | Pipe name |
-| `pipe_kind` | Pipe type (object storage or Kafka) |
-| `status` | Current status, e.g., `RUNNING`, `PAUSED`, `INVALID` |
-| `copy_statement` | The COPY INTO statement associated with the Pipe |
+## Related Documentation
 
-## View Pipe Details
-
-View detailed information about a specific Pipe object:
-
-```SQL
-DESC PIPE [EXTENDED] <name>;
-```
-
-**Sample Output:**
-
-```
-DESC PIPE EXTENDED kafka_pipe_stream;
-+--------------------+-----------------------------------------------------+
-|     info_name      |                     info_value                      |
-+--------------------+-----------------------------------------------------+
-| name               | kafka_pipe_stream                                   |
-| creator            | UAT_TEST                                            |
-| created_time       | 2025-03-05 10:40:55.405                             |
-| last_modified_time | 2025-03-05 10:40:55.405                             |
-| comment            |                                                     |
-| properties         | ((virtual_cluster,test_alter))                      |
-| copy_statement     | COPY INTO TABLE example.pipe_schema.sink_table ...  |
-| pipe_status        | RUNNING                                             |
-| output_name        | workspace.pipe_schema.sink_table                    |
-| input_name         | kafka_table_stream:workspace.pipe_schema.stream1    |
-| invalid_reason     |                                                     |
-| pipe_latency       | {"kafka":{"lags":{"0":0},"offsetLag":0}}            |
-+--------------------+-----------------------------------------------------+
-```
-
-## View Pipe Creation Statement
-
-```SQL
-SHOW CREATE PIPE <name>;
-```
-
-## Drop Pipe
-
-When a Pipe object is no longer needed, use the following command to delete it:
-
-```SQL
-DROP PIPE <name>;
-```
-
-## load_history Function
-
-**Description**: View the COPY job import file history of a table, with a retention period of 7 days. When a Pipe runs, it uses `load_history` to avoid re-importing existing files, ensuring data uniqueness.
-
-**Syntax:**
-
-```SQL
-load_history('schema_name.table_name')
-```
-
-**Example:**
-
-```SQL
-SELECT * FROM load_history('myschema.mytable');
-```
-
-## Constraints and Limitations
-
-- When the data source is Kafka: Only one `read_kafka` function is allowed in a Pipe.
-- When the data source is object storage: Only one Volume object is allowed in a Pipe.
+| Document | Description |
+|----------|-------------|
+| [Pipe Object Model](om-pipe.md) | Core concepts, comparison of two modes, deduplication mechanism, complete parameter reference |
+| [Object Storage Pipe Detailed Configuration](pipe-storage-object.md) | Complete configuration for EVENT_NOTIFICATION mode |
+| [Kafka Pipe Detailed Configuration](pipe-kafka.md) | READ_KAFKA parameter reference, consumer offset management |
+| [Real-time Pipeline Selection Guide](realtime-pipeline-selection-guide.md) | Comparison and selection guide for Pipe / Stream / Dynamic Table |

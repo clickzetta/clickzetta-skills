@@ -17,7 +17,7 @@ LIMIT 10;
 1. [Basics](sql_data_transform_basic.md)
 2. [Common Table Expressions (CTE)](sql_data_transform_cte.md)
 3. [Window Functions](sql_data_transform_windows.md)
-4. [Nested Data Types](sql_data_transfom_NestedDataTypes.md)
+4. [Nested Data Types](sql_data_transfom_nesteddatatypes.md)
 
 ## Practical Functions for Common Data Processing Scenarios
 

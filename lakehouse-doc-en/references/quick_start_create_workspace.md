@@ -14,30 +14,28 @@ If you want to create more workspaces to meet the needs of different usage scena
 Before reading this guide, it is recommended to complete reading and understanding the following documents:
 
 * [Lakehouse Product Introduction](what_is_clickzetta_lakehouse.md)
-* [Key Concepts](Key_Concepts.md)
-* [Lakehouse Studio Quick Tour](LakehouseStudioTour.md)
+* [Key Concepts](key_concepts.md)
+* [Lakehouse Studio Quick Tour](lakehousestudiotour.md)
 
 ## Operation Guide
 
 1. Click the button as shown below to enter the Lakehouse service instance:
 
-   ![](.topwrite/assets/image_1747991184372.png)
+:-: ![](/.topwrite/assets/image_1780975475741.png)
 
 2. Navigate to Management > Workspace page:
 
-   ![](.topwrite/assets/image_1747991196958.png)
+:-: ![](/.topwrite/assets/image_1780975507979.png)
 
 3. Click the "New" button, fill in the information according to the interface prompts, and complete the creation:
 
    * Note that the workspace name must be unique within the service instance and has naming constraints. Please follow the guidance prompts on the page.
    * "Storage Encryption" refers to whether tables under the workspace are physically stored with encryption enabled. This is an advanced configuration feature, enable as needed.
-     ![](.topwrite/assets/image_1747991206223.png)
+
 
 4. After the workspace is created, you may potentially perform the following operations:
 
-   * Use this workspace in product modules such as task development. The workspace switching entry is located at the top right corner of the page, as shown below:
-
-     ![](.topwrite/assets/image_1747991250081.png)
+   * Use this workspace in product modules such as task development. 
 
    * Add other users to the workspace for collaboration. For details, see: [How to Quickly Manage Users Under a Workspace](quick_start_workspace_user.md)
 

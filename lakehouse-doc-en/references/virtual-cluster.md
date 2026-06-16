@@ -14,11 +14,13 @@ A virtual cluster's specification defines the amount of compute resources availa
 
 > ⚠️ **Note**: Starting from December 2024, the old specification codes for virtual clusters (XS through 5XLarge) have been replaced with numeric specifications. For details, see [Virtual Cluster Specification Code Change Description](vcluster_size_description.md).
 
-| **Type**                              | **Minimum Spec (CRU)** | **Maximum Spec (CRU)** | **Default (CRU)** | **Step Size** (minimum increment/decrement unit)                                          |
-| ------------------------------------- | ---------------------- | ---------------------- | ----------------- | ----------------------------------------------------------------------------------------- |
-| General Purpose (GP VCluster)         | 1                      | 256                    | 1                 | 1 CRU per step. Examples: 1, 2, 3, 4, 5, 6...256                                         |
-| Analytics (AP VCluster)               | 1                      | 256                    | 1                 | Powers of 2. Examples: 1, 2, 4, 8, 16, 32, 64, 128, 256                                  |
-| Integration (Integration VCluster)    | 0.25                   | 256                    | 0.5               | Supports any decimal specification. Examples: 0.25, 0.5, 0.75, 1, 1.25...256             |
+| **Type**                           | **Minimum Spec (CRU**) | **Maximum Spec (CRU**) | **Default (CRU**) | **Step Size** (minimum increment/decrement unit)                             |
+| ---------------------------------- | ---------------------- | ---------------------- | ----------------- | ---------------------------------------------------------------------------- |
+| General Purpose (GP VCluster)      | 1                      | 256                    | 1                 | 1 CRU per step. Examples: 1, 2, 3, 4, 5, 6...256                             |
+| Analytics (AP VCluster)            | 1                      | 256                    | 1                 | Powers of 2. Examples: 1, 2, 4, 8, 16, 32, 64, 128, 256                      |
+| Integration (Integration VCluster) | 0.25                   | 256                    | 0.5               | Supports any decimal specification. Examples: 0.25, 0.5, 0.75, 1, 1.25...256 |
+
+> ⚠️ **Note**: Analytics cluster specifications must be a power of 2 (1, 2, 4, 8, 16, 32, 64, 128, 256). Setting any other value will result in an error.
 
 The compute resources consumed by a cluster per hour equal its CRU specification × 1 hour (unit: CRU·hour). For example, an Analytics cluster with a 3 CRU specification running for 1 hour consumes 3 CRU × 1 hour = 3 CRU·hours. Costs are calculated based on the "CRU·hour" unit price for the region where the cluster is located.
 
@@ -26,29 +28,28 @@ The compute resources consumed by a cluster per hour equal its CRU specification
 
 Virtual clusters come in three types: General Purpose, Analytics, and Integration.
 
-* **General Purpose (GENERAL)**: Suitable for offline jobs. Jobs share compute resources, and new and existing jobs are allocated resources using fair scheduling.
-* **Analytics (ANALYTICS)**: Supports multiple compute instances and auto-scaling. Suitable for online and high-concurrency workloads. When the concurrency limit is reached, subsequent jobs queue up, ensuring first-submitted jobs are executed first.
-* **Integration (INTEGRATION)**: Suitable for offline and real-time integration tasks. Multiple integration tasks can share a single Integration cluster instance. Tasks that exceed the cluster's capacity enter a queue.
+* **General Purpose (GENERAL**): Suitable for offline jobs. Jobs share compute resources, and new and existing jobs are allocated resources using fair scheduling.
+* **Analytics (ANALYTICS**): Supports multiple compute instances and auto-scaling. Suitable for online and high-concurrency workloads. When the concurrency limit is reached, subsequent jobs queue up, ensuring first-submitted jobs are executed first.
+* **Integration (INTEGRATION**): Suitable for offline and real-time integration tasks. Multiple integration tasks can share a single Integration cluster instance. Tasks that exceed the cluster's capacity enter a queue.
 
 The relationship between cluster types and task types is shown below:
 
-| **Task Type**           | **Supported Cluster Types**  | **Recommended Cluster Type**                                                  |
-| ----------------------- | ---------------------------- | ----------------------------------------------------------------------------- |
-| Offline Sync            | Integration                  | Integration                                                                   |
-| SQL                     | General Purpose, Analytics   | **ETL tasks**: General Purpose<br>**Ad-hoc queries**: Analytics               |
-| Python                  | No cluster required          | /                                                                             |
-| Shell                   | No cluster required          | /                                                                             |
-| JDBC                    | No cluster required          | /                                                                             |
-| Virtual Node            | No cluster required          | /                                                                             |
-| Databricks SQL          | No cluster required          | /                                                                             |
-| Databricks Notebook     | No cluster required          | /                                                                             |
-| Real-time Sync          | Integration                  | Integration                                                                   |
-| Multi-table Real-time Sync | Integration               | Integration                                                                   |
-| Dynamic Table           | General Purpose, Analytics   | **Low-frequency, large data volume**: General Purpose<br>**High-frequency, small data volume**: Analytics |
-| Streaming SQL           | General Purpose, Analytics   | **Low-frequency, large data volume**: General Purpose<br>**High-frequency, small data volume**: Analytics |
+| **Task Type**              | **Supported Cluster Types** | **Recommended Cluster Type**                                                                          |
+| -------------------------- | --------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Offline Sync               | Integration                 | Integration                                                                                           |
+| SQL                        | General Purpose, Analytics  | **ETL tasks**: General Purpose**Ad-hoc queries**: Analytics                                           |
+| Python                     | No cluster required         | /                                                                                                     |
+| Shell                      | No cluster required         | /                                                                                                     |
+| JDBC                       | No cluster required         | /                                                                                                     |
+| Virtual Node               | No cluster required         | /                                                                                                     |
+| Databricks SQL             | No cluster required         | /                                                                                                     |
+| Databricks Notebook        | No cluster required         | /                                                                                                     |
+| Real-time Sync             | Integration                 | Integration                                                                                           |
+| Multi-table Real-time Sync | Integration                 | Integration                                                                                           |
+| Dynamic Table              | General Purpose, Analytics  | **Low-frequency, large data volume**: General Purpose**High-frequency, small data volume**: Analytics |
+| Streaming SQL              | General Purpose, Analytics  | **Low-frequency, large data volume**: General Purpose**High-frequency, small data volume**: Analytics |
 
-:-: ![](.topwrite/assets/image_1743421840284.png =782)
-
+^
 ^
 
 ### Minimum Instances
@@ -79,23 +80,22 @@ Singdata Lakehouse provides two ways to manage virtual clusters: 1) Web UI; 2) S
 
 Log in to the Lakehouse platform and click "Compute" in the left menu to open the "Virtual Clusters" list page. Here you can view all virtual clusters in the current workspace that you have access to.
 
-![](.topwrite/assets/image_1741611037239.png)
+^
 
 Click any cluster name to open the details page, where you can view job execution status, configuration details, and your permissions for that cluster.
 
-:-: ![](.topwrite/assets/image_1728532541352.png =805)
+^
 
 #### Creating a Virtual Cluster
 
 On the "Virtual Clusters" list page, click "New Cluster" to open the creation interface. Fill in the cluster name, select the cluster type, configure the specification, and click "Create Cluster." The new cluster will appear in the list and can be used once its status changes to "Running."
 
-:-: ![](.topwrite/assets/image_1742214451076.png =813)
-
+^
 ^
 
 **Creating a General Purpose Cluster**
 
-:-: ![](.topwrite/assets/image_1742216967064.png =414)
+^
 
 If you need to run ETL or other batch workloads, create a General Purpose cluster:
 
@@ -112,8 +112,7 @@ After completing the configuration, click "OK" to finish creating the General Pu
 
 **Creating an Analytics Cluster**
 
-:-: ![](.topwrite/assets/image_1742216902917.png =404)
-
+^
 ^
 
 If you need compute resources for ad-hoc queries or BI dashboards, create an Analytics cluster:
@@ -128,7 +127,7 @@ If you need compute resources for ad-hoc queries or BI dashboards, create an Ana
 
 **Creating an Integration Cluster**
 
-:-: ![](.topwrite/assets/image_1742217991159.png =411)
+^
 
 If you need to run offline or real-time integration tasks, create an Integration cluster:
 
@@ -139,7 +138,7 @@ If you need to run offline or real-time integration tasks, create an Integration
 
 * Integration clusters provide a "Specification Estimation" feature to help you choose an appropriate size. Enter the "Number of Tasks" and "Average Task Concurrency," and the system calculates an estimated specification using the formula: Specification = Number of Tasks × Average Task Concurrency × 0.05.
 
-:-: ![](.topwrite/assets/image_1742218209994.png =441)
+^
 
 * Choose whether to enable "Auto Resume" and "Auto Suspend," and configure a suitable "Auto Suspend" time. We recommend enabling "Auto Resume" to handle jobs promptly, and setting "Auto Suspend" to 1 minute so the cluster shuts down quickly after jobs complete, saving costs.
 
@@ -149,21 +148,20 @@ If you need to run offline or real-time integration tasks, create an Integration
 
 In the cluster list, select the cluster and click "Modify" in the "Actions" column to adjust its configuration. Configuration changes may affect cluster status. When modifying key attributes such as specification or instance count, make sure there are no jobs currently running on the cluster.
 
-:-: ![](.topwrite/assets/image_1733812147311.png =813)
+^
 
 #### Starting and Stopping a Virtual Cluster
 
 In the cluster list, click "Start" or "Stop" in the "Actions" column to start or stop the cluster. When stopping a cluster, it waits for all running jobs to complete before fully stopping.
 
-:-: ![](.topwrite/assets/image_1733812217836.png =813)
-
+^
 ^
 
 #### Deleting a Virtual Cluster
 
 In the cluster list, click "Delete" in the "Actions" column to delete the specified cluster. The cluster must be stopped and all jobs must be complete before deletion can proceed.
 
-:-: ![](.topwrite/assets/image_1733812348735.png =810)
+^
 
 ### SQL
 
@@ -178,7 +176,7 @@ Virtual cluster instances can be woken up by submitted jobs while stopped, start
 * **Configure auto-suspend and auto-resume**: In the cluster creation or modification window, find the "Auto Resume" and "Auto Suspend" configuration options. These two settings are typically configured together: enable "Auto Resume" and set an "Auto Suspend" time.
 * **Set an appropriate timeout**: The "Auto Suspend" time can be set from 1 minute to 3 hours. Consider the impact of cluster start/stop on your jobs when choosing:
   1. For offline jobs, set "Auto Suspend" as short as possible — for example, 1 minute — so the cluster stops quickly after jobs complete, avoiding idle resource waste.
-  2. For online query services, extend "Auto Suspend" appropriately — for example, 30 minutes. This minimizes query latency caused by the cluster transitioning from stopped to running, and extends the cache lifetime for Analytics clusters, improving query performance.
+  2. For online query services, extend "Auto Suspend" appropriately — for example, 30 minutes. This minimizes query latency caused by the cluster transitioning from stopped to running, and extends the cache lifetime for Analytics clusters, improving query performance. To proactively preload hot tables into the cluster cache for further query acceleration, see [Compute Cluster Cache](vc_cache.md).
   3. It is strongly discouraged to set "Auto Suspend" to less than 1 minute. Since billing is per second and any run under 60 seconds is billed as 60 seconds, a very short auto-suspend time combined with very short jobs could cause the cluster to start and stop multiple times within a minute, each time incurring a 60-second charge. Only set auto-suspend below 1 minute if you are certain the jobs on that cluster will not cause multiple start/stop cycles within a minute.
 
 #### Scaling Cluster Specifications Up or Down
@@ -191,14 +189,14 @@ In practice, it is recommended to test queries with different cluster sizes (for
 
 The following table provides sample specifications across several dimensions — business load type, execution frequency, job concurrency, data volume, and SLA requirements — for reference:
 
-| Business Scenario                       | Load Type                  | Execution Frequency | Job Concurrency | Data Volume | VCluster Type   | Job Latency SLA              | VCluster Size |
-| --------------------------------------- | -------------------------- | ------------------- | --------------- | ----------- | --------------- | ---------------------------- | ------------- |
-| ETL Scheduling Jobs                     | Near real-time offline     | Hourly              | 1               | 1 TB        | General Purpose | 15 min                       | 4             |
-|                                         | T+1 offline                | Daily               | 1               | 10 TB       | General Purpose | 4 hours                      | 8             |
-| Tableau/FineBI                          | Ad-hoc analytics           | Ad-hoc              | 8               | 1 TB        | General Purpose | <1 min, TP90 <5s             | 16            |
-| Data Application Products               | Applications               | On demand           | 8               | 100 GB      | Analytics       | <1s                          | 4             |
-|                                         |                            | On demand           | 96              | 100 MB      | Analytics       | <1s                          | 4             |
-| Singdata Web UI (Data Development/Test) | Ad-hoc analytics           | Ad-hoc              | 8               | 3 TB        | General Purpose | <1 min, TP90 <15s            | 16            |
+| Business Scenario                       | Load Type              | Execution Frequency | Job Concurrency | Data Volume | VCluster Type   | Job Latency SLA   | VCluster Size |
+| --------------------------------------- | ---------------------- | ------------------- | --------------- | ----------- | --------------- | ----------------- | ------------- |
+| ETL Scheduling Jobs                     | Near real-time offline | Hourly              | 1               | 1 TB        | General Purpose | 15 min            | 4             |
+|                                         | T+1 offline            | Daily               | 1               | 10 TB       | General Purpose | 4 hours           | 8             |
+| Tableau/FineBI                          | Ad-hoc analytics       | Ad-hoc              | 8               | 1 TB        | General Purpose | <1 min, TP90 <5s  | 16            |
+| Data Application Products               | Applications           | On demand           | 8               | 100 GB      | Analytics       | <1s               | 4             |
+|                                         |                        | On demand           | 96              | 100 MB      | Analytics       | <1s               | 4             |
+| Singdata Web UI (Data Development/Test) | Ad-hoc analytics       | Ad-hoc              | 8               | 3 TB        | General Purpose | <1 min, TP90 <15s | 16            |
 
 #### Load Isolation with Multiple Clusters
 
@@ -209,3 +207,5 @@ The following table provides sample specifications across several dimensions —
   * Periodic ELT tasks and online business report queries should use separate clusters for isolation. Use General Purpose for ELT and Analytics for reports to take full advantage of each type's performance characteristics. This also makes it easy to configure different auto-suspend times — set a short auto-suspend (e.g., 1 minute) for the ELT cluster, and a slightly longer one (e.g., 5 minutes) for the reporting cluster.
 
   * Isolate clusters running large jobs from those running small jobs. Configure a larger cluster for large jobs to ensure sufficient runtime, and a smaller cluster for small jobs to avoid underutilization and resource waste.
+
+^

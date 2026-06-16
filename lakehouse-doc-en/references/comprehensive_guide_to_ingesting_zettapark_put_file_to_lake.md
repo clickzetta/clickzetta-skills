@@ -217,6 +217,6 @@ session.close()
 
 #### Documentation
 
-[Zettapark Quick Start](ZettaparkQuickStart.md)
+[Zettapark Quick Start](zettaparkquickstart.md)
 
 ^

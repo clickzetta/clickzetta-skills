@@ -28,11 +28,11 @@ Choose your onboarding path by role. Most scenarios can be completed in 30 minut
 
 **Step 3 — Build your data processing pipeline**
 
-[Dynamic Table Incremental Computation](incremental-computing.md) · [Studio Task Development and Scheduling](task-develop.md) · [End-to-End CDC Complete Example](czguide-intro-to-cdc-using-clickzetta-rtsync-dynamic-tables.md)
+[Dynamic Table Incremental Computation](incremental-computing.md) · [Studio Task Development and Scheduling](task-develop.md) · [Data Engineering Agent](dataagent.md) (natural language ETL development, task management) · [End-to-End CDC Complete Example](czguide-intro-to-cdc-using-clickzetta-rtsync-dynamic-tables.md)
 
 **Step 4 — Connect external tools**
 
-[JDBC Driver](JDBC-Driver.md) · [cz-cli Command Line](setup_cz_cli.md) · [SQLAlchemy](sqlalchemy.md) · [Python SDK](python_reference/connector.md)
+[JDBC Driver](jdbc-driver.md) · [cz-cli Command Line](setup_cz_cli.md) · [SQLAlchemy](sqlalchemy.md) · [Python SDK](python_reference/connector.md)
 
 </td>
 <td style="width:50%; vertical-align:top; padding:0 0 0 16px; overflow-wrap:break-word;">
@@ -49,14 +49,14 @@ Choose your onboarding path by role. Most scenarios can be completed in 30 minut
 
 | Tool type | Connection method |
 |-----------|-------------------|
-| BI tools (FineBI / PowerBI / Tableau, etc.) | [JDBC Driver](JDBC-Driver.md) |
+| BI tools (FineBI / PowerBI / Tableau, etc.) | [JDBC Driver](jdbc-driver.md) |
 | Database clients (DataGrip / DBeaver / Navicat, etc.) | [MySQL Protocol](use-mysql-client.md) |
 | Python scripts | [SQLAlchemy](sqlalchemy.md) |
 | Terminal command line | [Command-Line Client](connect-with-cli.md) |
 
 **Step 3 — Advanced analysis**
 
-[Data Analytics Agent (DataGPT)](LakehouseDataGPT-tour.md) · [SQL Usage Guide](considerations-for-using-sql.md) · [Experience Performance with TPC-H Sample Data](get-started-with-sample-data.md)
+[Data Analytics Agent (DataGPT)](lakehousedatagpt-tour.md) · [SQL Usage Guide](considerations-for-using-sql.md) · [Experience Performance with TPC-H Sample Data](get-started-with-sample-data.md)
 
 </td>
 </tr>
@@ -69,16 +69,17 @@ Choose your onboarding path by role. Most scenarios can be completed in 30 minut
 
 **Step 1 — Understand Lakehouse AI capabilities**
 
-[Lakehouse AI Overview](LakehouseAI-overview.md)
+[Lakehouse AI Overview](lakehouseai-overview.md)
 
 **Step 2 — Choose your scenario**
 
 | Scenario | Entry point |
 |----------|-------------|
 | Semantic search / RAG knowledge base | [AI Data Readiness](server-data-for-ai.md) · [Vector Search](vector_search_ai.md) |
-| Call LLMs in SQL | [AI Functions (AI\_COMPLETE / AI\_EMBEDDING)](AI_function_in_SQL.md) |
-| Manage and switch between multiple LLM models | [AI Gateway](AIGateway.md) |
+| Call LLMs in SQL | [AI Functions (AI\_COMPLETE / AI\_EMBEDDING)](ai_function_in_sql.md) |
+| Manage and switch between multiple LLM models | [AI Gateway](aigateway.md) |
 | Natural language conversational data analysis | [Data Analytics Agent](datagpt_introduction.md) |
+| Natural language ETL development, task management, operations diagnostics | [Data Engineering Agent](dataagent.md) |
 | Python data processing + AI inference | [Zettapark Quick Start](zettapark-quick-start.md) |
 
 </td>
@@ -121,6 +122,7 @@ Choose your onboarding path by role. Most scenarios can be completed in 30 minut
 | Python data read/write | [Zettapark](zettapark-quick-start.md) · [clickzetta-connector](python_reference/connector.md) |
 | Business semantic layer queries | [Semantic View](semantic-view-overview.md) |
 | Collaborate with a specialized data sub-agent | [cz-cli agent run](setup_cz_cli.md) |
+| Browser automation Web Agent | [Singclaw](https://www.singclaw.ai/) |
 
 </td>
 </tr>
@@ -141,7 +143,7 @@ Choose your onboarding path by role. Most scenarios can be completed in 30 minut
 | What I want to do | Entry point |
 |-------------------|-------------|
 | Experience core product features quickly | [Lakehouse Quick Start Experience](lakehouse-quick-experience_guide.md) |
-| Understand the Studio interface layout | [Lakehouse Studio Tour](LakehouseStudio-tour.md) |
+| Understand the Studio interface layout | [Lakehouse Studio Tour](lakehousestudio-tour.md) |
 | Upload a local CSV file | [Upload Local Data](quick_start_upload_data.md) |
 | Real-time CDC sync from MySQL / PG | [Studio Real-time Sync Tasks](realtime_sync.md) |
 | Create a scheduled sync task | [Create Sync Task to Import Data](quick_start_batch_sync_data.md) |
@@ -158,7 +160,8 @@ Choose your onboarding path by role. Most scenarios can be completed in 30 minut
 | Configure monitoring and alerting | [Configure Monitoring and Alerting Rules](quick_start_monitoring_and_alerting.md) |
 | Experience engine performance (TPC-H) | [Experience Performance with TPC-H Sample Data](get-started-with-sample-data.md) |
 | Write complex business analytics SQL | [SQL Usage Guide](considerations-for-using-sql.md) |
-| Use AI to analyze data conversationally | [Data Analytics Agent (DataGPT)](LakehouseDataGPT-tour.md) |
+| Use AI to analyze data conversationally | [Data Analytics Agent (DataGPT)](lakehousedatagpt-tour.md) |
+| Use AI for ETL development / task management | [Data Engineering Agent](dataagent.md) |
 | Build vector search / RAG knowledge base | [Vector Search](vector_search_ai.md) |
 | Process data with Python (Zettapark) | [Zettapark Quick Start](zettapark-quick-start.md) |
 | Migrate from Spark to Lakehouse | [Migration Guide](tutorial_migration.md) |

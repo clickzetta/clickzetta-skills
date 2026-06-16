@@ -33,6 +33,6 @@ USE VCLUSTER dev;
 SELECT current_vcluster();
 
 -- Switch back to the default computing cluster
-USE VCLUSTER default;
+USE VCLUSTER DEFAULT;
 SELECT current_vcluster();
 ```

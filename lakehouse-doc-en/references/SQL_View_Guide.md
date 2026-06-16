@@ -190,6 +190,6 @@ DROP TABLE IF EXISTS sales_detail;
 
 ## Related Documentation
 
-* [Views](VIEW.md)
+* [Views](view.md)
 * [Materialized Views](materialized_ddl.md)
-* [Dynamic Table Development Quick Start](SQL_Dynamic_Table_Guide.md)
+* [Dynamic Table Development Quick Start](sql_dynamic_table_guide.md)

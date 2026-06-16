@@ -9,8 +9,8 @@ Data quality rules are used to verify whether the quality of data objects meets 
 Before reading this guide, it is recommended to complete reading and understanding the following documents:
 
 * [Lakehouse Product Introduction](what_is_clickzetta_lakehouse.md)
-* [Key Concepts](Key_Concepts.md)
-* [Lakehouse Studio Quick Tour](LakehouseStudioTour.md)
+* [Key Concepts](key_concepts.md)
+* [Lakehouse Studio Quick Tour](lakehousestudiotour.md)
 
 ## Operation Guide
 
@@ -23,19 +23,19 @@ You can use the "Data Quality" feature provided by Lakehouse Studio to configure
 
 ### Steps
 
-1. As shown below, click the button to enter the Lakehouse service instance:
+1. click the button to enter the Lakehouse service instance.
 
-   ![](.topwrite/assets/image_1748337538227.png)
 
-2. Navigate to "Data" > "Data Quality" page:
 
-   ![](.topwrite/assets/image_1749449999835.png)
+2. Navigate to "Data" > "Data Quality" page
+
+
 
 3. On the "Quality Rules" tab, click the "Create Rule" button to open the page for creating a new quality rule. Please verify and ensure that the workspace in the upper right corner of the page is the workspace where the data table to be verified is located. If not, you can click to switch.
-   ![](.topwrite/assets/image_1749450019542.png)
+
 
 4. On the Create Rule page, the workspace value will be automatically set to the workspace selected in the previous step [1]. Select the data object to verify. In this example, select the `test_json` table where data was written by the sync task in the previous ETL pipeline for verification [2]. When a quality rule is executed, it is actually converted to a Lakehouse SQL statement for execution, so an execution cluster is required. For simplicity, it is recommended to directly select the default GP-type cluster `DEFAULT` [3].
-   ![](.topwrite/assets/image_1749450038105.png)
+
 
 5. Configure "Verification Method", "Trigger Method", and "Save" the rule.
 
@@ -45,10 +45,10 @@ You can use the "Data Quality" feature provided by Lakehouse Studio to configure
 
    * Other configuration items can keep default values or be left blank. Finally, click the "Save" [6] button to complete the creation of the quality rule.
 
-   ![](.topwrite/assets/image_1749450069308.png)
+
 
 6. After creation, you can see the newly added rule in the quality rule list page.
-   ![](.topwrite/assets/image_1749450081238.png)
+
 
 7. You can click the "Trial Run" button to test the configuration and verification of the quality rule. On the "Verification Results" tab, you can view the specific results, as shown below: the quality rule was triggered to run, the verification result matches expectations, and everything is normal.
    ![](.topwrite/assets/image_1749450092151.png)
@@ -62,11 +62,11 @@ You can use the "Data Quality" feature provided by Lakehouse Studio to configure
    * In "Data Quality" > "Verification Results", you can see the newly added verification record, with the trigger method being "Periodic Task Triggered".
      ![](.topwrite/assets/image_1749450124984.png)
 
-9. At this point, the configuration of quality rules and observation of verification execution have been completed. After completing the data quality rule configuration, if you need to promptly receive monitoring and alerting information when quality rule verification fails, you also need to configure monitoring. The specific operations are omitted here. For details, see the [Data Quality](DataQuality.md) help document.
+9. At this point, the configuration of quality rules and observation of verification execution have been completed. After completing the data quality rule configuration, if you need to promptly receive monitoring and alerting information when quality rule verification fails, you also need to configure monitoring. The specific operations are omitted here. For details, see the [Data Quality](dataquality.md) help document.
 
 ## Related Documents
 
-* You can read the [Data Quality](DataQuality.md) help document to understand the complete usage guide for the Data Quality module.
+* You can read the [Data Quality](dataquality.md) help document to understand the complete usage guide for the Data Quality module.
 
 ## Next Steps
 

@@ -36,6 +36,17 @@ Sometimes, we may need to add multiple tables and views to a share object. The f
 GRANT select, read metadata ON TABLE share_demo_table1, share_demo_table2 TO SHARE share_demo;
 GRANT select, read metadata ON VIEW share_demo_view TO SHARE share_demo;
 ```
+
+**Example 4: Batch-add all tables in a Schema to a share**
+
+To add all tables in a Schema (including tables created in the future) to a share object at once, use the `ALL TABLES IN SCHEMA` syntax:
+
+```SQL
+GRANT SELECT, READ METADATA ON ALL TABLES IN SCHEMA public TO SHARE share_demo;
+```
+
+> ⚠️ **Note**: This grants access to **all current and future** tables in the Schema. Confirm the scope is as intended before using, to avoid accidentally exposing newly created tables.
+
 ## Precautions
 
 1. Before executing the `GRANT TO SHARE` statement, please ensure that the share object already exists.

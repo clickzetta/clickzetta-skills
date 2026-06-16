@@ -14,7 +14,7 @@ time_travel_version ::=
 ```
 ## Parameter Description
 
-1. **table\_name**: Specifies the name of the table that has not been deleted, which can be either TABLE or DYNAMIC TABLE. If the table has been deleted, please use the [UNDROP](UNDROP-TABLE.md) command to restore it.
+1. **table\_name**: Specifies the name of the table that has not been deleted, which can be either TABLE or DYNAMIC TABLE. If the table has been deleted, please use the [UNDROP](undrop-table.md) command to restore it.
 2. **time\_travel\_version**: Specifies the version of the table to be restored. First, use DESC HISTORY table\_name to view the version timestamp, then use the `TIMESTAMP AS OF` clause to specify the exact timestamp. timestamp\_expression is a parameter that returns a timestamp type expression, for example:
 
 * `'2023-11-07 14:49:18'`, a string that can be cast to a timestamp.

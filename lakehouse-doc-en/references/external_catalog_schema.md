@@ -136,7 +136,7 @@ SELECT * FROM hive_sales.orders LIMIT 5;
 - Querying external tables consumes VCluster CRU.
 - Cross-network queries against external data may be slower than local queries; consider syncing frequently queried data to local tables.
 
-> 💡 For detailed billing rules, see the [Billing documentation](Billing.md).
+> 💡 For detailed billing rules, see the [Billing documentation](billing.md).
 
 ## Lifecycle Management
 

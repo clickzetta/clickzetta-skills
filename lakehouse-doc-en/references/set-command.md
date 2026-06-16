@@ -52,7 +52,7 @@ SET schedule_job_queue_priority = 5;
 ```python
 from clickzetta import connect
 
-conn = connect(username='', password='', service='...', instance='...', workspace='...', schema='public', vcluster='default')
+conn = connect(username='', password='', service='...', instance='...', workspace='...', schema='public', vcluster='DEFAULT')
 my_param = {'hints': {'cz.sql.timezone': 'UTC+00'}}
 cursor = conn.cursor()
 cursor.execute("SELECT current_timestamp();", my_param)

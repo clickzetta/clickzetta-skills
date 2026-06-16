@@ -1,6 +1,6 @@
 # Python Connector Advanced Usage
 
-This page covers the advanced features of `clickzetta-connector`. For basic usage, see [Python Connector SDK](python_reference/connector.md).
+This page covers the advanced features of `clickzetta-connector`. For basic usage, see [Python Connector SDK](connector.md).
 
 ---
 
@@ -17,7 +17,7 @@ conn = connect(
     instance='your_instance',
     workspace='your_workspace',
     schema='public',
-    vcluster='default'
+    vcluster='DEFAULT'
 )
 cursor = conn.cursor()
 ```
@@ -195,7 +195,7 @@ conn = connect(
     instance='your_instance',
     workspace='your_workspace',
     schema='public',
-    vcluster='default'
+    vcluster='DEFAULT'
 )
 cursor = conn.cursor()
 
@@ -252,7 +252,7 @@ conn.close()
 
 | Document | Description |
 |----------|-------------|
-| [Python Connector SDK](python_reference/connector.md) | Installation, connection parameters, and basic API |
-| [Python Connector Usage Examples](python_reference/connector_examples.md) | Common business scenario examples |
+| [Python Connector SDK](connector.md) | Installation, connection parameters, and basic API |
+| [Python Connector Usage Examples](connector_examples.md) | Common business scenario examples |
 | [Zettapark](../zettapark-quick-start.md) | Python DataFrame API for pandas-style operations |
 | [BulkLoad](../java_reference/bulkload-upload.md) | High-speed writes for millions of rows |

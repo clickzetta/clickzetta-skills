@@ -49,12 +49,12 @@ Singdata Lakehouse includes a rich built-in SQL function library covering numeri
 
 ### AI and Analytics
 
-**AI Functions** are native AI capabilities in Singdata Lakehouse. They let you call large language models and embedding models directly in SQL — completing text understanding, vectorization, and content generation without leaving the data platform. All AI functions take `model` as the first parameter, in the format `'endpoint:model_name'` (configured via [AI Gateway](AIGateway.md)).
+**AI Functions** are native AI capabilities in Singdata Lakehouse. They let you call large language models and embedding models directly in SQL — completing text understanding, vectorization, and content generation without leaving the data platform. All AI functions take `model` as the first parameter, in the format `'endpoint:model_name'` (configured via [AI Gateway](aigateway.md)).
 
 | Function | Description |
 |----------|-------------|
-| [AI_COMPLETE](AI_COMPLETE.md) | General LLM completion; supports custom prompts; suited for complex reasoning, code generation, and other custom scenarios; supports image input |
-| [AI_EMBEDDING](AI_EMBEDDING.md) | Convert text to high-dimensional vectors (`ARRAY<FLOAT>`); used for semantic search, RAG, recommendations, and clustering |
+| [AI_COMPLETE](ai_complete.md) | General LLM completion; supports custom prompts; suited for complex reasoning, code generation, and other custom scenarios; supports image input |
+| [AI_EMBEDDING](ai_embedding.md) | Convert text to high-dimensional vectors (`ARRAY<FLOAT>`); used for semantic search, RAG, recommendations, and clustering |
 | [AI_CLASSIFY](ai_classify.md) | Classify text or images into user-defined categories; no prompt writing required; supports 29+ languages |
 | [AI_EXTRACT](ai_extract.md) | Extract structured JSON from unstructured text or images by specified fields; no prompt writing required |
 | [AI_SENTIMENT](ai_sentiment.md) | Sentiment analysis; returns positive / negative / neutral; supports multiple languages |
@@ -65,7 +65,7 @@ Singdata Lakehouse includes a rich built-in SQL function library covering numeri
 | [AI_SIMILARITY](ai_similarity.md) | Compute cosine similarity between two text segments; returns a score in [0, 1] |
 | [AI_TRANSCRIBE](ai_transcribe.md) | Transcribe audio files to plain text (ASR); supports Chinese, English, and other languages |
 
-Full documentation and examples: [AI Functions Guide](AI_function_in_SQL.md) · [AI Functions Overview](ai_functions_overview.md) · [AI Gateway Configuration](AIGateway.md)
+Full documentation and examples: [AI Functions Guide](ai_function_in_sql.md) · [AI Functions Overview](ai_functions_overview.md) · [AI Gateway Configuration](aigateway.md)
 
 | Category | Description |
 |----------|-------------|
@@ -98,4 +98,4 @@ Full documentation and examples: [AI Functions Guide](AI_function_in_SQL.md) · 
 |----------|-------------|
 | [Data Types](data-type-guide.md) | Type descriptions to understand function input and output types |
 | [SQL Functions Usage Guide](sql_functions_guide.md) | Quick function reference and usage tips for common scenarios |
-| [AI Functions (AI_COMPLETE / AI_EMBEDDING)](AI_function_in_SQL.md) | Call LLMs and vector embeddings in SQL |
+| [AI Functions (AI_COMPLETE / AI_EMBEDDING)](ai_function_in_sql.md) | Call LLMs and vector embeddings in SQL |

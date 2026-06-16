@@ -21,8 +21,7 @@ After clicking "Chart" to visualize the worksheet results, you need to select th
 
 Hover over the chart to view detailed information for each data point. For example, you can view results as a line chart:
 
-![](.topwrite/assets/image_1742200992399.png =757)
-
+^
 ^
 
 In the "Settings" panel on the right side of the visualization area, configure what to display:
@@ -35,7 +34,7 @@ In the "Settings" panel on the right side of the visualization area, configure w
 
 3. Y-axis field:
 
-![](.topwrite/assets/image_1742201014009.png =347)
+^
 
 The Y-axis supports aggregate functions to derive a single value from multiple data points. The available aggregation methods are:
 
@@ -59,8 +58,7 @@ When there are many X-axis values and you need to view a specific data point on 
 
 For example, in the chart below, the accurate value is shown only when hovering over the visualization and the specific timestamp information appears.
 
-![](.topwrite/assets/image_1742201080540.png =387)
-
+^
 ^
 
 ## Use Cases
@@ -75,16 +73,7 @@ For example, in the chart below, the accurate value is shown only when hovering 
 select order_date, count(*) as c from big_data_table group by order_date;
 ```
 
-![](.topwrite/assets/20250317-190632.jpeg =617)
-
 ^
-
-![](.topwrite/assets/20250317-190714.jpeg =607)
-
-^
-
-![](.topwrite/assets/20250317-190759.jpeg =608)
-
 ^
 
 **Scenario 2**: To **ignore** time span differences and keep only the specific result data points, cast the result to a string (`order_date::string`):
@@ -93,4 +82,4 @@ select order_date, count(*) as c from big_data_table group by order_date;
 select order_date::string, count(*) as c from big_data_table group by order_date;
 ```
 
-![](.topwrite/assets/20250317-190854.jpeg =654)
+^

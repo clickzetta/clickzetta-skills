@@ -14,6 +14,21 @@ Full code on GitHub: [spark2lakehouse-formula1](https://github.com/clickzetta/sp
 
 The migrated code lives in the `03_lakehouse/` directory and can be compared file-by-file with `01_spark/`.
 
+## Conclusion First
+
+You don't need to rewrite any business logic or retrain your team. Existing PySpark engineers can get started immediately — all 4 changes are mechanical replacements with no analytical logic involved.
+
+| Change | Effort | Notes |
+|--------|--------|-------|
+| Import path replacement | Very low | Mechanical replacement, no logic changes |
+| Explicit Session creation | Very low | Databricks injects `spark` globally; ZettaPark requires explicit creation |
+| Add `.collect()` to DDL/DML | Low | Lazy execution — without it, nothing runs |
+| File path format | Low | `/mnt/...` → `vol://schema.vol/...` |
+
+Window functions, aggregations, JOINs, filters, sorting — the core operations of data engineering all have identical syntax and need no changes.
+
+---
+
 ## Technology Stack Comparison
 
 | | Original Project | After Migration |
@@ -33,21 +48,6 @@ The differences in the table look significant, but their impact on migration eff
 ---
 
 ![](.topwrite/assets/anim-05-f1-migration.svg)
-
----
-
-## Conclusion First
-
-**90% of PySpark code can be reused directly. Changes are limited to 4 areas.**
-
-| Change | Effort | Notes |
-|--------|--------|-------|
-| Import path replacement | Very low | Mechanical replacement, no logic changes |
-| Explicit Session creation | Very low | Databricks injects `spark` globally; ZettaPark requires explicit creation |
-| Add `.collect()` to DDL/DML | Low | Lazy execution — without it, nothing runs |
-| File path format | Low | `/mnt/...` → `vol://schema.vol/...` |
-
-Window functions, aggregations, JOINs, filters, sorting — the core operations of data engineering all have identical syntax and need no changes.
 
 ---
 
@@ -108,7 +108,7 @@ session = Session.builder.configs({
     "instance":  os.environ["CLICKZETTA_INSTANCE"],
     "workspace": os.environ["CLICKZETTA_WORKSPACE"],
     "schema":    "f1_processed",
-    "vcluster":  os.environ.get("CLICKZETTA_VCLUSTER", "default_ap"),
+    "vcluster":  os.environ.get("CLICKZETTA_VCLUSTER", "DEFAULT_AP"),
 }).create()
 
 df = session.read.option("header", "true").csv("vol://f1_raw.formula1_raw_vol/raw/circuits.csv")
@@ -203,7 +203,7 @@ session.sql("""
 
 ---
 
-## 4 Real Gotchas from the Migration
+## Notes
 
 These are issues encountered during the actual migration — not documented anywhere, only discovered by running the code.
 
@@ -508,5 +508,5 @@ This project passed 71/71 validation checks, confirming that data integrity afte
 - Medallion three-layer data warehouse: [Building a Medallion Architecture from Scratch on Lakehouse](medallion-lakehouse-from-scratch.md)
 - Volume usage guide: [Volume Usage Guide](zettapark-volume-guide.md)
 - Data type compatibility: [Data Type Compatibility Reference](migration-sql-compatibility.md)
-- Custom functions: [SQL Function](create-sql-function.md) · [External Function](CREATE_EXTERNAL_FUNCTION.md)
+- Custom functions: [SQL Function](create-sql-function.md) · [External Function](create_external_function.md)
 - Spark Connector: [Using Spark Connector](spark-connector-use.md)

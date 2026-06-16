@@ -72,5 +72,5 @@ UNDROP TABLE analytics.daily_report;
 
 - [CREATE DYNAMIC TABLE](create-dynamic-table.md): Create a dynamic table
 - [ALTER DYNAMIC TABLE](alter-dynamic-table.md): Modify a dynamic table
-- [UNDROP TABLE](UNDROP-TABLE.md): Recover a dropped table/dynamic table/materialized view
+- [UNDROP TABLE](undrop-table.md): Recover a dropped table/dynamic table/materialized view
 - [SHOW DYNAMIC TABLE REFRESH HISTORY](refresh-history.md): View dynamic table refresh history

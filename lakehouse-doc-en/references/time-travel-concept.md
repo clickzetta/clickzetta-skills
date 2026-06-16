@@ -168,8 +168,8 @@ SELECT * FROM orders TIMESTAMP AS OF '2024-01-15 11:00:00';
 
 ## Related Documentation
 
-- [Time Travel Queries](TIMETRAVEL.md)
-- [UNDROP TABLE](UNDROP-TABLE.md)
+- [Time Travel Queries](timetravel.md)
+- [UNDROP TABLE](undrop-table.md)
 - [RESTORE TABLE](restore.md)
 - [DESC HISTORY](desc-history.md)
 - [Data Lifecycle](data-lifecycle.md)

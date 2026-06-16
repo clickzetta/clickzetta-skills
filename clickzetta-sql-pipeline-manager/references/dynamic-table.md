@@ -1,14 +1,14 @@
-# Dynamic Table（动态表）SQL 参考
+# Dynamic Table SQL Reference
 
-> **⚠️ ClickZetta 特有语法**
-> - 刷新调度写法：`REFRESH INTERVAL 5 MINUTE vcluster default`（不是 `TARGET_LAG`）
-> - 修改调度周期或计算集群必须用 `CREATE OR REPLACE`，`ALTER` 不支持
-> - `ALTER DYNAMIC TABLE` 只支持：SUSPEND / RESUME / SET COMMENT / RENAME COLUMN / CHANGE COLUMN COMMENT / SET/UNSET PROPERTIES
-> - 删除用 `DROP DYNAMIC TABLE`（不是 `DROP TABLE`）
-> - 恢复用 `UNDROP TABLE`（不是 `UNDROP DYNAMIC TABLE`）
-> - DESC 用 `DESC TABLE name`（不支持 `DESC DYNAMIC TABLE name EXTENDED`）
+> **⚠️ ClickZetta-specific Syntax**
+> - Refresh scheduling: `REFRESH INTERVAL 5 MINUTE vcluster default` (not `TARGET_LAG`)
+> - Modifying refresh interval or compute cluster requires `CREATE OR REPLACE`, `ALTER` does not support this
+> - `ALTER DYNAMIC TABLE` only supports: SUSPEND / RESUME / SET COMMENT / RENAME COLUMN / CHANGE COLUMN COMMENT / SET/UNSET PROPERTIES
+> - Drop using `DROP DYNAMIC TABLE` (not `DROP TABLE`)
+> - Restore using `UNDROP TABLE` (not `UNDROP DYNAMIC TABLE`)
+> - DESC using `DESC TABLE name` (does not support `DESC DYNAMIC TABLE name EXTENDED`)
 
-动态表是 ClickZetta Lakehouse 的核心增量计算对象。通过 SQL 查询定义，自动增量刷新，无需手动调度。
+Dynamic Tables are core incremental computation objects in ClickZetta Lakehouse. They are defined by SQL queries and refresh incrementally without manual scheduling.
 
 ## CREATE DYNAMIC TABLE
 
@@ -25,15 +25,15 @@ AS
   <query>;
 ```
 
-**关键参数：**
-- `REFRESH INTERVAL <n> MINUTE`：刷新间隔，最小 1 分钟
-- `vcluster`：运行刷新任务的计算集群名称（直接跟名称，不带等号和引号）
-- `OR REPLACE`：若同名动态表已存在则替换（修改 SQL 逻辑或调度配置必须用此方式）
-- 建议使用 GP 型集群（如 `default`），AP 型集群不支持小文件合并
+**Key Parameters:**
+- `REFRESH INTERVAL <n> MINUTE`: Refresh interval, minimum 1 minute
+- `vcluster`: Name of compute cluster for running refresh tasks (directly followed by name, no equals sign or quotes)
+- `OR REPLACE`: Replace if dynamic table with same name exists (must use this to modify SQL logic or scheduling configuration)
+- Recommended to use GP-type cluster (e.g. `default`), AP-type clusters do not support small file compaction
 
-**示例：**
+**Examples:**
 ```sql
--- 基础示例：每 5 分钟刷新一次订单汇总
+-- Basic example: refresh order summary every 5 minutes
 CREATE OR REPLACE DYNAMIC TABLE dw.order_summary
   REFRESH INTERVAL 5 MINUTE vcluster default
 AS
@@ -45,7 +45,7 @@ SELECT
 FROM ods.orders
 GROUP BY 1, 2;
 
--- 修改调度周期（必须用 CREATE OR REPLACE）
+-- Modify refresh interval (must use CREATE OR REPLACE)
 CREATE OR REPLACE DYNAMIC TABLE dw.order_summary
   REFRESH INTERVAL 10 MINUTE vcluster default
 AS
@@ -61,82 +61,82 @@ GROUP BY 1, 2;
 ## ALTER DYNAMIC TABLE
 
 ```sql
--- 暂停刷新
+-- Suspend refresh
 ALTER DYNAMIC TABLE <name> SUSPEND;
 
--- 恢复刷新
+-- Resume refresh
 ALTER DYNAMIC TABLE <name> RESUME;
 
--- 修改注释
+-- Modify comment
 ALTER DYNAMIC TABLE <name> SET COMMENT '<comment>';
 
--- 修改列名
+-- Rename column
 ALTER DYNAMIC TABLE <name> RENAME COLUMN <old_col> TO <new_col>;
 
--- 修改列注释（注意用 CHANGE COLUMN）
+-- Modify column comment (note: use CHANGE COLUMN)
 ALTER DYNAMIC TABLE <name> CHANGE COLUMN <col_name> COMMENT '<comment>';
 
--- 修改属性
+-- Modify properties
 ALTER DYNAMIC TABLE <name> SET PROPERTIES ('key' = 'value');
 ALTER DYNAMIC TABLE <name> UNSET PROPERTIES ('key');
 ```
 
-> 注意：修改调度周期、计算集群、SQL 查询逻辑，必须用 `CREATE OR REPLACE DYNAMIC TABLE`，ALTER 不支持这些操作。
+> Note: To modify refresh interval, compute cluster, or SQL query logic, must use `CREATE OR REPLACE DYNAMIC TABLE`, ALTER does not support these operations.
 
-## REFRESH DYNAMIC TABLE（手动触发）
+## REFRESH DYNAMIC TABLE (Manual Trigger)
 
 ```sql
--- 手动触发一次刷新
+-- Manually trigger one refresh
 REFRESH DYNAMIC TABLE <name>;
 ```
 
 ## DROP DYNAMIC TABLE
 
 ```sql
--- ⚠️ 必须用 DROP DYNAMIC TABLE，不能用 DROP TABLE
+-- ⚠️ Must use DROP DYNAMIC TABLE, cannot use DROP TABLE
 DROP DYNAMIC TABLE [ IF EXISTS ] <name>;
 
--- 恢复已删除的动态表（⚠️ 用 UNDROP TABLE，不是 UNDROP DYNAMIC TABLE）
+-- Restore deleted dynamic table (⚠️ use UNDROP TABLE, not UNDROP DYNAMIC TABLE)
 UNDROP TABLE <name>;
 ```
 
 ## SHOW / DESC
 
 ```sql
--- 列出当前 schema 下所有动态表
+-- List all dynamic tables in current schema
 SHOW TABLES WHERE is_dynamic = true;
 
--- 列出指定 schema 下的动态表
+-- List dynamic tables in specified schema
 SHOW TABLES IN <schema_name> WHERE is_dynamic = true;
 
--- 查看动态表结构
+-- View dynamic table structure
 DESC TABLE <name>;
 
--- 查看完整建表语句
+-- View complete CREATE TABLE statement
 SHOW CREATE TABLE <name>;
 
--- 查看刷新历史（状态、耗时、触发方式、增量行数）
+-- View refresh history (status, duration, trigger method, incremental rows)
 SHOW DYNAMIC TABLE REFRESH HISTORY WHERE name = '<dt_name>' LIMIT 20;
 ```
 
-> ⚠️ **DESC 注意**：动态表用 `DESC TABLE name`，不支持 `DESC DYNAMIC TABLE name EXTENDED`（EXTENDED 会报错）。
+> ⚠️ **DESC Note**: For dynamic tables use `DESC TABLE name`, does not support `DESC DYNAMIC TABLE name EXTENDED` (EXTENDED will error).
 
-## 注意事项
+## Important Notes
 
-- 修改 SQL 逻辑、调度周期、计算集群 → 用 `CREATE OR REPLACE`，不能用 `ALTER`
-- 刷新间隔最小 1 分钟
-- 删除用 `DROP DYNAMIC TABLE`（不是 `DROP TABLE`）
-- 恢复用 `UNDROP TABLE`（不是 `UNDROP DYNAMIC TABLE`）
-- 刷新失败不影响表的可查询性（返回上次成功版本的数据）
-- 非简单加列/减列的 `CREATE OR REPLACE` 会触发一次全量刷新
-- 建议使用 GP 型集群（如 `default`），AP 型集群不支持小文件合并
+- To modify SQL logic, refresh interval, compute cluster → use `CREATE OR REPLACE`, cannot use `ALTER`
+- Minimum refresh interval is 1 minute
+- Drop using `DROP DYNAMIC TABLE` (not `DROP TABLE`)
+- Restore using `UNDROP TABLE` (not `UNDROP DYNAMIC TABLE`)
+- Refresh failures do not affect table queryability (returns data from last successful version)
+- Non-simple add/drop column `CREATE OR REPLACE` triggers a full refresh
+- Recommended to use GP-type cluster (e.g. `default`), AP-type clusters do not support small file compaction
 
-## 参数化动态表（SESSION_CONFIGS）
+## Parameterized Dynamic Tables (SESSION_CONFIGS)
 
-通过 `SESSION_CONFIGS()` 函数定义参数化查询，在刷新时传入分区值控制刷新范围：
+Use `SESSION_CONFIGS()` function to define parameterized queries, pass partition values during refresh to control refresh scope:
 
 ```sql
--- 创建参数化动态表
+-- Create parameterized dynamic table
 CREATE OR REPLACE DYNAMIC TABLE dwd.orders_partitioned
   REFRESH INTERVAL 30 MINUTE vcluster default
 AS
@@ -144,42 +144,42 @@ SELECT order_id, user_id, amount, dt
 FROM ods.orders
 WHERE dt = SESSION_CONFIGS('target_date', CAST(CURRENT_DATE() AS STRING));
 
--- 手动触发刷新并传入参数
+-- Manually trigger refresh with parameter
 REFRESH DYNAMIC TABLE dwd.orders_partitioned
   WITH PROPERTIES ('target_date' = '2024-06-15');
 ```
 
-适用场景：传统按天全量 ETL 改造为增量任务，用 SESSION_CONFIGS 替换调度变量。
+Use case: Transforming traditional daily full ETL into incremental tasks, use SESSION_CONFIGS to replace scheduling variables.
 
-## 动态表 DML 操作
+## Dynamic Table DML Operations
 
-动态表默认不支持 DML，需先开启参数（每次 DML 前都需要 SET）：
+Dynamic tables do not support DML by default, must enable parameter first (need SET before each DML):
 
 ```sql
--- ⚠️ 必须在同一会话/批次中先执行 SET，再执行 DML
+-- ⚠️ Must execute SET in same session/batch, then execute DML
 SET cz.sql.dt.allow.dml = true;
 INSERT INTO <name> VALUES (...);
 
--- 删除
+-- Delete
 SET cz.sql.dt.allow.dml = true;
 DELETE FROM <name> WHERE ...;
 ```
 
-> ⚠️ **DML 注意事项**：
-> - `SET cz.sql.dt.allow.dml = true` 必须与 DML 语句在同一执行批次中
-> - 执行 DML 后，下一次自动刷新会触发**全量刷新**（而非增量），可能耗时较长
-> - UPDATE 可能因内部隐藏列（`MV__KEY`）报错，建议改用 DELETE + INSERT
-> - 仅在数据修正等特殊场景使用 DML
+> ⚠️ **DML Notes**:
+> - `SET cz.sql.dt.allow.dml = true` must be in same execution batch with DML statement
+> - After executing DML, next auto-refresh will trigger **full refresh** (not incremental), may take longer
+> - UPDATE may error due to internal hidden column (`MV__KEY`), recommend using DELETE + INSERT instead
+> - Only use DML in special scenarios like data correction
 
-## 参考文档
+## Reference Documentation
 
 - [CREATE DYNAMIC TABLE](https://www.yunqi.tech/documents/create-dynamic-table)
 - [ALTER DYNAMIC TABLE](https://www.yunqi.tech/documents/alter-dynamic-table)
 - [DROP DYNAMIC TABLE](https://www.yunqi.tech/documents/drop-dynamic-table)
 - [SHOW DYNAMIC TABLES](https://www.yunqi.tech/documents/show-dynamic-table)
 - [SHOW DYNAMIC TABLE REFRESH HISTORY](https://www.yunqi.tech/documents/refresh-history)
-- [动态表简介](https://www.yunqi.tech/documents/dynamic_table_summary)
-- [查看动态表刷新模式](https://www.yunqi.tech/documents/dynamic-table-incre)
-- [传统离线任务转增量实践](https://www.yunqi.tech/documents/transformt-dt)
-- [动态表支持参数化定义](https://www.yunqi.tech/documents/dynamicTable-parmaters)
-- [动态表支持DML语句修改](https://www.yunqi.tech/documents/dynamicTable-dml)
+- [Dynamic Table Introduction](https://www.yunqi.tech/documents/dynamic_table_summary)
+- [View Dynamic Table Refresh Mode](https://www.yunqi.tech/documents/dynamic-table-incre)
+- [Traditional Offline Task to Incremental Practice](https://www.yunqi.tech/documents/transformt-dt)
+- [Dynamic Table Parameterized Definition Support](https://www.yunqi.tech/documents/dynamicTable-parmaters)
+- [Dynamic Table DML Statement Support](https://www.yunqi.tech/documents/dynamicTable-dml)

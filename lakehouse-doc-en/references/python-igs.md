@@ -1,3 +1,7 @@
+# Python SDK Real-time Write
+
+## Singdata Lakehouse Python SDK Real-time Write
+
 ## Installation
 
 1. **Uninstall Old Versions**
@@ -11,7 +15,7 @@
 
 2. **Install clickzetta connector**
 
-   Install the ingestion package, which requires Python version 3.7 or higher:
+   Install the ingestion package, which requires Python version 3.10 or higher:
 
    ```python
    pip install clickzetta-connector
@@ -232,7 +236,7 @@ with connect(username='your_username',
              instance='your_instance',
              workspace='your_workspace',
              schema='your_schema',
-             vcluster='default') as conn:
+             vcluster='DEFAULT') as conn:
     
     # Create a primary key table
     cursor = conn.cursor()
@@ -308,6 +312,6 @@ with connect(username='your_username',
 
 ## Summary
 
-The real-time write feature of the ClickZetta Python SDK provides an efficient and flexible way to write data, supporting various data types and operation modes. By configuring parameters appropriately, you can optimize write performance for different scenarios.
+The real-time write feature of the Singdata Python SDK provides an efficient and flexible way to write data, supporting various data types and operation modes. By configuring parameters appropriately, you can optimize write performance for different scenarios.
 
 For primary key tables and regular tables, different operation modes and row operation types are required. Primary key tables must use CDC mode and can only use UPSERT and DELETE_IGNORE operations; regular tables typically use APPEND_ONLY mode and INSERT operations.

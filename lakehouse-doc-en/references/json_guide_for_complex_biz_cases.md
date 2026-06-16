@@ -2,9 +2,7 @@
 
 ## Guide Overview
 
-This guide demonstrates the complete technical implementation of Singdata Lakehouse JSON functionality, starting from real-world business scenarios and providing professional solutions for JSON data processing.
-
-**Important Update Notice**: This revised edition is based on comprehensive practical verification, confirming the actual capability boundaries of Singdata Lakehouse JSON functionality. All SQL examples have been tested and verified.
+This guide demonstrates the complete technical implementation of Singdata Lakehouse JSON functionality, starting from real-world business scenarios and providing professional solutions for JSON data processing. All SQL examples have been tested and verified.
 
 ### Guide Structure
 
@@ -1892,7 +1890,7 @@ Singdata Lakehouse JSON data processing capabilities demonstrate the following c
 
 ## References
 
-[JSON Data Type](JSON.md)
+[JSON Data Type](json.md)
 
 [JSON Functions](json_function.md)
 

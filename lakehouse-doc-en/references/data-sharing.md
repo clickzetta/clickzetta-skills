@@ -53,40 +53,32 @@ You can use `all tables in schema <schema_name>` and `all views in schema <schem
 
 **1. Create a share object**
 
-To ensure data security, share objects must be created by users with the "Instance Administrator" (instance_admin) role. Click "Data Management" - "Data Sharing" in the left menu to enter the data sharing list page.
+To ensure data security, share objects must be created by users with the "Instance Administrator" (instance\_admin) role. Click "Data Management" - "Data Sharing" in the left menu to enter the data sharing list page.
 
 Click "+ New Share" to open the new data sharing window:
 
-:-: ![](.topwrite/assets/image_1734492957409.png =507)
+1. Fill in the "Share Name" for the data share.
 
-1) Fill in the "Share Name" for the data share.
+2. Select "Workspace," which refers to the workspace containing the tables or views to be shared. A single data share object can only contain data from one workspace.
 
-2) Select "Workspace," which refers to the workspace containing the tables or views to be shared. A single data share object can only contain data from one workspace.
+3. In the data object row, click "Add." Select the specific tables or views to include in the data share. Multiple selections are allowed. Note that tables and views originating from other shares cannot be selected, because data sharing authorization does not permit secondary sharing. Data shares created via the web interface only support including existing tables and views; specifying "future" tables or views under an entire schema is not yet supported.
 
-3) In the data object row, click "Add." Select the specific tables or views to include in the data share. Multiple selections are allowed. Note that tables and views originating from other shares cannot be selected, because data sharing authorization does not permit secondary sharing. Data shares created via the web interface only support including existing tables and views; specifying "future" tables or views under an entire schema is not yet supported.
-
-4) In the recipient instance row, click "Add." Enter the name of the service instance that needs to receive the data. Service instance names are globally unique within the Lakehouse service. Consumer users can find their service instance name on the right side of the homepage or in the service instance URL and provide it to the sharer for configuration.
-
-:-: ![](.topwrite/assets/share_img_instancename.png =786)
+4. In the recipient instance row, click "Add." Enter the name of the service instance that needs to receive the data. Service instance names are globally unique within the Lakehouse service. Consumer users can find their service instance name on the right side of the homepage or in the service instance URL and provide it to the sharer for configuration.
 
 ^
 
 *Note*:
 
-1. *To ensure data security with workspace-level isolation, only users with the Workspace Administrator role can add data objects from their managed workspace to a data share.*
-2. *In the create share dialog, "Create" and "Add Data" are two separate operations. Even if adding shared data fails partially or completely, it does not affect the creation of the share object. When any operation fails, an error message is returned. You can click on an already-created share in the data sharing list to continue adding data objects or recipient service instances.*
+1. *To ensure data security with workspace-level isolation, only users with the Workspace Administrator role can add data objects from their managed workspace to a data share*.
+2. *In the create share dialog, "Create" and "Add Data" are two separate operations. Even if adding shared data fails partially or completely, it does not affect the creation of the share object. When any operation fails, an error message is returned. You can click on an already-created share in the data sharing list to continue adding data objects or recipient service instances*.
 
 **2. Query created share objects**
 
-All share objects created within the current service instance are displayed on the "Data Sharing" list page. Users with the Instance Administrator role (instance_admin) or Workspace Administrator role (workspace_admin) can view the list of share objects.
-
-:-: ![](.topwrite/assets/image_1734493289109.png =737)
+All share objects created within the current service instance are displayed on the "Data Sharing" list page. Users with the Instance Administrator role (instance\_admin) or Workspace Administrator role (workspace\_admin) can view the list of share objects.
 
 **3. View share details**
 
-On the "Data Sharing" list page, click a specific share name to view detailed information about the share, including basic information, recipient service instances, and shared data objects. Users with the Instance Administrator role (instance_admin) or Workspace Administrator role (workspace_admin) can view share object details.
-
-:-: ![](.topwrite/assets/image_1734493331354.png =735)
+On the "Data Sharing" list page, click a specific share name to view detailed information about the share, including basic information, recipient service instances, and shared data objects. Users with the Instance Administrator role (instance\_admin) or Workspace Administrator role (workspace\_admin) can view share object details.
 
 **4. Add/Remove shared data objects**
 
@@ -96,19 +88,16 @@ On the data sharing list page, click the name of the share object to which you w
 
 Added data objects become immediately visible to share consumers and appear in their schema for extracting data.
 
-:-: ![](.topwrite/assets/image_1734493367553.png =721)
-
 **5. Configure share targets**
 
-You must configure the recipient service instance name (instance_name) for the share object to complete data sharing. The service instance name needs to be provided by the data consumer.
+You must configure the recipient service instance name (instance\_name) for the share object to complete data sharing. The service instance name needs to be provided by the data consumer.
 
-:-: ![](.topwrite/assets/image_1734493417202.png =771)
 
 ^
 
 **6. Delete a share object**
 
-Users with the Instance Administrator role (instance_admin) or the Workspace Administrator role (workspace_admin) for the workspace to which the share belongs can delete share objects.
+Users with the Instance Administrator role (instance\_admin) or the Workspace Administrator role (workspace\_admin) for the workspace to which the share belongs can delete share objects.
 
 On the data sharing list page or in the share details, click the "Delete" button under "Actions" to delete the share object. Once a share object is deleted, it cannot be recovered. Data consumers immediately lose access to the shared data.
 
@@ -116,7 +105,7 @@ On the data sharing list page or in the share details, click the "Delete" button
 
 **1. Create a share object**
 
-To ensure data security, share objects must be created by users with the "Instance Administrator" (instance_admin) role. When creating a share object, execute the following statement in the workspace where you plan to share data:
+To ensure data security, share objects must be created by users with the "Instance Administrator" (instance\_admin) role. When creating a share object, execute the following statement in the workspace where you plan to share data:
 
 ```SQL
 CREATE SHARE <share_name>;
@@ -145,7 +134,7 @@ Grant select, read metadata on ALL tables in SCHEMA share_demo_schema TO SHARE s
 Grant select, read metadata on ALL views in SCHEMA share_demo_schema TO SHARE share_demo;
 ```
 
-When adding data objects to a share, the user executing the operation must have SELECT (query) and READ METADATA (view metadata) privileges on the involved tables or views, and must be able to grant them onward (with grant option). The Workspace Administrator role (workspace_admin) inherently has the above privileges.
+When adding data objects to a share, the user executing the operation must have SELECT (query) and READ METADATA (view metadata) privileges on the involved tables or views, and must be able to grant them onward (with grant option). The Workspace Administrator role (workspace\_admin) inherently has the above privileges.
 
 To remove shared data objects from a share, use the REVOKE statement:
 
@@ -159,11 +148,10 @@ Note: When sharing a table or view, since the table or view always exists under 
 
 **3. Configure share targets**
 
-You must configure the recipient service instance name (instance_name) for the share object to complete data sharing. The service instance name needs to be provided by the data consumer.
+You must configure the recipient service instance name (instance\_name) for the share object to complete data sharing. The service instance name needs to be provided by the data consumer.
 
 Service instance names are globally unique within the Lakehouse service. Consumer users can find their service instance name on the right side of the homepage or in the service instance URL and provide it to the sharer for configuration.
 
-:-: ![](.topwrite/assets/share_img_instancename.png =786)
 
 The syntax for the data provider to configure share targets is:
 
@@ -185,17 +173,13 @@ You can execute the SHOW command to query created share objects. The syntax is:
 SHOW SHARES;
 ```
 
-Example result:
-
-:-: ![](.topwrite/assets/share_img_showshares.png =803)
-
 Where:
 
 * provider is the tenant name of the share provider;
-* provider_instance is the service instance name of the share provider;
-* provider_workspace is the workspace to which the share belongs;
+* provider\_instance is the service instance name of the share provider;
+* provider\_workspace is the workspace to which the share belongs;
 * scope is the sharing scope of the share. Currently only PRIVATE is supported -- sharing to specified instances;
-* to_instance is the service instance name(s) to which the share is shared. Multiple instance names are separated by commas (,);
+* to\_instance is the service instance name(s) to which the share is shared. Multiple instance names are separated by commas (,);
 * kind is the share type. OUTBOUND indicates data shared from the current service instance; INBOUND indicates data shared from other service instances to the current service instance.
 
 ^
@@ -208,9 +192,6 @@ Execute the following statement to query the data objects granted in a share:
 DESC SHARE <share_name>;
 ```
 
-Example result:
-
-:-: ![](.topwrite/assets/share_img_descshare.png =798)
 
 ^
 
@@ -230,11 +211,10 @@ Once a share object is deleted, it cannot be recovered. Data consumers immediate
 
 **1. View shared data**
 
-Users with the Instance Administrator (instance_admin) role or Workspace Administrator (workspace_admin) role can view all share objects shared to the current service instance in the "Shared With Me" tab under the "Data Sharing" menu.
+Users with the Instance Administrator (instance\_admin) role or Workspace Administrator (workspace\_admin) role can view all share objects shared to the current service instance in the "Shared With Me" tab under the "Data Sharing" menu.
 
 Click a share object name to view details including the source, reception time, and the data (tables or views) currently contained in the share.
 
-:-: ![](.topwrite/assets/image_1734493496334.png =777)
 
 ^
 
@@ -242,11 +222,9 @@ Click a share object name to view details including the source, reception time, 
 
 On the "Shared With Me" list page or the share details page, click the "Extract" button to extract data from the share.
 
-:-: ![](.topwrite/assets/image_1734493713534.png =793)
 
 When extracting data, extraction can only be done at the schema level. Individual table or view extraction is not yet supported.
 
-:-: ![](.topwrite/assets/image_1734493642759.png =541)
 
 First, select "Source Schema," which is the schema from which to extract data. If the share contains multiple schemas, you need to perform multiple extractions.
 
@@ -260,7 +238,6 @@ After completing data extraction, you can see all tables and views shared under 
 
 Shared data is marked with a special icon in the "Data" panel for easy identification.
 
-:-: ![](.topwrite/assets/image_1734493884869.png =279)
 
 ### Using SQL
 
@@ -284,7 +261,7 @@ Where `<provider_instance>` and `<share_name>` can be obtained from the `SHOW SH
 
 The schema name in `CREATE SCHEMA <schema_name>` can be customized and does not need to match the schema name in the share.
 
-When executing the above command, the operator must have permission to create schemas in the target workspace. The Workspace Administrator role (workspace_admin) inherently has this permission.
+When executing the above command, the operator must have permission to create schemas in the target workspace. The Workspace Administrator role (workspace\_admin) inherently has this permission.
 
 ^
 
@@ -296,15 +273,15 @@ After executing `CREATE SCHEMA FROM SHARE`, you can see all tables and views sha
 
 **1. Provider permissions**
 
-Only users with the Instance Administrator (instance_admin) role can create share objects. The permission points for share operations are as follows. Granting share object permissions to other roles or users via the GRANT statement is not currently supported.
+Only users with the Instance Administrator (instance\_admin) role can create share objects. The permission points for share operations are as follows. Granting share object permissions to other roles or users via the GRANT statement is not currently supported.
 
-| **Permission**                                                    | **Description**                                                                        |
-| --------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| Create share                                                    | Permission to create share objects.                                                                |
-| Alter share                                                     | Permission to modify share objects, add or remove shared instance IDs.                                                    |
-| Drop share                                                      | Permission to delete share instances.                                                                   |
-| Read metadata                                                   | Permission for SHOW SHARES and DESC SHARE. DESC SHARE returns the objects and granted object privileges within the share. |
-| Grant objectprivilege to share / Revoke objectprivilege from share | Add or remove data objects from a share: GRANT objectPrivilege TO; REVOKE objectPrivilege FROM.         |
+| **Permission**                                                     | **Description**                                                                                                           |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| Create share                                                       | Permission to create share objects.                                                                                       |
+| Alter share                                                        | Permission to modify share objects, add or remove shared instance IDs.                                                    |
+| Drop share                                                         | Permission to delete share instances.                                                                                     |
+| Read metadata                                                      | Permission for SHOW SHARES and DESC SHARE. DESC SHARE returns the objects and granted object privileges within the share. |
+| Grant objectprivilege to share / Revoke objectprivilege from share | Add or remove data objects from a share: GRANT objectPrivilege TO; REVOKE objectPrivilege FROM.                           |
 
 ^
 
@@ -312,9 +289,9 @@ Only users with the Instance Administrator (instance_admin) role can create shar
 
 All members in a workspace have USE and READ METADATA permissions on share objects. However, the CREATE SCHEMA permission in the workspace is required to create a schema from the data in a share.
 
-| **Permission**    | **Description**                                        |
-| ------------- | --------------------------------------------- |
-| Use           | Permission to use the share.                                  |
-| Read metadata | Permission to query share metadata. After obtaining this, SHOW SHARES and DESC SHARE can be executed. |
+| **Permission** | **Description**                                                                                       |
+| -------------- | ----------------------------------------------------------------------------------------------------- |
+| Use            | Permission to use the share.                                                                          |
+| Read metadata  | Permission to query share metadata. After obtaining this, SHOW SHARES and DESC SHARE can be executed. |
 
 ^

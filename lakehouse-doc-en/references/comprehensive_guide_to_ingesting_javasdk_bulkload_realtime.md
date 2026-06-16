@@ -18,11 +18,10 @@ Download the code for this guide from the [GitHub repository](https://github.com
 
 Add the project directory to your VS Code workspace.
 
-:-: ![](.topwrite/assets/image_1736229919125.png =512)
 
 ##### Modify Parameters
 
-Rename the file `config/config-ingest-sample.json` to `config/config-ingest.json`, and modify the [parameter values](https://uat-doc.singdata.com/JDBC-Driver) in `config-ingest.json`.
+Rename the file `config/config-ingest-sample.json` to `config/config-ingest.json`, and modify the [parameter values](jdbc-driver.md) in `config-ingest.json`.
 
 ```JSON
 {
@@ -43,9 +42,8 @@ Rename the file `config/config-ingest-sample.json` to `config/config-ingest.json
 
 ##### Bulkload
 
-Run `BulkLoadFile.java` in VS Code:
+Run `BulkLoadFile.java` in VS Code.
 
-:-: ![](.topwrite/assets/image_1736230356428.png =470)
 
 ```JAVA
 import com.clickzetta.client.BulkloadStream;
@@ -400,17 +398,13 @@ throw new ArithmeticException(bulkloadStream.getErrorMessage());
 
 ^
 
-View execution results:
+View execution results.
 
-:-:
-![](.topwrite/assets/image_1736230582408.png =474)
 
 ##### Realtime Ingestion
 
-Run `StreamingInsert.java` in VS Code:
+Run `StreamingInsert.java` in VS Code.
 
-:-:
-![](.topwrite/assets/image_1736230796054.png =477)
 
 ```JAVA
 import com.clickzetta.client.ClickZettaClient;

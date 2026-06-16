@@ -4,15 +4,6 @@
 
 Federated Queries allow Lakehouse to directly query data in external data catalogs (such as Hive Metastore, Databricks Unity Catalog) without migrating or copying data. Using `CREATE EXTERNAL CATALOG`, you can map external data sources as Catalogs within Lakehouse and use standard SQL for cross-system queries. This guide is organized by business scenario to help you quickly master federated query configuration methods.
 
-### Quick Navigation
-
-* [Create Hive External Catalog](#create-hive-external-catalog) -- Mount a Hive Metastore
-* [Query External Catalog Data](#query-external-catalog-data) -- Use three-level namespace queries
-* [View External Schemas and Tables](#view-external-schemas-and-tables) -- Explore external catalog structure
-* [Drop External Catalog](#drop-external-catalog) -- Clean up the federation connection
-
-***
-
 ## SQL Commands Covered
 
 | Command | Purpose | Use Case |
@@ -145,3 +136,4 @@ DROP CATALOG IF EXISTS hive_prod;
 * [External Catalog Introduction](external-catalog-summary.md)
 * [Create External Catalog](create-external-catalog.md)
 * [Create Hive Catalog](create-hive-catalog.md)
+* [Databricks Unity Catalog Federated Query Practice](databricks-external-catalog-practice.md) — Complete configuration steps, tested SQL, and error troubleshooting

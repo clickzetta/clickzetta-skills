@@ -49,5 +49,5 @@ SELECT subdate(NULL, 7);
 
 ## Related Documentation
 
-- [DATE_ADD](sql_functions/scalar_functions/datetime_functions/date_add.md) — date addition
-- [DATEDIFF](sql_functions/scalar_functions/datetime_functions/datediff.md) — calculates the difference between two dates
+- [DATE_ADD](date_add.md) — date addition
+- [DATEDIFF](datediff.md) — calculates the difference between two dates

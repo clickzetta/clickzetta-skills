@@ -35,5 +35,5 @@ SELECT json_remove(NULL, '$.a');
 
 ## Related Documentation
 
-- [PARSE_JSON](parse_json.md) — Parse a string into a JSON object
+- [PARSE_JSON](json_parse.md) — Parse a string into a JSON object
 - [JSON_EXTRACT](json_extract.md) — Extract the value at a specified path from JSON

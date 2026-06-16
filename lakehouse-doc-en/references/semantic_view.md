@@ -615,7 +615,7 @@ CREATE SEMANTIC VIEW tpch_rev_analysis
 
 ## MCP Tools -- Semantic View Specialized Capabilities
 
-The Singdata Lakehouse MCP Server provides a set of tools specifically designed for semantic views, supporting the full lifecycle management of semantic views through natural language or structured invocations. The following tools are exposed via the MCP protocol and can be integrated into AI agents, data assistants, and other automation scenarios. Please refer to [Link](LakehouseMCPServer-intro.md).
+The Singdata Lakehouse MCP Server provides a set of tools specifically designed for semantic views, supporting the full lifecycle management of semantic views through natural language or structured invocations. The following tools are exposed via the MCP protocol and can be integrated into AI agents, data assistants, and other automation scenarios. Please refer to [Link](lakehousemcpserver-intro.md).
 
 ***
 

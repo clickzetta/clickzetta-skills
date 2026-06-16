@@ -255,7 +255,7 @@ FROM DIRECTORY(VOLUME my_oss_volume);
 
 > ⚠️ **Note**: If the generated URL is not accessible from the public internet, the returned address is an internal object storage endpoint. Run `SET cz.sql.function.get.presigned.url.force.external = true` before executing to force an external URL.
 
-For detailed syntax, see: [GET_PRESIGNED_URL](sql_functions/scalar_functions/file_functions/GET_PRESIGNED_URL.md)
+For detailed syntax, see: [GET_PRESIGNED_URL](sql_functions/scalar_functions/file_functions/get_presigned_url.md)
 
 ---
 
@@ -360,7 +360,7 @@ COPY INTO VOLUME my_vol SUBDIRECTORY 'export/' FROM orders FILE_FORMAT = (TYPE =
 - Querying Volume files directly (`SELECT FROM VOLUME`) consumes VCluster CRU.
 - `COPY INTO` data ingestion consumes VCluster CRU, proportional to data volume and format complexity.
 
-> 💡 **Tip**: For detailed billing rules, see the [Billing Documentation](Billing.md).
+> 💡 **Tip**: For detailed billing rules, see the [Billing Documentation](billing.md).
 
 ## Lifecycle Management
 

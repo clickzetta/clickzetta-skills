@@ -122,4 +122,4 @@ OPTIMIZE doc_test.orders OPTIONS('cz.sql.optimize.table.async' = 'false');
 
 ## Related Guides
 
-- [Small File Compaction Optimization](SQL_Optimize_Guide.md): when to run OPTIMIZE, compaction strategy selection, and coordination with automatic optimization
+- [Small File Compaction Optimization](sql_optimize_guide.md): when to run OPTIMIZE, compaction strategy selection, and coordination with automatic optimization

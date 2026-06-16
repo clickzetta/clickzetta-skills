@@ -18,6 +18,7 @@ SHOW SHARES  [LIKE 'pattern' | WHERE expr] [LIMIT num]
 
 ## Return Columns
 
+* **share\_name**: The name of the share object.
 * **provider**: The tenant name of the share provider, indicating the source of the shared data.
 * **provider\_instance**: The service instance name of the share provider, indicating the service instance of the shared data.
 * **provider\_workspace**: The workspace to which the share belongs, indicating the workspace where the share object is located.

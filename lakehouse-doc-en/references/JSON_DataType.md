@@ -44,6 +44,6 @@ Please enjoy and learn more!
 
 ### Download Zeppelin Notebook Source File
 
-The code in this document is also available in a version that runs on [Zeppelin](eco_integration/Zeppelin.md). If you want to run the code directly, please follow the instructions in the documentation to install [Zeppelin](eco_integration/Zeppelin.md).
+The code in this document is also available in a version that runs on [Zeppelin](eco_integration/zeppelin.md). If you want to run the code directly, please follow the instructions in the documentation to install [Zeppelin](eco_integration/zeppelin.md).
 
 [03.JSON_Data_Processing.ipynb](https://github.com/yunqiqiliang/clickzetta_quickstart/blob/main/zeppelin_notebook/03.JSON%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86.ipynb)

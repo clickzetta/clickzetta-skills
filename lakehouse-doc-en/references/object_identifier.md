@@ -1,238 +1,270 @@
 # Lakehouse Object Naming Rules
 
-In Lakehouse, to ensure consistency and readability of metadata (such as databases, tables, views, users, etc.) and to avoid potential issues, we have established a set of naming rules. This document will detail these rules to help you better understand and use Lakehouse.
+In Lakehouse, a set of naming rules has been established to ensure consistency and readability in metadata naming (such as databases, tables, views, users, etc.) and to avoid potential issues. This document describes these rules in detail to help you better understand and use Lakehouse.
 
 ## Identifier Types
 
 Lakehouse supports the following types of identifier naming:
 
-* **Regular Identifiers**: Do not require quotes but must follow specific naming rules.
-* **Double-quoted Identifiers**: Need to be enclosed in double quotes (") and can translate keywords.
-* **Backtick Identifiers**: Need to be enclosed in backticks (\`), can contain any character but cannot contain backticks themselves. The default is backticks, but it can be switched to double quotes by setting (set `cz.sql.double.quoted.identifiers=true`).
+* **Regular identifiers**: No quotes required, but must comply with specific naming rules.
+* **Double-quoted identifiers**: Must be surrounded by double quotes (`"`), allowing keywords to be used as identifier names. Disabled by default; enable with `SET cz.sql.double.quoted.identifiers=true` (session level only). **Note**: Once enabled, double quotes no longer represent strings — `"hello"` is parsed as an identifier, not a string value.
+* **Backtick identifiers**: Must be surrounded by backticks (`` ` ``). For **column names**, backticks allow any characters (hyphens, spaces, Chinese characters, numeric prefixes, etc.); for **table names, schema names, and other object names**, backticks only bypass keyword restrictions and numeric-prefix restrictions — special characters such as hyphens, spaces, and Chinese characters are still not allowed. Backticks are used by default; switch to double quotes with `SET cz.sql.double.quoted.identifiers=true`.
 
 ## Naming Rules
 
-### Naming Conventions for Regular Identifiers
+### Regular Identifier Naming Conventions
 
-1. **Starting Character**: Identifiers must start with a letter (including uppercase A-Z, lowercase a-z) or an underscore ("_"). They cannot start with a number or other special characters.
-2. **Character Composition**: Identifiers can only contain letters, underscores, and decimal digits (0-9). Other special characters and keywords, such as hyphens (-), spaces, or other non-alphanumeric characters, are not allowed.
-3. **Case Sensitivity**: Although case can be specified when creating, metadata will be parsed as lowercase characters when stored. In Lakehouse, all object names are case-insensitive. This means "MyTable" and "mytable" will be considered the same identifier.
-4. **Language Restrictions**: Chinese characters are not supported.
-5. **Length Restrictions**: Length is 1 to 255 characters, WORKSPACE NAME length is limited to 3 to 28 characters.
+1. **Starting character**: Identifiers must start with a letter (uppercase A-Z or lowercase a-z) or an underscore (`_`). Starting with a digit or other special character is not allowed.
+2. **Character composition**: Identifiers may only contain letters, underscores, and decimal digits (0-9). Other special characters and keywords such as hyphens (`-`), spaces, or other non-alphanumeric characters are not allowed.
+3. **Case sensitivity**: Metadata undergoes case conversion during storage. Most objects (schema, table, view, column, etc.) are stored in **lowercase**; VCluster names are an exception and are stored in **uppercase**. References are case-insensitive — `MyTable` and `mytable` are treated as the same identifier. Backticks also cannot preserve case. Note: Column aliases in SELECT queries (`AS MyAlias`) preserve their original case and are not converted.
+4. **Language restriction**: Chinese characters are not supported.
+5. **Length limit**: 1–256 characters; WORKSPACE NAME is limited to 3–28 characters.
 
-Below are some examples of valid identifiers:
+Examples of valid identifiers:
+
 ```SQL
 my_table
 table1
 table_2
 ```
+
 ### Backtick Identifiers
 
-If backticks are added when naming objects, the following rules apply:
+The behavior of backticks differs by object type:
 
-* Users are allowed to use keywords.
-* Column names can include special characters such as Chinese.
-For identifier names that need to use keywords, you can surround them with double quotes or backticks, for example:
-```SQL
--- Allow numbers
-create schema `123`
--- Use keywords as object names
-create schema `select`
+**For column names**: Backticks bypass all naming restrictions, allowing hyphens, spaces, Chinese characters, numeric prefixes, and any other characters:
 
+```sql
+CREATE TABLE my_table(
+    `my-col`  INT,
+    `my col`  STRING,
+    `chinese_col`   DATE,
+    `123col`  BIGINT
+)
 ```
-Please note that backticks can be used to enclose identifiers, but their behavior may differ in certain situations. Generally, it is recommended to use backticks only when necessary.
+
+**For table names, schema names, and other object names**: Backticks only bypass keyword restrictions and numeric-prefix restrictions; special characters such as hyphens, spaces, and Chinese characters are still not allowed:
+
+```sql
+-- Numeric prefix allowed
+CREATE SCHEMA `123`;
+-- Keyword as name allowed
+CREATE SCHEMA `select`;
+-- Chinese column names (column names only)
+CREATE TABLE my_table(`chinese_col` STRING);
+```
+
+> ⚠️ **Note**: Backticks **cannot** preserve case. Whether for table names or column names, objects created with backticks are still stored in lowercase. For example, `` `MyTable` `` is stored as `mytable`.
+
+Use backticks only when necessary.
 
 ### Double-Quoted Identifiers
 
-In the ANSI/ISO standard for SQL, identifiers within double quotes (delimited identifiers) allow users to use keywords. Lakehouse is also compatible with this behavior. When enabled, double quotes act as delimiters for identifiers by setting `cz.sql.double.quoted.identifiers=true`, currently only supported at the session level. It is important to note that if double quotes are enabled as delimiters for identifiers, Lakehouse will no longer consider data enclosed in double quotes as a string type.
-```SQL
-"[ ... ]"
-```
-**Precautions**
+After enabling `SET cz.sql.double.quoted.identifiers=true`, double quotes act as identifier delimiters, compatible with SQL ANSI/ISO standard behavior. After enabling, note:
 
-* If an object is created using double-quote identifiers, when referencing the object in queries or any other SQL statements, if it is a keyword, the identifier must be exactly as specified during creation, including the double quotes. Omitting the double quotes may result in errors.
-```SQL
---Need to use keywords as object names
-create schema "select"
-```
-# Naming Conventions for Various Objects
-## Instance INSTANCE NAME
+- Double quotes no longer represent strings; `"hello"` is parsed as an identifier (column name/object name), not a string value
+- Objects created with keywords using double quotes must be referenced with double quotes
 
-|     | Constraint       | Constraint Conditions                                                  |
-| ---- | -------- | ----------------------------------------------------- |
-| Name Rule | Naming Rule     | System-generated. Starts with a letter (A-Z, a-z) or underscore ("_"). Uppercase letters are converted to lowercase. |
-|      | Length Limit     | Length of 3\~28 characters                                           |
-|      | Special Characters Support | Contains only letters, underscores, and decimal digits (0-9), no spaces allowed                         |
-|      | Chinese Support   | Not supported                                                   |
-|      | Reserved Words   | No reserved words                                                  |
-|      | Repetition Allowance   | Unique identifier for user lakehouse                                      |
+```sql
+-- Enable double-quoted identifier mode
+SET cz.sql.double.quoted.identifiers=true;
+
+-- Use a keyword as a schema name
+CREATE SCHEMA "select";
+
+-- Must use double quotes when referencing
+SELECT * FROM "select".my_table;
+```
+
+## Naming Rules for Each Object Type
+
+## Instance (INSTANCE NAME)
+
+|      | Constraint | Condition |
+| ---- | -------- | --------------------------------------- |
+| Name rules | Naming rule | Generated by the system; starts with a letter (A-Z, a-z) or underscore (`_`). Uppercase letters are converted to lowercase. |
+|      | Length limit | 3–28 characters |
+|      | Special characters | Only letters, underscores, and decimal digits (0-9); spaces not allowed |
+|      | Chinese characters | Not supported |
+|      | Reserved words | None |
+|      | Duplicates | Unique identifier for the user's Lakehouse |
 
 ## WORKSPACE
-|         | Constraint       | Constraint Conditions                              |
-| ------- | -------- | --------------------------------- |
-| Name Rule    | Naming Rule     | Starts with a letter (A-Z, a-z) or underscore ("_"). Uppercase letters are converted to lowercase. |
-|         | Length Limit     | Length of 3\~28 characters                       |
-|         | Special Characters Support | Contains only letters, underscores, and decimal digits (0-9), no spaces allowed     |
-|         | Chinese Support   | Not supported                               |
-|         | Reserved Words   | Reserved word: sys                            |
-|         | Repetition Allowance   | Not allowed to repeat within the current instance                       |
-| COMMENT | Naming Rule     | Starts with a letter or Chinese character                          |
-|         | Length Limit     | Length cannot exceed 1024 characters,                    |
-|         | Special Characters Support | Contains only letters, underscores, and decimal digits (0-9), spaces allowed in between    |
-|         | Chinese Support   | Yes                                 |
-|         | Case Sensitivity  | Distinguished                                |
+
+|         | Constraint | Condition |
+| ------- | -------- | -------------------------------- |
+| Name rules | Naming rule | Starts with a letter (A-Z, a-z) or underscore (`_`). Uppercase letters are converted to lowercase. |
+|         | Length limit | 3–28 characters |
+|         | Special characters | Only letters, underscores, and decimal digits (0-9); spaces not allowed |
+|         | Chinese characters | Not supported |
+|         | Reserved words | Reserved word: `sys` |
+|         | Duplicates | Not allowed within the current instance |
+| COMMENT | Naming rule | Starts with a letter or Chinese character |
+|         | Length limit | No more than 1024 characters |
+|         | Special characters | Letters, Chinese characters, underscores, decimal digits (0-9); spaces allowed in the middle |
+|         | Chinese characters | Supported |
+|         | Case sensitivity | Case-sensitive |
 
 ## SCHEMA
-|         | Constraint       | Constraint Conditions                              |
-| ------- | -------- | --------------------------------- |
-| Name Rule    | Naming Rule     | Starts with a letter (A-Z, a-z) or underscore ("_"). Uppercase letters are converted to lowercase. |
-|         | Length Limit     | Maximum length of 1-256 characters                     |
-|         | Special Characters Support | Contains only letters, underscores, and decimal digits (0-9), no spaces allowed     |
-|         | Chinese Support   | Not supported                               |
-|         | Reserved Words   | Reserved words: information_schema, public   |
-|         | Repetition Allowance   | Not allowed to repeat within the current WORKSPACE and with volume   |
-| COMMENT | Naming Rule     | Starts with a letter or Chinese character                          |
-|         | Length Limit     | 1024 characters                            |
-|         | Special Characters Support | Contains letters, Chinese characters, underscores, and decimal digits (0-9)            |
-|         | Chinese Support   | Yes                                 |
-|         | Case Sensitivity  | Distinguished                                |
+
+|         | Constraint | Condition |
+| ------- | -------- | -------------------------------- |
+| Name rules | Naming rule | Starts with a letter (A-Z, a-z) or underscore (`_`). Uppercase letters are converted to lowercase. |
+|         | Length limit | Maximum 1–256 characters |
+|         | Special characters | Only letters, underscores, and decimal digits (0-9); spaces not allowed |
+|         | Chinese characters | Not supported |
+|         | Reserved words | Reserved words: `information_schema`, `public` |
+|         | Duplicates | Not allowed within the current WORKSPACE; cannot duplicate a VOLUME name |
+| COMMENT | Naming rule | Starts with a letter or Chinese character |
+|         | Length limit | 1024 characters |
+|         | Special characters | Letters, Chinese characters, underscores, decimal digits (0-9) |
+|         | Chinese characters | Supported |
+|         | Case sensitivity | Case-sensitive |
 
 ## TABLE
-|         | Constraint       | Constraint Conditions                              |
-| ------- | -------- | --------------------------------- |
-| Name Rule    | Naming Rule     | Starts with a letter (A-Z, a-z) or underscore ("_"). Uppercase letters are converted to lowercase. |
-|         | Length Limit     | Maximum length of 1-256 characters                     |
-|         | Special Characters Support | Contains only letters, underscores, and decimal digits (0-9), no spaces allowed     |
-|         | Chinese Support   | Not supported                               |
-|         | Repetition Allowance   | Not allowed to repeat within the current schema                   |
-| COMMENT | Naming Rule     | Starts with a letter or Chinese character                          |
-|         | Length Limit     | 1024 characters                            |
-|         | Special Characters Support | Contains letters, Chinese characters, underscores, and decimal digits (0-9), spaces allowed    |
-|         | Chinese Support   | Yes                                 |
-|         | Case Sensitivity  | Distinguished                                |
+
+|         | Constraint | Condition |
+| ------- | -------- | -------------------------------- |
+| Name rules | Naming rule | Starts with a letter (A-Z, a-z) or underscore (`_`). Uppercase letters are converted to lowercase. |
+|         | Length limit | Maximum 1–256 characters |
+|         | Special characters | Only letters, underscores, and decimal digits (0-9); spaces not allowed |
+|         | Chinese characters | Not supported |
+|         | Reserved words | None |
+|         | Duplicates | Not allowed within the current schema |
+| COMMENT | Naming rule | Starts with a letter or Chinese character |
+|         | Length limit | 1024 characters |
+|         | Special characters | Letters, Chinese characters, underscores, decimal digits (0-9); spaces allowed |
+|         | Chinese characters | Supported |
+|         | Case sensitivity | Case-sensitive |
 
 ## VIEW
-|         | Constraint       | Constraint Conditions                              |
-| ------- | -------- | --------------------------------- |
-| Name Rule    | Naming Rule     | Starts with a letter (A-Z, a-z) or underscore ("_"). Uppercase letters are converted to lowercase. |
-|         | Length Limit     | Maximum length of 1-256 characters                     |
-|         | Special Characters Support | Contains only letters, underscores, and decimal digits (0-9), no spaces allowed     |
-|         | Chinese Support   | Not supported                               |
-|         | Repetition Allowance   | Not allowed to repeat within the current schema                   |
-| COMMENT | Naming Rule     | Starts with a letter or Chinese character                          |
-|         | Length Limit     | 1024 characters                            |
-|         | Special Characters Support | Contains letters, Chinese characters, underscores, and decimal digits (0-9), spaces allowed    |
-|         | Chinese Support   | Yes                                 |
-|         | Case Sensitivity  | Distinguished                                |
+
+|         | Constraint | Condition |
+| ------- | -------- | -------------------------------- |
+| Name rules | Naming rule | Starts with a letter (A-Z, a-z) or underscore (`_`). Uppercase letters are converted to lowercase. |
+|         | Length limit | Maximum 1–256 characters |
+|         | Special characters | Only letters, underscores, and decimal digits (0-9); spaces not allowed |
+|         | Chinese characters | Not supported |
+|         | Reserved words | None |
+|         | Duplicates | Not allowed within the current schema |
+| COMMENT | Naming rule | Starts with a letter or Chinese character |
+|         | Length limit | 1024 characters |
+|         | Special characters | Letters, Chinese characters, underscores, decimal digits (0-9); spaces allowed |
+|         | Chinese characters | Supported |
+|         | Case sensitivity | Case-sensitive |
 
 ## VIRTUAL CLUSTER
 
-|         | Constraint       | Constraint Conditions                              |
-| ------- | -------- | --------------------------------- |
-| Name Rule    | Naming Rule     | Starts with a letter (A-Z, a-z) or underscore ("_"). Uppercase letters are converted to lowercase. |
-|         | Length Limit     | Maximum length of 1-256 characters                     |
-|         | Special Characters Support | Contains only letters, underscores, and decimal digits (0-9), no spaces allowed     |
-|         | Chinese Support   | Not supported                               |
-|         | Repetition Allowance   | Not repeated within the current workspace                   |
-| COMMENT | Naming Rule     | Starts with a letter or Chinese character                          |
-|         | Length Limit     | 1024 characters                            |
-|         | Special Characters Support | Contains letters, Chinese characters, underscores, and decimal digits (0-9), spaces allowed    |
-|         | Chinese Support   | Yes                                 |
-|         | Case Sensitivity  | Distinguished                                |
+|         | Constraint | Condition |
+| ------- | -------- | -------------------------------- |
+| Name rules | Naming rule | Starts with a letter (A-Z, a-z) or underscore (`_`). **Lowercase letters are converted to uppercase** (opposite of other objects). |
+|         | Length limit | Maximum 1–256 characters |
+|         | Special characters | Only letters, underscores, and decimal digits (0-9); spaces not allowed |
+|         | Chinese characters | Not supported |
+|         | Duplicates | Not allowed within the current workspace |
+| COMMENT | Naming rule | Starts with a letter or Chinese character |
+|         | Length limit | 1024 characters |
+|         | Special characters | Letters, Chinese characters, underscores, decimal digits (0-9); spaces allowed |
+|         | Chinese characters | Supported |
+|         | Case sensitivity | Case-sensitive |
 
 ## COLUMN
 
-|         | Constraint       | Constraint Conditions                              |
-| ------- | -------- | --------------------------------- |
-| Name Rule    | Naming Rule     | Starts with a letter (A-Z, a-z) or underscore ("_"). Uppercase letters are converted to lowercase. |
-|         | Length Limit     | Maximum length of 1-256 characters                     |
-|         | Special Characters Support | Contains only letters, underscores, and decimal digits (0-9), no spaces allowed     |
-|         | Chinese Support   | Supported                               |
-|         | Reserved Words   | Has reserved words                              |
-|         | Repetition Allowance   | Not allowed to repeat within the current table                        |
-| COMMENT | Naming Rule     | Starts with a letter or Chinese character                          |
-|         | Length Limit     | 1024 characters                            |
-|         | Special Characters Support | Contains letters, Chinese characters, underscores, and decimal digits (0-9), spaces allowed    |
-|         | Chinese Support   | Yes                                 |
-|         | Case Sensitivity  | Distinguished                                |
+|         | Constraint | Condition |
+| ------- | -------- | -------------------------------- |
+| Name rules | Naming rule | Starts with a letter (A-Z, a-z) or underscore (`_`). Uppercase letters are converted to lowercase; backticks support special characters, Chinese characters, and numeric prefixes. |
+|         | Length limit | Maximum 1–256 characters |
+|         | Special characters | Not supported for regular identifiers; backtick identifiers support hyphens, spaces, and other special characters |
+|         | Chinese characters | Supported (requires backticks, e.g., `` `chinese_col` ``) |
+|         | Reserved words | Reserved words exist |
+|         | Duplicates | Not allowed within the current table |
+| COMMENT | Naming rule | Starts with a letter or Chinese character |
+|         | Length limit | 1024 characters |
+|         | Special characters | Letters, Chinese characters, underscores, decimal digits (0-9); spaces allowed |
+|         | Chinese characters | Supported |
+|         | Case sensitivity | Case-sensitive |
 
 ## VOLUME
-|         | Constraint       | Constraint Conditions                              |
-| ------- | -------- | --------------------------------- |
-| Name Rule    | Naming Rule     | Starts with a letter (A-Z, a-z) or underscore ("_"). Uppercase letters are converted to lowercase. |
-|         | Length Limit     | Maximum length of 1-256 characters                     |
-|         | Special Characters Support | Contains only letters, underscores, and decimal digits (0-9), no spaces allowed     |
-|         | Chinese Support   | Not supported                               |
-|         | Reserved Words   | Has reserved words                              |
-|         | Repetition Allowance   | Not repeated within the current workspace, and not allowed to repeat with schema      |
-| COMMENT | Naming Rule     | Starts with a letter or Chinese character                          |
-|         | Length Limit     | 1024 characters                            |
-|         | Special Characters Support | Contains letters, Chinese characters, underscores, and decimal digits (0-9), spaces allowed    |
-|         | Chinese Support   | Yes                                 |
-|         | Case Sensitivity  | Distinguished                                |
+
+|         | Constraint | Condition |
+| ------- | -------- | -------------------------------- |
+| Name rules | Naming rule | Starts with a letter (A-Z, a-z) or underscore (`_`). Uppercase letters are converted to lowercase. |
+|         | Length limit | Maximum 1–256 characters |
+|         | Special characters | Only letters, underscores, and decimal digits (0-9); spaces not allowed |
+|         | Chinese characters | Not supported |
+|         | Reserved words | Reserved words exist |
+|         | Duplicates | Not allowed within the current workspace; cannot duplicate a schema name |
+| COMMENT | Naming rule | Starts with a letter or Chinese character |
+|         | Length limit | 1024 characters |
+|         | Special characters | Letters, Chinese characters, underscores, decimal digits (0-9); spaces allowed |
+|         | Chinese characters | Supported |
+|         | Case sensitivity | Case-sensitive |
 
 ## FUNCTION
 
-|         | Constraint       | Constraint Conditions                                        |
-| ------- | -------- | ------------------------------------------- |
-| Name Rule    | Naming Rule     | Starts with a letter (A-Z, a-z) or underscore ("_"). Uppercase letters are converted to lowercase, avoid duplication with built-in functions. |
-|         | Length Limit     | Maximum length of 1-256 characters                               |
-|         | Special Characters Support | Contains only letters, underscores, and decimal digits (0-9), no spaces allowed               |
-|         | Chinese Support   | Not supported                                         |
-|         | Reserved Words   | Has reserved words                                        |
-|         | Repetition Allowance   | Allowed, distinguished by input parameters                              |
-| COMMENT | Naming Rule     | Starts with a letter or Chinese character                                    |
-|         | Length Limit     | 1024 characters                                      |
-|         | Special Characters Support | Contains letters, Chinese characters, underscores, and decimal digits (0-9), spaces allowed               |
-|         | Chinese Support   | Yes                                           |
-|         | Case Sensitivity  | Distinguished                                          |
+|         | Constraint | Condition |
+| ------- | -------- | ------------------------------------------ |
+| Name rules | Naming rule | Starts with a letter (A-Z, a-z) or underscore (`_`). Uppercase letters are converted to lowercase; avoid duplicating built-in function names. |
+|         | Length limit | Maximum 1–256 characters |
+|         | Special characters | Only letters, underscores, and decimal digits (0-9); spaces not allowed |
+|         | Chinese characters | Not supported |
+|         | Reserved words | Reserved words exist |
+|         | Duplicates | Duplicates allowed; distinguished by input parameters |
+| COMMENT | Naming rule | Starts with a letter or Chinese character |
+|         | Length limit | 1024 characters |
+|         | Special characters | Letters, Chinese characters, underscores, decimal digits (0-9); spaces allowed |
+|         | Chinese characters | Supported |
+|         | Case sensitivity | Case-sensitive |
 
 ## ROLE
-|             | Constraint       | Constraint Conditions                              |
-| ----------- | -------- | --------------------------------- |
-| Name Rule        | Naming Rule     | Starts with a letter (A-Z, a-z) or underscore ("_"). Uppercase letters are converted to lowercase. |
-|             | Length Limit     | Maximum length of 1-256 characters                     |
-|             | Special Characters Support | Contains only letters, underscores, and decimal digits (0-9), no spaces allowed     |
-|             | Chinese Support   | Not supported                               |
-|             | Reserved Words   | Has reserved roles                             |
-|             | Repetition Allowance   | Allowed                              |
-| COMMENT     | Naming Rule     | Starts with a letter or Chinese character                          |
-|             | Length Limit     | 1024 characters                            |
-|             | Special Characters Support | Contains letters, Chinese characters, underscores, and decimal digits (0-9), spaces allowed    |
-|             | Chinese Support   | Yes                                 |
-|             | Case Sensitivity  | Distinguished                                |
-| ROLE\_ALIAS | Naming Rule     | Starts with a letter or Chinese character                          |
-|             | Length Limit     | 1024 characters                            |
-|             | Special Characters Support | Contains letters, Chinese characters, underscores, and decimal digits (0-9), spaces allowed    |
-|             | Chinese Support   | Yes                                 |
-|             | Case Sensitivity  | Not distinguished                               |
+
+|             | Constraint | Condition |
+| ----------- | -------- | -------------------------------- |
+| Name rules | Naming rule | Starts with a letter (A-Z, a-z) or underscore (`_`). Uppercase letters are converted to lowercase. |
+|             | Length limit | Maximum 1–256 characters |
+|             | Special characters | Only letters, underscores, and decimal digits (0-9); spaces not allowed |
+|             | Chinese characters | Not supported |
+|             | Reserved words | Reserved roles exist |
+|             | Duplicates | Not allowed within the current instance |
+| COMMENT     | Naming rule | Starts with a letter or Chinese character |
+|             | Length limit | 1024 characters |
+|             | Special characters | Letters, Chinese characters, underscores, decimal digits (0-9); spaces allowed |
+|             | Chinese characters | Supported |
+|             | Case sensitivity | Case-sensitive |
+| ROLE_ALIAS | Naming rule | Starts with a letter or Chinese character |
+|             | Length limit | 1024 characters |
+|             | Special characters | Letters, Chinese characters, underscores, decimal digits (0-9); spaces allowed |
+|             | Chinese characters | Supported |
+|             | Case sensitivity | Case-insensitive |
 
 ## USER
-|         | Constraint       | Constraint Conditions                              |
-| ------- | -------- | --------------------------------- |
-| Name Rule    | Naming Rule     | Starts with a letter (A-Z, a-z) or underscore ("_"). Uppercase letters are converted to lowercase. |
-|         | Length Limit     | Maximum length of 1-256 characters                     |
-|         | Special Characters Support | Contains only letters, underscores, and decimal digits (0-9), no spaces allowed     |
-|         | Chinese Support   | Not supported                               |
-|         | Reserved Words   |                                   |
-|         | Repetition Allowance   | Not allowed to repeat within the current Account                    |
-| COMMENT | Naming Rule     | Starts with a letter or Chinese character                          |
-|         | Length Limit     | 1024 characters                            |
-|         | Special Characters Support | Contains letters, Chinese characters, underscores, and decimal digits (0-9), spaces allowed    |
-|         | Chinese Support   | Yes                                 |
-|         | Case Sensitivity  | Distinguished                                |
+
+|         | Constraint | Condition |
+| ------- | -------- | -------------------------------- |
+| Name rules | Naming rule | Starts with a letter (A-Z, a-z) or underscore (`_`). Uppercase letters are converted to lowercase. |
+|         | Length limit | Maximum 1–256 characters |
+|         | Special characters | Only letters, underscores, and decimal digits (0-9); spaces not allowed |
+|         | Chinese characters | Not supported |
+|         | Reserved words | Reserved words exist (e.g., `USER`) |
+|         | Duplicates | Not allowed within the current Account |
+| COMMENT | Naming rule | Starts with a letter or Chinese character |
+|         | Length limit | 1024 characters |
+|         | Special characters | Letters, Chinese characters, underscores, decimal digits (0-9); spaces allowed |
+|         | Chinese characters | Supported |
+|         | Case sensitivity | Case-sensitive |
 
 ## INDEX
-|         | Constraint       | Constraint Conditions                              |
-| ------- | -------- | --------------------------------- |
-| Name Rule    | Naming Rule     | Starts with a letter (A-Z, a-z) or underscore ("_"). Uppercase letters are converted to lowercase. |
-|         | Length Limit     | Maximum length of 1-256 characters                     |
-|         | Special Characters Support | Contains only letters, underscores, and decimal digits (0-9), no spaces allowed     |
-|         | Chinese Support   | Not supported                               |
-|         | Reserved Words   |                                   |
-|         | Repetition Allowance   | Not allowed to repeat within the current schema                     |
-| COMMENT | Naming Rule     | Starts with a letter or Chinese character                          |
-|         | Length Limit     | 1024 characters                            |
-|         | Special Characters Support | Contains letters, Chinese characters, underscores, and decimal digits (0-9), spaces allowed    |
-|         | Chinese Support   | Yes                                 |
-|         | Case Sensitivity  | Distinguished                                |
+
+|         | Constraint | Condition |
+| ------- | -------- | -------------------------------- |
+| Name rules | Naming rule | Starts with a letter (A-Z, a-z) or underscore (`_`). Uppercase letters are converted to lowercase. |
+|         | Length limit | Maximum 1–256 characters |
+|         | Special characters | Only letters, underscores, and decimal digits (0-9); spaces not allowed |
+|         | Chinese characters | Not supported |
+|         | Reserved words | Reserved words exist |
+|         | Duplicates | Not allowed within the current schema; an index must be in the same schema as its table |
+| COMMENT | Naming rule | Starts with a letter or Chinese character |
+|         | Length limit | 1024 characters |
+|         | Special characters | Letters, Chinese characters, underscores, decimal digits (0-9); spaces allowed |
+|         | Chinese characters | Supported |
+|         | Case sensitivity | Case-sensitive |

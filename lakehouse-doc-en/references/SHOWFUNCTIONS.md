@@ -2,7 +2,7 @@
 
 This command is used to list the external functions created by the current user. With this command, users can easily view and manage the external functions they have created.
 
-Related functions: [Create Connection](CREATECONNECTION.md), [Create External Function](<CREATE_EXTERNAL_FUNCTION.md>), [Drop Function](drop-function.md)
+Related functions: [Create Connection](createconnection.md), [Create External Function](<CREATE_EXTERNAL_FUNCTION.md>), [Drop Function](drop-function.md)
 
 ## Syntax
 ```

@@ -1,19 +1,15 @@
 ---
 name: clickzetta-cdc-sync-pipeline
 description: |
-  Create and manage ClickZetta Lakehouse multi-table real-time sync (CDC) tasks, syncing entire MySQL / PostgreSQL
-  databases or multiple tables to Lakehouse in real time.
-  Supports three sync modes: full database mirror, multi-table mirror, and sharded table merge.
-  Based on Binlog (MySQL) or WALs (PostgreSQL) for second-level end-to-end latency, with full load + incremental two-phase sync.
+  Create and manage ClickZetta Lakehouse multi-table real-time sync (CDC) tasks, syncing
+  MySQL/PostgreSQL databases to Lakehouse. Three sync modes: full database mirror,
+  multi-table mirror, sharded table merge. Binlog/WALs-based with full load + incremental sync.
   Triggered when the user says "multi-table real-time sync", "full database sync", "database mirror",
-  "CDC full database", "multi-table CDC", "sharded table merge", "MySQL full database sync to Lakehouse",
-  "PostgreSQL full database sync", "multi-table realtime sync", "database migration",
-  "full load + incremental sync", "sync operations", "sync SOP", "sync alert configuration",
-  "Binlog position expired", "server-id conflict", "full re-sync", "add sync table".
-  Covers source database preparation (parameter configuration + permissions), three sync mode selection,
-  task creation and deployment, operations SOP (full re-sync/add table/data repair),
-  monitoring and alerting (5 alert rules + IM webhook), and detailed troubleshooting —
-  all ClickZetta Studio specific logic.
+  "CDC full database", "multi-table CDC", "sharded table merge", "MySQL full database sync",
+  "PostgreSQL full database sync", "database migration", "sync operations", "sync SOP",
+  "Binlog position expired", "full re-sync", "add sync table".
+  Covers source DB preparation, sync mode selection, task deployment, operations SOP,
+  monitoring/alerting, and troubleshooting — all ClickZetta Studio specific logic.
   Keywords: CDC, real-time sync, MySQL, PostgreSQL, change data capture, mirror, merge, multi-table
 ---
 

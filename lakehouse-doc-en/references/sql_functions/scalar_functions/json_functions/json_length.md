@@ -32,6 +32,6 @@ SELECT json_length(PARSE_JSON('null'));
 
 ## Related Documentation
 
-- [JSON_ARRAY_GET](sql_functions/scalar_functions/json_functions/json_array_get.md)
-- [JSON_EXTRACT](sql_functions/scalar_functions/json_functions/json_extract.md)
-- [PARSE_JSON](sql_functions/scalar_functions/json_functions/json_parse.md)
+- [JSON_ARRAY_GET](json_array_get.md)
+- [JSON_EXTRACT](json_extract.md)
+- [PARSE_JSON](json_parse.md)

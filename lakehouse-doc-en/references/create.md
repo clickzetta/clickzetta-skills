@@ -64,7 +64,7 @@ Executing `CREATE` operations requires the corresponding creation permission (su
 - [CREATE TABLE STREAM](create-table-stream.md)
 
 ### Indexes and Synonyms
-- [CREATE BLOOMFILTER INDEX](CREATE-BLOOMFILTER-INDEX.md)
+- [CREATE BLOOMFILTER INDEX](create-bloomfilter-index.md)
 - [CREATE INVERTED INDEX](create-inverted-index.md)
 - [CREATE VECTOR INDEX](create-vector-index.md)
 - [CREATE SYNONYM](create-synonym.md)
@@ -86,7 +86,7 @@ Executing `CREATE` operations requires the corresponding creation permission (su
 
 ### Functions
 - [CREATE SQL FUNCTION](create-sql-function.md)
-- [CREATE EXTERNAL FUNCTION](CREATE_EXTERNAL_FUNCTION.md)
+- [CREATE EXTERNAL FUNCTION](create_external_function.md)
 
 ### Users and Permissions
 - [CREATE USER](create-user.md)

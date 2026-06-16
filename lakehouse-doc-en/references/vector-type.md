@@ -197,5 +197,5 @@ See [Create Vector Index](create-vector-index.md) for details.
 
 - [Vector Search Guide](vector-search.md)
 - [Create Vector Index](create-vector-index.md)
-- [AI_EMBEDDING Function](AI_EMBEDDING.md)
+- [AI_EMBEDDING Function](ai_embedding.md)
 - [Data Types](data-type.md)

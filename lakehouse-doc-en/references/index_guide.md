@@ -76,6 +76,6 @@ DROP INDEX idx_user_id;
 | Document | Description |
 |----------|-------------|
 | [SQL Commands Overview](sql-commands.md) | Categorized navigation for all SQL commands |
-| [Index Usage Guide](SQL_Index_Guide.md) | Complete examples for creating and validating indexes by scenario |
+| [Index Usage Guide](sql_index_guide.md) | Complete examples for creating and validating indexes by scenario |
 | [Full-Text Search Guide](fulltext_indexes_guide.md) | Detailed usage of inverted index full-text search |
 | [Lakehouse Index Best Practices](lakehouse-index-best-practice.md) | Index selection, maintenance, and performance tuning recommendations |

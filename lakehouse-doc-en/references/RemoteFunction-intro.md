@@ -13,7 +13,7 @@ Through pre-authorization by the user, the Singdata Lakehouse platform automatic
 
 ## EXTERNAL FUNCTION Creation Flow
 
-Please refer to: [Usage Workflow: External Function](RemoteFunction-best-practice.md)
+Please refer to: [Usage Workflow: External Function](remotefunction-best-practice.md)
 
 * Enable cloud Function Compute services (such as Alibaba Cloud FC) and Object Storage services.
 * Package the function execution code, executable files, dependency libraries, models, and data files, and upload them to object storage.
@@ -35,7 +35,7 @@ Please refer to: [Usage Workflow: External Function](RemoteFunction-best-practic
 
 * Currently, only Java and Python programming languages are supported, with supported runtime environments being Java 8 and Python 3.10.
 * If native libraries are required (e.g., libraries containing .so files), they must be compatible with the Python 3.10 ABI.
-* When the program and its dependency files, after compression, exceed 500 MB, the function must be created using the container image approach. Please refer to [Practice: Processing Image Data Using Hugging Face Image Recognition Models](RemoteFunction-on-acr.md).
+* When the program and its dependency files, after compression, exceed 500 MB, the function must be created using the container image approach. Please refer to [Practice: Processing Image Data Using Hugging Face Image Recognition Models](remotefunction-on-acr.md).
 
 ## EXTERNAL FUNCTION Billing
 
@@ -49,6 +49,6 @@ Please refer to: [Usage Workflow: External Function](RemoteFunction-best-practic
 Please refer to the following development guides:
 
 * [External Function(Java)](external-function-dev-guide-java.md)
-* [External Function(Python3)](RemoteFunction-dev-guide-python3.md)
+* [External Function(Python3)](remotefunction-dev-guide-python3.md)
 
 ^

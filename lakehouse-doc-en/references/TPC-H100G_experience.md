@@ -2,7 +2,7 @@
 
 TPC-H is a decision support benchmark developed by the Transaction Processing Performance Council (TPC). It consists of a suite of business-oriented ad-hoc queries and concurrent data modifications. TPC-H can model real production environments and simulate the data warehouse of a sales system. This test uses 8 tables with a data size of 100GB. A total of 22 queries were tested, with the main performance metric being the response time of each query, i.e., the duration between submitting the query and returning the result.
 TPC-H performance testing is a time-consuming and costly process. To complete the test, you need to prepare machines, data, generate reports, etc., which often takes several days and incurs significant expenses. Based on Singdata Lakehouse's second-level elastic scaling virtual clusters and shared TPC-H datasets, the resource and data preparation process is eliminated. Using the method provided in this article, you can experience the complete performance test of Singdata Lakehouse and view the comparison report in 3 minutes.
-The code in this article runs on [Zeppelin](eco_integration/Zeppelin.md). If you want to run the code in this article, please follow the documentation to install [Zeppelin](eco_integration/Zeppelin.md).
+The code in this article runs on [Zeppelin](eco_integration/zeppelin.md). If you want to run the code in this article, please follow the documentation to install [Zeppelin](eco_integration/zeppelin.md).
 
 ## Create a Test AP VC
 ```

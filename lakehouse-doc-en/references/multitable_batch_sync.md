@@ -19,6 +19,7 @@ Multi-table offline sync tasks are suitable for the following scenarios:
 ### Supported Data Sources
 
 **Source**
+
 * MySQL
 * PostgreSQL
 * SQL Server
@@ -28,6 +29,7 @@ Multi-table offline sync tasks are suitable for the following scenarios:
 * PolarDB PostgreSQL
 
 **Target**
+
 * Lakehouse
 
 ### Sync Modes
@@ -48,7 +50,7 @@ Multi-table offline sync tasks are suitable for the following scenarios:
 
 ### Step 1: Create a Task
 
-![](/.topwrite/assets/image_1763375029154.png =680)
+### :-: ![](/.topwrite/assets/image_1780885152826.png =545)
 
 1. In the Lakehouse Studio development module, click the **New** button.
 2. Under task types, select **Multi-table Offline Sync** (located in the "Data Sync" group).
@@ -58,7 +60,7 @@ Multi-table offline sync tasks are suitable for the following scenarios:
 
 #### Select Data Source Type
 
-![](/.topwrite/assets/image_1763375044630.png =680)
+#### ![](/.topwrite/assets/image_1780885244233.png =735)
 
 In the **Data Source Type** section, select the source and target data source types:
 
@@ -96,7 +98,7 @@ Select sync objects based on your needs:
 * Supports filtering by selected / schema / table.
 * The upper-right corner shows a count of selected objects (e.g., "Selected: 3 databases, 45 tables").
 
-  ![](/.topwrite/assets/image_1763375059693.png =680)
+  :-: ![](/.topwrite/assets/image_1780885309926.png =664)
 
 ### Step 3: Configure Target Settings
 
@@ -158,7 +160,7 @@ If you need to create partitioned tables, configure:
 
 ### Step 4: Configure Mappings
 
-![](/.topwrite/assets/image_1763375076182.png =680)
+### :-: ![](/.topwrite/assets/image_1780885417689.png =664)
 
 #### View Sync Objects
 
@@ -208,7 +210,7 @@ Controls how sync tasks are grouped and executed concurrently:
 * Groups tables by a fixed count.
 * You can configure the number of tables per group.
 
-  ![](/.topwrite/assets/image_1763375092075.png =680)
+  ^
 
 #### Concurrency Control
 
@@ -247,7 +249,7 @@ Configure write strategies for different table types:
 
 After completing and saving the task configuration, you will be taken to the task overview page, as shown below:
 
-![](/.topwrite/assets/image_1763375133438.png =680)
+^
 
 The **Run** button in the upper-right corner lets you do a debug run to verify that the data source and task configuration are correct. After triggering a run, you can view the run details in **Run History** at the lower-right corner of the page.
 
@@ -255,7 +257,7 @@ The **Run** button in the upper-right corner lets you do a debug run to verify t
 
 ### Step 7: Configure Scheduling
 
-![](/.topwrite/assets/image_1763375144107.png =680)
+![](/.topwrite/assets/image_1780885527230.png =720)
 
 Click the **Schedule** button to configure the periodic scheduling rules for the task:
 
@@ -273,8 +275,6 @@ Click the **Schedule** button to configure the periodic scheduling rules for the
 
 ### Step 8: Submit the Task
 
-![](/.topwrite/assets/image_1763375154481.png =680)
-
 1. Click the **Submit** button after completing the configuration.
 2. The system validates the configuration.
 3. After a successful submission, the task enters the scheduling system and runs automatically on the configured cycle.
@@ -283,7 +283,7 @@ Click the **Schedule** button to configure the periodic scheduling rules for the
 
 In **Task Operations**, multi-table offline sync tasks appear under the **Scheduled Tasks** category. Click a task name to drill down into its details.
 
-![](/.topwrite/assets/image_1763375175483.png =680)
+^
 
 ### Task Details
 
@@ -301,7 +301,7 @@ On the task details page, you can view:
 * Full list of task instances, including manually triggered runs and scheduled periodic instances.
 * Click a specific instance to view its details.
 
-  ![](/.topwrite/assets/image_1763375189472.png =680)
+  ^
 
 **Node Code tab**
 
@@ -328,7 +328,7 @@ On the task details page, you can view:
 **Unpublish**:
 
 * Stops the task and removes it from the scheduling system; the task reverts to an unsubmitted state.
-* **Unpublish (including downstream)**: Use this to unpublish the current task and all its downstream tasks together. If a task has downstream dependencies, it cannot be unpublished individually.
+* **Unpublish (including downstream**): Use this to unpublish the current task and all its downstream tasks together. If a task has downstream dependencies, it cannot be unpublished individually.
 
 **Backfill**:
 
@@ -340,13 +340,13 @@ On the task details page, you can view:
 
 Each task execution generates an instance. Under **Task Operations** → **Instance Operations**, you can view instances for multi-table offline sync tasks.
 
-![](/.topwrite/assets/image_1763375203084.png =680)
+^
 
 #### Instance Details
 
 Click an instance ID to view its details:
 
-![](/.topwrite/assets/image_1763375213755.png =680)
+^
 
 **Instance Details tab**
 
@@ -356,7 +356,7 @@ Click an instance ID to view its details:
 
 **Sync Objects tab**
 
-![](/.topwrite/assets/image_1763375221058.png =680)
+^
 
 * View all tables synced in this run.
 * Shows rows read, rows written, and sync rate for each table.
@@ -394,7 +394,7 @@ Click an instance ID to view its details:
 
 **Single-table actions** (in the Sync Objects tab)
 
-![](/.topwrite/assets/image_1763375229763.png =680)
+^
 
 * View sync details: view the sync details for a single table.
 * Re-sync: re-sync only this table.

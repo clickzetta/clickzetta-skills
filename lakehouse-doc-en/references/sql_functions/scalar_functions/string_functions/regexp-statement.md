@@ -52,7 +52,7 @@ SELECT col, RLIKE(col, '\\\\') FROM test_regex;
 
 # Using the String Prefix r
 
-To avoid manually handling escape characters when it is uncertain whether escaping is needed, Lakehouse supports adding an `r` prefix before a string, indicating that escape characters in the [string](../../../STRING.md) are not escaped and can be directly used in regular expressions. This allows users to write regular expressions normally without worrying about the SQL engine's escaping behavior. For example:
+To avoid manually handling escape characters when it is uncertain whether escaping is needed, Lakehouse supports adding an `r` prefix before a string, indicating that escape characters in the [string](../../../string.md) are not escaped and can be directly used in regular expressions. This allows users to write regular expressions normally without worrying about the SQL engine's escaping behavior. For example:
 
 ```SQL
 -- Use the r prefix to match data in a table

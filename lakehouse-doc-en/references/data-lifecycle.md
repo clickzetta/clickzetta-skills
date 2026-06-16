@@ -6,7 +6,7 @@ The data lifecycle (TTL) measures the length of time from the last update of tab
 
 The expiration of the data lifecycle relies on the last modification time (last\_modified\_time). You can view the last\_modified\_time using the `desc extended` command. The last\_modified\_time changes when DDL (Data Definition Language) and DML (Data Manipulation Language) operations occur.
 
-It is important to note that expired data is not immediately reclaimed. You can still query this data until the background process performs the deletion operation. Typically, the background process will delete this data within 24 hours. Additionally, reclaimed tables still adhere to the [data retention period](TIMETRAVEL.md), and you can still query using the [time travel](TIMETRAVEL.md) feature. If you need to restore deleted objects, you can use the [undrop table](UNDROP-TABLE.md) command.
+It is important to note that expired data is not immediately reclaimed. You can still query this data until the background process performs the deletion operation. Typically, the background process will delete this data within 24 hours. Additionally, reclaimed tables still adhere to the [data retention period](timetravel.md), and you can still query using the [time travel](timetravel.md) feature. If you need to restore deleted objects, you can use the [undrop table](undrop-table.md) command.
 
 ## Setting the Data Lifecycle
 

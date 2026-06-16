@@ -125,4 +125,4 @@ DROP VIEW IF EXISTS doc_test.v_high_value_orders;
 - [DROP VIEW](drop-view.md): Drop a view
 - [SHOW TABLES WHERE is_view=true](show-views.md): List all views
 - [SHOW CREATE TABLE](show-create-external-table.md): View the creation statement of a view
-- [Views and Materialized Views](SQL_View_Guide.md): Comparison of view and materialized view usage scenarios, typical query acceleration patterns
+- [Views and Materialized Views](sql_view_guide.md): Comparison of view and materialized view usage scenarios, typical query acceleration patterns

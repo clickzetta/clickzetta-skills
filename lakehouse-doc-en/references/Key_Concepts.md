@@ -95,7 +95,7 @@ Refers to data synchronization type tasks. Users generate synchronization tasks 
 
 ### Python Task
 
-Python tasks refer to tasks that can write and run Python code. For many data analysis and processing scenarios, especially for BI+AI analysis scenarios, combining Python and SQL can greatly improve the efficiency of data analysis and processing. In Singdata Lakehouse, Python code is run by providing a Python script task type. For more details, see [Python Task](Python_Task.md).
+Python tasks refer to tasks that can write and run Python code. For many data analysis and processing scenarios, especially for BI+AI analysis scenarios, combining Python and SQL can greatly improve the efficiency of data analysis and processing. In Singdata Lakehouse, Python code is run by providing a Python script task type. For more details, see [Python Task](python_task.md).
 
 ### JDBC Task
 

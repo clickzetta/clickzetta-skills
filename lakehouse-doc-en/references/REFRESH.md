@@ -7,7 +7,7 @@ The `REFRESH` command is used to manually trigger a data refresh for materialize
 - **Materialized View**: When the source table undergoes data changes, the materialized view automatically becomes invalid and cannot be used for query rewriting. Manually executing `REFRESH` restores the materialized view to a valid state.
 - **Dynamic Table**: Dynamic tables typically refresh automatically based on the configured refresh interval. Manually executing `REFRESH` triggers an immediate refresh before the next scheduled cycle.
 
-For more details, see [Materialized View](MATERIALIZEDVIEW.md).
+For more details, see [Materialized View](materializedview.md).
 
 ## Syntax
 

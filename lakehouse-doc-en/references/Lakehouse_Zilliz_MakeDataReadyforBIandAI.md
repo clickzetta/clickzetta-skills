@@ -45,7 +45,7 @@ hints['query_tag'] = 'test_conn_hints_zettapark'
 connection_parameters = {
   "username": "qiliang",
   "password": "",
-  "service": "uat-api.clickzetta.com",
+  "service": "api.clickzetta.com",
   "instance": "",
   "workspace": "ql_ws",
   "schema": "wayfair_wans",

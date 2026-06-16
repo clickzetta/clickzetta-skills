@@ -20,7 +20,7 @@ All of the above connect via the JDBC driver. Connection string format:
 jdbc:clickzetta://<instance_name>.<region_id>.api.singdata.com/<workspace_name>?username=<user>&password=<pwd>&virtualCluster=default
 ```
 
-See [JDBC Driver](JDBC-Driver.md) for details.
+See [JDBC Driver](jdbc-driver.md) for details.
 
 ---
 
@@ -28,13 +28,13 @@ See [JDBC Driver](JDBC-Driver.md) for details.
 
 | Tool | Description | Reference |
 |------|-------------|-----------|
-| FineBI | A leading domestic BI platform; connects via JDBC and is well-suited for internal enterprise reporting | [FineBI Connection Guide](FineBI.md) |
+| FineBI | A leading domestic BI platform; connects via JDBC and is well-suited for internal enterprise reporting | [FineBI Connection Guide](finebi.md) |
 | Tableau | Connects via JDBC; ideal for complex visualizations and exploratory analysis | [Tableau Connection Guide](tableau-connect-to-lakehouse.md) |
 | Metabase | Open-source and easy to deploy; suitable for self-service analytics in small to mid-sized teams | [Metabase Connection Guide](metabase.md) |
 | Apache Superset | Open-source; supports SQLAlchemy connections; suitable for teams with operational capacity | [Superset Connection Guide](eco_integration/superset.md) |
 | Rath | Open-source intelligent analytics tool with automatic insight generation | [Rath Connection Guide](eco_integration/rath.md) |
 | Streamlit | Python data application framework; lets data science teams build apps quickly | [Streamlit Connection Guide](eco_integration/streamlit.md) |
-| Zeppelin | Notebook-style interface; suitable for data exploration and reporting | [Zeppelin Connection Guide](eco_integration/Zeppelin.md) |
+| Zeppelin | Notebook-style interface; suitable for data exploration and reporting | [Zeppelin Connection Guide](eco_integration/zeppelin.md) |
 
 > Most BI tools connect via the JDBC driver. If a tool supports SQLAlchemy (e.g., Superset), you can also use the SQLAlchemy interface provided by the Python SDK.
 
@@ -59,7 +59,7 @@ See [JDBC Driver](JDBC-Driver.md) for details.
 
 | Method | Language | Description | Reference |
 |--------|----------|-------------|-----------|
-| JDBC Driver | Java / any JVM language | Standard JDBC interface; supports SQL queries and DML | [JDBC Driver](JDBC-Driver.md) |
+| JDBC Driver | Java / any JVM language | Standard JDBC interface; supports SQL queries and DML | [JDBC Driver](jdbc-driver.md) |
 | Python SDK | Python | PEP 249-compliant; supports SQL queries, bulk writes (bulkload), and real-time writes | [Python SDK](python_reference/python-sdk-summary.md) |
 | Java SDK | Java | Supports bulk writes (BulkLoad) and real-time streaming writes (RealtimeStream) | [Java SDK Bulk Upload](use-java-sdk-upload-data-local.md) · [Java SDK Real-time Upload](use-java-sdk-realtime-uploaddata.md) |
 
@@ -76,7 +76,6 @@ See [JDBC Driver](JDBC-Driver.md) for details.
 |--------|-------------|-----------|
 | Apache Spark | Read and write Singdata Lakehouse tables via the Spark Connector; supports the DataFrame API and spark-sql | [Spark Connector](spark-connector-summary.md) |
 | Apache Flink | Write to Singdata Lakehouse via the Flink Connector; supports CDC scenarios and append-only mode; sink tables only (write) | [Flink Connector](flink-write-connector.md) |
-| Trino | Query Singdata Lakehouse data via Trino federated queries | [Trino Integration Guide](eco_integration/trino.md) |
 
 **Two Flink Connector modes**:
 - `igs-dynamic-table`: supports CDC (insert / update / delete); the target table must have a primary key
@@ -116,6 +115,5 @@ What is your use case?
 │   └── Python applications → Python SDK
 └── Compute engine
     ├── Batch processing / ML → Spark Connector
-    ├── Stream processing / CDC → Flink Connector
-    └── Federated queries → Trino
+    └── Stream processing / CDC → Flink Connector
 ```

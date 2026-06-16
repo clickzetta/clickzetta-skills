@@ -209,6 +209,6 @@ SELECT MAP('a', NULL, 'b', 2)['z'];  -- NULL
 
 ## Related Documentation
 
-- [ARRAY](ARRAY.md): Ordered list of elements of the same type
-- [STRUCT](STRUCT.md): Named structure with multiple fields and types
+- [ARRAY](../../../array.md): Ordered list of elements of the same type
+- [STRUCT](../../../struct.md): Named structure with multiple fields and types
 - [Data Type Conversion](../../../datatype-conversion.md): Complex type conversion rules

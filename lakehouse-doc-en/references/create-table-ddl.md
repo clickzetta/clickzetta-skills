@@ -19,6 +19,7 @@ CREATE TABLE [ IF NOT EXISTS ] table_name
     [SORTED BY (column_name [ ASC | DESC ])] 
     [INTO num_buckets BUCKETS] 
 ]
+[ ROW FILTER filter_function ON (column_name,...) ]
 [ COMMENT 'table_comment' ]
 [PROPERTIES('data_lifecycle'='day_num')];
 
@@ -31,6 +32,7 @@ CREATE TABLE [ IF NOT EXISTS ] table_name
 column_name column_type 
 { NOT NULL |
   PRIMARY KEY|
+  UNIQUE|
   IDENTITY[(seed)]|
   GENERATED ALWAYS AS ( expr ) |
   DEFAULT default_expression |
@@ -75,9 +77,29 @@ CREATE    TABLE pk_table (
           PRIMARY key (id, pt)
           ) PARTITIONED BY (pt);
 ```
+#### Unique Key (UNIQUE)
+
+* **Unique Key (UNIQUE)** is used to declare that the values of a column or a combination of columns are unique. Unlike primary keys, UNIQUE is a **declarative constraint**: in the default mode (`DISABLE NOVALIDATE RELY`), uniqueness is not enforced at write time. It is primarily used to declare data semantics to the query optimizer to improve query optimization. UNIQUE columns allow NULL values. A table can have multiple UNIQUE constraints, and they can only be specified at table creation time. Both column-level and table-level (including composite) forms are supported. For detailed behavior, see [Unique Key Introduction](unique-key.md).
+
+```
+-- Column-level
+CREATE TABLE uk_table (id int UNIQUE, col string);
+
+-- Table-level (single column)
+CREATE TABLE uk_table (id int, col string, UNIQUE (id));
+
+-- Table-level (composite)
+CREATE TABLE uk_table (a int, b int, UNIQUE (a, b));
+
+-- With modifier (default is DISABLE NOVALIDATE RELY)
+CREATE TABLE uk_table (id int UNIQUE NORELY, col string);
+```
+
+> ⚠️ If you need to enforce deduplication at write time, use a primary key (PRIMARY KEY); do not rely on the UNIQUE constraint.
+
 #### Auto-increment Column (IDENTITY\[(seed)])
 
-* **IDENTITY\[(seed**)]: Supports specifying auto-increment. It cannot guarantee that the values in the sequence are continuous (gapless), nor can it guarantee that the sequence values are allocated in a specific order. This is because other concurrent inserts may occur in the table. These limitations are part of the design to improve performance. For specific usage, refer to the [IDENTITY Column documentation](IDENTITY-Column.md)
+* **IDENTITY\[(seed**)]: Supports specifying auto-increment. It cannot guarantee that the values in the sequence are continuous (gapless), nor can it guarantee that the sequence values are allocated in a specific order. This is because other concurrent inserts may occur in the table. These limitations are part of the design to improve performance. For specific usage, refer to the [IDENTITY Column documentation](identity-column.md)
 ```
 CREATE    TABLE identity_test (id bigint IDENTITY(1), col string);
 ```
@@ -107,7 +129,7 @@ INDEX index_name (col_name) index_type [COMMENT 'xxxxxx'] [PROPERTIES('key'='val
 
 **column\_name**: The name of the field that needs to be indexed
 
-**index\_type**: Index type, currently supports [bloomfilter](CREATE-BLOOMFILTER-INDEX.md), [inverted](inverted-index.md), [vector](create-vector-index.md)
+**index\_type**: Index type, currently supports [bloomfilter](create-bloomfilter-index.md), [inverted](inverted-index.md), [vector](create-vector-index.md)
 
 **COMMENT**: Specifies the description information of the index
 
@@ -168,6 +190,27 @@ CREATE TABLE sales_data (
 ) 
 SORTED BY (sale_date DESC);
 ```
+### ROW FILTER (Row-Level Security)
+
+> [Preview Release] This feature is currently in an invite-only preview. Contact our technical support team for assistance.
+
+* **ROW FILTER**: Binds a filter function that returns `BOOLEAN` to a table. The system automatically applies it during queries and DML operations — only rows for which the function returns `true` are visible to the current operation. Commonly used for multi-tenant isolation and row-level data access control by user/role. The filter function can use security context functions such as `current_user()` and `current_roles()` to dynamically filter based on the current login identity. Columns listed in `ON (...)` are passed in order as arguments to the filter function; their types and count must match the function definition. It is recommended to reference filter functions using schema-qualified names. See [Row-Level Security (Row Filter)](row-filter.md).
+
+```sql
+-- Create a filter function: each user can only see rows where owner equals their login name
+CREATE FUNCTION my_schema.owner_only(owner STRING) RETURNS BOOLEAN
+AS owner = current_user();
+
+-- Bind a row filter at table creation
+CREATE TABLE my_schema.docs (
+    id      INT,
+    owner   STRING,
+    content STRING
+) ROW FILTER my_schema.owner_only ON (owner);
+```
+
+You can also bind or remove a row filter on an existing table using `ALTER TABLE ... SET ROW FILTER ...` and `ALTER TABLE ... DROP ROW FILTER`.
+
 ### PROPERTIES
 
 You can set table-level properties via `PROPERTIES` at table creation time, and also modify them via `ALTER TABLE ... SET PROPERTIES`.
@@ -357,7 +400,7 @@ Users can create indexes on multiple columns when creating a table. Indexes can 
 
 | Document | Description |
 |------|------|
-| [SQL CREATE TABLE Usage Guide](SQL_CREATE_TABLE_GUIDE.md) | Complete guide for table creation options, column types, partitioning, sort columns, and property configuration |
+| [SQL CREATE TABLE Usage Guide](sql_create_table_guide.md) | Complete guide for table creation options, column types, partitioning, sort columns, and property configuration |
 | [Table Design Best Practices](lakehouse_table_design_guide.md) | Comprehensive selection recommendations for partitioning, bucketing, and indexing |
 | [Generated Columns Usage Guide](generated_columns_guide.md) | Definition and usage scenarios for virtual and stored columns |
 | [Data Types](data-type.md) | Descriptions and usage examples for all supported column types |
@@ -370,6 +413,8 @@ Users can create indexes on multiple columns when creating a table. Indexes can 
 | [Partitioned Table Usage Guide](notes-and-guidelines-for-partition-tables.md) | Usage patterns for partition design, partition pruning, and dynamic partitions |
 | [Bucketing (CLUSTERED BY)](cluster-table-guide.md) | Hash bucketing to improve Join and aggregation performance |
 | [Primary Key](primary-key.md) | Primary key table design, supporting CDC real-time write deduplication |
+| [Unique Key](unique-key.md) | Declarative UNIQUE constraint for query optimization |
+| [Row-Level Security (Row Filter)](row-filter.md) | Bind a filter function to a table to control row-level data visibility |
 
 **Indexing**
 
@@ -385,6 +430,6 @@ Users can create indexes on multiple columns when creating a table. Indexes can 
 | Document | Description |
 |------|------|
 | [Data Lifecycle](data-lifecycle.md) | `data_lifecycle` parameter, automatically expire and delete historical data |
-| [ALTER TABLE](ALTER-TABLE.md) | Modify table structure, properties, partitions, and other operations |
+| [ALTER TABLE](alter-table.md) | Modify table structure, properties, partitions, and other operations |
 | [Table Stream](tablestream_summary.md) | Capture incremental changes to a table based on `change_tracking` |
 | [Time Travel](timetravel-summary.md) | `data_retention_days` parameter, query and restore historical data |

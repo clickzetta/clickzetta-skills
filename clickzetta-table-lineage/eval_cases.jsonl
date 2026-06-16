@@ -1,1 +1,0 @@
-{"case_id":"001","type":"should_call","user_input":"Analyze table lineage over the past 7 days and generate a visualization page","expected_skill":"clickzetta-table-lineage"}

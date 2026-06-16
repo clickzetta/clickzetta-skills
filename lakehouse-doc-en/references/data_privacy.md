@@ -13,11 +13,14 @@ When the system processes your data queries, the following data will be sent to 
 
 **Data**:
 
-* Column value data with indexing enabled (You can prevent specific column data from being sent to the large language model by disabling column value indexing)  ![](.topwrite/assets/20250219-130449.jpeg)
+* Column value data with indexing enabled (You can prevent specific column data from being sent to the large language model by disabling column value indexing)
+
+![](.topwrite/assets/20250115-094842.jpeg)
 
 **Document Segmentation**:
 
-The system segments the document into vectorized chunks through semantic parsing. These vectorized segments are then processed by the Large Language Model (LLM) to enable intelligent question-answering capabilities.
+* The system segments document content into chunks
+* These document segments are sent to the Large Language Model to enable intelligent question-answering
 
 ## Data Protection Measures
 

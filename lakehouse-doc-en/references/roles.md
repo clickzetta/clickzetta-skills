@@ -56,16 +56,15 @@ Roles can be granted to users via the Web interface or SQL.
 
 On the **Security > Roles** page, you can view instance-level roles and workspace-level roles under the current instance.
 
-:-: ![](.topwrite/assets/image_1734878372389.png =784)
+
 
 To authorize any role, click the role name to enter the role details page, where you can see all users who have been granted this role. Click **+ Grant User**, select the users to add in the dialog, and click **Authorize** to grant the role to the users.
-:-: ![](.topwrite/assets/image_1734878510613.png =798)
+
 
 To remove a user who has been granted a role, click the "..." to the right of the username and select **Remove User** to revoke that user's permission to use this role.
 
 On the **Management > Workspaces** list, enter the workspace details page, and on the **Roles** tab you can also view the role list within that workspace and perform the above operations to grant or revoke roles to/from users.
 
-:-: ![](.topwrite/assets/image_1734878871234.png =795)
 
 **SQL Operation**
 

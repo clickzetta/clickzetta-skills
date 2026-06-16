@@ -11,7 +11,7 @@ As shown in the figure above, the table originally had one piece of data, and op
 
 ## Accessing Data at a Specific Point in Time
 
-[TIME TRAVEL](TIMETRAVEL.md)
+[TIME TRAVEL](timetravel.md)
 
 ## Setting Data Retention Period
 

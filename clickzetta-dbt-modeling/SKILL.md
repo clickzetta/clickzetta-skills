@@ -4,15 +4,10 @@ description: |
   dbt-clickzetta data modeling wizard. Autonomously discovers Lakehouse data sources,
   infers modeling strategies, generates sources.yml and model files, and runs the full test suite.
   Presents choices rather than blank forms — explores data first, then proposes a justified plan for user confirmation.
-
-  Trigger this skill whenever the user wants to turn raw Lakehouse data into usable analytical tables,
-  even if they don't mention dbt or ClickZetta by name. Typical scenarios:
-  - Explicitly mentions dbt (dbt modeling, dbt model, sources.yml, incremental, snapshot, dbt run, dbt test)
-  - Wants to do ETL transformation, data cleansing, or layered modeling on Lakehouse data
-  - Wants to build dimension tables, fact tables, or summary tables
-  - Has raw data and wants to produce tables ready for reporting or analysis
-  - Asks "how do I turn these tables into a queryable dataset"
-  - Already has a dbt project set up and wants to start building models
+  Trigger when the user wants to turn raw Lakehouse data into usable analytical tables — mentions dbt
+  (dbt modeling, dbt model, sources.yml, incremental, dbt run, dbt test), wants ETL transformation,
+  dimension/fact tables, or asks "how do I turn these tables into a queryable dataset".
+  Keywords: dbt, dbt modeling, sources.yml, incremental, dbt run, dbt test, dimension table, fact table, ETL
 ---
 
 # clickzetta-dbt-modeling
@@ -337,7 +332,7 @@ Present the following options after modeling is complete — let the user choose
 **A. Publish model code to Studio as assets** → `clickzetta-dbt-studio-pipeline`
 Publish SQL code to Studio for unified code management. Only `table` / `incremental` / `snapshot` models need scheduling — `dynamic_table` models self-refresh and do not need Studio cron tasks.
 
-**B. Connect BI tools and start reporting** → `clickzetta-bi-connect`
+**B. Connect BI tools and start reporting** → `lakehouse-doc-en` official BI / JDBC / SQLAlchemy connection docs
 Connect marts layer tables to Tableau / Metabase / FineReport or other BI tools for direct query and analysis.
 
 **C. Configure data quality monitoring**

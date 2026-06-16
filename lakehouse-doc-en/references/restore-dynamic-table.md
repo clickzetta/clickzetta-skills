@@ -4,7 +4,7 @@
 Using this command, you can restore an undeleted table or dynamic table to a specified historical version. With the time travel feature, you can easily roll back the table state to a past moment to recover data when needed.
 
 **Data Retention Period**:
-The historical recovery capability of objects depends on the data retention period. The current preview version has a default data retention period of 7 days, which will be adjusted to 1 day in the future. You can adjust the retention period by executing the [ALTER command](TIMETRAVEL.md). Please note that modifying the retention period may increase storage costs. Supported tables (TABLE) and dynamic tables (DYNAMIC TABLE) do not support materialized views.
+The historical recovery capability of objects depends on the data retention period. The current preview version has a default data retention period of 7 days, which will be adjusted to 1 day in the future. You can adjust the retention period by executing the [ALTER command](timetravel.md). Please note that modifying the retention period may increase storage costs. Supported tables (TABLE) and dynamic tables (DYNAMIC TABLE) do not support materialized views.
 
 ## Syntax 
 ```SQL
@@ -14,7 +14,7 @@ time_travel_version ::=
 ```
 ## Parameter Description
 
-1. **table\_name**: Specifies the name of the table that has not been deleted. It can be a TABLE, DYNAMIC TABLE, or MATERIALIZED VIEW. If the table has been deleted, please use the [UNDROP](UNDROP-TABLE.md) command to restore it.
+1. **table\_name**: Specifies the name of the table that has not been deleted. It can be a TABLE, DYNAMIC TABLE, or MATERIALIZED VIEW. If the table has been deleted, please use the [UNDROP](undrop-table.md) command to restore it.
 2. **time\_travel\_version**: Specifies the version of the table to be restored. First, use DESC HISTORY table\_name to view the version time points, then use the `TIMESTAMP AS OF` clause to specify the exact time point. timestamp\_expression is a parameter that returns an expression of timestamp type, for example:
 
 * `'2023-11-07 14:49:18'`, a string that can be forcibly converted to a timestamp.

@@ -87,7 +87,7 @@ SELECT * FROM products WHERE category = 'Electronics';
 
 ## Create BloomFilter Index
 
-[Create BloomFilter Index](<CREATE-BLOOMFILTER-INDEX.md>)
+[Create BloomFilter Index](<create-bloomfilter-index.md>)
 
 To create a BloomFilter index for a column, you can use the following statement:
 ```
@@ -99,7 +99,7 @@ CREATE BLOOMFILTER INDEX email_bloomfilter ON employees (email);
 ```
 ## View BloomFilter Index Details
 
-[View BOOLFILTER Index Details](<DESC-INDEX.md>)
+[View BOOLFILTER Index Details](<desc-index.md>)
 
 To view the BloomFilter index details on a table, you can use the `DESCRIBE INDEX` statement:
 ```
@@ -111,7 +111,7 @@ DESCRIBE INDEX email_bloomfilter ON employees;
 ```
 ## Delete BloomFilter Index
 
-[Delete BloomFilter Index](<DROP-INDEX.md>)
+[Delete BloomFilter Index](<drop-index.md>)
 
 
 To delete a BloomFilter index, you can use the `DROP INDEX` statement:
@@ -124,7 +124,7 @@ DROP INDEX email_bloomfilter ON employees;
 ```
 ## List BloomFilter Indexes on the Table
 
-[List BloomFilter Indexes on the Table](<SHOW-INDEX.md>)
+[List BloomFilter Indexes on the Table](<show-index.md>)
 
 To view all BloomFilter indexes on the table, you can use the `SHOW INDEXES` statement:
 ```

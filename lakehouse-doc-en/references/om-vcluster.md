@@ -63,6 +63,8 @@ ALTER VCLUSTER my_gp_cluster SUSPEND;
 SHOW VCLUSTERS;
 ```
 
+> ⚠️ **Note**: VCluster names are automatically converted to **uppercase** when stored (unlike table names and schema names, which are lowercased). For example, a cluster created as `my_gp_cluster` will have the actual name `MY_GP_CLUSTER`. References are case-insensitive, but `SHOW VCLUSTERS` always displays uppercase names.
+
 ## Cost Implications
 
 ### Compute Cost
@@ -76,7 +78,7 @@ SHOW VCLUSTERS;
 - Virtual clusters themselves do not incur storage costs; data is stored in object storage
 - `PRELOAD_TABLES` on Analytics clusters uses local SSD cache space (temporary storage)
 
-> 💡 **Tip**: For detailed billing rules, refer to the [Billing Documentation](Billing.md).
+> 💡 **Tip**: For detailed billing rules, refer to the [Billing Documentation](billing.md).
 
 ## Lifecycle Management
 

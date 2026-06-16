@@ -1,109 +1,109 @@
-# Dynamic Table 性能优化指南
+# Dynamic Table Performance Optimization Guide
 
-本文档从 SQL 写法、数据特征、管道设计三个维度，帮助用户写出增量刷新性能更好的 DT。
+This document helps users write DTs with better incremental refresh performance from three dimensions: SQL writing, data characteristics, and pipeline design.
 
-## 核心原则：增量刷新的代价模型
+## Core Principle: The Cost Model of Incremental Refresh
 
-增量刷新的性能取决于三个因素：
-1. **变更量占比**：每次刷新时，源表中有多少数据发生了变化。变更量越小，增量越划算
-2. **算子类型**：不同 SQL 算子的增量代价差异很大
-3. **数据局部性**：变更数据在 JOIN key / GROUP BY key / PARTITION BY key 上的分布是否集中
+Incremental refresh performance depends on three factors:
+1. **Change ratio**: how much data in the source table changed during each refresh. The smaller the change volume, the more worthwhile incremental is.
+2. **Operator type**: different SQL operators have very different incremental costs.
+3. **Data locality**: whether the changed data is concentrated on JOIN keys / GROUP BY keys / PARTITION BY keys.
 
-当变更量超过总数据量的较大比例时，增量刷新可能反而比全量刷新更慢，因为增量需要额外的变更数据计算、去重合并、状态表读写等开销。
+When the change volume exceeds a significant proportion of total data, incremental refresh may actually be slower than full refresh, because incremental has additional overhead for change data computation, deduplication merging, state table read/write, etc.
 
-## SQL 写法优化
+## SQL Writing Optimization
 
-### 1. 优先使用 INNER JOIN 而非 OUTER JOIN
+### 1. Prefer INNER JOIN over OUTER JOIN
 
-INNER JOIN 的增量计算比 OUTER JOIN 更高效：
-- INNER JOIN：只需要计算 A 的变更数据 JOIN B 的全量数据 + A 的全量数据 JOIN B 的变更数据
-- LEFT/RIGHT/FULL OUTER JOIN：还需要额外处理 NULL 填充、反向撤回等逻辑
+INNER JOIN incremental computation is more efficient than OUTER JOIN:
+- INNER JOIN: only needs to compute A's change data JOIN B's full data + A's full data JOIN B's change data
+- LEFT/RIGHT/FULL OUTER JOIN: also needs to handle NULL filling, reverse retraction, and other logic
 
-如果业务上可以保证参照完整性（即 JOIN key 一定能匹配），优先用 INNER JOIN。
+If business logic can guarantee referential integrity (i.e., JOIN keys will always match), prefer INNER JOIN.
 
 ```sql
--- ❌ 不必要的 LEFT JOIN（如果 product 一定存在）
+-- ❌ Unnecessary LEFT JOIN (if product is guaranteed to exist)
 SELECT o.*, p.name FROM orders o LEFT JOIN products p ON o.pid = p.id;
 
--- ✅ 改用 INNER JOIN
+-- ✅ Switch to INNER JOIN
 SELECT o.*, p.name FROM orders o INNER JOIN products p ON o.pid = p.id;
 ```
 
-### 2. 减少不必要的 DISTINCT
+### 2. Reduce Unnecessary DISTINCT
 
-每次增量刷新时，DISTINCT 需要对受影响的 key 做重算。如果上游数据已经去重，或者可以通过其他方式保证唯一性，去掉 DISTINCT。
+On every incremental refresh, DISTINCT needs to recompute affected keys. If upstream data is already deduplicated, or uniqueness can be guaranteed another way, remove DISTINCT.
 
 ```sql
--- ❌ 冗余的 DISTINCT
+-- ❌ Redundant DISTINCT
 SELECT DISTINCT user_id, user_name FROM user_events;
 ```
 
-### 3. 窗口函数必须有 PARTITION BY
+### 3. Window Functions Must Have PARTITION BY
 
-没有 PARTITION BY 的窗口函数会导致每次增量刷新都全量重算整个窗口。加上 PARTITION BY 后，只需要重算受影响的分区。
+Window functions without PARTITION BY cause every incremental refresh to fully recompute the entire window. With PARTITION BY, only affected partitions need to be recomputed.
 
 ```sql
--- ❌ 全局窗口，每次增量都全量重算
+-- ❌ Global window; every incremental refresh does a full recomputation
 SELECT *, ROW_NUMBER() OVER (ORDER BY created_at DESC) AS rn FROM events;
 
--- ✅ 加上 PARTITION BY，只重算有变更的分区
+-- ✅ Add PARTITION BY; only recompute partitions with changes
 SELECT *, ROW_NUMBER() OVER (PARTITION BY category ORDER BY created_at DESC) AS rn FROM events;
 ```
 
-### 4. 聚合 key 尽量使用简单列引用
+### 4. Use Simple Column References as Aggregation Keys
 
-复合表达式作为 GROUP BY key 会降低增量效率，因为引擎需要对表达式求值后才能判断哪些 key 受影响。
+Compound expressions as GROUP BY keys reduce incremental efficiency, because the engine needs to evaluate the expression before determining which keys are affected.
 
 ```sql
--- ❌ 复合表达式作为 GROUP BY key
+-- ❌ Compound expression as GROUP BY key
 SELECT DATE_TRUNC('hour', ts) AS hour, SUM(amount)
 FROM transactions
 GROUP BY DATE_TRUNC('hour', ts);
 
--- ✅ 如果可能，在上游预计算好 key 列
--- 或者拆分为两个 DT（见下文"管道拆分"）
+-- ✅ If possible, pre-compute the key column upstream
+-- Or split into two DTs (see "Pipeline Splitting" below)
 ```
 
-### 5. 尽可能使用分区条件限制数据范围
+### 5. Use Partition Conditions to Limit Data Range Where Possible
 
-在 DT 的 SQL 中对源表添加分区过滤条件，可以显著减少每次增量刷新需要扫描的数据量。
+Adding partition filter conditions on source tables in the DT's SQL can significantly reduce the amount of data that needs to be scanned on each incremental refresh.
 
 ```sql
--- ❌ 不加分区条件，每次扫描全表
+-- ❌ No partition condition; scans the full table every time
 SELECT o.*, p.name
 FROM orders o JOIN products p ON o.pid = p.id;
 
--- ✅ 通过分区条件限制数据范围
+-- ✅ Limit data range with partition condition
 SELECT o.*, p.name
 FROM orders o JOIN products p ON o.pid = p.id
 WHERE o.ds = SESSION_CONFIGS()['dt.args.ds'];
 ```
 
-## 管道拆分：复杂 DT 拆成多级
+## Pipeline Splitting: Break Complex DTs into Multiple Levels
 
-当一个 DT 的 SQL 包含多个 JOIN + 聚合 + 窗口函数时，考虑拆分为多个 DT，每个 DT 只做一件事。
+When a DT's SQL contains multiple JOINs + aggregations + window functions, consider splitting it into multiple DTs, each doing one thing.
 
-好处：
-- 每个 DT 的增量计算更简单、更快
-- 中间 DT 可以被多个下游 DT 复用
-- 出问题时更容易定位是哪一层的问题
-- 不同层可以使用不同的优化策略
+Benefits:
+- Each DT's incremental computation is simpler and faster
+- Intermediate DTs can be reused by multiple downstream DTs
+- Easier to pinpoint which layer has a problem when issues arise
+- Different layers can use different optimization strategies
 
-## 数据特征与增量效率
+## Data Characteristics and Incremental Efficiency
 
-### 变更量占比
+### Change Ratio
 
-增量刷新在变更量占总数据量比例较小时效果最好。经验值：
-- < 5%：增量刷新通常显著优于全量
-- 5% ~ 20%：取决于具体算子和数据分布
-- \> 20%：可能需要评估是否全量刷新更合适
+Incremental refresh works best when the change volume is a small proportion of total data. Rule of thumb:
+- < 5%: incremental refresh is usually significantly better than full
+- 5% ~ 20%: depends on specific operators and data distribution
+- \> 20%: may need to evaluate whether full refresh is more appropriate
 
-### Append-Only 源表
+### Append-Only Source Tables
 
-如果源表只有 INSERT 没有 UPDATE/DELETE 可以显著优化：
-- 增量引擎知道变更数据只有新增（无撤回），可以跳过去重合并等操作
-- 聚合可以直接累加，不需要维护完整的中间状态
+If the source table only has INSERT and no UPDATE/DELETE, significant optimization is possible:
+- The incremental engine knows change data only has additions (no retractions), and can skip deduplication merging and other operations
+- Aggregation can directly accumulate without maintaining complete intermediate state
 
-### 变更数据的分布
+### Distribution of Changed Data
 
-如果变更数据集中在少数 key 上（如最近时间段的数据），增量效率高。如果变更分散在大量 key 上，聚合和窗口函数需要重算大量分区，效率下降。
+If changed data is concentrated on a few keys (e.g., recent time periods), incremental efficiency is high. If changes are spread across many keys, aggregation and window functions need to recompute many partitions, reducing efficiency.

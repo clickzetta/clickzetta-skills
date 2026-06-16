@@ -43,7 +43,7 @@ A lakehouse instance is the carrier of Singdata Lakehouse product services, cont
 
 ## Workspace
 
-A workspace is a team's independent development environment, similar to different projects in a Git repository -- different teams operate within their own workspaces without interfering with each other.
+A workspace is a team's independent development environment, similar to different projects in a Git repository — different teams operate within their own workspaces without interfering with each other.
 
 A workspace is a logical container for organizing Lakehouse resource objects (data objects, compute resources, users, etc.) and provides supporting data development capabilities.
 
@@ -55,27 +55,6 @@ A workspace is a logical container for organizing Lakehouse resource objects (da
 * Cross-workspace authorization enables sharing of objects between different workspaces within the same instance
 
 **Relationship with Workflow**: One instance can have multiple workspaces, each with an independent development environment and scheduling system.
-
-## Virtual Cluster (VCluster)
-
-A virtual cluster is compute resource started on demand, stopped when done, and incurs no cost when idle -- similar to hailing a ride, you call for it when needed and leave when finished.
-
-A virtual cluster consists of multi-instance virtual compute clusters and the compute services running within them, providing CPU, memory, and temporary storage resources for jobs.
-
-**Three Types**:
-
-| Type          | Use Case                                  | Characteristics                                 |
-| ------------- | ----------------------------------------- | ----------------------------------------------- |
-| **GENERAL**   | Offline ETL, data development             | Jobs share resources, fair scheduling           |
-| **ANALYTICS** | Online queries, high-concurrency analysis | Multiple compute instances, automatic scaling   |
-| **SYNC**      | Data sync jobs                            | Optimized specifically for data synchronization |
-
-**Billing Method**: Charged by CRU (Compute Resource Unit) x hours; different cluster types have different CRU step sizes.
-
-**Elasticity**:
-
-* Analytics clusters support automatic scaling, adjusting compute instances based on concurrency
-* All clusters support automatic suspension and resumption, pausing automatically when idle to save costs
 
 ## Workspace and Catalog Relationship
 
@@ -92,7 +71,7 @@ This is one of the most commonly confused concepts in Lakehouse.
 | ---------- | ------------------------------------------------------------------------------ | --------------------------------- |
 | `MANAGED`  | Native Workspace with both platform-layer and Studio-layer capabilities        | Create a Workspace in the console |
 | `EXTERNAL` | External Catalog mapping external data sources (Hive/Databricks/Iceberg, etc.) | `CREATE EXTERNAL CATALOG`         |
-| `SHARED`   | System-shared datasets (e.g. TPC-H, TPC-DS benchmark data)                     | System built-in                   |
+| `SHARED`   | System-shared datasets (e.g., TPC-H, TPC-DS benchmark data)                    | System built-in                   |
 
 * `SHOW WORKSPACES` and `SHOW CATALOGS` return the same results
 * `current_workspace()` and `current_catalog()` return the same value
@@ -106,9 +85,45 @@ This is one of the most commonly confused concepts in Lakehouse.
 
 These three namespace types can be queried via three-level naming (`catalog.schema.table`), but cannot be used as write targets and have no Studio layer (no VCluster, user management, or task scheduling).
 
+## Workspace and Database Relationship
+
+For users familiar with traditional databases (PostgreSQL, MySQL, Snowflake, etc.), Workspace is the **Database** in ClickZetta:
+
+| Traditional Database    | ClickZetta Lakehouse     |
+| ----------------------- | ------------------------ |
+| Database                | Workspace                |
+| Schema                  | Schema                   |
+| Table                   | Table                    |
+| `database.schema.table` | `workspace.schema.table` |
+
+The two are fully equivalent at the SQL level with the same three-level naming structure. The main difference is that Workspace, in addition to serving as a namespace like a Database, also includes the Studio development environment (VCluster, user management, task scheduling, etc.) — making it a heavier concept.
+
+**Impact on dbt users**: dbt's `database` config maps to the ClickZetta workspace, `{{ this }}` renders as `workspace.schema.table`, and `target.database` returns the workspace name — consistent with other dbt adapters.
+
+## Virtual Cluster (VCluster)
+
+A Virtual Cluster is compute resource started on demand, stopped when done, and incurs no cost when idle — similar to hailing a ride, you call for it when needed and leave when finished.
+
+A Virtual Cluster consists of multi-instance virtual compute clusters and the compute services running within them, providing CPU, memory, and temporary storage resources for jobs.
+
+**Three Types**:
+
+| Type                              | Use Case                                  | Characteristics                                 |
+| --------------------------------- | ----------------------------------------- | ----------------------------------------------- |
+| **General (GP VC / GENERAL**)     | Offline ETL, data development             | Jobs share resources, fair scheduling           |
+| **Analytics (AP VC / ANALYTICS**) | Online queries, high-concurrency analysis | Multiple compute instances, automatic scaling   |
+| **Sync (Integration VC / SYNC**)  | Data sync jobs                            | Optimized specifically for data synchronization |
+
+**Billing Method**: Charged by CRU (Compute Resource Unit) × hours; different cluster types have different CRU step sizes.
+
+**Elasticity**:
+
+* Analytics clusters support automatic scaling, adjusting compute instances based on concurrency
+* All clusters support automatic suspension and resumption, pausing automatically when idle to save costs
+
 ## Schema
 
-A Schema is a namespace within a database used to organize tables and views within the same workspace, similar to folders in a file system.
+A Schema is a namespace within a workspace used to organize tables, views, dynamic tables, and other objects — similar to folders in a file system.
 
 A Schema is a namespace for a group of data objects within a workspace, including tables, views, dynamic tables, materialized views, and more.
 
@@ -116,7 +131,7 @@ A Schema is a namespace for a group of data objects within a workspace, includin
 
 * One workspace can contain multiple Schemas
 * A Schema is the direct container for objects such as tables
-* Similar to the Database/Schema concept in traditional databases
+* Full three-level naming: `workspace.schema.table` (similar to `database.schema.table` in PostgreSQL/Snowflake)
 
 ## Table
 
@@ -126,7 +141,7 @@ A table is the most fundamental data storage object in the Lakehouse, storing da
 
 **Storage Format**: Uses Parquet format by default, supporting efficient compression and columnar queries.
 
-**Table Types**: The Lakehouse provides multiple table types; see [Concept Index](Concepts.md#table-type-comparison) for details.
+**Table Types**: The Lakehouse provides multiple table types; see [Concept Index](concepts.md#table-type-comparison) for details.
 
 ## Dynamic Table
 
@@ -153,7 +168,7 @@ A dynamic table is a data object that refreshes automatically and incrementally 
 
 ## Materialized View
 
-A materialized view stores pre-computed results of commonly used queries. Queries read cached results directly for faster performance -- the optimizer automatically decides when to use it.
+A materialized view stores pre-computed results of commonly used queries. Queries read cached results directly for faster performance — the optimizer automatically decides when to use it.
 
 A materialized view is a special view that pre-computes and stores query results. Unlike regular views, materialized views physically exist in the Lakehouse and consume storage resources.
 
@@ -197,7 +212,7 @@ A Table Stream is the Lakehouse's Change Data Capture (CDC) mechanism used to ca
 
 * Table Stream is the underlying CDC mechanism responsible for capturing changes
 * Dynamic tables are advanced data processing features that perform data transformation based on incremental computation
-* The two can work together: Table Stream captures changes, then Dynamic Table performs transformation and aggregation
+* The two can work together: Table Stream captures changes → Dynamic Table performs transformation and aggregation
 
 **Typical Operations**:
 
@@ -212,7 +227,7 @@ INSERT INTO target_table SELECT * FROM my_stream;
 
 ## Pipe
 
-A Pipe is a continuously running data ingestion pipeline, similar to a water pipe -- whenever new data arrives at the source, it automatically flows into the Lakehouse without manual triggering.
+A Pipe is a continuously running data ingestion pipeline, similar to a water pipe — whenever new data arrives at the source, it automatically flows into the Lakehouse without manual triggering.
 
 A Pipe is the Lakehouse's continuous data ingestion pipeline object, used to continuously ingest data from Kafka or object storage (OSS/S3/COS) into tables.
 
@@ -244,14 +259,12 @@ A Volume is the Lakehouse's object storage mount point, used to access files in 
 
 **Four Types**:
 
-| Type                | Description                                                         | Creation Method                       | Storage Location     |
-| ------------------- | ------------------------------------------------------------------- | ------------------------------------- | -------------------- |
-| **External Volume** | Mounts external object storage (OSS/COS/S3)                         | `CREATE EXTERNAL VOLUME`              | External storage     |
-| **Named Volume**    | A Volume explicitly created by the user (a type of External Volume) | `CREATE VOLUME`                       | Internal or external |
-| **User Volume**     | User-level file storage space                                       | Created automatically                 | Internal storage     |
-| **Table Volume**    | Table-level file storage space                                      | Created automatically (one per table) | Internal storage     |
-
-> ⚠️ **Note**: Named Volume is a type of External Volume, emphasizing user-explicit creation with a custom name, distinct from automatically generated User/Table Volumes.
+| Type                | Description                                                             | Creation Method                       | Storage Location           |
+| ------------------- | ----------------------------------------------------------------------- | ------------------------------------- | -------------------------- |
+| **External Volume** | Mounts user-owned object storage (OSS/COS/S3), data stays in place      | `CREATE EXTERNAL VOLUME`              | User-owned cloud storage   |
+| **Managed Volume**  | Lakehouse-managed internal storage, platform handles storage management | `CREATE VOLUME`                       | Lakehouse internal storage |
+| **User Volume**     | Per-user file space for uploading temporary files, import/export        | Created automatically by the system   | Lakehouse internal storage |
+| **Table Volume**    | Per-table file space storing the table's data files                     | Created automatically (one per table) | Lakehouse internal storage |
 
 **Relationship with Tables**:
 
@@ -262,19 +275,25 @@ A Volume is the Lakehouse's object storage mount point, used to access files in 
 **Typical Operations**:
 
 ```sql
--- Import data from Volume to table
-COPY INTO orders FROM VOLUME my_vol USING CSV;
+-- View file list in an External/Managed Volume
+SELECT * FROM DIRECTORY(VOLUME schema_name.vol_name);
 
--- Query files in Volume
-SELECT * FROM VOLUME my_vol WHERE file LIKE '*.csv';
+-- Import data from Volume into a table
+COPY INTO orders FROM VOLUME my_schema.my_vol USING CSV OPTIONS('header'='true');
 
--- Upload local file to User Volume
-PUT file:///local/data.csv TO USER VOLUME;
+-- Upload a local file to User Volume
+PUT 'file:///local/data.csv' TO USER VOLUME;
+
+-- View User Volume file list
+SHOW USER VOLUME DIRECTORY;
+
+-- Import data from User Volume into a table
+COPY INTO orders FROM USER VOLUME USING CSV OPTIONS('header'='true') FILES('data.csv');
 ```
 
 ## Time Travel
 
-Time Travel lets you look back at historical data like a "time machine" -- you can query data snapshots at any past point, recover accidentally dropped tables, or roll back mistakenly modified data.
+Time Travel lets you look back at historical data like a "time machine" — you can query data snapshots at any past point, recover accidentally dropped tables, or roll back mistakenly modified data.
 
 Time Travel is the Lakehouse's historical data access feature that allows users to access data at any point in time within a defined time range.
 
@@ -295,8 +314,8 @@ Time Travel is the Lakehouse's historical data access feature that allows users 
 **Typical Operations**:
 
 ```sql
--- Query data from 1 hour ago
-SELECT * FROM orders TIMESTAMP AS OF CURRENT_TIMESTAMP() - INTERVAL 1 HOUR;
+-- Query data at a specific point in time (TIMESTAMP AS OF only accepts literals, not expressions)
+SELECT * FROM orders TIMESTAMP AS OF '2024-01-15 09:00:00';
 
 -- Recover a dropped table
 UNDROP TABLE orders;
@@ -330,11 +349,12 @@ An External Catalog is the Lakehouse's federated query feature for accessing dat
 
 **Supported Data Sources**:
 
-| Data Source                          | Connection Method            | Description                               |
-| ------------------------------------ | ---------------------------- | ----------------------------------------- |
-| **Apache Hive**                      | Hive Metastore URIs          | Access Hive tables through Hive Metastore |
-| **Databricks Unity Catalog**         | Databricks API               | Access tables in Databricks               |
-| **Snowflake Open Catalog (Iceberg**) | Iceberg REST Catalog + OAuth | Access Iceberg tables in Snowflake        |
+| Data Source                  | Connection Method        | Description                                                            |
+| ---------------------------- | ------------------------ | ---------------------------------------------------------------------- |
+| **Apache Hive**              | Hive Metastore URIs      | Access Hive tables through Hive Metastore                              |
+| **Databricks Unity Catalog** | Databricks API           | Access tables in Databricks                                            |
+| **Iceberg REST Catalog**     | Iceberg REST API         | Access any data catalog compatible with the Iceberg REST protocol      |
+| **Snowflake Open Catalog**   | Iceberg REST API + OAuth | Snowflake's managed catalog service based on the Iceberg REST protocol |
 
 **Typical Operations**:
 
@@ -364,7 +384,7 @@ Data Share is the Lakehouse's cross-instance data sharing feature that allows re
 
 ```
 Provider: CREATE SHARE → GRANT TO SHARE → ALTER SHARE ADD INSTANCE
-                                                      ↓
+                                                    ↓
 Consumer: SHOW SHARES → DESC SHARE → CREATE SCHEMA FROM SHARE → SELECT query
 ```
 
@@ -383,7 +403,7 @@ SELECT * FROM shared_data.orders;
 
 ## Lakehouse Studio
 
-Lakehouse Studio is the web-based operational interface of Singdata Lakehouse, equivalent to the product's "cockpit" -- data integration, development scheduling, and operations monitoring are all completed here, with no command line needed.
+Lakehouse Studio is the web-based operational interface of Singdata Lakehouse, equivalent to the product's "cockpit" — data integration, development scheduling, and operations monitoring are all completed here, with no command line needed.
 
 Lakehouse Studio is the web-based graphical interface provided by Singdata Lakehouse. It is a **unified data development and governance platform** that integrates data integration, development scheduling, operations monitoring, data catalog, and other capabilities.
 
@@ -400,4 +420,4 @@ Lakehouse Studio is the web-based graphical interface provided by Singdata Lakeh
 
 ***
 
-See the [Concept Index](Concepts.md) for more concepts and architecture overview.
+See the [Product Object Model](object_model_design.md) for detailed product concepts.

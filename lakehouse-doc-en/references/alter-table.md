@@ -345,5 +345,5 @@ data_retention_days  | 7
 - [CREATE TABLE](create-table-ddl.md)
 - [DROP TABLE](drop-table.md)
 - [ALTER DYNAMIC TABLE](alter-dynamic-table.md)
-- [SQL CREATE TABLE Guide](SQL_CREATE_TABLE_GUIDE.md): Complete usage guide for table creation options, column types, partitioning, and sort columns
+- [SQL CREATE TABLE Guide](sql_create_table_guide.md): Complete usage guide for table creation options, column types, partitioning, and sort columns
 - [Generated Columns Guide](generated_columns_guide.md): Defining and modifying virtual and stored columns

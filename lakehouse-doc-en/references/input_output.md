@@ -8,11 +8,11 @@ Context parameters, in parameter configuration, refer to configuring two special
 
 ## Usage Guide
 
-* **Upstream Node (Provider)**: Responsible for generating a value and using it as an output parameter.
+* **Upstream Node (Provider**): Responsible for generating a value and using it as an output parameter.
 
-  * **Configure and Assign Output Parameter**: The system captures the query result of the last line of the node's code (e.g., `SELECT * from table_A;`) and **assigns** it to a built-in output parameter **`outputs`**, then passes the value of this parameter to downstream nodes. The parameter value depends on the code execution result.
+  * **Configure and Assign Output Parameter**: The system captures the query result of the last line of the node's code (e.g., `SELECT * from table_A;`) and **assigns** it to a built-in output parameter \`\`, then passes the value of this parameter to downstream nodes. The parameter value depends on the code execution result.
 
-* **Downstream Node (Consumer)**: Receives and uses the value provided by the upstream node.
+* **Downstream Node (Consumer**): Receives and uses the value provided by the upstream node.
 
   * **Establish Scheduling Dependency**: Configure a scheduling dependency on the upstream node.
   * **Configure Input Parameter**: In the downstream node's **parameter configuration** area, add an input parameter and set its value source to the upstream node's output parameter.
@@ -21,12 +21,13 @@ Context parameters, in parameter configuration, refer to configuring two special
 ## Configuration Instructions
 
 ### Configure Output Parameters
-![](/.topwrite/assets/image_1775099138460.png)
+
+^
 
 If you wish to pass the current node's result to downstream, follow these steps:
 
 1. Click the node, then Parameters > Output Parameters
-2. Click "New", and the system will automatically fill in the built-in parameter $[output].
+2. Click "New", and the system will automatically fill in the built-in parameter $\[output].
 
 > If the task is of Python/Shell type, the output result defaults to the output of the last line, with result data split by delimiter.
 >
@@ -47,7 +48,7 @@ Configure the input parameter.
   * Upstream Dependency: From the currently configured upstream tasks, select those that have output parameters as the input parameter value source.
   * Others: To add a task with output parameters from elsewhere, use "Others" to select it. Once selected, the dependency on that task will be automatically configured.
 
-![](/.topwrite/assets/image_1775099157450.png)
+^
 
 #### Reference Parameters
 
@@ -67,4 +68,6 @@ If the upstream node passes the assigned result to downstream, the parameter val
   * Cell: `${param[i][j]}`.
   * If the upstream is Python/Shell (one-dimensional array): Row: `${param[i]}`.
 
-> *Indexes start from 0.*
+> *Indexes start from 0*.
+
+^

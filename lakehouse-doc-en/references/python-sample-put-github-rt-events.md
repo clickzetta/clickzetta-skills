@@ -67,7 +67,7 @@ def get_lakehouse_connect():
 
     schema='public',
 
-    vcluster='default')
+    vcluster='DEFAULT')
 
     return conn
 

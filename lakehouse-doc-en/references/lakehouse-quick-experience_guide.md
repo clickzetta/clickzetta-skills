@@ -6,8 +6,6 @@ Welcome to Lakehouse! This guide has designed a series of carefully orchestrated
 
 This guide includes the following experience content:
 
-:-: ![](.topwrite/assets/lakehouse-happy-path-diagram_1747811346312.svg =820)
-
 1. **Run Your First SQL Query** (2-3 minutes)
    Experience Lakehouse's easy-to-use SQL analysis environment.
 
@@ -40,7 +38,6 @@ Log into Lakehouse Studio and create a new workspace: `lakehouse_quick_experienc
 
 ^
 
-:-: ![](.topwrite/assets/image_1747812390227.png =618)
 
 ^
 
@@ -48,13 +45,13 @@ Enter the "Development" page and switch the workspace to the newly created works
 
 ^
 
-:-: ![](.topwrite/assets/image_1747812493874.png =622)
+
 
 ^
 
-Entry for creating a new SQL worksheet:
+Entry for creating a new SQL worksheet.
 
-:-: ![](.topwrite/assets/image_1747812869517.png =621)
+
 
 ^
 
@@ -62,7 +59,7 @@ Create a new SQL worksheet named "00\_Environment\_Preparation".
 
 ^
 
-:-: ![](.topwrite/assets/image_1747812698576.png =622)
+
 
 ^
 
@@ -973,8 +970,8 @@ Now you can start applying Lakehouse to actual business scenarios and enjoy a si
 
 ## References
 
-[Key Concepts](Key_Concepts.md)
+[Key Concepts](key-concepts.md)
 [Virtual Compute Cluster](getting_started_with_vcluster_for_processing_analytics.md)
 [Volume](datalake_volume.md)
-[Vector Index](create-vector-index.md)
+[Vector Index](vector-search.md)
 [Inverted Index](inverted-index.md)

@@ -466,6 +466,6 @@ This is the standard approach for consuming STANDARD mode Table Streams. See the
 
 ## Related Guides
 
-- [Upsert Guide](SQL_Upsert_Guide.md): Complete MERGE usage scenarios, including INSERT-only, UPDATE-only, and conditional UPSERT examples.
-- [Table Stream Change Data Capture](SQL_Table_Stream_Guide.md): Writing to a target table with MERGE when consuming incremental Stream data.
-- [SQL DML Guide](SQL_DML_Considerations.md): Notes and best practices for INSERT/UPDATE/DELETE/MERGE.
+- [Upsert Guide](sql_upsert_guide.md): Complete MERGE usage scenarios, including INSERT-only, UPDATE-only, and conditional UPSERT examples.
+- [Table Stream Change Data Capture](sql_table_stream_guide.md): Writing to a target table with MERGE when consuming incremental Stream data.
+- [SQL DML Guide](sql_dml_considerations.md): Notes and best practices for INSERT/UPDATE/DELETE/MERGE.

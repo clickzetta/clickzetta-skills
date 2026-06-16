@@ -37,5 +37,5 @@ SELECT regexp_extract_all('no match here', '([0-9]+)', 1);
 ## Related Documentation
 
 - [REGEXP_EXTRACT](regexp_extract.md) — extracts the first match
-- [REGEXP_LIKE](regexp_like.md) — tests whether a string matches a pattern
+- [REGEXP_LIKE](regexp-statement.md) — tests whether a string matches a pattern
 - [REGEXP_REPLACE](regexp_replace.md) — replaces matched content

@@ -4,7 +4,7 @@
 
 The `DROP TABLE` command is used to delete a regular table in the Lakehouse. After execution, the table and its data will be removed.
 
-> **Data Recovery**: Singdata Lakehouse provides Time Travel functionality. Within the data retention period (default 1 day, configurable up to 90 days), a deleted table can be restored using the `UNDROP TABLE` command. See [UNDROP TABLE](UNDROP-TABLE.md) for details.
+> **Data Recovery**: Singdata Lakehouse provides Time Travel functionality. Within the data retention period (default 1 day, configurable up to 90 days), a deleted table can be restored using the `UNDROP TABLE` command. See [UNDROP TABLE](undrop-table.md) for details.
 
 ## Syntax
 

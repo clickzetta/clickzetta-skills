@@ -663,8 +663,8 @@ DROP TABLE IF EXISTS demo_table_2;
 
 \- \[Create Inverted Index]\(create-inverted-index.md)&#x20;
 
-\- \[Create Bloom Filter Index]\(CREATE-BLOOMFILTER-INDEX.md)
+\- \[Create Bloom Filter Index]\(create-bloomfilter-index.md)
 
 \- \[Build Index]\(build-index.md)
 
-\- \[Show Index]\(SHOW-INDEX.md)
+\- \[Show Index]\(show-index.md)

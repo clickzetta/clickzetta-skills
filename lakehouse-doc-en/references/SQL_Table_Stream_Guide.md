@@ -175,4 +175,4 @@ DROP TABLE IF EXISTS users_sync;
 
 * [TABLE STREAM Introduction](tablestream_summary.md)
 * [CREATE TABLE STREAM](create-table-stream.md)
-* [Dynamic Table Development Quick Start](SQL_Dynamic_Table_Guide.md)
+* [Dynamic Table Development Quick Start](sql_dynamic_table_guide.md)

@@ -10,20 +10,19 @@ This document aims to guide users on how to configure and manage data sources to
 
    First, log in to the Lakehouse product console. On the console homepage, select the "Management" module and click to enter the "Data Source" page. You will see a list of data sources showing all currently configured data sources.
 
-   ![](.topwrite/assets/image_1740137071389.png =640)
+   :-: ![](.topwrite/assets/image_1740137071389.png =640)
 
 2. **Create a New Data Source**
 
    On the data source list page, click the "New Data Source" button in the upper right corner. At this point, you need to select the data source type. Lakehouse supports multiple data source types, including but not limited to MySQL, Oracle, SQL Server, etc.
 
-   ![](.topwrite/assets/image_1740137096346.png =640)
-
+   :-: ![](.topwrite/assets/image_1740137096346.png =640)
 
 3. **Fill in the Data Source Definition and Test Connectivity**
 
    Based on the data source type you selected, fill in the corresponding connection information. For example, for a MySQL data source, you need to provide the database address, port, username, password, etc. After filling in, click the "Test Connection" button to ensure the information provided is correct.
 
-   ![](.topwrite/assets/image_1740137122891.png =640)
+   :-: ![](.topwrite/assets/image_1740137122891.png =640)
 
 ## Connect to Data Sources within a VPC via SSH Tunnel
 
@@ -50,8 +49,7 @@ On the new data source page, enable the "Connect via SSH Tunnel" option. Fill in
 * **SSH Username**: Enter the username for SSH login.
 * **SSH Password**: Enter the corresponding SSH login password.
 
-  ![](.topwrite/assets/image_1740137146102.png =640)
-
+  :-: ![](.topwrite/assets/image_1740137146102.png =640)
 
 After completing the above configuration, click the "Test Connection" button. If the connection is successful, you will see a green checkmark prompt. This means that the data synchronization service can establish a network connection with the data source within the VPC via SSH Tunnel when the task starts.
 

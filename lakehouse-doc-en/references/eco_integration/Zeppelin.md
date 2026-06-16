@@ -12,7 +12,7 @@
 2. **Configure Zeppelin to connect to Singdata Lakehouse**:
    You need to complete the following steps to configure Zeppelin's JDBC interpreter to connect to Singdata Lakehouse.
 
-   2.1 First, download the [JDBC driver](../JDBC-Driver.md) for Singdata Lakehouse.
+   2.1 First, download the [JDBC driver](../jdbc-driver.md) for Singdata Lakehouse.
 
    2.2 Next, click on "anonymous" at the top right of the Zeppelin page, and select "Interpreter" from the dropdown list that appears.
 
@@ -38,7 +38,7 @@
    ![Execute SQL Commands](../.topwrite/assets/image_1699930908479.png)
 
    You can refer to the following commands for operations:
-   - [show tables](../SHOWTABLES.md): List all tables in the current database.
+   - [show tables](../show-tables.md): List all tables in the current database.
    - [select](../query-syntax.md): Query data from the table.
 
 ## View the Computing Resources (vcluster) and Database Schema in the Current Workspace

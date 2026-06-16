@@ -3,24 +3,14 @@ name: clickzetta-sql-migration
 description: |
   Migration guide for SQL workloads moving to ClickZetta Lakehouse from Snowflake,
   Databricks, or Spark SQL. Covers object concept mapping, syntax differences,
-  function mapping tables, MERGE INTO limitations, the strict implicit type
-  conversion rule, and migration pitfalls. Use this skill ONLY for migration or
-  cross-platform comparison questions. For native ClickZetta SQL syntax (DDL,
-  DML, DQL, functions) reference the ClickZetta Lakehouse documentation.
-  Triggered when the user mentions migration source platforms (Snowflake,
-  Databricks, Delta Lake, Spark SQL) together with ClickZetta, asks "how do I
-  write X (from Snowflake/Spark) in ClickZetta", asks about specific Snowflake
-  or Spark functions/syntax (IFF, ARRAY_SIZE, LISTAGG, FLATTEN, METADATA$ACTION,
-  TARGET_LAG, APPLY CHANGES INTO, ZORDER, WITH RECURSIVE, WHEN NOT MATCHED BY
-  SOURCE, OBJECT_CONSTRUCT, VARIANT colon syntax, CHARINDEX, ZEROIFNULL,
-  DATEADD/DATEDIFF parameter order), asks about implicit type conversion errors,
-  or asks about compatibility/differences between ClickZetta and these
-  platforms.
-  Keywords: Snowflake migration, Databricks migration, Spark SQL migration,
-  Snowflake to ClickZetta, Databricks to ClickZetta, vs Snowflake, vs Spark,
-  vs Databricks, syntax differences, function mapping, implicit type conversion,
-  WHEN NOT MATCHED BY SOURCE, APPLY CHANGES INTO, WITH RECURSIVE, METADATA$ACTION,
-  TARGET_LAG, FLATTEN, IFF, LISTAGG, OBJECT_CONSTRUCT, VARIANT, CHARINDEX
+  function mapping tables, MERGE INTO limitations, strict implicit type conversion,
+  and migration pitfalls. For native ClickZetta SQL syntax reference the Lakehouse documentation.
+  Triggered when the user mentions migration source platforms (Snowflake, Databricks,
+  Spark SQL) together with ClickZetta, asks about specific functions/syntax
+  (IFF, LISTAGG, FLATTEN, TARGET_LAG, APPLY CHANGES INTO, ZORDER, WITH RECURSIVE,
+  WHEN NOT MATCHED BY SOURCE), or asks about compatibility/differences.
+  Keywords: Snowflake migration, Databricks migration, Spark SQL migration, vs Snowflake,
+  vs Spark, vs Databricks, syntax differences, function mapping, implicit type conversion
 ---
 
 # ClickZetta SQL Migration Guide
@@ -122,7 +112,7 @@ This skill focuses on **SQL syntax compatibility**. A complete migration involve
 3. **Data movement** — typically via object storage (S3/OSS) staging + COPY INTO; not covered in detail here
 4. **SQL rewrites** — see this skill's reference documents
 5. **Application/driver layer** — JDBC, Python connector, BI tool reconnection; refer to `clickzetta-lakehouse-connect` skill
-6. **Permission migration** — RBAC concept comparison; refer to `clickzetta-access-control` skill
-7. **Performance tuning re-mapping** — Snowflake CLUSTER BY / Databricks ZORDER → ClickZetta partitioning + indexes; refer to `clickzetta-query-optimizer` skill
+6. **Permission migration** — RBAC concept comparison; refer to `lakehouse-doc-en` official permission, GRANT, masking policy, and network policy docs
+7. **Performance tuning re-mapping** — Snowflake CLUSTER BY / Databricks ZORDER → ClickZetta partitioning, indexes, and official optimization docs in `lakehouse-doc-en`
 
 For end-to-end migration planning, combine this skill with the skills listed above.

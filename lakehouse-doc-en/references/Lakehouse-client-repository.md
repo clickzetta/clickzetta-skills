@@ -6,6 +6,6 @@ This page provides download links for the Lakehouse command line client, JDBC dr
 * [Java SDK (including JDBC driver)](java_reference/java-sdk-summary.md): [Maven repository download link](https://repo1.maven.org/maven2/com/clickzetta/clickzetta-java) The Lakehouse Java SDK and JDBC driver are in the same package.
 * [SQLAlchemy](sqlalchemy.md): Public PyPi library download pip install clickzetta-sqlalchemycata
 * [Python SDK](python_reference/connector.md): Public PyPi library download pip install clickzetta-connector
-* [Zettapark](ZettaparkQuickStart.md): Public PyPi library download pip install clickzetta\_zettapark\_python
+* [Zettapark](zettaparkquickstart.md): Public PyPi library download pip install clickzetta\_zettapark\_python
 
 ^

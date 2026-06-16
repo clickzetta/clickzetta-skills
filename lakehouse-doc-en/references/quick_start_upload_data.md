@@ -9,8 +9,8 @@ Lakehouse provides an integrated engine to support data processing, transformati
 Before reading this guide, it is recommended to complete reading and understanding the following documents:
 
 * [Lakehouse Product Introduction](what_is_clickzetta_lakehouse.md)
-* [Key Concepts](Key_Concepts.md)
-* [Lakehouse Studio Quick Tour](LakehouseStudioTour.md)
+* [Key Concepts](key_concepts.md)
+* [Lakehouse Studio Quick Tour](lakehousestudiotour.md)
 
 ## Operation Guide
 
@@ -30,17 +30,15 @@ You can add data to Lakehouse tables through the "Data Upload" feature available
 2. You can click "Upload Data" in any of the following locations:
 
    * Instance Homepage
-     ![](.topwrite/assets/image_1747999086635.png)
+
    * Development -> Data Tree
-     ![](.topwrite/assets/image_1749035410382.png)
+
    * Data Asset Map
-     ![](.topwrite/assets/image_1749035355497.png)
+
    * Data Asset Map -> Data Management
-     ![](.topwrite/assets/image_1749035495163.png)
+
 
 3. After clicking, the following dialog will appear. You can add local files by dragging and dropping, or by clicking to browse files on the local system. Only one file can be added at a time, and the size must not exceed 2GiB. You can use this sample file to try uploading: :attachment[walmart.csv]{src=".topwrite/assets/walmart.csv" size="363.73 kB"}.
-
-   ![](.topwrite/assets/image_1749035813956.png =380)
 
 4. Schema: Choose to create the table under a certain schema.
 
@@ -51,7 +49,7 @@ You can add data to Lakehouse tables through the "Data Upload" feature available
 7. Data Import Mode: Supports append write and truncate-then-write modes for importing data into the new table.
 
 8. After confirming all information, click "Next". The system will automatically parse the field information from the uploaded file, as shown below.
-   ![](.topwrite/assets/image_1749035692218.png =380)
+
 
 9. Check and determine whether the automatically parsed field names and field types meet expectations. After confirming correctness, click "Confirm" to complete the table creation and data upload.
    * If you find issues with field parsing, you can modify the **File Properties** configuration items to re-trigger automatic parsing of field names, field types, etc. Or you can manually modify field names or field types.

@@ -353,8 +353,8 @@ WHERE tag != 'inactive';
 
 ## Related Documentation
 
-* [ARRAY Type](ARRAY.md)
-* [JSON Type](JSON.md)
+* [ARRAY Type](array.md)
+* [JSON Type](json.md)
 * [Table Functions Reference](table_function.md)
 * [Higher-Order Functions Guide](high_order_function.md)
-* [JSON Data Parsing](SQL_JSON_Parsing_Guide.md)
+* [JSON Data Parsing](sql_json_parsing_guide.md)

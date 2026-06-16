@@ -22,7 +22,7 @@ This section collects hands-on guides for migrating existing data systems to Sin
 
 **You have existing PySpark code and want to migrate it directly**
 
-Use the ZettaPark DataFrame API. 90% of your code can be reused as-is, with changes concentrated in 4 areas (import paths, Session creation, `.collect()`, file paths). See [PySpark → ZettaPark Migration in Practice](pyspark-to-zettapark-migration-f1.md) for complete before/after code comparisons and 4 real-world pitfall records.
+Use the ZettaPark DataFrame API. 90% of your code can be reused as-is, with changes concentrated in 4 areas (import paths, Session creation, `.collect()`, file paths). See [PySpark → ZettaPark Migration in Practice](pyspark-to-zettapark-migration-f1.md) for complete before/after code comparisons and 4 migration notes.
 
 **You have RDD code (Spark 1.x legacy project) and want to migrate to Lakehouse**
 

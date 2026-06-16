@@ -20,13 +20,13 @@ Now, the system automatically saves a version each time AI modifies a dashboard 
 
 Click the **Version History** button in the upper right corner of the dashboard page
 
-![](/.topwrite/assets/image_1779185094088.png =555)
+:-: ![](/.topwrite/assets/image_1780902105757.png =527)
 
 ### 2. View Historical Versions
 
 Each version card in the version panel contains:
 
-![](/.topwrite/assets/image_1779185134029.png =311)
+:-: ![](/.topwrite/assets/image_1780902136018.png =366)
 
 * Version number (V1, V2, V3...)
 
@@ -44,7 +44,7 @@ Click on a version card to view a snapshot of the dashboard at that version (rea
 
 Hover over a version card and click the **Restore** button:
 
-![](/.topwrite/assets/image_1779185185822.png)
+:-: ![](/.topwrite/assets/image_1780902285772.png =558)
 
 * The system will show a confirmation prompt: "The rollback operation will create a new version based on this version"
 
@@ -80,7 +80,7 @@ Hover over a version card and click the **Restore** button:
 
 ### Private to Shared Transition
 
-![](/.topwrite/assets/image_1779185254845.png =393)
+:-: ![](/.topwrite/assets/image_1780902352447.png =704)
 
 * Versions before the sharing time point are visible only to the creator
 
@@ -107,3 +107,11 @@ Hover over a version card and click the **Restore** button:
 2\. Restoring does not delete intermediate versions; instead, it creates a new version based on the target version
 
 3\. The version retention limit is 100; it is recommended to periodically confirm the status of important versions
+
+## Related Documentation
+
+* [Chart Auto-Refresh Settings](chart-auto-refresh-guide.md) — Set automatic data updates for dashboard charts
+* [Table Rendering](table_rendering.md) — Generate complex table layouts through natural language
+* [Conversational Data Analytics (Analytics Agent)](datagpt_introduction.md) — Return to feature overview
+
+^

@@ -111,3 +111,5 @@ After completing all parameter configurations and passing the connection test, y
 * Configure specific collections and field mappings
 * Set scheduling strategies and incremental update rules for data synchronization
 * Execute data import or export operations
+
+^

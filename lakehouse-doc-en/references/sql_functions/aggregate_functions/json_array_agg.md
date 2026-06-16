@@ -44,6 +44,6 @@ GROUP BY k;
 
 ## Related Documentation
 
-- [JSON_OBJECT_AGG](sql_functions/aggregate_functions/json_object_agg.md) — aggregates into a JSON object
-- [COLLECT_LIST](sql_functions/aggregate_functions/collect_list.md) — aggregates into an ARRAY type
-- [JSON_ARRAY_GET](sql_functions/scalar_functions/json_functions/json_array_get.md)
+- [JSON_OBJECT_AGG](json_object_agg.md) — aggregates into a JSON object
+- [COLLECT_LIST](collect_list.md) — aggregates into an ARRAY type
+- [JSON_ARRAY_GET](../scalar_functions/json_functions/json_array_get.md)

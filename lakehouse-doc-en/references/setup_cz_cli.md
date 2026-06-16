@@ -493,5 +493,3 @@ For concepts such as account name (account\_name) and service name (instance\_na
 - [External Data Source Management](cz-cli-datasource.md) — Data source browsing, connectivity testing, sample data preview
 
 ^
-
-^

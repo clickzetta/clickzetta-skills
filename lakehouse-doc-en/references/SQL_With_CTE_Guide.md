@@ -1494,7 +1494,7 @@ All code in this guide has passed the following feature verification:
 - ✅ Array processing (SPLIT, EXPLODE, etc.)
 - ✅ Cross-stack syntax compatibility
 - ✅ Performance optimization best practices
-- ❌ Recursive CTE (not currently supported in the current version; see [Hierarchical Query Workaround](SQL_Hierarchy_Workaround_Guide.md) for alternatives)
+- ❌ Recursive CTE (not currently supported in the current version; see [Hierarchical Query Workaround](sql_hierarchy_workaround_guide.md) for alternatives)
 
 ### Get Started Now
 

@@ -37,6 +37,6 @@ SELECT typeof('any length of text');       -- string
 ## Related Documentation
 
 - [CHAR](char.md)
-- [VARCHAR(n)](VARCHARlength.md)
+- [VARCHAR(n)](varcharlength.md)
 - [STRING](string.md)
 - [Data Types](data-type.md)

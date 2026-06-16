@@ -13,11 +13,11 @@ from clickzetta.zettapark import functions as F
 session = Session.builder.configs({
     "username": "your_username",
     "password": "your_password",
-    "service":  "cn-shanghai-alicloud.api.singdata.com",
+    "service":  "cn-shanghai-alicloud.api.clickzetta.com",
     "instance": "your_instance",
     "workspace": "your_workspace",
     "schema":   "public",
-    "vcluster": "default"
+    "vcluster": "DEFAULT"
 }).create()
 ```
 
@@ -36,8 +36,9 @@ session = Session.builder.configs({
 
 The examples in this guide use Named Volume (internal Volume), which requires no external storage mount and can be used immediately after creation:
 
+Create a Named Volume (one-time operation)
+
 ```python
-# Create a Named Volume (one-time operation)
 session.sql("CREATE VOLUME IF NOT EXISTS my_named_vol").collect()
 ```
 
@@ -51,17 +52,24 @@ session.sql("CREATE VOLUME IF NOT EXISTS my_named_vol").collect()
 
 ### Upload a Local File to a Volume
 
+Upload a single file
+
 ```python
-# Upload a single file
 result = session.file.put(
     "/local/path/data.csv",
     "volume://my_named_vol/data/data.csv",
     auto_compress=False
 )
 print(result)
-# [PutResult(source='/local/path/data.csv', target='/data/data.csv', source_size=1024, target_size=1024)]
+```
 
-# Refresh the directory index after upload so session.read can see the new file
+```Plain
+[PutResult(source='/local/path/data.csv', target='/data/data.csv', source_size=1024, target_size=1024)]
+```
+
+Refresh the directory index after upload so session.read can see the new file
+
+```python
 session.sql("ALTER VOLUME my_named_vol REFRESH").collect()
 ```
 
@@ -73,7 +81,10 @@ result = session.file.get(
     "/local/output/"
 )
 print(result)
-# [GetResult(file='data.csv', size=1024)]
+```
+
+```Plain
+[GetResult(file='data.csv', size=1024)]
 ```
 
 ### List a Volume Directory
@@ -82,17 +93,24 @@ print(result)
 files = session.file.list_("volume://my_named_vol/data/")
 for f in files:
     print(f.file, f.size)
-# data/orders.csv  2048
-# data/users.csv   1024
+```
+
+```Plain
+data/orders.csv  2048
+data/users.csv   1024
 ```
 
 ### Delete a Volume File
 
-```python
-# Delete a single file
-session.file.delete("volume://my_named_vol/data/old_file.csv")
+Delete a single file
 
-# Delete a directory (deletes all files under it)
+```python
+session.file.delete("volume://my_named_vol/data/old_file.csv")
+```
+
+Delete a directory (deletes all files under it)
+
+```python
 session.file.delete("volume://my_named_vol/archive/")
 ```
 
@@ -114,8 +132,9 @@ df.printSchema()
 
 ### Read Parquet
 
+Read all Parquet files in a directory
+
 ```python
-# Read all Parquet files in a directory
 df = session.read.parquet("volume://my_named_vol/data/parquet_dir/")
 df.show()
 ```
@@ -160,10 +179,11 @@ df.write.copy_into_volume(
 
 Read raw files from a Volume, process them, write to a table, then export results back to a Volume:
 
+Step 1: Upload raw data to Volume
+
 ```python
 import csv
 
-# Step 1: Upload raw data to Volume
 raw_data = [
     ["order_id", "user_id", "product", "amount", "status"],
     [1001, 101, "iPhone",  7999.0, "paid"],
@@ -178,32 +198,50 @@ session.file.put(
     "volume://my_named_vol/raw/orders.csv",
     auto_compress=False
 )
+```
 
-# Refresh directory index so session.read can see the newly uploaded file
+Refresh the directory index so session.read can see the newly uploaded file
+
+```python
 session.sql("ALTER VOLUME my_named_vol REFRESH").collect()
+```
 
-# Step 2: Read from Volume and clean data
+Step 2: Read from Volume and clean data
+
+```python
 df = session.read \
     .option("header", True) \
     .option("infer_schema", True) \
     .csv("volume://my_named_vol/raw/orders.csv")
+```
 
-# Filter and transform
+Filter and transform
+
+```python
 paid_df = df.filter(F.col("status") == "paid") \
     .with_column("amount_with_tax", F.col("amount") * 1.13)
+```
 
-# Step 3: Write to a Lakehouse table
+Step 3: Write to a Lakehouse table
+
+```python
 paid_df.write.save_as_table("paid_orders", mode="overwrite")
 print(f"Written {paid_df.count()} records")
+```
 
-# Step 4: Export processed results back to Volume
+Step 4: Export processed results back to Volume
+
+```python
 session.table("paid_orders") \
     .write.copy_into_volume(
         "volume://my_named_vol/processed/paid_orders/",
         file_format_type="parquet"
     )
+```
 
-# Verify export
+Verify export results
+
+```python
 files = session.file.list_("volume://my_named_vol/processed/paid_orders/")
 print(f"Exported files: {[f.file for f in files]}")
 ```
@@ -214,25 +252,41 @@ print(f"Exported files: {[f.file for f in files]}")
 
 Named Volume is internal storage — no external dependencies required. Suitable for temporary storage and export scenarios.
 
+Create a Named Volume
+
 ```python
-# Create a Named Volume
 session.sql("CREATE VOLUME IF NOT EXISTS my_named_vol").collect()
+```
 
-# Upload a file (using SQL PUT command)
+Upload a file (using SQL PUT command)
+
+```python
 session.sql("PUT '/local/path/file.csv' TO VOLUME my_named_vol FILE 'data/file.csv'").collect()
+```
 
-# List files
+List files
+
+```python
 files = session.file.list_("volume://my_named_vol/")
 for f in files:
     print(f.file, f.size)
+```
 
-# Download a file
+Download a file
+
+```python
 session.file.get("volume://my_named_vol/data/file.csv", "/local/output/")
+```
 
-# Delete a file
+Delete a file
+
+```python
 session.file.delete("volume://my_named_vol/data/file.csv")
+```
 
-# Export DataFrame to Named Volume
+Export DataFrame to Named Volume
+
+```python
 df.write.copy_into_volume(
     "volume://my_named_vol/export/",
     file_format_type="csv",
@@ -246,16 +300,23 @@ df.write.copy_into_volume(
 
 User Volume is each user's personal storage space. `session.file` methods are not supported — use SQL commands instead:
 
-```python
-# Upload to User Volume
-session.sql("PUT '/local/path/file.csv' TO USER VOLUME FILE 'subdir/file.csv'").collect()
+Upload to User Volume
 
-# List User Volume files
+```python
+session.sql("PUT '/local/path/file.csv' TO USER VOLUME FILE 'subdir/file.csv'").collect()
+```
+
+List User Volume files
+
+```python
 files = session.sql("SHOW USER VOLUME DIRECTORY").collect()
 for f in files:
     print(f["relative_path"], f["size"])
+```
 
-# Read from User Volume (via SQL SELECT FROM VOLUME)
+Read from User Volume (via SQL SELECT FROM VOLUME)
+
+```python
 df = session.sql("""
     SELECT * FROM USER VOLUME
     USING CSV
@@ -263,8 +324,11 @@ df = session.sql("""
     FILES('subdir/file.csv')
 """)
 df.show()
+```
 
-# Download a User Volume file
+Download a User Volume file
+
+```python
 session.sql("GET USER VOLUME FILE 'subdir/file.csv' TO '/local/output/'").collect()
 ```
 

@@ -11,7 +11,7 @@ DESC [materialized view name];
 Parameter description:
 - Materialized view name: Specifies the name of the materialized view whose structure needs to be viewed.
 
-[Refer to DESC Table](DESCTABLE.md)
+[Refer to DESC Table](desctable.md)
 
 ## Example
 

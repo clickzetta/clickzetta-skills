@@ -1,44 +1,23 @@
 {
   "skills": [
     {
-      "name": "clickzetta-access-control",
-      "description": "管理 ClickZetta Lakehouse 的用户、角色和权限（RBAC），以及列级动态数据脱敏。",
+      "name": "clickzetta-ai-function",
+      "description": "Use ClickZetta built-in AI functions: AI_COMPLETE (call LLMs) and AI_EMBEDDING (text vectors).",
       "files": [
         "SKILL.md",
-        "references/dynamic-masking.md",
-        "references/grant-revoke.md",
-        "references/role-management.md",
-        "references/user-management.md"
-      ]
-    },
-    {
-      "name": "clickzetta-app-python-sdk",
-      "description": "在 Python 应用程序中集成 ClickZetta Lakehouse 的官方 SDK 用法。",
-      "files": [
-        "SKILL.md",
-        "references/bulkload.md",
-        "references/connector.md",
-        "references/realtime.md"
+        "references/ai-function-ddl.md"
       ]
     },
     {
       "name": "clickzetta-batch-sync-pipeline",
-      "description": "创建和管理 ClickZetta Lakehouse 离线同步（批量同步）任务，支持单表离线同步和多表离线同步两种模式。",
+      "description": "Create and manage ClickZetta Lakehouse batch sync tasks, supporting both single-table and multi-table modes.",
       "files": [
         "SKILL.md"
       ]
     },
     {
-      "name": "clickzetta-bi-connect",
-      "description": "将 BI 工具和数据库客户端连接到 ClickZetta Lakehouse。覆盖 Apache Superset、",
-      "files": [
-        "SKILL.md",
-        "references/bi-tools.md"
-      ]
-    },
-    {
       "name": "clickzetta-cdc-sync-pipeline",
-      "description": "Create and manage ClickZetta Lakehouse multi-table real-time sync (CDC) tasks, syncing entire MySQL/PostgreSQL databases or multiple tables to Lakehouse in real time.",
+      "description": "Create and manage ClickZetta Lakehouse multi-table real-time sync (CDC) tasks, syncing",
       "files": [
         "SKILL.md",
         "references/troubleshooting.md"
@@ -46,22 +25,14 @@
     },
     {
       "name": "clickzetta-data-ingest-pipeline",
-      "description": "ClickZetta Lakehouse 数据导入总览与路由。根据用户的数据源类型、实时性要求、数据量等条件，",
+      "description": "Router skill: selects the best data ingestion method for ClickZetta Lakehouse based on",
       "files": [
         "SKILL.md"
       ]
     },
     {
-      "name": "clickzetta-data-retention",
-      "description": "管理 ClickZetta Lakehouse 数据生命周期（TTL 自动回收）和数据恢复（Time Travel / UNDROP / RESTORE）。",
-      "files": [
-        "SKILL.md",
-        "references/lifecycle-reference.md"
-      ]
-    },
-    {
       "name": "clickzetta-data-science",
-      "description": "数据科学家使用 ClickZetta Lakehouse 的端到端工作流指南。按工作阶段组织：",
+      "description": "End-to-end data science workflow guide for ClickZetta Lakehouse. Covers",
       "files": [
         "SKILL.md",
         "references/bitmap-profile.md",
@@ -73,24 +44,8 @@
       ]
     },
     {
-      "name": "clickzetta-data-sharing",
-      "description": "管理 ClickZetta Lakehouse 跨账户/跨实例数据分享（Share）。无需复制数据，",
-      "files": [
-        "SKILL.md",
-        "references/share-ddl.md"
-      ]
-    },
-    {
-      "name": "clickzetta-dba-guide",
-      "description": "ClickZetta Lakehouse DBA daily operations handbook: cluster operations, job monitoring, data recovery, storage optimization, and schema/object management.",
-      "files": [
-        "SKILL.md",
-        "references/operations-sql.md"
-      ]
-    },
-    {
       "name": "clickzetta-dbt-modeling",
-      "description": "dbt-clickzetta data modeling wizard. Autonomously discovers Lakehouse data sources, infers modeling strategies, generates sources.yml and model files, and runs the full test suite.",
+      "description": "dbt-clickzetta data modeling wizard. Autonomously discovers Lakehouse data sources,",
       "files": [
         "SKILL.md",
         "references/grant-patterns.md",
@@ -101,7 +56,7 @@
     },
     {
       "name": "clickzetta-dbt-project-setup",
-      "description": "dbt-clickzetta project initialization wizard. Helps users build a dbt project from scratch connected to ClickZetta Lakehouse.",
+      "description": "dbt-clickzetta project initialization wizard. Helps build a dbt project from scratch connected",
       "files": [
         "SKILL.md",
         "references/dbt-clickzetta-adapter.md",
@@ -110,7 +65,7 @@
     },
     {
       "name": "clickzetta-dbt-studio-pipeline",
-      "description": "Publish all dbt models to Studio as assets and configure scheduled execution. Reads dbt manifest.json, rewrites incremental SQL, deploys Studio tasks.",
+      "description": "Publish all dbt models to Studio as assets and configure scheduled execution.",
       "files": [
         "SKILL.md",
         "references/parameter-guide.md",
@@ -119,7 +74,7 @@
     },
     {
       "name": "clickzetta-dw-modeling",
-      "description": "ClickZetta Lakehouse data warehouse modeling wizard. Autonomously explores data landscape, presents justified recommendations for layering (ODS/DWD/DWS/ADS, Medallion, or hybrid).",
+      "description": "ClickZetta Lakehouse data warehouse modeling wizard. Autonomously explores data landscape,",
       "files": [
         "SKILL.md",
         "references/modeling-patterns.md"
@@ -127,22 +82,14 @@
     },
     {
       "name": "clickzetta-dynamic-table",
-      "description": "ClickZetta Dynamic Table（动态表）使用指南，覆盖动态表的创建、修改、增量计算配置和性能优化。",
+      "description": "ClickZetta Dynamic Table usage guide and routing hub. Covers general consultation (introduction,",
       "files": [
         "SKILL.md"
       ]
     },
     {
-      "name": "clickzetta-external-catalog",
-      "description": "配置和使用 ClickZetta Lakehouse External Catalog，实现对 Hive、Iceberg、Databricks、",
-      "files": [
-        "SKILL.md",
-        "references/external-catalog-ddl.md"
-      ]
-    },
-    {
       "name": "clickzetta-external-function",
-      "description": "在 ClickZetta Lakehouse 中创建和使用外部函数（External Function / UDF），",
+      "description": "Create and use External Functions (custom UDFs) in ClickZetta Lakehouse using Python or Java,",
       "files": [
         "SKILL.md",
         "references/external-function-ddl.md"
@@ -150,29 +97,9 @@
     },
     {
       "name": "clickzetta-file-import-pipeline",
-      "description": "从 URL、本地文件或 Volume 路径将数据导入到 ClickZetta 表中，覆盖文件下载、格式推断、",
+      "description": "Import data from URLs, local files, or Volume paths into ClickZetta tables. Covers the complete",
       "files": [
         "SKILL.md"
-      ]
-    },
-    {
-      "name": "clickzetta-index-manager",
-      "description": "管理 ClickZetta Lakehouse 的三类索引：Bloom Filter 索引（等值查询加速）、",
-      "files": [
-        "SKILL.md",
-        "references/bloomfilter-index.md",
-        "references/index-management.md",
-        "references/inverted-index.md",
-        "references/vector-index.md"
-      ]
-    },
-    {
-      "name": "clickzetta-java-sdk",
-      "description": "Use the ClickZetta Java SDK to write data to Lakehouse tables in batch or in real time.",
-      "files": [
-        "SKILL.md",
-        "references/bulkload.md",
-        "references/realtime.md"
       ]
     },
     {
@@ -185,54 +112,15 @@
       ]
     },
     {
-      "name": "clickzetta-lakehouse-connect",
-      "description": "Guide for connecting to ClickZetta Lakehouse via SDK/JDBC. Covers Python SDK (clickzetta.connect), ZettaPark Session (DataFrame API), SQLAlchemy (ORM/BI tools), and JDBC (Java). Use this skill when user needs to configure a connection from external tools or code. Trigger for: \"Python SDK 连接\", \"JDBC 连接\", \"SQLAlchemy 配置\", \"ZettaPark 怎么用\", \"连接报错\", \"clickzetta-connector-python\", \"clickzetta-sqlalchemy\".",
-      "files": [
-        "SKILL.md",
-        "references/config-file.md",
-        "references/jdbc.md",
-        "references/python-sdk.md",
-        "references/sqlalchemy.md",
-        "references/zettapark-session.md"
-      ]
-    },
-    {
-      "name": "clickzetta-manage-comments",
-      "description": "",
-      "files": [
-        "SKILL.md"
-      ]
-    },
-    {
-      "name": "clickzetta-metadata",
-      "description": "查询 ClickZetta Lakehouse 元数据，覆盖两种方式：",
-      "files": [
-        "SKILL.md",
-        "references/instance-views-reference.md",
-        "references/metering-views-reference.md",
-        "references/show-desc-reference.md",
-        "references/views-reference.md"
-      ]
-    },
-    {
-      "name": "clickzetta-monitoring",
-      "description": "监控和分析 ClickZetta Lakehouse 作业运行状态、性能和资源使用情况，",
-      "files": [
-        "SKILL.md",
-        "references/job-history-analysis.md",
-        "references/show-jobs.md"
-      ]
-    },
-    {
       "name": "clickzetta-oss-ingest-pipeline",
-      "description": "搭建 ClickZetta 对象存储（OSS/S3/COS）数据导入管道，覆盖持续导入（PIPE）和批量一次性导入",
+      "description": "Build ClickZetta object storage (OSS/S3/COS) data ingestion pipelines, covering both continuous",
       "files": [
         "SKILL.md"
       ]
     },
     {
       "name": "clickzetta-overview",
-      "description": "ClickZetta Lakehouse 产品全貌：核心概念、对象模型、架构设计、Studio 功能介绍。",
+      "description": "ClickZetta Lakehouse product overview: core concepts, object model, architecture, and Studio module introduction.",
       "files": [
         "SKILL.md",
         "references/brands-and-endpoints.md",
@@ -242,33 +130,21 @@
     },
     {
       "name": "clickzetta-pipeline-review",
-      "description": "Comprehensive review and diagnosis of ClickZetta Lakehouse data pipelines. Discovers all pipeline objects, identifies missing dependencies, DDL idempotency issues, and Dynamic Table anti-patterns.",
+      "description": "Comprehensive review and diagnosis of ClickZetta Lakehouse data pipelines. Starting from any entry point",
       "files": [
         "SKILL.md"
       ]
     },
     {
-      "name": "clickzetta-query-optimizer",
-      "description": "诊断和优化 ClickZetta Lakehouse SQL 查询性能。覆盖执行计划分析、慢查询排查、",
-      "files": [
-        "SKILL.md",
-        "references/explain.md",
-        "references/hints-and-sortkey.md",
-        "references/optimize.md",
-        "references/result-cache.md",
-        "references/show-jobs.md"
-      ]
-    },
-    {
       "name": "clickzetta-realtime-sync-pipeline",
-      "description": "创建和管理 ClickZetta Lakehouse 实时同步任务（单表），将外部数据源的数据实时同步到 Lakehouse。",
+      "description": "Create and manage ClickZetta Lakehouse real-time sync tasks (single-table), syncing data from external sources",
       "files": [
         "SKILL.md"
       ]
     },
     {
       "name": "clickzetta-semantic-view",
-      "description": "创建和查询 ClickZetta Lakehouse 语义视图（Semantic View）。语义视图是架构级逻辑",
+      "description": "Create and query ClickZetta Lakehouse Semantic Views. A Semantic View is a schema-level logical",
       "files": [
         "SKILL.md",
         "references/semantic-view-reference.md"
@@ -276,7 +152,7 @@
     },
     {
       "name": "clickzetta-spark-flink-connector",
-      "description": "使用 Spark Connector 或 Flink Write Connector 将数据写入 ClickZetta Lakehouse。",
+      "description": "Write data to ClickZetta Lakehouse using the Spark Connector or Flink Write Connector.",
       "files": [
         "SKILL.md",
         "references/flink.md",
@@ -284,39 +160,39 @@
       ]
     },
     {
+      "name": "clickzetta-sql-migration",
+      "description": "Migration guide for SQL workloads moving to ClickZetta Lakehouse from Snowflake,",
+      "files": [
+        "SKILL.md",
+        "references/ddl-reference.md",
+        "references/dml-differences.md",
+        "references/dml-reference.md",
+        "references/dql-reference.md",
+        "references/function-mapping.md",
+        "references/functions-reference.md",
+        "references/implicit-type-conversion.md",
+        "references/migration-databricks.md",
+        "references/migration-snowflake.md",
+        "references/vs-snowflake.md",
+        "references/vs-spark.md"
+      ]
+    },
+    {
       "name": "clickzetta-sql-pipeline-manager",
-      "description": "Manage ClickZetta Lakehouse SQL pipeline objects: Dynamic Table, Materialized View, Table Stream, and Pipe. Covers full lifecycle operations.",
+      "description": "",
       "files": [
         "SKILL.md",
         "references/dynamic-table.md",
         "references/materialized-view.md",
         "references/pipe.md",
-        "references/table-stream.md",
         "references/scenarios.md",
+        "references/table-stream.md",
         "references/troubleshooting.md"
       ]
     },
     {
-      "name": "clickzetta-sql-migration",
-      "description": "Migration guide for SQL workloads moving to ClickZetta Lakehouse from Snowflake, Databricks, or Spark SQL.",
-      "files": [
-        "SKILL.md",
-        "references/migration-snowflake.md",
-        "references/migration-databricks.md",
-        "references/vs-snowflake.md",
-        "references/vs-spark.md",
-        "references/dml-differences.md",
-        "references/implicit-type-conversion.md",
-        "references/function-mapping.md",
-        "references/ddl-reference.md",
-        "references/dml-reference.md",
-        "references/dql-reference.md",
-        "references/functions-reference.md"
-      ]
-    },
-    {
       "name": "clickzetta-studio-task-manager",
-      "description": "Manage ClickZetta Lakehouse Studio tasks: task types, folder organization, scheduling, dependency management. Implements separation of DDL and pipeline management.",
+      "description": "Manage ClickZetta Lakehouse Studio tasks: task types (batch sync/multi-table batch sync/real-time sync/",
       "files": [
         "SKILL.md",
         "references/engineering-sop.md",
@@ -325,30 +201,21 @@
     },
     {
       "name": "clickzetta-table-lineage",
-      "description": "表血缘可视化工具。从 ClickZetta information_schema.job_history 获取表依赖关系和成本数据，",
+      "description": "Table lineage visualization tool for ClickZetta Lakehouse. Retrieves table dependency relationships",
       "files": [
         "SKILL.md"
       ]
     },
     {
       "name": "clickzetta-table-stream-pipeline",
-      "description": "搭建和管理 ClickZetta Table Stream 变更数据捕获管道，覆盖从源表配置、Stream 创建、",
+      "description": "Build and manage ClickZetta Table Stream change data capture pipelines. Covers end-to-end workflow",
       "files": [
         "SKILL.md"
       ]
     },
     {
-      "name": "clickzetta-vcluster-manager",
-      "description": "管理 ClickZetta Lakehouse 计算集群（VCluster）的完整生命周期。",
-      "files": [
-        "SKILL.md",
-        "references/vc-cache.md",
-        "references/vcluster-ddl.md"
-      ]
-    },
-    {
       "name": "clickzetta-volume-manager",
-      "description": "管理 ClickZetta Lakehouse Volume 对象，实现对象存储（OSS/COS/S3）的挂载、",
+      "description": "Manage ClickZetta Lakehouse Volume objects for mounting object storage (OSS/COS/S3),",
       "files": [
         "SKILL.md",
         "references/volume-ddl.md"
@@ -356,10 +223,17 @@
     },
     {
       "name": "clickzetta-zettapark",
-      "description": "Use the ZettaPark Python library to work with ClickZetta Lakehouse data. Provides a pandas-like DataFrame API that translates Python operations into SQL for distributed execution.",
+      "description": "Use the ZettaPark Python library to work with ClickZetta Lakehouse data. ZettaPark provides",
       "files": [
         "SKILL.md",
         "references/zettapark-api.md"
+      ]
+    },
+    {
+      "name": "singsight_install",
+      "description": "引导用户把 AI 编码助手（Claude Code、Hermes Agent、OpenClaw、Opencode）接入 Singsight AI Agent 可观测性平台，通过 OpenTelemetry 自动上报 LLM 调用、工具执行、Token 用量和会话。",
+      "files": [
+        "SKILL.md"
       ]
     }
   ]

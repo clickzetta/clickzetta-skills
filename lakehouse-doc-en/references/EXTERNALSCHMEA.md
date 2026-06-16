@@ -40,8 +40,8 @@ This design provides great flexibility and convenience as it reduces the need fo
 
 Cloud Lakehouse provides commands to create and delete EXTERNAL SCHEMA, enabling users to manage access permissions and configurations for these external data sources as needed.
 
-  * **Creating EXTERNAL SCHEMA**: Users can use the `CREATE EXTERNAL SCHEMA` command to create a new EXTERNAL SCHEMA and begin interacting with external databases. Specific syntax and parameter settings can be found in the [Create EXTERNAL SCHEMA](CREATEEXTERNAlLSCHEMA.md) documentation.
-  * **Deleting EXTERNAL SCHEMA**: If an EXTERNAL SCHEMA is no longer needed or if access to the external database needs to be removed, the `DROP SCHEMA` command can be used to delete it. Related steps and precautions are detailed in the [Delete EXTERNAL SCHEMA](DROPSCHEMA.md) documentation.
+  * **Creating EXTERNAL SCHEMA**: Users can use the `CREATE EXTERNAL SCHEMA` command to create a new EXTERNAL SCHEMA and begin interacting with external databases. Specific syntax and parameter settings can be found in the [Create EXTERNAL SCHEMA](createexternallschema.md) documentation.
+  * **Deleting EXTERNAL SCHEMA**: If an EXTERNAL SCHEMA is no longer needed or if access to the external database needs to be removed, the `DROP SCHEMA` command can be used to delete it. Related steps and precautions are detailed in the [Delete EXTERNAL SCHEMA](dropschema.md) documentation.
 
 ## Permission Description
 

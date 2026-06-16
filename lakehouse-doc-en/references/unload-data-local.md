@@ -17,7 +17,7 @@ In data development, when selecting and executing SQL, the results can be downlo
 1. Prerequisites
 
 * Installed [command line tool](connect-with-cli.md)
-* Understand the [GET command](GET.md) and [COPY INTO](COPY_INTO_Location.md) export commands
+* Understand the [GET command](get.md) and [COPY INTO](copy_into_location.md) export commands
 
 2. Export table data to local
 

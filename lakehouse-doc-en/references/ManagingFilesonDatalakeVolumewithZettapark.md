@@ -6,14 +6,14 @@
 
 ## 1. Overview
 
-Singdata Lakehouse provides unified management of data lake files and data warehouse tables through its abstract storage layer ([Volume](datalake_volume.md),  [Schema](SCHEMA.md) and [Table](TABLE.md)) and Python API. This guide demonstrates how to perform file management operations in the data lake, including uploading (PUT), downloading (GET), and listing (LIST) files.
+Singdata Lakehouse provides unified management of data lake files and data warehouse tables through its abstract storage layer ([Volume](datalake_volume.md),  [Schema](schema.md) and [Table](table.md)) and Python API. This guide demonstrates how to perform file management operations in the data lake, including uploading (PUT), downloading (GET), and listing (LIST) files.
 
 **Key Concepts**:
 
 * **Volume Storage Abstraction**: All data lake storage is mapped to Volume objects.
   * [External Volume](external_volume.md): Managed by customers, supporting integration with cloud storage like AWS S3 and Alibaba Cloud OSS.
   * [Internal Volume](internal_volume.md): Managed by Singdata, divided into USER VOLUME  and TABLE VOLUME.
-* [Zettapark](ZettaparkQuickStart.md) **Python API**: Provides a unified interface for seamless integration of files and tables.
+* [Zettapark](zettaparkquickstart.md) **Python API**: Provides a unified interface for seamless integration of files and tables.
 
 You could [Get the Source Code(Jupyter Notebook ipynb file) From Github Repository](https://github.com/yunqiqiliang/clickzetta_quickstart/blob/main/Zettapark/Managing%20Files%20on%20Datalake%20Volume%20with%20Zettapark.ipynb).
 

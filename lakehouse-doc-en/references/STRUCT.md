@@ -194,6 +194,6 @@ WHERE person.age > 26;
 
 - [named_struct function](sql_functions/scalar_functions/nested_functions/named_struct.md)
 - [struct_update function](sql_functions/scalar_functions/nested_functions/struct_update.md)
-- [ARRAY](ARRAY.md): ordered list of same-type elements
-- [MAP](MAP.md): key-value pair type
+- [ARRAY](array.md): ordered list of same-type elements
+- [MAP](map.md): key-value pair type
 - [Data Type Conversion](datatype-conversion.md): complex type conversion rules

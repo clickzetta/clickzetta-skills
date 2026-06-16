@@ -344,7 +344,7 @@ DROP TABLE IF EXISTS doc_user_events;
 
 ## Related Documentation
 
-- [Window Functions](window-functions.md)
+- [Window Functions](windowfunction.md)
 - [LAG](sql_functions/window_functions/lag.md)
 - [FIRST_VALUE](sql_functions/window_functions/first_value.md)
 - [Create Dynamic Table](create-dynamic-table.md)

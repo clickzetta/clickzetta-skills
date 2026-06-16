@@ -35,9 +35,9 @@ CREATE TABLE table_name(
 ### Reference Documents
 
 * [Build Index](build-index.md)
-* [Delete Index](DROP-INDEX.md)
-* [List All Indexes](SHOW-INDEX.md)
-* [View Index Details](DESC-INDEX.md)
+* [Delete Index](drop-index.md)
+* [List All Indexes](show-index.md)
+* [View Index Details](desc-index.md)
 
 ### Examples
 ```SQL

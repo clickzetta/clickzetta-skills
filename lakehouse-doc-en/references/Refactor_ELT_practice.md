@@ -20,7 +20,7 @@ Today, the author attempts to use Singdata Lakehouse to find new solutions to th
 
 Simplify data task development and operations environment with Singdata Lakehouse, achieving unified task version management:
 
-* [Python Task Development](Python_Task.md): From Jupyter Notebook development to Python task development in Singdata Lakehouse Studio.
+* [Python Task Development](python_task.md): From Jupyter Notebook development to Python task development in Singdata Lakehouse Studio.
 
 * [SQL Task Development](taskdevelop.md): From DBV SQL task development to SQL task development in Singdata Lakehouse Studio.
 
@@ -235,7 +235,7 @@ This article discussed the problems and challenges of traditional development me
 * [Singdata Lakehouse Dynamic Table](dynamic_table_summary.md)
 * [Singdata Lakehouse Studio Task Development and Scheduling](taskdevelop.md)
 * [Singdata Lakehouse Studio Backfilling Data Task](backfilling_data.md)
-* [Singdata Lakehouse JSON Data Type](JSON.md)
+* [Singdata Lakehouse JSON Data Type](json.md)
 * [Singdata Lakehouse Vector Data Type](vector-type.md)
 
 ^

@@ -185,7 +185,7 @@ Set the value for each parameter:
 
 :-: ![](.topwrite/assets/image_1737534633567.png =562)
 
-For how to obtain parameter values, please refer to [this article](https://uat-doc.clickzetta.com/JDBC-Driver).
+For how to obtain parameter values, please refer to [this article](jdbc-driver.md).
 
 ^
 
@@ -292,8 +292,8 @@ user guide document.
 ## Reference Materials
 
 * [Task Development and Scheduling](taskdevelop.md)
-* [Python Task Development and Scheduling, Workflow Orchestration](Python_Task.md)
-* [Zettapark Quick Start](ZettaparkQuickStart.md)
+* [Python Task Development and Scheduling, Workflow Orchestration](python_task.md)
+* [Zettapark Quick Start](zettaparkquickstart.md)
 * [Task Parameters](task_param.md)
 * [Monitoring and Alerting](<monitor_and_alert.md>)
 

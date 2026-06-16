@@ -241,8 +241,8 @@ DROP TABLE IF EXISTS doc_orders;
 
 ## Related Documentation
 
-- [Time Travel Feature Overview](timetravel.md)
+- [Time Travel Feature Overview](time_travel_guide.md)
 - [UNDROP TABLE](undrop-table.md)
 - [RESTORE TABLE](restore.md)
 - [DESC HISTORY](desc-history.md)
-- [Historical Data Lookback Guide](SQL_Time_Travel_Guide.md)
+- [Historical Data Lookback Guide](sql_time_travel_guide.md)

@@ -86,5 +86,5 @@ DROP MATERIALIZED VIEW IF EXISTS public.mv_daily_sales;
 | Document | Description |
 |----------|-------------|
 | [SQL Commands Overview](sql-commands.md) | Categorized navigation for all SQL commands |
-| [Materialized Views (Object Model)](MATERIALIZEDVIEW.md) | How materialized views work, query rewriting, and selection guidance |
+| [Materialized Views (Object Model)](materializedview.md) | How materialized views work, query rewriting, and selection guidance |
 | [Dynamic Tables](dynamic-table.md) | Consider dynamic tables for data processing pipeline scenarios |

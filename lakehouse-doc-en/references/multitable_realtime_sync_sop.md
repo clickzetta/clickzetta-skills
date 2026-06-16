@@ -41,24 +41,24 @@ The source database requires certain parameter settings and permission grants to
 
 Note: Modifying the following parameters requires restarting the PostgreSQL server to take effect.
 
-|                            |                                                                                                                                                                                                                                                                                                 |                      |
-| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
-| Configuration              | Description                                                                                                                                                                                                                                                                                     | Default Value (Unit) |
-| wal\_level                 | WAL level. `logical` is required for real-time sync. `replica` supports WAL archiving and replication. `minimal` keeps only what is needed to recover from a crash.                                                                                                                             | replica              |
-| max\_replication\_slots    | Maximum number of replication slots allowed on the server.                                                                                                                                                                                                                                      | 10                   |
-| max\_wal\_senders          | Maximum number of WAL sender processes that can run simultaneously, corresponding to the number of concurrent real-time sync tasks.                                                                                                                                                              | 10                   |
-| max\_slot\_wal\_keep\_size | Size of WAL retained per slot. `-1` means unlimited.                                                                                                                                                                                                                                           | -1 (MB)              |
-| wal\_sender\_timeout       | Replication connections idle longer than this value will be terminated.                                                                                                                                                                                                                         | 60000 (ms)           |
+|                            |                                                                                                                                                                     |                      |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
+| Configuration              | Description                                                                                                                                                         | Default Value (Unit) |
+| wal\_level                 | WAL level. `logical` is required for real-time sync. `replica` supports WAL archiving and replication. `minimal` keeps only what is needed to recover from a crash. | replica              |
+| max\_replication\_slots    | Maximum number of replication slots allowed on the server.                                                                                                          | 10                   |
+| max\_wal\_senders          | Maximum number of WAL sender processes that can run simultaneously, corresponding to the number of concurrent real-time sync tasks.                                 | 10                   |
+| max\_slot\_wal\_keep\_size | Size of WAL retained per slot. `-1` means unlimited.                                                                                                                | -1 (MB)              |
+| wal\_sender\_timeout       | Replication connections idle longer than this value will be terminated.                                                                                             | 60000 (ms)           |
 
 **MySQL**
 
-|                               |                                                                                                                                                                                                                                                                                                                                                                                                                                            |                                                                           |                                                  |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------- | ------------------------------------------------ |
-| Attribute                     | Description                                                                                                                                                                                                                                                                                                                                                                                                                                | Required Setting                                                          | Query Method                                     |
-| log\_bin                      | Whether binlog is enabled.                                                                                                                                                                                                                                                                                                                                                                                                                 | ON                                                                        | SHOW GLOBAL VARIABLES LIKE 'log\_bin'            |
-| binlog\_format                | Binlog format. `statement` records SQL (compact but can cause sync errors with non-deterministic functions). `row` records full before/after row images (accurate but higher volume). `mixed` lets MySQL choose automatically.                                                                                                                                                                                                              | ROW                                                                       | SHOW GLOBAL VARIABLES LIKE 'binlog\_format'      |
-| binlog\_row\_image            | Whether full before/after row images are recorded.                                                                                                                                                                                                                                                                                                                                                                                         | FULL (record all fields in both images)                                   | SHOW GLOBAL VARIABLES LIKE 'binlog\_row\_image'  |
-| binlog\_expire\_logs\_seconds | Binlog automatic cleanup interval.                                                                                                                                                                                                                                                                                                                                                                                                         | Configure based on business needs; 86400 seconds (1 day) or more recommended. |                                              |
+|                               |                                                                                                                                                                                                                                |                                                                               |                                                 |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------- | ----------------------------------------------- |
+| Attribute                     | Description                                                                                                                                                                                                                    | Required Setting                                                              | Query Method                                    |
+| log\_bin                      | Whether binlog is enabled.                                                                                                                                                                                                     | ON                                                                            | SHOW GLOBAL VARIABLES LIKE 'log\_bin'           |
+| binlog\_format                | Binlog format. `statement` records SQL (compact but can cause sync errors with non-deterministic functions). `row` records full before/after row images (accurate but higher volume). `mixed` lets MySQL choose automatically. | ROW                                                                           | SHOW GLOBAL VARIABLES LIKE 'binlog\_format'     |
+| binlog\_row\_image            | Whether full before/after row images are recorded.                                                                                                                                                                             | FULL (record all fields in both images)                                       | SHOW GLOBAL VARIABLES LIKE 'binlog\_row\_image' |
+| binlog\_expire\_logs\_seconds | Binlog automatic cleanup interval.                                                                                                                                                                                             | Configure based on business needs; 86400 seconds (1 day) or more recommended. |                                                 |
 
 #### Database Permission Configuration
 
@@ -68,11 +68,11 @@ Appropriate permissions must be configured on each source database to ensure cha
 
 When executing grant SQL statements, ensure the executing account itself has the ability to grant those permissions — using an administrator account is recommended. Execute the grants for all scenarios listed below to ensure the task runs smoothly.
 
-**Scenario: Task configuration (fetching metadata: schema list, table list, field list)**
+**Scenario: Task configuration (fetching metadata: schema list, table list, field list**)
 
 Required permissions:
 
-> SELECT (on information_schema and the tables to be inspected)
+> SELECT (on information\_schema and the tables to be inspected)
 
 Grant statements:
 
@@ -100,7 +100,7 @@ Grant statements:
 CREATE ROLE <name> REPLICATION LOGIN;
 ```
 
-**Scenario: Sync historical full data (optional)**
+**Scenario: Sync historical full data (optional**)
 
 * Required permissions:
 
@@ -138,7 +138,7 @@ Grant statement:
 
 When executing grant SQL statements, ensure the executing account has the GRANT OPTION privilege — using a superuser such as root is recommended. Execute the grants for all scenarios listed below.
 
-**Scenario: Task configuration (fetching metadata: database list, table list, field list)**
+**Scenario: Task configuration (fetching metadata: database list, table list, field list**)
 
 Required permissions:
 
@@ -210,13 +210,13 @@ Follow these steps in order:
 
 * Extended fields currently support: source server name, database name, schema name, and table name.
 
-  ![](.topwrite/assets/image_1740314767939.png =680)
+  ^
 
 ### General: If the same primary key exists in different sharded source tables, how do I avoid write conflicts in the target table?
 
 * Enable the extended fields feature in the task configuration, and include those extended fields in the composite primary key of the target table.
 
-  ![](.topwrite/assets/image_1740314789823.png =680)
+  ^
 
 ### General: If the sharded source tables have mostly — but not exactly — the same field structure, how do I configure the sync task?
 
@@ -314,7 +314,7 @@ There are several options:
 
   * `step1.taskmanager.memory.task.off-heap.size` — for example, set to `500M` (default: `256M`)
 
-    ![](.topwrite/assets/image_1740314863947.png =680)
+    ^
 
 ### Emergency Maintenance: The task has failed and I cannot resolve it on my own — how do I get help from Singdata?
 
@@ -334,31 +334,31 @@ There are several options:
 
 After a task starts, it goes through three phases: initialization, full sync, and incremental sync. You can view the status of these phases in the instance monitoring area.
 
-![](.topwrite/assets/image_1740314893402.png =600)
+^
 
 #### Metric Monitoring
 
-|                    |                                                                                                                                                                          |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Metric             | Description                                                                                                                                                              |
-| Data read          | Number of records read from the source during the measurement period.                                                                                                    |
-| Data written       | Number of records written to the target during the measurement period.                                                                                                   |
-| Avg. read rate     | Average read rate during the measurement period (total records read / period duration).                                                                                  |
-| Avg. write rate    | Average write rate during the measurement period (total records written / period duration).                                                                              |
-| Failover count     | Number of failovers during the measurement period. This reflects the operational stability of the sync service itself.                                                   |
+|                 |                                                                                                                        |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Metric          | Description                                                                                                            |
+| Data read       | Number of records read from the source during the measurement period.                                                  |
+| Data written    | Number of records written to the target during the measurement period.                                                 |
+| Avg. read rate  | Average read rate during the measurement period (total records read / period duration).                                |
+| Avg. write rate | Average write rate during the measurement period (total records written / period duration).                            |
+| Failover count  | Number of failovers during the measurement period. This reflects the operational stability of the sync service itself. |
 
-![](.topwrite/assets/image_1740314904374.png =600)
+^
 
 #### Per-Table Sync Progress
 
-|                      |                                                                                                                                           |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| Metric               | Description                                                                                                                               |
-| Latest read position | The write time of the most recent record written to the target table, used as a proxy for the current read position.                      |
-| Latest update time   | The last time a record was written to the target table.                                                                                   |
-| Data latency         | The time between a transaction committing on the source and the data becoming visible on the target.                                      |
+|                      |                                                                                                                      |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Metric               | Description                                                                                                          |
+| Latest read position | The write time of the most recent record written to the target table, used as a proxy for the current read position. |
+| Latest update time   | The last time a record was written to the target table.                                                              |
+| Data latency         | The time between a transaction committing on the source and the data becoming visible on the target.                 |
 
-![](.topwrite/assets/image_1740314933658.png =600)
+^
 
 ### Configuring Task Monitoring and Alerts
 
@@ -381,25 +381,25 @@ In the monitoring and alerting module, you can configure monitoring rules to tra
 
 3. Add a new webhook configuration in the product — select Lark or WeCom as the channel and enter the bot's webhook URL.
 
-   ![](.topwrite/assets/image_1740315003712.png =680)
+   ^
 
 4. Enable the webhook in the notification policy.
 
-   ![](.topwrite/assets/image_1740315034077.png =680)
+   ^
 
 5. In the monitoring rule, select the notification policy with the webhook enabled, then choose the webhook configuration you just created.
 
-   ![](.topwrite/assets/image_1740315043022.png =680)
+   ^
 
 #### Configuring Exception Monitoring for Real-Time Data Integration Tasks
 
 1. **Task failover alert**: create a new monitoring rule and select "Multi-table real-time sync job failover" as the monitoring event. You can add filter attributes such as workspace or task name. If no filter is added, all multi-table real-time sync tasks in the instance are monitored by default.
 
-   ![](.topwrite/assets/image_1740315064690.png =680)
+   ^
 
 2. **Task stop alert**: create a new monitoring rule and select "Multi-table real-time sync task run failure" as the monitoring event. You can add filter attributes such as workspace or task name. If no filter is added, all multi-table real-time sync tasks in the instance are monitored by default.
 
-   ![](.topwrite/assets/image_1740315072098.png =460)
+   ^
 
 #### Configuring In-Task Exception Monitoring
 
@@ -409,21 +409,21 @@ In the monitoring and alerting module, you can configure monitoring rules to tra
 
    * You can configure an alert for when a table is added to the blacklist, covering two scenarios: Schema Evolution failure and a single field value exceeding the 10 MB size limit.
 
-     ![](.topwrite/assets/image_1740315081002.png =460)
+     ^
 
    * Schema Evolution failure alert: create a new monitoring rule and select "Multi-table real-time sync target table change failure."
 
-     ![](.topwrite/assets/image_1740315087204.png =460)
+     ^
 
 #### Configuring Maximum Latency Monitoring for Real-Time Data Integration Tasks
 
 1. **End-to-end sync latency**: create a new monitoring rule and select "Multi-table real-time sync latency." You can add filter attributes such as workspace or task name. If no filter is added, all multi-table real-time sync tasks in the instance are monitored by default.
 
-   ![](.topwrite/assets/image_1740315096380.png =680)
+   ^
 
 2. **Read checkpoint latency**: create a new monitoring rule and select "Multi-table real-time sync read checkpoint latency." You can add filter attributes such as workspace or task name. If no filter is added, all multi-table real-time sync tasks in the instance are monitored by default.
 
-   ![](.topwrite/assets/image_1740315103745.png =680)
+   ^
 
 ## Common Error Troubleshooting
 
@@ -443,11 +443,11 @@ In the monitoring and alerting module, you can configure monitoring rules to tra
 
   * Query the current binlog file and position with `SHOW MASTER STATUS`:
 
-    ![](.topwrite/assets/image_1740315126085.png =460)
+    ^
 
   * Restart the sync task using the file and position from the result.
 
-    ![](.topwrite/assets/image_1740315139248.png =460)
+    ^
 
   * If you need to recover the data that was missed, resync the affected tables.
 
@@ -507,7 +507,7 @@ In the monitoring and alerting module, you can configure monitoring rules to tra
 * Cause
 
   * The total encoded length of the primary key fields in the source table exceeds the default limit of 128 bytes.
-  * In a merge scenario, multiple extended fields (e.g., server_id, database, schema, table) are included in the composite primary key to prevent conflicts across sharded tables — and the total encoded key length exceeds 128 bytes.
+  * In a merge scenario, multiple extended fields (e.g., server\_id, database, schema, table) are included in the composite primary key to prevent conflicts across sharded tables — and the total encoded key length exceeds 128 bytes.
 
 * Resolution
 
@@ -567,7 +567,7 @@ In the monitoring and alerting module, you can configure monitoring rules to tra
 
 * Problem
 
-  *   A table's status automatically changes to "sync stopped." The tooltip on the table object shows errors such as `pk column different`, `pk column type mismatch`, or `invalid modify column`.
+  * A table's status automatically changes to "sync stopped." The tooltip on the table object shows errors such as `pk column different`, `pk column type mismatch`, or `invalid modify column`.
 
 * Cause
 
@@ -586,3 +586,5 @@ In the monitoring and alerting module, you can configure monitoring rules to tra
 * To prevent write conflicts on the target, only source tables with primary key (PK) fields are supported. Tables without a primary key cannot be synced.
 * The sync task will automatically create target tables. To ensure stable task execution and data correctness, avoid manually creating, modifying, or deleting target tables unless absolutely necessary.
 * Schema Evolution supports adding and removing columns on the source. Changing column types and automatically adding new tables are not currently supported.
+
+^

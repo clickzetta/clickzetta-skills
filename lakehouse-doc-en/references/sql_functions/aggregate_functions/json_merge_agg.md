@@ -27,5 +27,5 @@ FROM (
 
 ## Related Documentation
 
-- [JSON_OBJECT_AGG](sql_functions/aggregate_functions/json_object_agg.md)
-- [JSON_ARRAY_AGG](sql_functions/aggregate_functions/json_array_agg.md)
+- [JSON_OBJECT_AGG](json_object_agg.md)
+- [JSON_ARRAY_AGG](json_array_agg.md)

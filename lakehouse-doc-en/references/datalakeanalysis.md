@@ -176,15 +176,15 @@ show volume directory sh_image_volume;
 
 #### 4. Display the images under the Volume path in Lakehouse Studio
 
-When developing in the Lakehouse Studio interface, you can directly click on the url -> **Preview** to open the image when you get the access url of the image through the [get\_presigned\_url](GET_PRESIGNED_URL.md) function:
+When developing in the Lakehouse Studio interface, you can directly click on the url -> **Preview** to open the image when you get the access url of the image through the [get\_presigned\_url](get_presigned_url.md) function:
 
 ![](.topwrite/assets/presigned_url_1710729090982.jpeg)
 
 #### 5. Call UDF such as: fc\_image2text, analyze the dishes and calorie information in the OSS image
 
-For creating Remote Function, please refer to: [Remote Function Usage Document (Alibaba Cloud Version)](REMOTEFUNCTION.md).
+For creating Remote Function, please refer to: [Remote Function Usage Document (Alibaba Cloud Version)](remotefunction.md).
 
-The function to get the file access URL is [get\_presigned\_url](GET_PRESIGNED_URL.md)
+The function to get the file access URL is [get\_presigned\_url](get_presigned_url.md)
 
 ```SQL
 set cz.sql.remote.udf.enabled = true;

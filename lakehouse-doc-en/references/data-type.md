@@ -202,7 +202,7 @@ When migrating from another database, if the original SQL relied on type errors 
 | [TIMESTAMP_NTZ](data-types-timestamp-ntz.md) | Detailed explanation and use cases for timezone-free timestamps |
 | [VECTOR Type](vector-type.md) | Vector type syntax, dimension configuration, and usage examples |
 | [BITMAP Type](bitmap-type.md) | Bitmap type use cases and function reference |
-| [Data Type Conversion Guide](SQL_Type_Conversion_Guide.md) | Type mapping when migrating from MySQL / PostgreSQL / Hive |
+| [Data Type Conversion Guide](sql_type_conversion_guide.md) | Type mapping when migrating from MySQL / PostgreSQL / Hive |
 | [CREATE TABLE](create-table-ddl.md) | Full syntax for using data types when creating tables |
 
 **Organizing Data Efficiently**

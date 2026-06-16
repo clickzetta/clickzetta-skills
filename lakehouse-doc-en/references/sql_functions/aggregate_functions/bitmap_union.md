@@ -36,6 +36,6 @@ GROUP BY k;
 
 ## Related Documentation
 
-- [BITMAP_UNION_COUNT](sql_functions/aggregate_functions/bitmap_union_count.md) — returns the cardinality of the union directly
-- [BITMAP_AGG](sql_functions/aggregate_functions/bitmap_agg.md) — aggregates an integer column into a BITMAP
-- [TO_BITMAP](sql_functions/scalar_functions/bitmap_functions/to_bitmap.md)
+- [BITMAP_UNION_COUNT](bitmap_union_count.md) — returns the cardinality of the union directly
+- [BITMAP_AGG](bitmap_agg.md) — aggregates an integer column into a BITMAP
+- [TO_BITMAP](../scalar_functions/bitmap_functions/to_bitmap.md)

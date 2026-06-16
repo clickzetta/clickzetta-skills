@@ -120,4 +120,4 @@ Agile principle: **verify immediately after each step — don't wait until the f
 - [ ] DWS/ADS Dynamic Table DDL saved as DRAFT task (code asset), no scheduling configured
 - [ ] Scheduling DAG has no circular dependencies
 - [ ] ETL task dependency chain is complete (`cz-cli task deps <task>`, `task_dependencies` not empty)
-- [ ] Key tables and fields have comments (load `clickzetta-manage-comments`)
+- [ ] Key tables and fields have comments (refer to `lakehouse-doc-en` for `COMMENT ON TABLE` / `COMMENT ON COLUMN` syntax)

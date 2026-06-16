@@ -1,57 +1,70 @@
 # Data Source Management
 
-DataGPT will by default add the Alibaba Cloud Lakehouse instance in the same region as a built-in data source, without the need for manual addition. If you want to add a Lakehouse data source from another region, please refer to the following operations.
+Data sources are the foundation for Analytics Agent to perform data analysis. You must first connect your database to the system before Analytics Agent can answer questions based on that data.
 
-## Function Overview
+## Navigation Entry
 
-This function is used to add and configure LakeHouse data source connections, supporting users to connect LakeHouse databases to the system for data analysis.
+Left navigation bar → **Management** → **Data Sources**
 
-## Operation Entry
+![](/.topwrite/assets/image_1780905896057.png)
 
-* Location: Product homepage, left navigation bar: Management -> Data Source
+## Supported Data Source Types
 
-## Configuration Item Description
+Click + **New Data Source** in the upper right corner and select a data source type:
 
-### Basic Information
+:-: ![](/.topwrite/assets/image_1780905931540.png =751)
 
-| Field Name                        | Required | Description                                                 |
-| --------------------------------- | -------- | ----------------------------------------------------------- |
-| Data Source Name                  | Yes      | The unique name used to identify the data source            |
-| Connection String                 | Yes      | The connection address of the LakeHouse database            |
-| Username                          | Yes      | The user account for accessing the database, example: admin |
-| Password                          | Yes      | The password for accessing the database                     |
-| Analytical Computing Cluster Name | No       | Specify the computing cluster used for data analysis        |
+| Type           | Applicable Scenario         |
+| -------------- | --------------------------- |
+| **LakeHouse**  | Singdata Lakehouse instance |
+| **Databricks** | Databricks data platform    |
+| **MySQL**      | MySQL database              |
+| **StarRocks**  | StarRocks database          |
 
-## Operation Instructions
+## Configuration Guide
 
-1. Enter the data source name
-2. Fill in the database connection string
+### LakeHouse
 
-![](.topwrite/assets/20250219-114848.jpeg =691)
+![](/.topwrite/assets/image_1780906009343.png)
 
-![](.topwrite/assets/20250219-114853.jpeg =677)
+| Field              | Description                                                               |
+| ------------------ | ------------------------------------------------------------------------- |
+| Data source name   | Must be unique within the system                                          |
+| Username           | Database username                                                         |
+| Password           | Database password                                                         |
+| JDBC URL           | Connection address, format: `jdbc:clickzetta://[host]/[workspace]`        |
+| AP Virtual Cluster | Name of the analytical Virtual Cluster; defaults to DEFAULT if left blank |
 
-1. Enter the username and password
-2. Fill in the analytical computing cluster name
-3. Click the "Connection Test" button to verify if the configuration is correct
-4. After passing the test, click the "Save" button to complete the addition
+### MySQL / StarRocks
 
-## Precautions
+![](/.topwrite/assets/image_1780905971354.png)
 
-1. The data source name must be unique in the system
-2. It is recommended to perform a connection test before saving
-3. Please ensure that the username provided has sufficient database access permissions
-4. It is recommended to use a strong password to ensure security
+| Field            | Description                                                         |
+| ---------------- | ------------------------------------------------------------------- |
+| Data source name | Must be unique within the system                                    |
+| Username         | Database username                                                   |
+| Password         | Database password                                                   |
+| JDBC URL         | Connection address, format: `jdbc:mysql://[host]:[port]/[database]` |
 
-## Error Handling
+### Databricks
 
-|                        |                                       |                                                     |
-| ---------------------- | ------------------------------------- | --------------------------------------------------- |
-| Error Type             | Possible Cause                        | Solution                                            |
-| Connection Test Failed | Connection string format error        | Check if the connection string format is correct    |
-|                        | Username or password error            | Confirm the correctness of the account and password |
-|                        | Network issue                         | Check if the network connection is normal           |
-| Save Failed            | Duplicate data source name            | Use an unused name                                  |
-|                        | Required information not fully filled | Check if all required fields are filled             |
+| Field            | Description                                       |
+| ---------------- | ------------------------------------------------- |
+| Data source name | Must be unique within the system                  |
+| JDBC URL         | JDBC connection address of the Databricks cluster |
+| Password         | Access token (Personal Access Token)              |
+
+## Connection Test and Save
+
+After filling in all fields, click **Connection Test** to verify connectivity. Once the test passes, click **Save** to complete the setup.
+
+> ⚠️ **Note**: After a data source is saved, modifying the connection information may cause associated analysis domain data to become unavailable. Proceed with caution.
+
+## Related Documentation
+
+* [Quick Start](datagpt_quickstart.md) — After adding a data source, follow this guide to complete your first Q\&A configuration
+* [Model Selection and Configuration](datagpt-model-config.md) — Choose the right LLM for your analysis domain
+* [Answer Accuracy Improvement](answer-accuracy-improve.md) — After connecting a data source, improve answer quality through semantic layer configuration
+* [Conversational Data Analytics (Analytics Agent)](datagpt_introduction.md) — Return to feature overview
 
 ^

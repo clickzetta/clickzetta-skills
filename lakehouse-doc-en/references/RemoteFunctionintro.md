@@ -13,7 +13,7 @@ The Lakehouse platform, through the user's pre-authorization, will automatically
 
 ## Main Process of Creating EXTERNAL FUNCTION
 
-Please refer to: [Usage Process: External Function](RemoteFunctionBestPractice.md)
+Please refer to: [Usage Process: External Function](remotefunctionbestpractice.md)
 
 * Users activate cloud function computing services (such as Alibaba Cloud Function Compute FC) and object storage services
 * Package the function execution code & executable files, dependency libraries, models, and data files, and upload them to object storage
@@ -35,7 +35,7 @@ Please refer to: [Usage Process: External Function](RemoteFunctionBestPractice.m
 
 * Currently, only Java and Python programming languages are supported, with supported runtime environments: Java 8 and Python 3.10 versions
 * If relying on native libraries (including .so libraries), they need to be compatible with Python 3.10 ABI
-* When the program and dependency files exceed 500M after compression, functions need to be created in the form of container images. Please refer to [Practice: Using Hugging Face Image Recognition Model to Process Image Data](RemoteFunctionOnACR.md)
+* When the program and dependency files exceed 500M after compression, functions need to be created in the form of container images. Please refer to [Practice: Using Hugging Face Image Recognition Model to Process Image Data](remotefunctiononacr.md)
 
 ## EXTERNAL FUNCTION Fees
 
@@ -48,7 +48,7 @@ Please refer to: [Usage Process: External Function](RemoteFunctionBestPractice.m
 
 Please refer to the following development guides:
 
-* Development Guide: [External Function (Java)](ExternalFunctionDevGuideJava.md)
-* Development Guide: [External Function (Python3)](RemoteFunctionDevGuidePython3.md)
+* Development Guide: [External Function (Java)](externalfunctiondevguidejava.md)
+* Development Guide: [External Function (Python3)](remotefunctiondevguidepython3.md)
 
 ^

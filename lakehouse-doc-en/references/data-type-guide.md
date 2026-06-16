@@ -68,10 +68,10 @@ Singdata Lakehouse supports numeric, string, time, boolean, binary, and complex 
 | [Date/Time Types](time_date_guide.md) | DATE / TIMESTAMP / TIMESTAMP_NTZ / INTERVAL comparison and selection guide |
 | [BINARY](binary.md) | Binary type reference |
 | [BOOLEAN](boolean.md) | Boolean type reference |
-| [ARRAY](ARRAY.md) | Array type syntax and functions |
-| [MAP](MAP.md) | Map type syntax and functions |
-| [STRUCT](STRUCT.md) | Nested struct type syntax and functions |
-| [JSON](JSON.md) | JSON type syntax, field access, and query examples |
+| [ARRAY](array.md) | Array type syntax and functions |
+| [MAP](map.md) | Map type syntax and functions |
+| [STRUCT](struct.md) | Nested struct type syntax and functions |
+| [JSON](json.md) | JSON type syntax, field access, and query examples |
 | [VECTOR](vector-type.md) | Vector type syntax, dimension configuration, and vector index usage |
 | [BITMAP](bitmap-type.md) | Bitmap type syntax, set operation functions reference |
 
@@ -81,6 +81,6 @@ Singdata Lakehouse supports numeric, string, time, boolean, binary, and complex 
 
 | Document | Description |
 |----------|-------------|
-| [Data Type Conversion Guide](SQL_Type_Conversion_Guide.md) | Type mapping when migrating from MySQL / PostgreSQL / Hive |
+| [Data Type Conversion Guide](sql_type_conversion_guide.md) | Type mapping when migrating from MySQL / PostgreSQL / Hive |
 | [TIMESTAMP_NTZ Reference](data-types-timestamp-ntz.md) | Detailed explanation and use cases for timezone-free timestamps |
 | [CREATE TABLE](create-table-ddl.md) | Full syntax for using data types when creating tables |

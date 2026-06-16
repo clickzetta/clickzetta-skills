@@ -17,7 +17,7 @@ The PUT command is a utility in Lakehouse SQL used to upload local files from th
 
 This guide uses [DbVisualizer Free Edition](https://www.dbvis.com/) as the example database management tool. Skip this step if already installed.
 
-Download the [JDBC Driver](JDBC-Driver.md) for Singdata Lakehouse to your local machine.
+Download the [JDBC Driver](jdbc-driver.md) for Singdata Lakehouse to your local machine.
 
 Install the Lakehouse JDBC Driver in DBV.
 
@@ -37,8 +37,8 @@ SHOW  VOLUME DIRECTORY ingest_demo;
 ```
 #### Data
 
-[SQL PUT Command](PUT.md)
+[SQL PUT Command](put.md)
 
-[JDBC Driver](JDBC-Driver.md)
+[JDBC Driver](jdbc-driver.md)
 
 [Database Management Tool](data-mamager-tool.md)

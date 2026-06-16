@@ -341,6 +341,6 @@ DROP TABLE IF EXISTS doc_pivot_tags;
 ## Related Documentation
 
 * [GROUP BY Clause](groupby.md)
-* [LATERAL VIEW](LATERALVIEW.md)
-* [Window Functions](WINDOWFUNCTION.md)
+* [LATERAL VIEW](lateralview.md)
+* [Window Functions](windowfunction.md)
 * [String Functions](string_function.md)

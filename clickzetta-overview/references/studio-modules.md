@@ -1,173 +1,173 @@
-# Studio 各模块详细说明
+# Studio Module Details
 
-> 来源：https://www.yunqi.tech/documents/LakehouseStudioTour 等官方文档
+> Source: https://www.yunqi.tech/documents/LakehouseStudioTour and other official documentation
 
 ---
 
-## 任务类型完整列表
+## Complete Task Type List
 
-| 任务类型 | 触发方式 | 使用 VCluster | 典型用途 |
+| Task Type | Trigger | VCluster | Typical Use |
 |---|---|---|---|
-| SQL 任务 | 周期调度 / 手动 | GP 或 AP | ETL、Ad-Hoc 查询、DDL 操作 |
-| Python 任务 | 周期调度 / 手动 | 不使用 | ZettaPark 数据处理、文件操作 |
-| Shell 任务 | 周期调度 / 手动 | 不使用 | 系统命令、文件处理 |
-| JDBC 任务 | 周期调度 / 手动 | 不使用 | 操作 MySQL/Hive/ClickHouse 等 |
-| 动态表任务 | 向导式创建 | GP 或 AP | 声明式增量计算 |
-| 离线同步任务 | 周期调度 | 同步型 | 全量/增量批量同步 |
-| 实时同步任务（单表） | 持续运行 | 同步型 | Kafka/MySQL/PG 实时写入 |
-| 多表实时 CDC | 持续运行 | 同步型 | 整库镜像、分库分表合并 |
-| 组合任务 | 周期调度 | 取决于子任务 | 封装多个任务统一调度 |
-| 虚拟节点 | 周期调度 | 不使用 | 占位节点，用于依赖编排 |
+| SQL Task | Scheduled / Manual | GP or AP | ETL, Ad-Hoc queries, DDL operations |
+| Python Task | Scheduled / Manual | None | ZettaPark data processing, file operations |
+| Shell Task | Scheduled / Manual | None | System commands, file processing |
+| JDBC Task | Scheduled / Manual | None | Operate MySQL/Hive/ClickHouse, etc. |
+| Dynamic Table Task | Wizard-based creation | GP or AP | Declarative incremental computation |
+| Offline Sync Task | Scheduled | Integration | Full/incremental batch sync |
+| Realtime Sync Task (single table) | Continuous | Integration | Kafka/MySQL/PG realtime write |
+| Multi-table Realtime CDC | Continuous | Integration | Full database mirror, sharded table merge |
+| Flow Task | Scheduled | Depends on sub-tasks | Wrap multiple tasks for unified scheduling |
+| Virtual Node | Scheduled | None | Placeholder node for dependency orchestration |
 
 ---
 
-## 任务状态说明
+## Task Status Descriptions
 
-| 状态 | 含义 |
+| Status | Meaning |
 |---|---|
-| 已提交，有修改 | 任务已提交到生产，但本地有未提交的修改 |
-| 已提交，无修改 | 生产版本与本地版本一致 |
-| 已下线 | 任务已停止调度 |
-| 未提交 | 仅在开发环境，未发布到生产 |
+| Published with changes | Task is published to production, but there are local uncommitted changes |
+| Published, no changes | Production version matches local version |
+| Offline | Task scheduling has been stopped |
+| Unpublished | Only in development environment, not released to production |
 
 ---
 
-## 调度配置关键参数
+## Scheduling Configuration Key Parameters
 
-### Cron 表达式示例
+### Cron Expression Examples
 
 ```
-# 每天凌晨 2 点执行
+# Run at 2 AM every day
 0 2 * * *
 
-# 每小时执行一次
+# Run every hour
 0 * * * *
 
-# 每 5 分钟执行一次
+# Run every 5 minutes
 */5 * * * *
 
-# 每月 1 号凌晨 1 点执行
+# Run at 1 AM on the 1st of every month
 0 1 1 * *
 ```
 
-### 依赖策略
+### Dependency Strategies
 
-| 策略 | 说明 | 适用场景 |
+| Strategy | Description | Use Case |
 |---|---|---|
-| 默认 | 上游当天实例完成后触发下游 | 标准 ETL 链路 |
-| 向前 | 上游最近一个完成的实例触发 | 上游频率高于下游 |
-| 向前就近 | 上游最近且时间最接近的实例触发 | 时间对齐要求高 |
+| Default | Downstream triggered after upstream's same-day instance completes | Standard ETL pipeline |
+| Forward | Downstream triggered by upstream's most recently completed instance | Upstream runs more frequently than downstream |
+| Forward-nearest | Downstream triggered by upstream's most recent instance closest in time | High time-alignment requirements |
 
 ---
 
-## 任务参数内置时间函数
+## Built-in Time Functions for Task Parameters
 
-| 表达式 | 含义 | 示例（今天 2024-01-15） |
+| Expression | Meaning | Example (today: 2024-01-15) |
 |---|---|---|
-| `$[yyyy-MM-dd]` | 当天日期 | 2024-01-15 |
-| `$[yyyy-MM-dd, -1d]` | 昨天 | 2024-01-14 |
-| `$[yyyy-MM-dd, +1d]` | 明天 | 2024-01-16 |
-| `$[yyyyMM]` | 当月 | 202401 |
-| `$[yyyyMM, -1M]` | 上月 | 202312 |
-| `$[yyyy-MM-dd HH:mm:ss]` | 当前时间 | 2024-01-15 10:30:00 |
-| `$[HH:mm:ss]` | 当前时间（仅时分秒） | 10:30:00 |
-| `sys_plan_datetime` | 任务计划执行时间 | 系统内置参数 |
+| `$[yyyy-MM-dd]` | Current date | 2024-01-15 |
+| `$[yyyy-MM-dd, -1d]` | Yesterday | 2024-01-14 |
+| `$[yyyy-MM-dd, +1d]` | Tomorrow | 2024-01-16 |
+| `$[yyyyMM]` | Current month | 202401 |
+| `$[yyyyMM, -1M]` | Last month | 202312 |
+| `$[yyyy-MM-dd HH:mm:ss]` | Current datetime | 2024-01-15 10:30:00 |
+| `$[HH:mm:ss]` | Current time (time only) | 10:30:00 |
+| `sys_plan_datetime` | Task planned execution time | Built-in system parameter |
 
 ---
 
-## 数据质量规则六大维度
+## Data Quality Six Dimensions
 
-| 维度 | 说明 | 示例规则 |
+| Dimension | Description | Example Rule |
 |---|---|---|
-| 完整性 | 字段非空率 | `user_id` 非空率 ≥ 99% |
-| 唯一性 | 主键/唯一键重复检测 | `order_id` 无重复 |
-| 一致性 | 跨表数据一致 | 订单表与明细表金额一致 |
-| 准确性 | 数值范围合理性 | `age` 在 0-150 之间 |
-| 有效性 | 格式/枚举值合法 | `status` 在 ['active','inactive'] 中 |
-| 及时性 | 数据更新时效 | 每天 8 点前数据已更新 |
+| Completeness | Non-null rate of fields | `user_id` non-null rate ≥ 99% |
+| Uniqueness | Primary key / unique key duplicate detection | `order_id` has no duplicates |
+| Consistency | Cross-table data consistency | Order table and detail table amounts match |
+| Accuracy | Numeric range validity | `age` is between 0 and 150 |
+| Validity | Format / enum value legality | `status` is in ['active', 'inactive'] |
+| Timeliness | Data update freshness | Data updated before 8 AM every day |
 
-### 触发方式
+### Trigger Methods
 
-- **定时触发**：Cron 表达式，独立于任务调度
-- **调度任务触发**：绑定到某个 SQL/同步任务，任务完成后自动触发质量检测
-- **手动触发**：在 Studio 界面手动执行
+- **Scheduled trigger**: Cron expression, independent of task scheduling
+- **Task-bound trigger**: Bound to a SQL/sync task, quality check auto-triggers after task completes
+- **Manual trigger**: Execute manually in the Studio UI
 
 ---
 
-## 数据目录（Data Catalog）功能
+## Data Catalog Features
 
-### 表详情页六大 Tab
+### Table Detail Page Six Tabs
 
-| Tab | 内容 |
+| Tab | Content |
 |---|---|
-| 详情 | DDL 语句（一键复制）、权限管理入口 |
-| 字段 | 字段名/类型/描述/主键/标准化标签 |
-| 预览 | 100 行数据预览（需 SELECT 权限 + 指定 VCluster） |
-| 血缘 | 上下游表关系图（数据血缘） |
-| 作业 | 该表相关的查询历史 |
-| 上传 | 本地文件直接上传到表 |
+| Details | DDL statement (one-click copy), permission management entry |
+| Fields | Column name / type / description / primary key / standardized tags |
+| Preview | 100-row data preview (requires SELECT permission + specified VCluster) |
+| Lineage | Upstream/downstream table relationship graph (data lineage) |
+| Jobs | Query history related to this table |
+| Upload | Upload local files directly to the table |
 
-### 搜索支持的过滤条件
+### Search Filter Conditions
 
-- 对象类型：Table / View / Materialized View
-- 工作空间 / Schema
-- 创建时间范围
-- 负责人
+- Object type: Table / View / Materialized View
+- Workspace / Schema
+- Creation time range
+- Owner
 
 ---
 
-## 运维监控告警
+## Operations Monitoring Alerts
 
-### 内置告警规则
+### Built-in Alert Rules
 
-| 规则 | 触发条件 |
+| Rule | Trigger Condition |
 |---|---|
-| 周期任务实例运行失败 | 任务实例执行失败 |
-| 数据质量检测失败 | 质量规则校验不通过 |
-| Pipe 延迟告警 | Kafka/OSS Pipe 消费延迟超阈值 |
-| 同步任务失败 | 离线/实时同步任务异常 |
-| 自定义规则 | 用户自定义 SQL 条件 |
+| Scheduled task instance failure | Task instance execution failed |
+| Data quality check failure | Quality rule validation failed |
+| Pipe delay alert | Kafka/OSS Pipe consumption delay exceeds threshold |
+| Sync task failure | Offline/realtime sync task error |
+| Custom rule | User-defined SQL condition |
 
-### 告警通知渠道
+### Alert Notification Channels
 
-- 飞书 webhook
-- 企业微信 webhook
-- 邮件（部分版本）
+- Lark webhook
+- WeCom (Enterprise WeChat) webhook
+- Email (some versions)
 
 ---
 
-## 数据同步支持的数据源（部分）
+## Data Sync Supported Data Sources (partial)
 
-### 离线同步（批量）
+### Offline Sync (Batch)
 
 MySQL · PostgreSQL · SQL Server · Oracle · Aurora · PolarDB · ClickHouse · Hive · HDFS · OSS/S3/COS · Lakehouse
 
-### 实时同步（CDC）
+### Realtime Sync (CDC)
 
-MySQL（Binlog）· PostgreSQL（WAL）· Kafka（JSON/Avro/CSV）
+MySQL (Binlog) · PostgreSQL (WAL) · Kafka (JSON/Avro/CSV)
 
-### 连接方式
+### Connection Methods
 
-- 公网直连
-- SSH Tunnel（连接 VPC 内数据库）
-- 私网连接（PrivateLink）
+- Public network direct connection
+- SSH Tunnel (connect to databases in VPC)
+- Private network connection (PrivateLink)
 
 ---
 
-## Python 任务中使用数据源
+## Using Data Sources in Python Tasks
 
-Studio Python 任务内置 `clickzetta-dbutils` 工具包，可直接使用预配置的数据源：
+Studio Python tasks have the built-in `clickzetta-dbutils` package, which allows direct use of pre-configured data sources:
 
 ```python
 from clickzetta import dbutils
 
-# 使用预配置的 Lakehouse 数据源
+# Use a pre-configured Lakehouse data source
 conn = dbutils.get_connection('my_lakehouse_datasource')
 cursor = conn.cursor()
 cursor.execute("SELECT * FROM my_schema.my_table LIMIT 10")
 rows = cursor.fetchall()
 print(rows)
 
-# 使用预配置的 MySQL 数据源
+# Use a pre-configured MySQL data source
 mysql_conn = dbutils.get_connection('my_mysql_datasource')
 ```

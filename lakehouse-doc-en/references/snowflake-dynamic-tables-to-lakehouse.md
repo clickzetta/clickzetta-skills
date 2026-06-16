@@ -1,34 +1,49 @@
-# Migrating Snowflake Dynamic Tables to Lakehouse: Bronze–Silver–Gold Three-Layer Pipeline
+# Snowflake Dynamic Tables Migration in Practice: Bronze–Silver–Gold Pipeline
 
-If you have built a Medallion data pipeline on Snowflake using Dynamic Tables, migrating to Singdata Lakehouse involves changes in 4 syntax areas. The core SQL query logic does not need to change.
+If you have built a Medallion data pipeline on Snowflake using Dynamic Tables, migrating to Singdata Lakehouse involves mainly 4 syntax differences. The core SQL query logic does not need to change.
 
-This guide walks through a complete migration using a real project: moving a Bronze–Silver–Gold three-layer pipeline built on Snowflake Dynamic Tables to Singdata Lakehouse, using the TPC-H standard dataset available on both platforms. All SQL has been validated with cz-cli against a live instance.
+This article demonstrates the complete migration process with a real project: migrating a Bronze–Silver–Gold three-layer pipeline based on Snowflake Dynamic Tables to Singdata Lakehouse, using the TPC-H standard dataset available on both platforms. All SQL has been validated with cz-cli.
 
-Full code on GitHub: [snowflake2lakehouse-dynamic-tables](https://github.com/clickzetta/snowflake2lakehouse-dynamic-tables)
+Full code: [snowflake2lakehouse-dynamic-tables](https://github.com/clickzetta/snowflake2lakehouse-dynamic-tables)
 
 ---
 
 ## Original Project
 
-[snowflake2lakehouse-dynamic-tables](https://github.com/clickzetta/snowflake2lakehouse-dynamic-tables) is adapted from [Techy-Malay/snowflake-bsg-dynamic-tables](https://github.com/Techy-Malay/snowflake-bsg-dynamic-tables) and demonstrates how to implement a Bronze–Silver–Gold three-layer architecture on Snowflake using Dynamic Tables. The project uses the TPC-H ORDERS table as its data source and produces a daily sales summary after three layers of Dynamic Table processing.
+[snowflake2lakehouse-dynamic-tables](https://github.com/clickzetta/snowflake2lakehouse-dynamic-tables) is adapted from [Techy-Malay/snowflake-bsg-dynamic-tables](https://github.com/Techy-Malay/snowflake-bsg-dynamic-tables), demonstrating how to implement a Bronze–Silver–Gold architecture on Snowflake using Dynamic Tables. The project uses the TPC-H ORDERS table as the data source and outputs a daily sales summary after three layers of Dynamic Table processing.
 
-The migrated code lives in the `03_lakehouse/` directory. The original Snowflake SQL is preserved in `01_snowflake/` for comparison.
+The migrated code is in the `03_lakehouse/` directory; the original Snowflake SQL is preserved in `01_snowflake/` for comparison.
+
+## Conclusion First
+
+**The core SQL query logic does not need to change.** All 4 changes are platform configuration replacements: `TARGET_LAG` → `REFRESH INTERVAL`, `WAREHOUSE` → `VCLUSTER`, `DATA_RETENTION_TIME_IN_DAYS` moved to a separate post-creation statement, and `DOWNSTREAM` cascade refresh replaced with independent per-layer intervals.
+
+| Change | Effort | Notes |
+|---|---|---|
+| Dynamic Table refresh parameters | Very low | `TARGET_LAG` → `REFRESH INTERVAL`, `WAREHOUSE` → `VCLUSTER` |
+| DOWNSTREAM cascade refresh | Low | Singdata Lakehouse has no such concept; each layer sets its own `REFRESH INTERVAL` independently |
+| Time Travel retention | Very low | Moved from inline CREATE TABLE option to post-creation `ALTER TABLE SET PROPERTIES` |
+| Data source reference | Very low | `SNOWFLAKE_SAMPLE_DATA.TPCH_SF1` → `clickzetta_sample_data.tpch_100g` |
+
+Cleaning, deduplication (QUALIFY), aggregation, date truncation — the core SQL logic syntax is identical and requires no changes.
+
+---
 
 ## Technology Stack Comparison
 
-| | Original (Snowflake) | Migrated (Lakehouse) |
+| | Original (Snowflake) | After Migration (Lakehouse) |
 |---|---|---|
-| Compute resource | `WAREHOUSE = compute_wh` | `VCLUSTER default` |
+| Compute resource | `WAREHOUSE = compute_wh` | `VCLUSTER DEFAULT` |
 | Refresh strategy | `TARGET_LAG = '5 minutes'` | `REFRESH INTERVAL '5' MINUTE` |
-| Dependency propagation | `TARGET_LAG = 'DOWNSTREAM'` (automatic cascade) | No equivalent; each layer refreshes independently |
+| Dependency propagation | `TARGET_LAG = 'DOWNSTREAM'` (auto cascade) | No such concept; each layer refreshes independently |
 | Manual refresh | `ALTER DYNAMIC TABLE ... REFRESH` | `REFRESH DYNAMIC TABLE ...` |
-| Time Travel retention | `DATA_RETENTION_TIME_IN_DAYS = 1` (inline CREATE TABLE option) | `ALTER TABLE ... SET PROPERTIES ('data_retention_days' = '1')` (separate statement after table creation) |
-| Sample dataset | `SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.ORDERS` (1 GB) | `clickzetta_sample_data.tpch_100g.orders` (100 GB) |
-| Schema reference | `USE SCHEMA` + unqualified name, or fully qualified name | Same; both styles are supported |
+| Time Travel retention | `DATA_RETENTION_TIME_IN_DAYS = 1` (inline CREATE TABLE option) | `ALTER TABLE ... SET PROPERTIES ('data_retention_days' = '1')` (separate post-creation statement) |
+| Sample dataset | `SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.ORDERS` (1GB) | `clickzetta_sample_data.tpch_100g.orders` (100GB) |
+| Schema reference | `USE SCHEMA` + unqualified name, or fully qualified name | Same; both forms supported |
 | Deduplication syntax | `QUALIFY ROW_NUMBER() OVER (...) = 1` | Same syntax, fully supported |
 | Date truncation | `DATE_TRUNC('day', ts)` | Same syntax, fully supported |
 
-What changes is primarily platform configuration — swapping Snowflake Virtual Warehouse for Lakehouse VCluster, and `TARGET_LAG` for `REFRESH INTERVAL`. The core SQL data processing logic is completely unchanged: cleansing, deduplication, and aggregation are written identically on Lakehouse.
+The main changes are platform configuration — replacing Snowflake Virtual Warehouse with Lakehouse VCluster, and `TARGET_LAG` with `REFRESH INTERVAL`. The core SQL logic for data processing is completely unchanged: cleaning, deduplication, aggregation — these are written identically on Lakehouse as on Snowflake.
 
 ---
 
@@ -36,7 +51,7 @@ What changes is primarily platform configuration — swapping Snowflake Virtual 
 
 ```
 SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.ORDERS          clickzetta_sample_data.tpch_100g.orders
-(Snowflake built-in sample dataset, 1 GB)       (Lakehouse shared dataset, 100 GB)
+(Snowflake built-in sample dataset, 1GB)        (Lakehouse shared dataset, 100GB)
               │                                               │
               ▼                                               ▼
          ORDERS_STG                                    orders_stg
@@ -48,11 +63,11 @@ SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.ORDERS          clickzetta_sample_data.tpch_100g.
               │                                               │
               ▼  TARGET_LAG = '5 minutes' + QUALIFY           ▼  REFRESH INTERVAL '5' MINUTE + QUALIFY
          silver_orders                                 silver_orders
-    (cleansed, deduplicated, type-normalized)      (cleansed, deduplicated, type-normalized)
+    (cleaned, deduplicated, type-normalized)       (cleaned, deduplicated, type-normalized)
               │                                               │
               ▼  TARGET_LAG = '10 minutes'                    ▼  REFRESH INTERVAL '10' MINUTE
          gold_sales_summary                            gold_sales_summary
-    (daily sales summary, analytics-ready)         (daily sales summary, analytics-ready)
+    (daily sales summary for analytics)            (daily sales summary for analytics)
 ```
 
 ---
@@ -63,9 +78,9 @@ SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.ORDERS          clickzetta_sample_data.tpch_100g.
 
 ## Migration Steps
 
-### Step 1: Replace the sample dataset reference
+### Step 1: Replace Sample Dataset Reference
 
-Snowflake's built-in sample data is accessed via the `SNOWFLAKE_SAMPLE_DATA` database. Lakehouse's shared dataset is accessed via `clickzetta_sample_data`.
+Snowflake's built-in sample data is accessed via the `SNOWFLAKE_SAMPLE_DATA` database; Lakehouse's shared dataset is accessed via `clickzetta_sample_data`.
 
 Snowflake:
 
@@ -101,16 +116,16 @@ SET PROPERTIES ('data_retention_days' = '1');
 
 Two changes:
 
-1. `SNOWFLAKE_SAMPLE_DATA.TPCH_SF1` → `clickzetta_sample_data.tpch_100g` (different dataset name; column names are the same)
-2. `DATA_RETENTION_TIME_IN_DAYS = 1` moves from an inline DDL option to a separate `ALTER TABLE ... SET PROPERTIES` statement after table creation
+1. `SNOWFLAKE_SAMPLE_DATA.TPCH_SF1` → `clickzetta_sample_data.tpch_100g` (different dataset name, same column names)
+2. `DATA_RETENTION_TIME_IN_DAYS = 1` moved from inline DDL option to a separate post-creation `ALTER TABLE ... SET PROPERTIES`
 
-### Step 2: Replace Dynamic Table syntax
+### Step 2: Replace Dynamic Table Syntax
 
-This is the core of the migration and involves 3 syntax changes.
+This is the core part of the migration, involving 3 syntax changes.
 
 **`TARGET_LAG` → `REFRESH INTERVAL`**
 
-Snowflake uses `TARGET_LAG` to declare the acceptable data lag (the platform decides the refresh frequency automatically). Lakehouse uses `REFRESH INTERVAL` to set a fixed refresh cycle.
+Snowflake uses `TARGET_LAG` to declare acceptable data latency (the platform automatically determines refresh frequency); Lakehouse uses `REFRESH INTERVAL` to set a fixed refresh cycle.
 
 Snowflake:
 
@@ -127,7 +142,7 @@ Lakehouse:
 ```sql
 CREATE OR REPLACE DYNAMIC TABLE bsg_dynamic_tables.bronze_orders
   REFRESH INTERVAL '5' MINUTE
-  VCLUSTER default
+  VCLUSTER DEFAULT
 AS
 SELECT ...
 ```
@@ -138,11 +153,11 @@ Snowflake Virtual Warehouse corresponds to Lakehouse VCluster. Use your VCluster
 
 **Handling `TARGET_LAG = 'DOWNSTREAM'`**
 
-Snowflake supports `TARGET_LAG = 'DOWNSTREAM'`, which causes an upstream table's refresh to automatically trigger downstream table refreshes, forming a dependency cascade. Lakehouse does not have this concept — each Dynamic Table refreshes independently on its own `REFRESH INTERVAL`.
+Snowflake supports `TARGET_LAG = 'DOWNSTREAM'`, which lets upstream table refreshes automatically trigger downstream table refreshes in a dependency cascade. Lakehouse does not have this concept — each Dynamic Table refreshes independently according to its own `REFRESH INTERVAL`.
 
-Practical recommendation: set Tier 1 (Bronze/Silver) refresh intervals shorter than Tier 2 (Gold) to approximate the cascade effect. For example, set Bronze/Silver to 5 minutes and Gold to 10 minutes — by the time Gold refreshes, Bronze/Silver will already have the latest data.
+Practical recommendation: set Tier 1 (Bronze/Silver) refresh intervals shorter than Tier 2 (Gold) to approximate cascade behavior. For example, Bronze/Silver at 5 minutes and Gold at 10 minutes ensures Bronze/Silver data is up to date when Gold refreshes.
 
-### Step 3: Replace the manual refresh command
+### Step 3: Replace Manual Refresh Command
 
 Snowflake:
 
@@ -156,7 +171,7 @@ Lakehouse:
 REFRESH DYNAMIC TABLE bsg_dynamic_tables.bronze_orders;
 ```
 
-Note that refreshes must be executed manually in dependency order — Lakehouse does not cascade automatically:
+Note that refreshes must be executed manually in dependency order — Lakehouse does not auto-cascade:
 
 ```sql
 REFRESH DYNAMIC TABLE bsg_dynamic_tables.bronze_orders;
@@ -164,14 +179,14 @@ REFRESH DYNAMIC TABLE bsg_dynamic_tables.silver_orders;
 REFRESH DYNAMIC TABLE bsg_dynamic_tables.gold_sales_summary;
 ```
 
-### Step 4: Fully compatible parts (no changes needed)
+### Step 4: Fully Compatible Parts (No Changes Needed)
 
 The following syntax is identical between Lakehouse and Snowflake:
 
 **`QUALIFY ROW_NUMBER() OVER (...) = 1`** (Silver layer deduplication)
 
 ```sql
--- Identical syntax in both Snowflake and Lakehouse
+-- Identical syntax in Snowflake and Lakehouse
 FROM bronze_orders
 QUALIFY ROW_NUMBER() OVER (
     PARTITION BY order_id
@@ -182,7 +197,7 @@ QUALIFY ROW_NUMBER() OVER (
 **`DATE_TRUNC('day', ts)`** (Gold layer date aggregation)
 
 ```sql
--- Identical syntax in both Snowflake and Lakehouse
+-- Identical syntax in Snowflake and Lakehouse
 SELECT
     DATE_TRUNC('day', order_ts) AS order_date,
     COUNT(*)                    AS total_orders,
@@ -194,7 +209,7 @@ GROUP BY DATE_TRUNC('day', order_ts);
 **`CAST(order_ts AS TIMESTAMP)`** (Silver layer type conversion)
 
 ```sql
--- Identical syntax in both Snowflake and Lakehouse
+-- Identical syntax in Snowflake and Lakehouse
 CAST(order_ts AS TIMESTAMP) AS order_ts
 ```
 
@@ -202,16 +217,16 @@ CAST(order_ts AS TIMESTAMP) AS order_ts
 
 ## Validation Results
 
-All SQL was validated by running it against a Lakehouse instance with cz-cli:
+All SQL has been validated by running on a Lakehouse instance via cz-cli:
 
-| Table | Row count | Notes |
-|-------|-----------|-------|
-| `orders_stg` | 100,000 | Sampled from the 150M-row TPC-H dataset |
-| `bronze_orders` | 100,000 | Two columns added: `ingestion_ts`, `source_system` |
+| Table | Row Count | Notes |
+|----|------|------|
+| `orders_stg` | 100,000 | Sampled from 150M-row TPC-H dataset |
+| `bronze_orders` | 100,000 | Added `ingestion_ts` and `source_system` columns |
 | `silver_orders` | 100,000 | After QUALIFY deduplication (TPC-H source data has no duplicates) |
 | `gold_sales_summary` | 103 | 103 distinct order dates, total sales $15 billion |
 
-After the run, clean up all Lakehouse objects with:
+After running, clean up all Lakehouse objects with:
 
 ```bash
 cz-cli sql -f 03_lakehouse/06_cleanup.sql --profile <your-profile> --sync --write
@@ -219,27 +234,27 @@ cz-cli sql -f 03_lakehouse/06_cleanup.sql --profile <your-profile> --sync --writ
 
 ---
 
-## Migration Conclusions
+## Migration Conclusion
 
-The SQL query logic of Snowflake Dynamic Tables and Lakehouse Dynamic Tables is highly compatible. This project validates the following conclusions:
+Snowflake Dynamic Tables and Lakehouse Dynamic Tables have highly compatible SQL query logic. This project validates the following conclusions:
 
 **Fully compatible (no changes needed):**
 
 - `QUALIFY ROW_NUMBER() OVER (...) = 1` deduplication
 - `DATE_TRUNC('day', ts)` date truncation
 - `CAST(col AS TYPE)` type conversion
-- Standard aggregate functions: `COUNT`, `SUM`, `AVG`
+- Standard aggregation functions: `COUNT`, `SUM`, `AVG`
 - `CURRENT_TIMESTAMP()` system function
 
-**4 areas that require changes:**
+**4 changes required:**
 
 | Difference | Snowflake | Lakehouse |
-|------------|-----------|-----------|
+|--------|-----------|-----------|
 | Compute resource | `WAREHOUSE = wh_name` | `VCLUSTER vcluster_name` |
 | Refresh strategy | `TARGET_LAG = 'N minutes'` | `REFRESH INTERVAL 'N' MINUTE` |
-| Dependency cascade | `TARGET_LAG = 'DOWNSTREAM'` | No equivalent; each layer sets its own interval |
+| Dependency cascade | `TARGET_LAG = 'DOWNSTREAM'` | No such concept; each layer sets its own interval |
 | Manual refresh | `ALTER DYNAMIC TABLE ... REFRESH` | `REFRESH DYNAMIC TABLE ...` |
-| Time Travel retention | `DATA_RETENTION_TIME_IN_DAYS = N` (inline CREATE TABLE option) | `ALTER TABLE ... SET PROPERTIES ('data_retention_days' = 'N')` (separate statement after table creation) |
+| Time Travel retention | `DATA_RETENTION_TIME_IN_DAYS = N` (inline CREATE TABLE option) | `ALTER TABLE ... SET PROPERTIES ('data_retention_days' = 'N')` (separate post-creation statement) |
 
 ---
 
@@ -249,5 +264,5 @@ The SQL query logic of Snowflake Dynamic Tables and Lakehouse Dynamic Tables is 
 - Original project: [Techy-Malay/snowflake-bsg-dynamic-tables](https://github.com/Techy-Malay/snowflake-bsg-dynamic-tables)
 - [Dynamic Table Overview](dynamic_table_summary.md)
 - [CREATE DYNAMIC TABLE](create-dynamic-table.md)
-- [Time Travel](timetravel.md)
-- [Dynamic Table Development Guide](SQL_Dynamic_Table_Guide.md)
+- [Time Travel](timetravel-summary.md)
+- [Dynamic Table Development Guide](sql_dynamic_table_guide.md)

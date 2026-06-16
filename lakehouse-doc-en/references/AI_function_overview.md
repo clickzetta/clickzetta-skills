@@ -13,13 +13,13 @@ Upon receiving prior user authorization, the Lakehouse platform will automatical
 
 ## Main Process for Creating External Functions
 
-Please refer to: [Usage Process: External Function](RemoteFunctionBestPractice.md)
+Please refer to: [Usage Process: External Function](remotefunctionbestpractice.md)
 
 ## Developing AI Functions Using External Functions
 
 Please refer to the following development guides:
 
-* [External Function(Python3)](RemoteFunctionDevGuidePython3.md)
-* [External Function(Java)](ExternalFunctionDevGuideJava.md)
+* [External Function(Python3)](remotefunctiondevguidepython3.md)
+* [External Function(Java)](externalfunctiondevguidejava.md)
 
 ^

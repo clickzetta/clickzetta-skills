@@ -4,11 +4,11 @@ description: |
   Router skill: selects the best data ingestion method for ClickZetta Lakehouse based on
   data source, latency, sync scope, and continuity requirements. Routes to specialized skills:
   Kafka Pipe, OSS/S3/COS Pipe, Studio batch sync, Studio real-time sync, Studio CDC,
-  file/URL import, or SDK ingestion.
+  file/URL import, or programmatic ingestion guidance.
   Trigger: user wants to get external data INTO Lakehouse but hasn't chosen a method, OR
   asks which ingestion approach fits their scenario.
   Covers: Kafka, MySQL, PostgreSQL, SQL Server, TiDB, OSS, S3, COS, local files, URLs,
-  Java SDK, Python/ZettaPark. Does NOT cover: querying data, pipeline monitoring/diagnosis,
+  programmatic application writes, Python/ZettaPark. Does NOT cover: querying data, pipeline monitoring/diagnosis,
   Dynamic Table tuning, internal table transformations, or data export.
   Keywords: data ingestion, import, sync, ETL, migrate, load data, ingest, pipeline selection
 ---
@@ -27,7 +27,7 @@ Routes users to the correct ingestion skill based on data source, latency requir
 
 ### Step 1: Collect Requirements
 
-1. **Data source type**: Kafka / Object storage (OSS/S3/COS) / Relational DB (MySQL/PostgreSQL/SQL Server/TiDB) / Local file / URL / Java SDK / Python
+1. **Data source type**: Kafka / Object storage (OSS/S3/COS) / Relational DB (MySQL/PostgreSQL/SQL Server/TiDB) / Local file / URL / application write / Python
 2. **Latency**: Real-time (seconds) / Near real-time (minutes) / Batch (hours/days)
 3. **Sync scope**: Single table / Multiple tables / Entire database
 4. **Continuity**: One-time import / Continuous incremental sync
@@ -46,8 +46,8 @@ Routes users to the correct ingestion skill based on data source, latency requir
 | MySQL/PG/SQL Server/TiDB | Real-time CDC | Multiple tables / Entire DB | `clickzetta-cdc-sync-pipeline` |
 | MySQL/PG/SQL Server | Offline batch | Single table | `clickzetta-batch-sync-pipeline` |
 | MySQL/PG/SQL Server | Offline batch | Multiple tables / Entire DB | `clickzetta-batch-sync-pipeline` |
-| Java application | Real-time/Batch | Programmatic write | `clickzetta-java-sdk` |
-| Python/ZettaPark | Batch | DataFrame write | `clickzetta-zettapark` / `clickzetta-app-python-sdk` |
+| Java application | Real-time/Batch | Programmatic write | `lakehouse-doc-en` (official Java SDK docs) |
+| Python/ZettaPark | Batch | DataFrame write | `clickzetta-zettapark` / `lakehouse-doc-en` |
 | Small data (manual) | One-time | Few rows | Direct SQL INSERT (see below) |
 
 ### How to Choose Between Similar Options

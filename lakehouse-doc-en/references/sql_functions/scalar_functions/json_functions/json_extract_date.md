@@ -30,6 +30,6 @@ SELECT json_extract_date(PARSE_JSON('{"dt":"2024-01-15"}'), '$.other');
 
 ## Related Documentation
 
-- [JSON_EXTRACT_TIMESTAMP](sql_functions/scalar_functions/json_functions/json_extract_timestamp.md), [JSON_EXTRACT_TIMESTAMP_NTZ](sql_functions/scalar_functions/json_functions/json_extract_timestamp_ntz.md)
-- [JSON_EXTRACT_STRING](sql_functions/scalar_functions/json_functions/json_extract_string.md)
-- [PARSE_JSON](sql_functions/scalar_functions/json_functions/json_parse.md)
+- [JSON_EXTRACT_TIMESTAMP](json_extract_timestamp.md), [JSON_EXTRACT_TIMESTAMP_NTZ](json_extract_timestamp_ntz.md)
+- [JSON_EXTRACT_STRING](json_extract_string.md)
+- [PARSE_JSON](json_parse.md)

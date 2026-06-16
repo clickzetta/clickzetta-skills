@@ -32,9 +32,9 @@ The two complement each other: Studio is suitable for daily development and visu
 
 ## Quick Start
 
-* [Lakehouse Studio Quick Tour](LakehouseStudio-tour.md) — Understand interface layout and feature entry points
+* [Lakehouse Studio Quick Tour](lakehousestudio-tour.md) — Understand interface layout and feature entry points
 * [Lakehouse Studio Getting Started Guide](lakehouse-studio-101.md) — Start using Studio from scratch
-* [Data Analytics Agent (DataGPT) Quick Tour](LakehouseDataGPT-tour.md) — AI-assisted data analysis
+* [Data Analytics Agent (DataGPT) Quick Tour](lakehousedatagpt-tour.md) — AI-assisted data analysis
 
 ## Related Documentation
 

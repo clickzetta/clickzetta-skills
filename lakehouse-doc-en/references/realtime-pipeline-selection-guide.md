@@ -252,8 +252,7 @@ CREATE PIPE ods.kafka_events_pipe AS
 
 -- Step 3: Create Dynamic Table for minute-level aggregation (DWD layer)
 CREATE DYNAMIC TABLE dwd.event_stats
-    TARGET_LAG = '1 minute'
-    VCLUSTER = 'default'
+    REFRESH INTERVAL 1 MINUTE VCLUSTER DEFAULT
 AS
 SELECT
     DATE_TRUNC('minute', ts)  AS minute,

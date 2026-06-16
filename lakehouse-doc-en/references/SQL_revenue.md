@@ -28,4 +28,4 @@ WHERE a.user_id = b.user_id;
 
 ## Related Documentation
 
-* [Retention and Cohort Analysis](SQL_Retention_Cohort_Guide.md) — Complete retention analysis guide (N-day retention, cohort matrix, consecutive active users, churn analysis)
+* [Retention and Cohort Analysis](sql_retention_cohort_guide.md) — Complete retention analysis guide (N-day retention, cohort matrix, consecutive active users, churn analysis)

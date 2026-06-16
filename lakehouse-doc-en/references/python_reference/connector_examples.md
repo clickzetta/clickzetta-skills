@@ -2,7 +2,7 @@
 
 This page provides complete, runnable examples of `clickzetta-connector` for common business scenarios.
 
-For connection configuration and basic usage, see [Singdata Connector Python SDK](python_reference/connector.md).
+For connection configuration and basic usage, see [ClickZetta Connector Python SDK](connector.md).
 
 ---
 
@@ -21,7 +21,7 @@ conn = connect(
     instance='your_instance',
     workspace='your_workspace',
     schema='public',
-    vcluster='default'
+    vcluster='DEFAULT'
 )
 cursor = conn.cursor()
 ```
@@ -235,7 +235,7 @@ For supported hints parameters, see [Parameter Management](../set-properties.md)
 
 | Document | Description |
 |----------|-------------|
-| [Python Connector SDK](python_reference/connector.md) | Installation, connection parameters, and full API reference |
+| [Python Connector SDK](connector.md) | Installation, connection parameters, and full API reference |
 | [Zettapark](../zettapark-quick-start.md) | Python DataFrame API for pandas-style operations |
 | [BulkLoad](../java_reference/bulkload-upload.md) | High-speed writes for millions of rows |
 | [Parameter Management](../set-properties.md) | SQL hints parameter reference |

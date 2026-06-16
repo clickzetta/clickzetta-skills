@@ -924,7 +924,7 @@ GROUP BY user_id;
 
 #### Index Naming Best Practices
 
-**Important Update**: Through actual testing, the current version of the Singdata Lakehouse **strictly enforces schema-level uniqueness** for index naming.
+**Note**: The current version of Singdata Lakehouse **strictly enforces schema-level uniqueness** for index naming.
 
 #### Recommended Index Naming Convention
 
@@ -1491,8 +1491,6 @@ SELECT * FROM filtered_source;
 
 **Important Update**: Through testing, the current version of the Singdata Lakehouse strictly enforces schema-level uniqueness for index names.
 
-**Recommended Naming Practice**:
-
 ```sql
 -- Use table name prefix for unique index naming
 CREATE TABLE orders (
@@ -1734,7 +1732,7 @@ CREATE TABLE correct_table (id BIGINT IDENTITY, name VARCHAR(50));
 
 #### Error 2: Index Naming Management
 
-**Important Update**: Through actual testing, the current version of the Singdata Lakehouse **may not strictly enforce schema-level uniqueness** for index naming. Although testing shows that indexes with the same name can be created successfully, we still recommend using unique index names for code maintainability and future version compatibility.
+The current version of the Singdata Lakehouse **may not strictly enforce schema-level uniqueness** for index naming. Although indexes with the same name can be created successfully, we still recommend using unique index names for code maintainability and future version compatibility.
 
 **Best Practice**:
 

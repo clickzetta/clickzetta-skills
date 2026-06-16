@@ -384,8 +384,8 @@ filter(transform(durations, d -> d * 2), d -> d > 20)
 
 ## Related Documentation
 
-* [ARRAY Type](ARRAY.md)
-* [MAP Type](MAP.md)
-* [Nested Data Type Conversion](sql_data_transfom_NestedDataTypes.md)
-* [Array Explode and Flatten Guide](SQL_Array_Explode_Guide.md)
+* [ARRAY Type](array.md)
+* [MAP Type](map.md)
+* [Nested Data Type Conversion](sql_data_transfom_nesteddatatypes.md)
+* [Array Explode and Flatten Guide](sql_array_explode_guide.md)
 * [Higher-Order Functions Reference](sql_functions/scalar_functions/high_order_functions/)

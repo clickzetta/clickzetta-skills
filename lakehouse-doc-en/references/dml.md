@@ -8,7 +8,7 @@ DML commands are used to write, update, and delete data in tables, and to merge 
 
 | Page | Description |
 |------|-------------|
-| [INSERT INTO](INSERT.md) | Append rows to a table; supports VALUES and SELECT as sources |
+| [INSERT INTO](insert.md) | Append rows to a table; supports VALUES and SELECT as sources |
 | [UPDATE](update.md) | Modify column values in existing rows based on a condition |
 | [DELETE](delete.md) | Delete rows from a table based on a condition |
 | [MERGE INTO](merge.md) | Perform INSERT/UPDATE/DELETE on a target table based on match conditions; suited for CDC upsert scenarios |

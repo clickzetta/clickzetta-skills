@@ -318,7 +318,7 @@ LIMIT 100;
 
 * [Metabase](metabase.md) with Lakehouse Driver on Docker
 * [MindsDB](mindsdb.md) with Lakehouse Connector on Docker
-* [Zeppelin](eco_integration/Zeppelin.md) with Lakehouse JDBC Driver
+* [Zeppelin](eco_integration/zeppelin.md) with Lakehouse JDBC Driver
 
 ### Preview Parquet File Schema and Data via Python Code, and Generate SQL Code for Singdata Lakehouse
 

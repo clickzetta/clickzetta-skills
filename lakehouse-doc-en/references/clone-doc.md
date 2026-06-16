@@ -16,7 +16,7 @@ In Lakehouse, the clone table operation creates an independent copy of a table t
 CREATE TABLE [ IF NOT EXISTS ] table_name
   CLONE <source_object_name> [TIMESTAMP AS OF timestamp_expression]
 ```
-* You can use `TIMESTAMP AS OF timestamp_expression` to clone the version of the dynamic table at a specified point in time. As long as the point in time is within the **[data retention period](TIMETRAVEL.md)** (`data_retention_days`)
+* You can use `TIMESTAMP AS OF timestamp_expression` to clone the version of the dynamic table at a specified point in time. As long as the point in time is within the **[data retention period](timetravel.md)** (`data_retention_days`)
   * `timestamp_expression` can be any of the following:
     * `'2024-10-18T22:15:12.013Z'`, i.e., a string that can be cast to a timestamp
     * `cast('2024-10-18 13:36:32 ' as timestamp)`
@@ -51,7 +51,7 @@ CREATE DYNAMIC TABLE dt_name
     *  INTERVAL 30 second
 * `VCLUSTER vcname`: Specifies the name of the compute cluster. `vcname` is the actual name of the compute cluster.
 * `CLONE <source_dynamic_table>`: Clones from an existing dynamic table `<source_dynamic_table>`.
-* `TIMESTAMP AS OF timestamp_expression`: The version of the cloned dynamic table at the specified point in time. `timestamp_expression` can be one of several timestamp expressions. As long as the point in time is within the [data retention period](TIMETRAVEL.md) (`data_retention_days`):
+* `TIMESTAMP AS OF timestamp_expression`: The version of the cloned dynamic table at the specified point in time. `timestamp_expression` can be one of several timestamp expressions. As long as the point in time is within the [data retention period](timetravel.md) (`data_retention_days`):
   * `timestamp_expression` can be any of the following:
     * `'2024-10-18T22:15:12.013Z'`, i.e., a string that can be cast to a timestamp
     * `cast('2024-10-18 13:36:32 ' as timestamp)`

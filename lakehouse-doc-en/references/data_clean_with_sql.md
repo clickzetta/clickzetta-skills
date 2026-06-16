@@ -341,7 +341,7 @@ The following is a list of commonly used SQL data cleaning functions:
 
 6. **Removing Outliers**
 
-   * [DELETE](DELETE.md): Used to delete records that do not meet conditions.
+   * [DELETE](delete.md): Used to delete records that do not meet conditions.
 
 7. **Deduplication**
 
@@ -365,7 +365,7 @@ The following is a list of commonly used SQL data cleaning functions:
 
 11. **Joining Data**
 
-    * [JOIN](JOIN.md): Used to join two or more tables to form a complete data view.
+    * [JOIN](join.md): Used to join two or more tables to form a complete data view.
 
 12. **Merging Column Data**
 

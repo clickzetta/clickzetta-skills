@@ -12,7 +12,7 @@ Singdata Lakehouse supports three categories of data ingestion: real-time databa
 | -------------------------------------------------------- | --------------------------------- | ------------------------------------------------------------------- |
 | Single table or a few tables, real-time sync             | Studio real-time sync task (CDC)  | [Real-time Sync Task](realtime_sync.md)                             |
 | Full database sync, mirroring a source DB into Lakehouse | Studio multi-table real-time sync | [Multi-table Real-time Sync Guide](multitable_realtime_sync_sop.md) |
-| Offline periodic sync (T+1 or H+1)                       | Studio offline sync task          | [Offline Sync Task](batch_sync.md) · [FAQ](batch_sync_Sop.md)       |
+| Offline periodic sync (T+1 or H+1)                       | Studio offline sync task          | [Offline Sync Task](batch_sync.md) · [FAQ](batch_sync_sop.md)       |
 | Oracle database real-time sync                           | Bluepipe integration              | [Oracle Real-time Sync](bluepipe-oracle-lakehouse-datasync.md)      |
 | Sync over private network (VPC / Private Link)           | Studio + Private Link             | [RDS Sync over VPC](studio-di-privatelink-vpc-from-rds.md)          |
 

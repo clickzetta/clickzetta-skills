@@ -32,6 +32,6 @@ SELECT acos(2);
 
 ## Related Documentation
 
-- [ASIN](sql_functions/scalar_functions/math_functions/asin.md) — Arc sine
-- [ATAN](sql_functions/scalar_functions/math_functions/atan.md) — Arc tangent
-- [COS](sql_functions/scalar_functions/math_functions/cos.md) — Cosine
+- [ASIN](asin.md) — Arc sine
+- [ATAN](atan.md) — Arc tangent
+- [COS](cos.md) — Cosine

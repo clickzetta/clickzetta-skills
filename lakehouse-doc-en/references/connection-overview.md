@@ -132,7 +132,7 @@ CREATE API CONNECTION my_fc_conn
 - Accessing external data through a Connection may incur data transfer fees from the cloud provider.
 - Reading external storage files via an External Volume consumes VCluster CRU.
 
-> 💡 **Tip**: For detailed billing rules, see the [Billing Documentation](Billing.md).
+> 💡 **Tip**: For detailed billing rules, see the [Billing Documentation](billing.md).
 
 ## Lifecycle Management
 

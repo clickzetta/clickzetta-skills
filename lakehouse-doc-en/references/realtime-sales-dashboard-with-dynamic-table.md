@@ -126,7 +126,7 @@ Join the orders table with the products table to add category and brand informat
 
 ```sql
 CREATE OR REPLACE DYNAMIC TABLE doc_dwd_order_detail
-REFRESH INTERVAL '1' MINUTE VCLUSTER default
+REFRESH INTERVAL '1' MINUTE VCLUSTER DEFAULT
 AS
 SELECT
     o.order_id,
@@ -151,7 +151,7 @@ Aggregate by category to compute order count, total quantity, GMV, and average p
 
 ```sql
 CREATE OR REPLACE DYNAMIC TABLE doc_ads_category_gmv
-REFRESH INTERVAL '1' MINUTE VCLUSTER default
+REFRESH INTERVAL '1' MINUTE VCLUSTER DEFAULT
 AS
 SELECT
     category,
@@ -171,7 +171,7 @@ Compute real-time rankings based on the GMV summary table.
 
 ```sql
 CREATE OR REPLACE DYNAMIC TABLE doc_ads_category_rank
-REFRESH INTERVAL '1' MINUTE VCLUSTER default
+REFRESH INTERVAL '1' MINUTE VCLUSTER DEFAULT
 AS
 SELECT
     RANK() OVER (ORDER BY gmv DESC) AS gmv_rank,

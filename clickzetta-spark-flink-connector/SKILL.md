@@ -1,39 +1,40 @@
 ---
 name: clickzetta-spark-flink-connector
 description: |
-  使用 Spark Connector 或 Flink Write Connector 将数据写入 ClickZetta Lakehouse。
-  覆盖 Spark DataFrame 读写配置（Maven 依赖、连接参数、read/write 代码）、
-  Flink Table API 写入（CDC 模式 igs-dynamic-table、仅追加模式 igs-dynamic-table-append-only）、
-  checkpoint 配置、buffer/flush 调优，以及主键表限制等关键约束。
-  当用户说"Spark Connector"、"Flink Connector"、"Spark 写入 Lakehouse"、
-  "Flink 写入 Lakehouse"、"spark-clickzetta"、"igs-flink-connector"、
-  "Spark DataFrame 写入"、"Flink CDC 写入"、"Flink sink"、
-  "spark.read.format clickzetta"时触发。
+  Write data to ClickZetta Lakehouse using the Spark Connector or Flink Write Connector.
+  Covers Spark DataFrame read/write configuration (Maven dependencies, connection
+  parameters, read/write code), Flink Table API writes (CDC mode igs-dynamic-table,
+  append-only mode igs-dynamic-table-append-only), checkpoint configuration,
+  buffer/flush tuning, and key constraints such as primary-key table limitations.
+  Trigger when the user says "Spark Connector", "Flink Connector", "Spark writes to Lakehouse",
+  "Flink writes to Lakehouse", "spark-clickzetta", "igs-flink-connector",
+  "Spark DataFrame write", "Flink CDC write", "Flink sink",
+  or "spark.read.format clickzetta".
   Keywords: Spark, Flink, DataFrame, connector, read, write, CDC, igs-dynamic-table
 ---
 
 # ClickZetta Spark & Flink Connector
 
-阅读 [references/spark.md](references/spark.md) 了解 Spark Connector，[references/flink.md](references/flink.md) 了解 Flink Write Connector。
+Read [references/spark.md](references/spark.md) for the Spark Connector and [references/flink.md](references/flink.md) for the Flink Write Connector.
 
 ---
 
-## 关键约束（必读）
+## Key Constraints (Required Reading)
 
-| 约束 | Spark Connector | Flink Connector |
+| Constraint | Spark Connector | Flink Connector |
 |---|---|---|
-| 主键表写入 | ❌ 不支持 | ✅ 支持（igs-dynamic-table 模式） |
-| 部分字段写入 | ❌ 必须写全部字段 | ✅ 支持 |
-| CDC（UPDATE/DELETE） | ❌ 仅 append | ✅ igs-dynamic-table 模式支持 |
-| Spark 版本 | 3.4.0+ | — |
-| Flink 版本 | — | 1.15.2+ |
+| Primary-key table writes | Not supported | Supported in `igs-dynamic-table` mode |
+| Partial-column writes | Not supported; all columns must be written | Supported |
+| CDC (UPDATE/DELETE) | Not supported; append only | Supported in `igs-dynamic-table` mode |
+| Spark version | 3.4.0+ | N/A |
+| Flink version | N/A | 1.14, 1.15, 1.17, 1.18 |
 
 ---
 
-## Spark Connector 快速示例
+## Spark Connector Quick Example
 
 ```scala
-// 写入
+// Write
 df.write.format("clickzetta")
   .option("endpoint", "your_instance.cn-shanghai-alicloud.api.clickzetta.com")
   .option("username", sys.env("CZ_USERNAME"))
@@ -45,7 +46,7 @@ df.write.format("clickzetta")
   .mode("append")
   .save()
 
-// 读取
+// Read
 val df = spark.read.format("clickzetta")
   .option("endpoint", "your_instance.cn-shanghai-alicloud.api.clickzetta.com")
   .option("username", sys.env("CZ_USERNAME"))
@@ -59,10 +60,10 @@ val df = spark.read.format("clickzetta")
 
 ---
 
-## Flink Connector 快速示例
+## Flink Connector Quick Example
 
 ```sql
--- CDC 模式（支持 INSERT/UPDATE/DELETE，目标表需有主键）
+-- CDC mode (supports INSERT/UPDATE/DELETE; the target table must have a primary key)
 CREATE TABLE lakehouse_sink (
     order_id   INT,
     status     STRING,
@@ -82,11 +83,11 @@ INSERT INTO lakehouse_sink SELECT order_id, status, amount FROM source_table;
 
 ---
 
-## 选择指南
+## Selection Guide
 
-| 场景 | 推荐方案 |
+| Scenario | Recommended option |
 |---|---|
-| Spark ETL 批量写入（无主键表） | Spark Connector |
-| Flink 实时流写入（无主键表） | Flink igs-dynamic-table-append-only |
-| Flink CDC 同步（有主键表，含 UPDATE/DELETE） | Flink igs-dynamic-table |
-| 高频实时写入（Java 应用） | Java SDK RealtimeStream |
+| Spark ETL batch writes to a non-primary-key table | Spark Connector |
+| Flink real-time stream writes to a non-primary-key table | Flink `igs-dynamic-table-append-only` |
+| Flink CDC synchronization to a primary-key table, including UPDATE/DELETE | Flink `igs-dynamic-table` |
+| High-frequency real-time writes from a Java application | Java SDK RealtimeStream |

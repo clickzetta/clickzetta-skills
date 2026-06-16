@@ -95,7 +95,7 @@ input {
 
 output {
     clickzetta {
-            jdbcUrl => "jdbc:clickzetta://9a310b9b.uat-api.clickzetta.com/quick_start?schema=public&username=index_test&password=password&virtualCluster=YETING_TEST_AP"
+            jdbcUrl => "jdbc:clickzetta://9a310b9b.api.clickzetta.com/quick_start?schema=public&username=index_test&password=password&virtualCluster=YETING_TEST_AP"
             username => "index_test"
             password => "password"
             schema => "public"
@@ -154,7 +154,7 @@ ruby {
 output {
     if "odd" in [tags] {
         clickzetta {
-            jdbcUrl => "jdbc:clickzetta://9a310b9b.uat-api.clickzetta.com/quick_start?schema=public&username=index_test&password=password&virtualCluster=YETING_TEST_AP"
+            jdbcUrl => "jdbc:clickzetta://9a310b9b.api.clickzetta.com/quick_start?schema=public&username=index_test&password=password&virtualCluster=YETING_TEST_AP"
             username => "index_test"
             password => "password"
             schema => "public"
@@ -166,7 +166,7 @@ output {
         }
     } else {
         clickzetta {
-            jdbcUrl => "jdbc:clickzetta://9a310b9b.uat-api.clickzetta.com/quick_start?schema=public&username=index_test&password=password&virtualCluster=YETING_TEST_AP"
+            jdbcUrl => "jdbc:clickzetta://9a310b9b.api.clickzetta.com/quick_start?schema=public&username=index_test&password=password&virtualCluster=YETING_TEST_AP"
             username => "index_test"
             password => "password"
             schema => "public"

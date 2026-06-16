@@ -10,29 +10,28 @@ In Singdata Lakehouse, every account has a unique identifier used to distinguish
 
 The account name is your unique identifier within Singdata Lakehouse and cannot be changed once generated. You can find your account name in the prompt shown after registration or on the Management Center home page.
 
-:-: ![](.topwrite/assets/image\_1739329828430.png =780)
+
 
 ^
 
-:-: ![](.topwrite/assets/image\_1739329908616.png =783)
 
 ### Login URL
 
 In Singdata products, each account has its own dedicated login URL. The login URL follows the format: `<your_account_name>.accounts.singdata.com`.
 
-:-: ![](.topwrite/assets/image\_1739329970639.png =799)
+
 
 ### Service Instance Name
 
 Singdata Lakehouse is a multi-cloud big data platform that supports creating service instances across different regions of multiple cloud providers. Each service instance provisioned generates a unique identifier within that region and carves out a logical area within the infrastructure resources to provide Lakehouse services. The service instance name (`instance_name`) is the unique identifier for a service instance. It is automatically generated when you provision the instance and consists of an 8-character random string. You can find your service instance name in the service instance URL or on the right side of the service instance home page.
 
-:-: ![](.topwrite/assets/image\_1740540520113.png =807)
+
 
 ### Account Registration Phone Number
 
 The account registration phone number is the phone number you provided when creating the account and adding the first user. The initial account phone number is the same as the phone number of the first user under the account. Account administrators can change the registration phone number in the Management Center. Keep your registration phone number safe — in Singdata products, each registration phone number corresponds to only one account, and it is the sole credential for account recovery.
 
-:-: ![](.topwrite/assets/image\_1739330026163.png =806)
+
 
 ^ ^
 
@@ -127,7 +126,6 @@ Example:
 
 In some SQL clients (such as DBeaver), JDBC drivers, or Python/Java library configuration files, you need to configure connection parameters. For example, when configuring the DBeaver driver:
 
-:-: ![](.topwrite/assets/image\_1740549280083.png =361)
 
 In the JDBC connection string, use the service instance name (`instance_name`), for example:
 
@@ -161,16 +159,13 @@ When configuring the Python SDK, use the service instance name (`instance_name`)
 
 When you log in to Singdata with a user that has the account administrator role, you can manage your account in the Management Center. On the "Account Home" page, you can view basic account information and the account login URL. You can also click the "Modify" button next to the registration phone number to change it. Note that on the "Account Center" page you will see two separate phone number fields: "Registration Phone" under "Account Info" — this is the phone number bound to the account and can be used to retrieve the account name; and "Registration Phone" under "User Info" — this is the phone number bound to the currently logged-in user and can be used for MFA verification, username recovery, and password recovery for that user. Be sure to distinguish between the two.
 
-![](.topwrite/assets/image\_1740550879753.png)
 
 
 ### Changing the Account Registration Phone Number
 
 To change the account registration phone number, you must be logged in as a user with the account administrator (`account_admin`) role. In the "Account Center", click the modify button next to "Registration Phone" under "Account Info". After verifying the old phone number, you can enter and save the new phone number.
 
-:-: ![](.topwrite/assets/image\_1740551806201.png =765)
 
-:-: ![](.topwrite/assets/image\_1740551835302.png =438)
 
 ### Changing the Account Name or Service Instance Name
 

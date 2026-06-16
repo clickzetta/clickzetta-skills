@@ -558,7 +558,7 @@ CREATE EXTERNAL FUNCTION my_schema.clean_phone
 SELECT my_schema.clean_phone(phone_number) FROM users;
 ```
 
-> ⚠️ External Function creation syntax differs from SQL Function — parameter types and return types are not declared in the DDL; types are handled internally by the function code. See [CREATE EXTERNAL FUNCTION](CREATE_EXTERNAL_FUNCTION.md).
+> ⚠️ External Function creation syntax differs from SQL Function — parameter types and return types are not declared in the DDL; types are handled internally by the function code. See [CREATE EXTERNAL FUNCTION](create_external_function.md).
 
 ### Session-Level UDF Registration
 
@@ -601,7 +601,7 @@ When writing to Lakehouse via Spark Connector, note the following limitations:
 
 ## Related Documentation
 
-- [PySpark → ZettaPark Migration: F1 Racing Data Engineering Project](pyspark-to-zettapark-migration-f1.md): Complete migration case with 4 required changes and real-world pitfalls, 71/71 verified
+- [PySpark → ZettaPark Migration: F1 Racing Data Engineering Project](pyspark-to-zettapark-migration-f1.md): Complete migration case with 4 required changes and migration notes, 71/71 verified
 - [Build a Medallion Three-Layer Warehouse from Scratch on Lakehouse](medallion-lakehouse-from-scratch.md): Bronze → Silver → Gold modeling practice with surrogate key generation and 22 automated validations
 - [Data Type Compatibility Reference](migration-sql-compatibility.md): MySQL/PostgreSQL/Hive/Spark type mapping
 - [Data Type Conversion](datatype-conversion.md): Explicit and implicit conversion rules

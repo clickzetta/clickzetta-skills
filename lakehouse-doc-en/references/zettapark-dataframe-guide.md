@@ -7,7 +7,7 @@ Zettapark is the Python DataFrame API for Singdata Lakehouse, providing a pandas
 > 💡 **When to use what**:
 > - Need DataFrame operations (pandas/PySpark-like) → Use Zettapark (this guide)
 > - Need standard SQL execution or script automation → Use [Python Connector](python_reference/connector.md)
-> - Need high-speed bulk writes (millions of rows) → Use [BulkLoad](java_reference/bulkload-upload.md)
+> - Need high-speed bulk writes (millions of rows) → Use [BulkLoad](java_reference/bulkload.md)
 
 ---
 
@@ -27,11 +27,11 @@ from clickzetta.zettapark.session import Session
 session = Session.builder.configs({
     "username": "your_username",
     "password": "your_password",
-    "service":  "cn-shanghai-alicloud.api.singdata.com",
+    "service":  "cn-shanghai-alicloud.api.clickzetta.com",
     "instance": "your_instance",
     "workspace": "your_workspace",
     "schema":   "public",
-    "vcluster": "default"
+    "vcluster": "DEFAULT"
 }).create()
 ```
 
@@ -53,13 +53,16 @@ from clickzetta.zettapark.session import Session
 data = [(1, "Alice", 1000.0), (2, "Bob", 2000.0), (3, "Carol", 500.0)]
 df = session.create_dataframe(data, schema=["id", "name", "amount"])
 df.show()
-# +---+-----+------+
-# | id| name|amount|
-# +---+-----+------+
-# |  1|Alice|  1000|
-# |  2|  Bob|  2000|
-# |  3|Carol|   500|
-# +---+-----+------+
+```
+
+```Plain
++---+-----+------+
+| id| name|amount|
++---+-----+------+
+|  1|Alice|  1000|
+|  2|  Bob|  2000|
+|  3|Carol|   500|
++---+-----+------+
 ```
 
 ### From an Existing Table
@@ -104,26 +107,47 @@ from clickzetta.zettapark import functions as F
 
 data = [(1,"A",100.0),(2,"A",200.0),(3,"B",300.0),(4,"B",150.0)]
 df = session.create_dataframe(data, schema=["id","category","amount"])
+```
 
-# filter — filter rows
+filter — filter rows
+
+```python
 df.filter(F.col("amount") > 150).show()
+```
 
-# select — select columns
+select — select columns
+
+```python
 df.select("category", "amount").show()
+```
 
-# sort — sort rows
+sort — sort rows
+
+```python
 df.sort("amount", ascending=False).show()
+```
 
-# with_column — add or replace a column
+with\_column — add or replace a column
+
+```python
 df.with_column("amount_tax", F.col("amount") * 1.13).show()
+```
 
-# with_column_renamed — rename a column
+with\_column\_renamed — rename a column
+
+```python
 df.with_column_renamed("amount", "price").show()
+```
 
-# drop — drop a column
+drop — drop a column
+
+```python
 df.drop("id").show()
+```
 
-# limit
+limit
+
+```python
 df.limit(2).show()
 ```
 
@@ -131,8 +155,9 @@ df.limit(2).show()
 
 ## Aggregations
 
+group\_by + agg
+
 ```python
-# group_by + agg
 result = df.group_by("category").agg(
     F.sum("amount").alias("total"),
     F.count("id").alias("cnt"),
@@ -141,12 +166,15 @@ result = df.group_by("category").agg(
     F.min("amount").alias("min_amount")
 )
 result.show()
-# +--------+-----+---+----------+---------+---------+
-# |category|total|cnt|avg_amount|max_amount|min_amount|
-# +--------+-----+---+----------+---------+---------+
-# |       A|  300|  2|       150|      200|      100|
-# |       B|  450|  2|       225|      300|      150|
-# +--------+-----+---+----------+---------+---------+
+```
+
+```Plain
++--------+-----+---+----------+---------+---------+
+|category|total|cnt|avg_amount|max_amount|min_amount|
++--------+-----+---+----------+---------+---------+
+|       A|  300|  2|       150|      200|      100|
+|       B|  450|  2|       225|      300|      150|
++--------+-----+---+----------+---------+---------+
 ```
 
 ---
@@ -156,22 +184,34 @@ result.show()
 ```python
 users  = session.create_dataframe([(1,"Alice"),(2,"Bob"),(3,"Carol")], schema=["id","name"])
 orders = session.create_dataframe([(1,500.0),(1,300.0),(2,800.0)],    schema=["user_id","amount"])
+```
 
-# inner join (default)
+inner join (default)
+
+```python
 users.join(orders, users["id"] == orders["user_id"]).show()
+```
 
-# left join
+left join
+
+```python
 users.join(orders, users["id"] == orders["user_id"], "left").show()
-# +---+-----+-------+------+
-# | id| name|user_id|amount|
-# +---+-----+-------+------+
-# |  1|Alice|      1|   300|
-# |  1|Alice|      1|   500|
-# |  2|  Bob|      2|   800|
-# |  3|Carol|   NULL|  NULL|  ← Carol has no orders, NULL filled
-# +---+-----+-------+------+
+```
 
-# cross join
+```Plain
++---+-----+-------+------+
+| id| name|user_id|amount|
++---+-----+-------+------+
+|  1|Alice|      1|   300|
+|  1|Alice|      1|   500|
+|  2|  Bob|      2|   800|
+|  3|Carol|   NULL|  NULL|
++---+-----+-------+------+
+```
+
+cross join
+
+```python
 users.cross_join(orders).show()
 ```
 
@@ -195,24 +235,36 @@ df1.except_(df2).show()     # difference (in df1 but not df2)
 ```python
 data = [(1,"Alice",100.0),(2,None,200.0),(3,"Carol",None)]
 df = session.create_dataframe(data, schema=["id","name","amount"])
+```
 
-# Drop rows containing NULL
+Drop rows containing NULL
+
+```python
 df.dropna().show()
-# +---+-----+------+
-# | id| name|amount|
-# +---+-----+------+
-# |  1|Alice|   100|
-# +---+-----+------+
+```
 
-# Fill NULL values
+```Plain
++---+-----+------+
+| id| name|amount|
++---+-----+------+
+|  1|Alice|   100|
++---+-----+------+
+```
+
+Fill NULL values
+
+```python
 df.fillna({"name": "Unknown", "amount": 0.0}).show()
-# +---+-------+------+
-# | id|   name|amount|
-# +---+-------+------+
-# |  1|  Alice|   100|
-# |  2|Unknown|   200|
-# |  3|  Carol|     0|
-# +---+-------+------+
+```
+
+```Plain
++---+-------+------+
+| id|   name|amount|
++---+-------+------+
+|  1|  Alice|   100|
+|  2|Unknown|   200|
+|  3|  Carol|     0|
++---+-------+------+
 ```
 
 ---
@@ -224,11 +276,17 @@ from clickzetta.zettapark.window import Window
 
 data = [(1,"A",100),(2,"A",200),(3,"B",300),(4,"B",150),(5,"A",50)]
 df = session.create_dataframe(data, schema=["id","category","amount"])
+```
 
-# Rank within group
+Rank within group
+
+```python
 w_rank = Window.partition_by("category").order_by(F.col("amount").desc())
+```
 
-# Running sum within group
+Running sum within group
+
+```python
 w_sum = Window.partition_by("category").order_by("amount")
 
 result = df \
@@ -236,15 +294,18 @@ result = df \
     .with_column("running_total", F.sum("amount").over(w_sum))
 
 result.show()
-# +---+--------+------+----+-------------+
-# | id|category|amount|rank|running_total|
-# +---+--------+------+----+-------------+
-# |  5|       A|    50|   3|           50|
-# |  1|       A|   100|   2|          150|
-# |  2|       A|   200|   1|          350|
-# |  4|       B|   150|   2|          150|
-# |  3|       B|   300|   1|          450|
-# +---+--------+------+----+-------------+
+```
+
+```Plain
++---+--------+------+----+-------------+
+| id|category|amount|rank|running_total|
++---+--------+------+----+-------------+
+|  5|       A|    50|   3|           50|
+|  1|       A|   100|   2|          150|
+|  2|       A|   200|   1|          350|
+|  4|       B|   150|   2|          150|
+|  3|       B|   300|   1|          450|
++---+--------+------+----+-------------+
 ```
 
 ---
@@ -255,11 +316,17 @@ result.show()
 
 ```python
 df = session.create_dataframe([(1,"Alice",100.0),(2,"Bob",200.0)], schema=["id","name","amount"])
+```
 
-# Overwrite (creates the table if it doesn't exist)
+Overwrite (creates the table if it doesn't exist)
+
+```python
 df.write.save_as_table("my_table", mode="overwrite")
+```
 
-# Append
+Append
+
+```python
 df.write.save_as_table("my_table", mode="append")
 ```
 
@@ -286,8 +353,11 @@ print(pdf.head())
 
 ```python
 df.filter(F.col("amount") > 100).create_or_replace_temp_view("high_value_orders")
+```
 
-# Query the temporary view with SQL
+Query the temporary view with SQL
+
+```python
 session.sql("SELECT * FROM high_value_orders").show()
 ```
 
@@ -299,8 +369,9 @@ df.filter(F.col("amount") > 100).create_or_replace_view("v_high_value_orders")
 
 ### Dynamic Table (auto incremental refresh)
 
+Define transformation logic on a source table; the system auto-refreshes incrementally
+
 ```python
-# Define transformation logic on a source table; the system auto-refreshes incrementally
 source_df = session.table("raw_orders").filter(F.col("status") == "paid")
 
 source_df.create_or_replace_dynamic_table(
@@ -323,11 +394,14 @@ df.filter(F.col("amount") > 150) \
   .group_by("category") \
   .agg(F.sum("amount").alias("total")) \
   .explain()
+```
 
-# Output:
-# SELECT `category`, sum(`amount`) AS `total`
-# FROM ( SELECT ... WHERE (`amount` > CAST(150 AS bigint)))
-# GROUP BY `category`
+Output:
+
+```Plain
+SELECT `category`, sum(`amount`) AS `total`
+FROM ( SELECT ... WHERE (`amount` > CAST(150 AS bigint)))
+GROUP BY `category`
 ```
 
 ---
@@ -339,4 +413,4 @@ df.filter(F.col("amount") > 150) \
 | [Zettapark Quick Start](zettapark-quick-start.md) | Installation and basic examples |
 | [Python Connector SDK](python_reference/connector.md) | Standard SQL execution interface |
 | [Dynamic Table](dynamic-table.md) | Auto-incrementally refreshed data pipelines |
-| [BulkLoad Batch Import](java_reference/bulkload-upload.md) | High-speed writes for millions of rows |
+| [BulkLoad Batch Import](java_reference/bulkload.md) | High-speed writes for millions of rows |

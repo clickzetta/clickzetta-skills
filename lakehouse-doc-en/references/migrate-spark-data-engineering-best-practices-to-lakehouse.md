@@ -3,7 +3,7 @@
 ## New Solution Highlights
 
 * **Full cloud migration, focus on data**: Move all on-premises managed environments to the cloud, eliminating non-data-related tasks such as resource preparation and system operations.
-* **Easy to migrate**: Singdata Lakehouse SQL and Zettapark are highly compatible with Spark SQL and pySpark respectively, making code migration extremely low in difficulty and cost.
+* **You don't need to rewrite existing code**: Singdata Lakehouse SQL and ZettaPark are highly compatible with Spark SQL and PySpark respectively. Existing Spark engineers can get started immediately without retraining.
 * **Reduced total cost and complexity**: Singdata Lakehouse has built-in workflow services and data quality control services, eliminating the need for separate Airflow and Great Expectations. This greatly simplifies the system architecture and reduces total cost and complexity.
 * **Openness**: At the same time, Airflow and Great Expectations can be retained in the architecture, using Airflow to schedule Python tasks and continuing to call Great Expectations for data quality checks within Python code.
 * **Resource management and task queue management**: Use different Virtual Clusters to handle ETL, BI, and data quality workloads, achieving resource isolation and task queue management.
@@ -98,7 +98,7 @@ The following demonstrates two techniques for avoiding data duplication when re-
 ### Features of the New Solution
 
 * **Full cloud migration, focus on data**: Move all on-premises managed environments to the cloud, eliminating non-data-related tasks such as resource preparation and system operations.
-* **Easy to migrate**: Singdata Lakehouse SQL and Zettapark are highly compatible with Spark SQL and pySpark respectively, making code migration extremely low in difficulty and cost.
+* **You don't need to rewrite existing code**: Singdata Lakehouse SQL and ZettaPark are highly compatible with Spark SQL and PySpark respectively. Existing Spark engineers can get started immediately without retraining.
 * **Reduced total cost and complexity**: Singdata Lakehouse has built-in workflow services and data quality control services, eliminating the need for separate Airflow and Great Expectations. This greatly simplifies the system architecture and reduces total cost and complexity.
 * **Openness**: At the same time, Airflow and Great Expectations can be retained in the architecture, using Airflow to schedule Python tasks and continuing to call Great Expectations for data quality checks within Python code.
 * **Resource management and task queue management**: Use different Virtual Clusters to handle ETL, BI, and data quality workloads, achieving resource isolation and task queue management.
@@ -188,7 +188,7 @@ Set the value for each parameter:
 
 :-: ![](.topwrite/assets/image_1737534633567.png =562)
 
-For how to obtain parameter values, please refer to [this article](https://uat-doc.singdata.com/JDBC-Driver).
+For how to obtain parameter values, please refer to [this article](jdbc-driver.md).
 
 ^
 

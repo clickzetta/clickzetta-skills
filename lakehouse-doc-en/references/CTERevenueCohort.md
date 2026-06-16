@@ -2,7 +2,7 @@
 
 ## CTE
 
-[CTE(Common Table Expression) ](WITH.md), Common Table Expression, is a temporary result set defined within the scope of a single statement execution, only valid during the query. It can be self-referencing and can be referenced multiple times within the same query, achieving code reuse.
+[CTE(Common Table Expression) ](with.md), Common Table Expression, is a temporary result set defined within the scope of a single statement execution, only valid during the query. It can be self-referencing and can be referenced multiple times within the same query, achieving code reuse.
 
 ## Cohort (Revenue Cohort)
 
@@ -269,7 +269,7 @@ Please enjoy and learn more!
 
 ### Download Zeppelin Notebook source file
 
-The code in this article is also available in a version that runs on [Zeppelin](eco_integration/Zeppelin.md). If you want to run the code in this article directly, please follow the documentation to install [Zeppelin](eco_integration/Zeppelin.md).
+The code in this article is also available in a version that runs on [Zeppelin](eco_integration/zeppelin.md). If you want to run the code in this article directly, please follow the documentation to install [Zeppelin](eco_integration/zeppelin.md).
 
 [03.CTE(Common Table Expression)..ipynb](https://github.com/yunqiqiliang/clickzetta_quickstart/blob/main/zeppelin_notebook/03.CTE\(Common%20Table%20Expression\)..ipynb)
 [03.CTE(Common Table Expression)\_2JHUJ5BP8.zpln](https://github.com/yunqiqiliang/clickzetta_quickstart/blob/main/zeppelin_notebook/03.CTE\(Common%20Table%20Expression\)_2JHUJ5BP8.zpln)

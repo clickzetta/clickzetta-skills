@@ -1,6 +1,6 @@
 # JSON Query Syntax
 
-This document aims to guide users on how to efficiently query JSON data using SQL syntax. By mastering these query methods, users can simplify the query process. For creating JSON types, refer to the [JSON Types](JSON.md) document.
+This document aims to guide users on how to efficiently query JSON data using SQL syntax. By mastering these query methods, users can simplify the query process. For creating JSON types, refer to the [JSON Types](json.md) document.
 
 ## Syntax
 
@@ -18,7 +18,7 @@ json_array[index]
 
 **Return Value**
 
-- The return value is of JSON type. If another type is needed, use the CAST function for conversion. See the [JSON Types](JSON.md) document for type conversion details.
+- The return value is of JSON type. If another type is needed, use the CAST function for conversion. See the [JSON Types](json.md) document for type conversion details.
 
 ## Examples
 
