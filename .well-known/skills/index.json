@@ -38,9 +38,10 @@
     },
     {
       "name": "clickzetta-cdc-sync-pipeline",
-      "description": "创建和管理 ClickZetta Lakehouse 多表实时同步任务（CDC），将 MySQL / PostgreSQL 数据库整库或多表实时同步到 Lakehouse。",
+      "description": "Create and manage ClickZetta Lakehouse multi-table real-time sync (CDC) tasks, syncing entire MySQL/PostgreSQL databases or multiple tables to Lakehouse in real time.",
       "files": [
-        "SKILL.md"
+        "SKILL.md",
+        "references/troubleshooting.md"
       ]
     },
     {
@@ -81,14 +82,44 @@
     },
     {
       "name": "clickzetta-dba-guide",
-      "description": "ClickZetta Lakehouse DBA 日常运维操作手册。集中覆盖 DBA 最常用的 6 类操作：",
+      "description": "ClickZetta Lakehouse DBA daily operations handbook: cluster operations, job monitoring, data recovery, storage optimization, and schema/object management.",
       "files": [
-        "SKILL.md"
+        "SKILL.md",
+        "references/operations-sql.md"
+      ]
+    },
+    {
+      "name": "clickzetta-dbt-modeling",
+      "description": "dbt-clickzetta data modeling wizard. Autonomously discovers Lakehouse data sources, infers modeling strategies, generates sources.yml and model files, and runs the full test suite.",
+      "files": [
+        "SKILL.md",
+        "references/grant-patterns.md",
+        "references/incremental-patterns.md",
+        "references/materialization-guide.md",
+        "references/test-strategy.md"
+      ]
+    },
+    {
+      "name": "clickzetta-dbt-project-setup",
+      "description": "dbt-clickzetta project initialization wizard. Helps users build a dbt project from scratch connected to ClickZetta Lakehouse.",
+      "files": [
+        "SKILL.md",
+        "references/dbt-clickzetta-adapter.md",
+        "references/elt-standards.md"
+      ]
+    },
+    {
+      "name": "clickzetta-dbt-studio-pipeline",
+      "description": "Publish all dbt models to Studio as assets and configure scheduled execution. Reads dbt manifest.json, rewrites incremental SQL, deploys Studio tasks.",
+      "files": [
+        "SKILL.md",
+        "references/parameter-guide.md",
+        "references/studio-task-sop.md"
       ]
     },
     {
       "name": "clickzetta-dw-modeling",
-      "description": "ClickZetta Lakehouse 数仓建模向导。先自主探索用户的数据现状，再给出有依据的",
+      "description": "ClickZetta Lakehouse data warehouse modeling wizard. Autonomously explores data landscape, presents justified recommendations for layering (ODS/DWD/DWS/ADS, Medallion, or hybrid).",
       "files": [
         "SKILL.md",
         "references/modeling-patterns.md"
@@ -146,10 +177,11 @@
     },
     {
       "name": "clickzetta-kafka-ingest-pipeline",
-      "description": "搭建 ClickZetta Lakehouse Kafka 数据接入管道，覆盖从连接验证、数据探查、目标表创建",
+      "description": "Build Kafka-to-Lakehouse ingestion pipelines using READ_KAFKA Pipe or Kafka External Table + Table Stream.",
       "files": [
         "SKILL.md",
-        "references/kafka-pipe-syntax.md"
+        "references/kafka-pipe-syntax.md",
+        "references/operations.md"
       ]
     },
     {
@@ -210,7 +242,7 @@
     },
     {
       "name": "clickzetta-pipeline-review",
-      "description": "对 ClickZetta Lakehouse 数据管道进行全面 Review 与诊断。从任意入口（任务名/schema/表名/",
+      "description": "Comprehensive review and diagnosis of ClickZetta Lakehouse data pipelines. Discovers all pipeline objects, identifies missing dependencies, DDL idempotency issues, and Dynamic Table anti-patterns.",
       "files": [
         "SKILL.md"
       ]
@@ -253,13 +285,15 @@
     },
     {
       "name": "clickzetta-sql-pipeline-manager",
-      "description": "",
+      "description": "Manage ClickZetta Lakehouse SQL pipeline objects: Dynamic Table, Materialized View, Table Stream, and Pipe. Covers full lifecycle operations.",
       "files": [
         "SKILL.md",
         "references/dynamic-table.md",
         "references/materialized-view.md",
         "references/pipe.md",
-        "references/table-stream.md"
+        "references/table-stream.md",
+        "references/scenarios.md",
+        "references/troubleshooting.md"
       ]
     },
     {
@@ -282,9 +316,11 @@
     },
     {
       "name": "clickzetta-studio-task-manager",
-      "description": "管理 ClickZetta Lakehouse Studio 任务，覆盖任务类型说明（离线同步/多表离线同步/实时同步/",
+      "description": "Manage ClickZetta Lakehouse Studio tasks: task types, folder organization, scheduling, dependency management. Implements separation of DDL and pipeline management.",
       "files": [
-        "SKILL.md"
+        "SKILL.md",
+        "references/engineering-sop.md",
+        "references/troubleshooting.md"
       ]
     },
     {
@@ -320,7 +356,7 @@
     },
     {
       "name": "clickzetta-zettapark",
-      "description": "使用 ZettaPark Python 库操作 ClickZetta Lakehouse 数据。ZettaPark 提供类 pandas 的",
+      "description": "Use the ZettaPark Python library to work with ClickZetta Lakehouse data. Provides a pandas-like DataFrame API that translates Python operations into SQL for distributed execution.",
       "files": [
         "SKILL.md",
         "references/zettapark-api.md"
