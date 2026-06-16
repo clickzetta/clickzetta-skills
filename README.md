@@ -6,7 +6,7 @@
 
 ## Skills 总览
 
-当前仓库包含 37 个顶层 `clickzetta-*` skills：
+当前仓库包含 40 个顶层 `clickzetta-*` skills：
 
 | 类别 | Skill | 适用场景 |
 |---|---|---|
@@ -32,6 +32,9 @@
 | 建模与计算 | [clickzetta-index-manager](./clickzetta-index-manager/) | Bloom Filter、倒排索引、向量索引创建、构建、删除、查看 |
 | 建模与计算 | [clickzetta-data-science](./clickzetta-data-science/) | 数据科学工作流：Jupyter、EDA、特征工程、采样、推理、向量检索 |
 | 建模与计算 | [clickzetta-semantic-view](./clickzetta-semantic-view/) | Semantic View 语义层、逻辑表、维度、指标、过滤器和查询 |
+| 建模与计算 | [clickzetta-dbt-project-setup](./clickzetta-dbt-project-setup/) | dbt 项目初始化：连接配置、分层模式、dbt_project.yml 生成 |
+| 建模与计算 | [clickzetta-dbt-modeling](./clickzetta-dbt-modeling/) | dbt 数据建模：数据探索、物化策略推断、模型文件生成、测试 |
+| 建模与计算 | [clickzetta-dbt-studio-pipeline](./clickzetta-dbt-studio-pipeline/) | dbt 模型发布为 Studio 任务：资产管理、调度配置、依赖编排 |
 | SDK 与外部集成 | [clickzetta-app-python-sdk](./clickzetta-app-python-sdk/) | Python 应用 SDK：connector、BulkLoad、IGS 实时写入、SQLAlchemy |
 | SDK 与外部集成 | [clickzetta-zettapark](./clickzetta-zettapark/) | ZettaPark DataFrame API、Session、表读写、文件操作、SQL 执行 |
 | SDK 与外部集成 | [clickzetta-java-sdk](./clickzetta-java-sdk/) | Java SDK BulkloadStream batch writes and RealtimeStream Kafka real-time writes |
@@ -62,6 +65,8 @@
 | 管理 Studio 任务、调度、依赖、补数、任务目录 | `clickzetta-studio-task-manager` |
 | 设计数据管道、动态表、流式增量 ETL | `clickzetta-sql-pipeline-manager` / `clickzetta-dynamic-table` / `clickzetta-table-stream-pipeline` |
 | 诊断管道质量、任务失败、链路缺陷 | `clickzetta-pipeline-review` |
+| 用 dbt 建模：初始化项目 → 探索数据生成模型 → 发布到 Studio | `clickzetta-dbt-project-setup` → `clickzetta-dbt-modeling` → `clickzetta-dbt-studio-pipeline` |
+| 直接用 SQL 建模（不用 dbt） | `clickzetta-dw-modeling` / `clickzetta-sql-pipeline-manager` |
 | 写 SQL、迁移 SQL、查函数或语法差异 | `clickzetta-sql-migration`（迁移/对比时）+ ClickZetta 官方文档（写 ClickZetta 原生 SQL 时） |
 | 查询元数据、表结构、作业历史、成本归因 | `clickzetta-metadata` / `clickzetta-monitoring` |
 | 查询慢、作业慢、小文件、缓存、执行计划 | `clickzetta-query-optimizer` |
@@ -208,6 +213,31 @@ Bloom Filter 适合等值查询加速，倒排索引用于全文检索，向量�
 语义视图（Semantic View）创建和查询指南。Semantic View 是 schema 级逻辑数据模型对象，可声明逻辑表、维度、指标、过滤器，将复杂 JOIN 和聚合封装为业务友好的语义层。
 
 适合统一指标口径、构建业务语义模型、通过 `semantic_view()` 函数查询语义层数据。当前为邀测功能。
+
+### dbt 建模（dbt-clickzetta）
+
+三个 dbt skills 组成完整的 dbt 工作流，对应 [dbt-clickzetta](https://github.com/clickzetta/dbt-clickzetta) adapter 的建模 → 发布链路：
+
+#### [clickzetta-dbt-project-setup](./clickzetta-dbt-project-setup/)
+
+dbt 项目初始化向导。帮用户从零搭建连接 ClickZetta 的 dbt 项目，覆盖安装验证、profiles.yml 配置、分层标准和 dbt_project.yml 生成。
+
+支持四种分层模式：dbt 推荐（staging/marts）、大奖牌架构（bronze/silver/gold）、传统数仓（ODS/DWD/DWS/ADS），以及自定义。多环境推荐用同一 Workspace 不同 Schema 前缀隔离（dev/prod/ci）。完成后自然交接给 `clickzetta-dbt-modeling` 开始数据建模。
+
+#### [clickzetta-dbt-modeling](./clickzetta-dbt-modeling/)
+
+dbt 数据建模向导。先自主探索 Lakehouse 数据源（表结构、行数、增长趋势），再推断建模策略并生成 sources.yml 和模型文件。默认优先使用动态表——系统自动增量刷新，不需要写 merge 逻辑。
+
+覆盖五种物化方式（table/view/incremental/dynamic_table/snapshot）、四种增量策略（merge/append/insert_overwrite/delete+insert）、索引、分区、数据测试、persist_docs。建模完成后运行 `dbt run` + `dbt test` 验证。
+
+#### [clickzetta-dbt-studio-pipeline](./clickzetta-dbt-studio-pipeline/)
+
+将 dbt 模型发布为 Studio 任务，实现统一代码资产管理和自动化调度。读取 dbt manifest.json，生成 Studio SQL 任务。两层架构：
+
+- **资产管理**：所有模型创建为 Studio SQL 任务（DRAFT），团队可在 Studio 查看完整管道代码
+- **调度**：table/incremental/snapshot 模型配 Cron + 依赖 + 部署；dynamic_table 不需要调度（自动刷新）
+
+也处理 incremental SQL 重写（注入 Studio 调度参数 bizdate），以及 Python 模型的 Studio 任务创建。
 
 ### SDK 与外部集成
 
