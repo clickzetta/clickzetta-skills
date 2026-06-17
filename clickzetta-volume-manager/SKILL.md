@@ -132,6 +132,7 @@ SHOW VOLUME DIRECTORY my_oss_volume;
 
 > **Syntax limitation**: ClickZetta does not support the `@volume_name` shorthand (Snowflake Stage syntax). You must use the full `FROM VOLUME name USING format` syntax.
 > **Multi-format file handling**: If a Volume contains mixed-format files (e.g., .csv and .json), omitting `FILES()` or `SUBDIRECTORY` will attempt to read all files and may fail due to format mismatch. Use `FILES('xxx.csv')` or `SUBDIRECTORY 'csv_data/'`.
+> **CSV column names**: `SELECT * FROM VOLUME ... USING CSV` without schema definition returns columns as `f0, f1, f2, ...` (not the original header names). To get meaningful column names, define the schema explicitly: `FROM VOLUME vol (col1 STRING, col2 INT) USING CSV OPTIONS('header'='true')`.
 > **JSON nested field access**: Use `data['key']` syntax (not Snowflake's `data:key` syntax).
 
 ```sql
@@ -312,6 +313,7 @@ FILE_FORMAT = (TYPE = PARQUET);
 
 > `COPY INTO VOLUME` exports use `FILE_FORMAT = (TYPE = CSV/PARQUET)`, not `USING CSV`.
 > The `USING` keyword is only for `SELECT FROM VOLUME` queries.
+> **SUBDIRECTORY is required**: `COPY INTO VOLUME` without `SUBDIRECTORY` causes a syntax error. Always specify a target subdirectory, e.g., `SUBDIRECTORY 'export/'`.
 
 ### Export to Local (GET Command)
 
@@ -354,6 +356,8 @@ DROP VOLUME IF EXISTS my_managed_volume;
 |---|---|---|
 | SHOW VOLUME DIRECTORY shows no files | Directory not refreshed | Run `ALTER VOLUME name REFRESH` |
 | SELECT FROM VOLUME fails | Format mismatch | Ensure USING format matches actual file format; use `FILES()` to specify files |
+| CSV query returns columns named f0, f1, f2 | `SELECT *` without explicit schema | Use `FROM VOLUME vol (col1 STRING, col2 INT) USING CSV OPTIONS('header'='true')` to define column names |
+| COPY INTO VOLUME syntax error | Missing `SUBDIRECTORY` clause | `COPY INTO VOLUME` requires `SUBDIRECTORY 'path/'` — it cannot be omitted |
 | COPY INTO fails with mixed format files | Mixed format files in Volume | Use `FILES('xxx.csv')` or `SUBDIRECTORY` to narrow scope |
 | PUT command fails | Local path does not exist | Verify local file path is correct |
 | COPY INTO errors | Insufficient permissions | Check STORAGE CONNECTION access key permissions |

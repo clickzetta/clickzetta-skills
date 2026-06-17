@@ -227,7 +227,7 @@ DESC PIPE EXTENDED <pipe_name>;
 SHOW PIPES;
 
 -- Load history (retained 7 days)
-SELECT * FROM load_history('<schema>.<table>') ORDER BY last_load_time DESC LIMIT 20;
+SELECT * FROM load_history('<schema>.<table>') ORDER BY last_copy_time DESC LIMIT 20;
 
 -- Pipe jobs by query_tag
 SHOW JOBS WHERE query_tag = 'pipe.<workspace>.<schema>.<pipe_name>';
