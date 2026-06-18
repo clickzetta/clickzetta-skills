@@ -19,7 +19,7 @@ description: |
 See [references/engineering-sop.md](references/engineering-sop.md) for the complete new project launch process, incremental iteration guide, and delivery checklist.
 See [references/troubleshooting.md](references/troubleshooting.md) for common issues, type mapping, scheduling best practices, sync task troubleshooting, and multi-environment management.
 
-**When the user is writing Python task code** (Session creation, file I/O, watermark patterns, Databricks migration), also read the `clickzetta-zettapark` skill → [references/studio-task-pattern.md](../clickzetta-zettapark/references/studio-task-pattern.md) for Studio-specific patterns (get_active_lakehouse_engine, save-script, task parameters, volume paths).
+**When the user is writing Python task code** (Session creation, file I/O, watermark patterns, Databricks migration), also invoke the `clickzetta-zettapark` skill for Studio-specific patterns (get_active_lakehouse_engine, save-script, task parameters, volume paths).
 
 ## Wizard: Clarify Intent
 

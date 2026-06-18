@@ -44,6 +44,7 @@ cz-cli task flow run <flow_name>
 
 # View node-level run records for an instance
 cz-cli task flow instances <flow_name> --flow-instance <schedule_instance_id>
+# Note: use --flow-instance (not --instance, which is the global ClickZetta instance name option)
 
 # View DAG structure (nodes + dependencies)
 cz-cli task flow dag <flow_name>
@@ -93,4 +94,4 @@ cz-cli task flow run <flow_name> --param dt=2026-06-18
 | `columnMapping` direction | For INTEGRATION nodes inside a Flow, format is `"sink_col": "source_col"` (e.g. `"id": "ID"`). Reversed direction causes Studio field-mapping switches to show as disabled |
 | `flow submit` known issue | CLI may return `published: false`; the Flow can still run, but verify published status in Studio UI |
 | Flow does not use `task deploy` | Use `flow submit` to publish; calling `task deploy` on a Flow returns an error |
-| `task flow instances --flow-instance` | The ID is the `schedule_instance_id` returned by `flow run`, not a task ID |
+| `task flow instances --flow-instance` | The ID is the `schedule_instance_id` returned by `flow run`, not a task ID. Use `--flow-instance`, not `--instance` (which is the global ClickZetta instance name option) |

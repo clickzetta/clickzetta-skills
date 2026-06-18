@@ -118,7 +118,7 @@ Use `offline-sync-schema` output as the base — it returns `source_params_templ
 | PostgreSQL | `created_at >= '2026-01-01'::date` | `created_at >= DATE '2026-01-01'` |
 | MySQL | `created_at >= '2026-01-01'` | `created_at >= DATE '2026-01-01'` |
 | SQL Server | `created_at >= '2026-01-01'` | — |
-| Oracle | `CREATED_AT >= TO_DATE('2026-01-01', 'YYYY-MM-DD')` | — |
+| Oracle | `CREATED_AT >= TO_DATE('2026-01-01', 'YYYY-MM-DD')` | Verified from schema probe — `TO_DATE` format confirmed |
 
 ### Scheduling Variables
 
@@ -137,15 +137,19 @@ Use `offline-sync-schema` output as the base — it returns `source_params_templ
 
 ### SQL Server Unsupported Column Types
 
-Remove these from `source.columns` and `sink.columns` before calling `save-offline-sync`:
+Tested against `test_sqlserve_alltype` (28 columns) on aliyun_shanghai_prod:
 
-| Unsupported | Notes |
-|---|---|
-| `sql_variant` | Not supported by FlinkX sync engine |
-| `image` | Binary — not supported |
-| `binary`, `varbinary` | Binary — not supported |
-| `timestamp` (rowversion) | Not supported |
-| `text`, `ntext` | ✅ Supported — map to `STRING` |
+| Type | Status | Notes |
+|---|---|---|
+| `sql_variant` | ❌ Unsupported | Fails at submit with `UnsupportedTypeException: Unsupported type: [SQL_VARIANT]` |
+| `binary`, `varbinary` | ✅ Supported | Map to `BINARY` |
+| `image` | ✅ Supported | Map to `BINARY` |
+| `text`, `ntext` | ✅ Supported | Map to `STRING` |
+| `timestamp` (rowversion) | Not tested | Not present in test table |
+| `uniqueidentifier` | ✅ Supported | Map to `STRING` |
+| `xml` | ✅ Supported | Map to `STRING` |
+
+Only `sql_variant` needs to be removed from column lists before calling `save-offline-sync`.
 
 ### Source Type Mapping Principles
 
