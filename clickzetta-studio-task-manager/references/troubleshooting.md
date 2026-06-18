@@ -33,7 +33,7 @@
 
 | Error | Cause | Solution |
 |---|---|---|
-| Sync task deploy OK but execute hangs or fails silently | INTEGRATION VC is SUSPENDED after 60s of inactivity (auto_suspend) | `cz-cli sql --sync "DESC VCLUSTER <name>"` → if `state=SUSPENDED`: `cz-cli sql --sync "ALTER VCLUSTER <name> RESUME" --write` |
+| Sync task deploy OK but execute hangs or fails silently | INTEGRATION VC is SUSPENDED (auto_suspend after ~60s idle). Usually auto-resumes when a task starts (AUTO_RESUME=TRUE default). | If auto-resume doesn't trigger: `cz-cli sql --sync "DESC VCLUSTER <name>"` → if `state=SUSPENDED`: `cz-cli sql --sync "ALTER VCLUSTER <name> RESUME" --write` |
 | `SHOW VCLUSTERS` doesn't show `vcluster_type` | SHOW returns summary; DESC shows full details | Use `DESC VCLUSTER <name>` to check `vcluster_type=INTEGRATION` |
 | No INTEGRATION VC available | Not created for this workspace | `CREATE VCLUSTER IF NOT EXISTS sync_vc VCLUSTER_TYPE=INTEGRATION VCLUSTER_SIZE=1 AUTO_RESUME=TRUE;` |
 | `save-offline-sync` / `deploy` rejects vcluster name | Must use INTEGRATION-type VC, not default query VC | List INTEGRATION VCs with `DESC VCLUSTER` and use `--vc <name>` |

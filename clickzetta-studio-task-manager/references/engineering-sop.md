@@ -79,7 +79,8 @@ Agile principle: **verify immediately after each step — don't wait until the f
    ✅ Verify: DESC TABLE <schema>.<table>
 
 5. Configure scheduling + deploy
-   cz-cli task save-cron <task_id> --cron '0 0 2 * * * *' --vc <integration_vc>
+   cz-cli task save-cron <task_id> --cron '0 0 2 * * * *'
+   cz-cli task save-schedule <task_id> --vc <integration_vc>
    cz-cli task deploy <task_id> -y
 
 6. Execute and verify
@@ -142,7 +143,8 @@ Python tasks use `save-script` (not `save-content`) and are deployed as data dev
    cz-cli task save-script <task_id> --script-file ./main.py
 
 4. Configure + deploy
-   cz-cli task save-cron <task_id> --cron '0 0 6 * * * *' --vc default
+   cz-cli task save-cron <task_id> --cron '0 0 6 * * * *'
+   cz-cli task save-schedule <task_id> --vc default
    cz-cli task deploy <task_id> -y
 
 5. Execute and verify
