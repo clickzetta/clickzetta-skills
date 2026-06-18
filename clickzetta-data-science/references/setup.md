@@ -108,7 +108,7 @@ def get_session() -> Session:
         "workspace": os.environ["CLICKZETTA_WORKSPACE"],
         "username":  os.environ["CLICKZETTA_USERNAME"],
         "password":  os.environ["CLICKZETTA_PASSWORD"],
-        "vcluster":  os.environ.get("CLICKZETTA_VCLUSTER", "default_ap"),
+        "vcluster":  os.environ.get("CLICKZETTA_VCLUSTER", "default"),
         "schema":    os.environ.get("CLICKZETTA_SCHEMA", "public"),
     }).create()
 
@@ -120,7 +120,7 @@ def get_connector_connection():
         workspace=os.environ["CLICKZETTA_WORKSPACE"],
         username=os.environ["CLICKZETTA_USERNAME"],
         password=os.environ["CLICKZETTA_PASSWORD"],
-        vcluster=os.environ.get("CLICKZETTA_VCLUSTER", "default_ap"),
+        vcluster=os.environ.get("CLICKZETTA_VCLUSTER", "default"),
         schema=os.environ.get("CLICKZETTA_SCHEMA", "public"),
     )
 ```
@@ -135,7 +135,7 @@ CLICKZETTA_INSTANCE=<instance-id>
 CLICKZETTA_WORKSPACE=<workspace>
 CLICKZETTA_USERNAME=<username>
 CLICKZETTA_PASSWORD=<password>
-CLICKZETTA_VCLUSTER=default_ap
+CLICKZETTA_VCLUSTER=default
 CLICKZETTA_SCHEMA=ds_workspace
 ```
 

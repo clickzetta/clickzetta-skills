@@ -238,7 +238,7 @@ AS SELECT ...;
 
 -- ClickZetta Dynamic Table (does not support TARGET_LAG)
 CREATE DYNAMIC TABLE product_sales
-    REFRESH INTERVAL 1 MINUTE VCLUSTER default_ap
+    REFRESH INTERVAL 1 MINUTE VCLUSTER default
 AS SELECT ...;
 ```
 

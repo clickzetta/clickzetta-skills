@@ -24,6 +24,10 @@ See [references/zettapark-api.md](references/zettapark-api.md) for the complete 
 
 **When the user is developing a Studio Python task** (not local script), read [references/studio-task-pattern.md](references/studio-task-pattern.md) — covers Studio session creation (`get_active_lakehouse_engine`), `save-script` deployment, task parameters, file I/O in Volume, watermark patterns, and common pitfalls.
 
+**When the user is migrating PySpark DataFrame code** (`spark.read`, `withColumn`, `groupBy`, `saveAsTable`, UDFs, window functions), read [references/migration-spark-dataframe.md](references/migration-spark-dataframe.md) — method name mapping (camelCase → snake_case), read/write differences, F functions, window API, complete side-by-side example.
+
+**When the user is migrating Snowpark (Snowflake Python) code** (`session.table`, `group_by`, `call_udf`, `@udf`, `Window.partition_by`), read [references/migration-snowpark.md](references/migration-snowpark.md) — both use snake_case but differ in session config, function names (IFF→IF, flatten→explode), UDF patterns, and Snowflake SQL inside F.expr().
+
 ## Installation
 
 > ⚠️ **Python version**: Python 3.12 recommended (minimum 3.10; 3.9 and below not supported)

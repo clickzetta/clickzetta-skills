@@ -28,7 +28,7 @@
 | `username` | ✅ | 用户名 |
 | `password` | ✅ | 密码 |
 | `workspace` | ✅ | 工作空间 |
-| `virtualCluster` | ✅ | 虚拟集群，默认 `default_ap` |
+| `virtualCluster` | ✅ | 虚拟集群，默认 `default` |
 | `schema` | ✅ | Schema 名称 |
 | `table` | ✅ | 目标表名 |
 
@@ -54,7 +54,7 @@ object SparkToLakehouse {
       .option("username", username)
       .option("password", password)
       .option("workspace", workspace)
-      .option("virtualCluster", "default_ap")
+      .option("virtualCluster", "default")
       .option("schema", "silver")
       .option("table", "orders_cleaned")
       .load()
@@ -72,7 +72,7 @@ object SparkToLakehouse {
       .option("username", username)
       .option("password", password)
       .option("workspace", workspace)
-      .option("virtualCluster", "default_ap")
+      .option("virtualCluster", "default")
       .option("schema", "gold")
       .option("table", "region_summary")
       .mode("append")
@@ -96,7 +96,7 @@ options = {
     "username": os.environ["CZ_USERNAME"],
     "password": os.environ["CZ_PASSWORD"],
     "workspace": os.environ["CZ_WORKSPACE"],
-    "virtualCluster": "default_ap",
+    "virtualCluster": "default",
     "schema": "public",
     "table": "orders",
 }

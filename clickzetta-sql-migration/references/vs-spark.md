@@ -177,7 +177,7 @@ USE VCLUSTER my_vc;
 
 -- 2. DYNAMIC TABLE (incremental computation)
 CREATE DYNAMIC TABLE sales_summary
-    REFRESH INTERVAL 5 MINUTE VCLUSTER default_ap
+    REFRESH INTERVAL 5 MINUTE VCLUSTER default
 AS SELECT customer_id, SUM(amount) FROM orders GROUP BY 1;
 
 -- 3. TABLE STREAM (CDC change capture)
