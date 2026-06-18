@@ -22,6 +22,8 @@ ZettaPark is ClickZetta Lakehouse's Python DataFrame framework. It translates Py
 
 See [references/zettapark-api.md](references/zettapark-api.md) for the complete API reference, all transformation methods, and worked examples (ETL, feature engineering, file import).
 
+**When the user is developing a Studio Python task** (not local script), read [references/studio-task-pattern.md](references/studio-task-pattern.md) — covers Studio session creation (`get_active_lakehouse_engine`), `save-script` deployment, task parameters, file I/O in Volume, watermark patterns, and common pitfalls.
+
 ## Installation
 
 > ⚠️ **Python version**: Python 3.12 recommended (minimum 3.10; 3.9 and below not supported)
