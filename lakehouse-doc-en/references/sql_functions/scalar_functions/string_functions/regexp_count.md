@@ -12,7 +12,7 @@ REGEXP_COUNT(string_expression, pattern_expression)
 ### Parameter Description
 
 - string_expression: STRING, the string expression to be searched
-- pattern_expression: STRING, Java regular expression pattern. See [List of Supported Regular Expression Functions](../../../regexp-statement.md)
+- pattern_expression: STRING, Java regular expression pattern. See [List of Supported Regular Expression Functions](regexp-statement.md)
 
 ### Return Value
 

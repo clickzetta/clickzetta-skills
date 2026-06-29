@@ -86,7 +86,7 @@ jdbc:clickzetta://<instance_name>.<region_id>.api.clickzetta.com/<workspace_name
 | Parameter | Description |
 |------|------|
 | `-d` | JDBC driver class name, fixed as `com.clickzetta.client.jdbc.ClickZettaDriver` |
-| `-u` | JDBC connection URL, see [JDBC Driver](JDBC-Driver.md) for full format |
+| `-u` | JDBC connection URL, see [JDBC Driver](jdbc-driver.md) for full format |
 | `-n` | Workspace member username |
 | `-p` | Workspace member password |
 | `schema` | Specifies the Schema to connect to, required |
@@ -166,6 +166,6 @@ export SQLLINE_DEBUG_ENABLE=TRUE
 ## Related Documents
 
 - [Connect using the cz-cli command line tool](connect-with-cz-cli.md) — Recommended alternative
-- [JDBC Driver Connection](JDBC-Driver.md) — Full JDBC URL format and parameters
+- [JDBC Driver Connection](jdbc-driver.md) — Full JDBC URL format and parameters
 - [Connect to Lakehouse Tutorial](tutorial_connect_to_lakehouse.md) — Comparison of all connection methods
 

@@ -4,9 +4,6 @@
 
 Through this tutorial, you will learn how to use a Virtual Cluster to clean, transform, and aggregate the raw data of the New York Taxi public dataset Fhvhv trips, and perform multi-concurrent queries on the result data.
 
-The tutorial example is shown in the figure below:
-![](.topwrite/assets/image_1714992137097.png)
-
 The tutorial content will be completed through the following steps:
 
 * Environment Preparation: Check the raw data through the sample dataset, create a computing cluster and target Schema
@@ -20,11 +17,7 @@ What is a Virtual Cluster?
 
 A Virtual Cluster (VC or Cluster) is a computing resource object provided by Singdata Lakehouse for data processing and analysis. Virtual Clusters provide the necessary resources such as CPU, memory, and local temporary storage (SSD medium) to execute SQL jobs in the Lakehouse. Clusters feature quick creation/destruction, scaling up/down, pausing/resuming, and are charged based on resource specifications and usage duration, with no costs incurred when paused or deleted.
 
-Virtual Clusters offer two types of clusters, general-purpose and analytical, to meet the isolation and optimization needs of different workloads for ETL and analysis scenarios.
-
-As shown in the figure below:
-![](.topwrite/assets/image_1714992266569.png)
-It is recommended to use general-purpose clusters for ETL data processing and analytical clusters for query analysis or supporting data product applications. General-purpose clusters support vertical scaling to meet the needs of different scales of ETL Pipeline tasks. Analytical clusters support horizontal scaling with multiple replicas within the cluster to meet the elastic capabilities for concurrent queries.
+Virtual Clusters offer two types of clusters, general-purpose and analytical, to meet the isolation and optimization needs of different workloads for ETL and analysis scenarios. It is recommended to use general-purpose clusters for ETL data processing and analytical clusters for query analysis or supporting data product applications. General-purpose clusters support vertical scaling to meet the needs of different scales of ETL Pipeline tasks. Analytical clusters support horizontal scaling with multiple replicas within the cluster to meet the elastic capabilities for concurrent queries.
 
 This tutorial will use general-purpose clusters for data cleaning and transformation, and analytical clusters for low-latency concurrent analysis.
 
@@ -62,7 +55,6 @@ show  vclusters ;
 -- 1.4 Switch the virtual cluster used in the current session,It will only take effect if selected and executed together with the SQL to be executed.It will only take effect if selected and executed together with the SQL to be executed.
 USE VCLUSTER REPORTING_VC;
 ```
-![](.topwrite/assets/image_1714992453071.png)
 
 > ⚠️ **Note**: The `vcluster_size` parameter for compute clusters supports both T-shirt sizes (XSMALL, SMALL, LARGE, etc.) and numeric values (1, 2, 4, 16, etc.) to provide a richer range of compute cluster specifications for different scenarios. For more information, see: [VCluster Size Specification Change Description](vcluster_size_description.md)
 
@@ -73,14 +65,12 @@ USE VCLUSTER REPORTING_VC;
 --Describes New York City For-Hire-Vehicle trips. 
 desc clickzetta_sample_data.nyc_taxi_tripdata.fhvhv_tripdata;
 ```
-![](.topwrite/assets/image_1714992471693.png)
 
 2.2 Preview Data Details
 ```sql
 --Sample Of Trip Record Data
 select * from clickzetta_sample_data.nyc_taxi_tripdata.fhvhv_tripdata limit 10;
 ```
-![](.topwrite/assets/image_1714992501025.png)
 
 2.3 View the Number of Records in the Dataset
 ```sql
@@ -158,7 +148,6 @@ Validate the processed data
 ```sql
 SELECT * FROM tutorial.int_fhvhv_tripdata LIMIT 10;
 ```
-![](.topwrite/assets/image_1714992818566.png)
 
 3. Aggregate the cleaned data according to the analysis topics to generate data tables for analysis
 ```sql
@@ -223,15 +212,12 @@ Check if the data object was created successfully.
 show tables in tutorial;
 ```
 
-![](.topwrite/assets/image_1714992844915.png)
-
 ```sql
 --Check the data of the newly created data model
 SELECT * FROM tutorial.mart_trips_driver_pay_per_company
 WHERE substr(year_month,0,4)='2021'
 ORDER BY year_month ASC;
 ```
-![](.topwrite/assets/image_1714992852747.png)
 
 ## Step03 Use Analytical Cluster for Single Concurrency Query
 
@@ -279,15 +265,13 @@ SET QUERY_TAG = '';
 -- View the execution results of running jobs
 SHOW JOBS WHERE QUERY_TAG='Tutorial02' LIMIT 10;
 ```
-You can also use the job history on the Studio page to view the execution status of query jobs.
-![](.topwrite/assets/image_1714992890007.png)
+You can also use the job history on the Studio page to view the execution status of query jobs, where each job entry shows its runtime, status, and scan metrics.
 
 ## Step04 Use Python Tasks for Concurrent Queries
 
 Test concurrent queries using Python tasks to observe the query performance and elastic concurrency expansion capabilities of the analytical cluster under continuous dynamic concurrency.
 
-1. In the Studio development module, create a Python task
-   ![](.topwrite/assets/image_1714992974205.png)
+1. In the Studio development module, create a Python task by clicking the "+" button in the task list and selecting "Python Task".
 
 2. Write a concurrent test script using the Lakehouse Python SDK
 

@@ -32,4 +32,4 @@ CREATE API CONNECTION my_fc_conn
 
 - [CREATE API CONNECTION](create-api-connection.md) — full syntax
 - [External Function](om-external-function.md) — how to use API Connection to create external functions
-- [Connection Overview](connection-guide.md)
+- [Connection Overview](create-connection.md)

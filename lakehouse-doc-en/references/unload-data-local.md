@@ -4,7 +4,7 @@ This document details how to download table data to your local machine. Currentl
 
 1. Download files using the GET command and export them locally.
 2. Use the visual download interface of Lakehouse Studio.
-3. Use the Jdbc client to download data locally with the [COPY](copy.md) command. (This feature has been deprecated in jdbc version 2.0.0, it is recommended to use the GET command for downloading)
+3. Use the Jdbc client to download data locally with the [COPY](sql_copy_into_guide.md) command. (This feature has been deprecated in jdbc version 2.0.0, it is recommended to use the GET command for downloading)
 
 # Using the Visual Download Interface of Lakehouse Studio
 

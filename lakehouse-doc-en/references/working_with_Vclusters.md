@@ -72,7 +72,7 @@ Assume the data to be processed is 10TB, and it is expected to be completed with
 
 :-: ![](.topwrite/assets/image_1739274962311.png =514)
 
-4. In the scheduling configuration of the ETL task (ETL\_task\_demo), configure the computing cluster for task execution to the ETL cluster set in the previous step. For more scheduling configuration operations, refer to the relevant content in the [Task Development and Scheduling](taskdevelop.md) document.
+4. In the scheduling configuration of the ETL task (ETL\_task\_demo), configure the computing cluster for task execution to the ETL cluster set in the previous step. For more scheduling configuration operations, refer to the relevant content in the [Task Development and Scheduling](cz-cli-studio-tasks.md) document.
 
 :-: ![](.topwrite/assets/image_1739276187369.png =791)
 

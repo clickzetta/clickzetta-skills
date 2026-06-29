@@ -4,8 +4,6 @@
 
 In this step-by-step tutorial, you will use Zettapark for Python, along with your favorite data analysis and visualization Python libraries and the popular scikit-learn machine learning library, to solve an end-to-end machine learning use case.
 
-:-: ![](.topwrite/assets/image_1742454392552.png)
-
 ### Prerequisites
 
 * Lakehouse account

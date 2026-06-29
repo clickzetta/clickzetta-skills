@@ -14,9 +14,9 @@ Features of the Modern Data Stack solution based on Singdata Lakehouse:
 
 This solution emphasizes simplicity and ease of use, aiming to help enterprises shift their focus from data infrastructure to data analysis, achieving modernization of data analysis.
 
-![](.topwrite/assets/image_1734577522644.png)
+The overall architecture for migrating to and building a Modern Data Stack based on Singdata Lakehouse consists of four layers: data source (Redshift on AWS), data lake storage (S3), data processing and storage (Singdata Lakehouse), and application layer (Metabase for BI and MindsDB for AI).
 
-The above diagram illustrates the architecture for migrating to and building a Modern Data Stack based on Singdata Lakehouse, summarized as follows:
+The above architecture illustrates the migration path and is summarized as follows:
 
 * Use the Redshift UNLOAD command to unload data to Parquet files in an S3 bucket.
 * Through Singdata Lakehouse's `SELECT * FROM VOLUME` statement, directly load data from Parquet files in the AWS S3 bucket into Singdata Lakehouse tables, achieving rapid data ingestion (in this example, loading a table with over 20 million rows into the Lakehouse took only 30 seconds).
@@ -98,7 +98,11 @@ where option is
 
 View the total number of rows (requires creating Singdata Lakehouse's `STORAGE CONNECTION` and `EXTERNAL VOLUME` in advance):
 
-![](.topwrite/assets/image_1718933981338.png)
+```SQL
+SELECT COUNT(*) FROM VOLUME hz_qiliang_csv_volume(...) USING parquet regexp '/house_prices_iceberg/data/000.*.parquet';
+```
+
+The query returns the total row count (e.g., over 20 million rows for the house prices dataset).
 
 Preview data
 
@@ -125,9 +129,7 @@ regexp '/house_prices_iceberg/data/000.*.parquet'
 limit 10;
 ```
 
-Execute the above query in Singdata Lakehouse, with the following results:
-
-![](.topwrite/assets/image_1718933998640.png)
+Execute the above query in Singdata Lakehouse. The result set shows the first 10 rows of the Parquet data, with columns including price, date, postcode1, postcode2, type, is_new, duration, and address fields.
 
 ### Data Loading: Load (L) Data from S3 into Singdata Lakehouse and Perform Data Transformation (T)
 
@@ -170,33 +172,33 @@ order by date,county,price;
 
 Verify the number of rows loaded:
 
-![](.topwrite/assets/image_1718934039921.png)
+After the `CREATE TABLE AS SELECT` completes, run `SELECT COUNT(*) FROM house_prices_paid_from_oss_parquet;` to confirm the row count matches the source data (e.g., over 20 million rows loaded in approximately 30 seconds).
 
 Explore data in the Lakehouse using SQL:
 
-![](.topwrite/assets/image_1718934046872.png)
+Run a sample query such as `SELECT * FROM house_prices_paid_from_oss_parquet LIMIT 10;` to confirm the data types and values were correctly transformed (e.g., the `date` column now shows proper timestamps and string columns are readable text).
 
 ### BI Application: Explore and Analyze Data in Singdata Lakehouse through Metabase
 
 #### Create a Database Connection to Singdata Lakehouse in Metabase
 
-![](.topwrite/assets/image_1718934063007.png)
+In Metabase, go to Admin > Databases > Add Database. Select the Singdata Lakehouse driver from the database type dropdown, then fill in the host, port, workspace, instance, username, and password fields. After saving, Metabase confirms the connection is established.
 
 #### Explore and Analyze Data through Metabase (Just Two Clicks -- Yes, Just Two!)
 
 ##### Select Database and Table:
 
-![](.topwrite/assets/image_1718934072740.png)
+Click 1: In Metabase's "Browse Data" view, select the Singdata Lakehouse database connection to see a list of available schemas and tables.
 
-![](.topwrite/assets/image_1718934080762.png)
+Click 2: Select the target table (e.g., `house_prices_paid_from_oss_parquet`) to open it in Metabase's data exploration view.
 
 ##### Browse and Analyze Data through Metabase
 
-![](.topwrite/assets/image_1718934087952.png)
+Metabase automatically renders the table data as an interactive visualization (e.g., a bar chart of average house prices by county), generated without writing any SQL.
 
 #### Explore and Analyze Data through Metabase:
 
-![](.topwrite/assets/image_1718934094905.png)
+The resulting dashboard displays multiple chart panels (e.g., price distribution by region, trends over time), all driven by the Singdata Lakehouse connection and assembled with just a few clicks.
 
 ### AI Application: Predict House Prices through MindsDB (Only SQL)
 
@@ -234,13 +236,11 @@ LIMIT 10000;
 
 ### Create Zeppelin Interpreter, Connect to MindsDB via MySQL JDBC
 
-![](.topwrite/assets/image_1718934120805.png)
+In Zeppelin's Interpreter settings, create a new interpreter of type "jdbc" and configure it with the MySQL JDBC driver class, the MindsDB connection URL (e.g., `jdbc:mysql://localhost:47335/`), and the MindsDB credentials. After saving, the interpreter is available for use in notebooks.
 
 #### Create a New Notebook in Zeppelin
 
-MindsDB connects to Singdata Lakehouse, using Singdata Lakehouse as a data source
-
-![](.topwrite/assets/image_1718934127523.png)
+MindsDB connects to Singdata Lakehouse, using Singdata Lakehouse as a data source. In the Zeppelin notebook, use the MindsDB MySQL JDBC interpreter to run the following connection command:
 
 ```SQL
 -- Connect MindsDB to Singdata Lakehouse
@@ -259,9 +259,7 @@ PARAMETERS = {
 
 ### Create Model
 
-Create a prediction model to predict `paid_times`, i.e., the number of times a house has been sold.
-
-![](.topwrite/assets/image_1718934140448.png)
+Create a prediction model to predict `paid_times`, i.e., the number of times a house has been sold. In the Zeppelin notebook, run the following SQL. After executing `CREATE MODEL`, MindsDB starts training; the subsequent `DESCRIBE` statement shows the model status transitioning from `training` to `complete`.
 
 ```SQL
 -- Create prediction model
@@ -275,7 +273,7 @@ DESCRIBE clickzetta.uk_house_prices_grouped_by_features_model_avg_price;
 
 #### House Price Prediction
 
-![](.topwrite/assets/image_1718934147927.png)
+Run the following prediction query in the Zeppelin notebook using the MindsDB MySQL JDBC interpreter. The query returns the predicted `avg_price` along with a confidence explanation object.
 
 ```SQL
 -- MAKE A PREDICTION
@@ -302,7 +300,7 @@ avg_price        avg_price_explain
 
 #### Batch House Price Prediction
 
-![](.topwrite/assets/image_1718934160811.png)
+Run the following batch prediction query to score all 10,000 rows in `house_prices_paid_grouped_by_features`. The result set adds a `predicted_avg_price` column and an explanation object to each row from the source table.
 
 ```SQL
 -- Bulk predictions by joining a table with your model:
@@ -383,4 +381,4 @@ for file_name in parquet_files:
 
 Sample input:
 
-![](.topwrite/assets/image_1718934180299.png)
+The Python script reads the local Parquet files and prints both the inferred schema (as a SQL column definition fragment) and the first 10 rows of data for each file, making it easy to verify field names and types before writing Lakehouse queries.

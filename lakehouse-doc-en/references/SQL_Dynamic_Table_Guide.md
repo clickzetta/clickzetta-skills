@@ -209,7 +209,7 @@ DROP TABLE IF EXISTS products_dt;
 
 ## Related Documentation
 
-* [Dynamic Table Introduction](dynamic-table-introduce.md)
+* [Dynamic Table Introduction](sql_dynamic_table_guide.md)
 * [CREATE DYNAMIC TABLE](create-dynamic-table.md)
 * [View Refresh History](refresh-history.md)
 * [Incremental Computation Mechanism](incremental-computing.md)

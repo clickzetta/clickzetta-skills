@@ -43,4 +43,4 @@ SHOW GRANTS TO ROLE analyst;
 - [Role Management Details](roles.md)
 - [User Management](om-user-management.md)
 - [Dynamic Masking](om-dynamic-mask.md) — Role-based masking control
-- [Row-Level Permission](om-row-level-permission.md) — Role-based row-level access control
+- [Row-Level Permission](row-filter.md) — Role-based row-level access control

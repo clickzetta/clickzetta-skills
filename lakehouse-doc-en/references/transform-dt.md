@@ -236,7 +236,7 @@ Applicable scenarios must meet the following criteria:
 
 ## Converting Offline Tasks to Incremental Tasks
 
-![](.topwrite/assets/image_1747648578327.png)
+
 
 ## Transformation Implementation Steps
 

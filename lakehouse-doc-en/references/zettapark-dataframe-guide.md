@@ -7,7 +7,7 @@ Zettapark is the Python DataFrame API for Singdata Lakehouse, providing a pandas
 > 💡 **When to use what**:
 > - Need DataFrame operations (pandas/PySpark-like) → Use Zettapark (this guide)
 > - Need standard SQL execution or script automation → Use [Python Connector](python_reference/connector.md)
-> - Need high-speed bulk writes (millions of rows) → Use [BulkLoad](java_reference/bulkload.md)
+> - Need high-speed bulk writes (millions of rows) → Use [BulkLoad](bulkload-summary.md)
 
 ---
 
@@ -413,4 +413,4 @@ GROUP BY `category`
 | [Zettapark Quick Start](zettapark-quick-start.md) | Installation and basic examples |
 | [Python Connector SDK](python_reference/connector.md) | Standard SQL execution interface |
 | [Dynamic Table](dynamic-table.md) | Auto-incrementally refreshed data pipelines |
-| [BulkLoad Batch Import](java_reference/bulkload.md) | High-speed writes for millions of rows |
+| [BulkLoad Batch Import](bulkload-summary.md) | High-speed writes for millions of rows |

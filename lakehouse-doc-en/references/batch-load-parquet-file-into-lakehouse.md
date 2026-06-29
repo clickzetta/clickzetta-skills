@@ -12,26 +12,26 @@ This guide will help you import large amounts of data from public URL Parquet fi
 
 Script download address: <https://github.com/yunqiqiliang/nyc-taxi-data-clickzetta>
 
-## 1. Install [Singdata SQLLine](connect-with-cli.md)
+## Install [Singdata SQLLine](connect-with-cli.md)
 
-## 2. Install [R](https://www.r-project.org/)
+## Install [R](https://www.r-project.org/)
 
 From [CRAN](https://cloud.r-project.org/)
 
 Note that R used to be optional for this repo, but is required starting with the 2022 file format change. The scripts use R to convert Parquet files to CSV before loading into Postgres. There are other ways to convert from Parquet to CSV that wouldn't require R, but I found that R's `arrow` package was faster than some of the other CLI tools I tried
 
-## 3. Download raw data
+## Download raw data
 
 `./download_raw_data.sh`
 
 When done, modify download_raw_data.sh and run again to download data from 202212:
 wget -i setup_files/raw_data_urls_new\.txt -P data/ -w 2
 
-## 4. Initialize database and set up schema
+## Initialize database and set up schema
 
 `./initialize_database.sh`
 
-## 5. Import taxi and FHV data
+## Import taxi and FHV data
 
 `./import_yellow_taxi_trip_data.sh`
 
@@ -66,7 +66,7 @@ for parquet_filename in data/fhv_tripdata*.parquet; do
   ./setup_files/convert_parquet_to_csv.R ${parquet_filename}
 
   csv_filename=${parquet_filename/.parquet/.csv}
-
+  
   sh ../sqlline_cz/sqlline properties ../sqlline_cz/clickzetta.properties -e "set copy.csv.with.header=false;set copy.csv.skip.header=true; copy fhv_trips_staging from '${csv_filename}';"
 
   echo "`date`: finished raw load for ${csv_filename}"
@@ -75,5 +75,3 @@ for parquet_filename in data/fhv_tripdata*.parquet; do
   echo "`date`: deleted ${csv_filename}"
 done;
 ```
-
-^

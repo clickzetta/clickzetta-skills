@@ -79,7 +79,7 @@ See [CZ-CLI Documentation](cz-cli.md) for details.
 
 ## MCP Server Tools
 
-The Singdata Lakehouse MCP Server provides a set of tools specifically for semantic views, which can be integrated into AI Agent frameworks (Dify, N8N, Claude Desktop, etc.). See [MCP Server Documentation](mcpservers.md) for details.
+The Singdata Lakehouse MCP Server provides a set of tools specifically for semantic views, which can be integrated into AI Agent frameworks (Dify, N8N, Claude Desktop, etc.). See [MCP Server Documentation](lakehousemcpserver.md) for details.
 
 ### Tool Overview
 
@@ -180,5 +180,5 @@ The YAML format is compatible with the Snowflake Cortex Analyst specification. U
 
 - [AI Functions](ai_function_in_sql.md)
 - [CZ-CLI](cz-cli.md)
-- [MCP Server](mcpservers.md)
+- [MCP Server](lakehousemcpserver.md)
 - [Query Semantic View](semantic-view-query.md)

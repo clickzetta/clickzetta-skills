@@ -217,6 +217,6 @@ session.close()
 
 #### Documentation
 
-[Zettapark Quick Start](zettaparkquickstart.md)
+[Zettapark Quick Start](lakehousepython-zettapark.md)
 
 ^

@@ -46,4 +46,5 @@ USE VCLUSTER vc_name;
 
 - When connecting using client tools such as [SQLLine Client](<connect-with-cli.md>) or [DBeaver](<eco_integration/dbeaver-lakehouse.md>), the relevant operations take effect for the entire session duration.
 - If you are using the Lakehouse Studio interface, it is recommended to switch schemas and compute clusters primarily through the page UI. If you use the command directly, its effect is only temporary, and you must select and execute it together with the SQL statements that depend on it for it to take effect.
-![](.topwrite/assets/image_1741317824124.png)
+
+> In the Studio UI, the schema and compute cluster selectors are located in the top toolbar of the SQL editor. You can switch them directly from the dropdown menus there without typing `USE` commands.

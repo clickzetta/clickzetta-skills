@@ -1,5 +1,7 @@
 # Private Link Overview
 
+> [Preview Release] This feature is currently in an invite-only preview release. If you need to use it, please contact our technical support team for assistance.
+
 ## What is Private Link?
 
 **Private Link** (AWS PrivateLink, Alibaba Cloud Private Link, Tencent Cloud Private Link, etc.) is a secure, private network connection method provided by cloud vendors. It allows different VPCs (Virtual Private Clouds) to interconnect through an internal network without being exposed to the public internet, significantly reducing the security risks of data transmission.

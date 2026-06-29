@@ -15,34 +15,25 @@ For accounts with multiple users, identity verification can only be performed by
 
 ## How to Check Verification Status
 
-Log in to the Singdata platform and go to the account home page to view the current identity verification status:
-![](.topwrite/assets/image_1747638304936.png)
+Log in to the Singdata platform and go to the account home page. The current identity verification status is displayed in the account overview section, showing whether the account is unverified, individually verified, or enterprise verified.
 
 ## Enterprise Identity Verification
 
-Go to Account Home -> Select "Verification Upgrade" -> Select "Enterprise Verification" to enter the enterprise identity verification page. The verification process consists of two steps: fill in enterprise basic information -> legal representative completes facial recognition, as shown below:
-![](.topwrite/assets/image_1747638456789.png)
-![](.topwrite/assets/image_1747638493466.png)
-![](.topwrite/assets/image_1747638545329.png)
+Go to Account Home -> Select "Verification Upgrade" -> Select "Enterprise Verification" to enter the enterprise identity verification page. The verification process consists of two steps: fill in enterprise basic information, then the legal representative completes facial recognition.
 
 * Required enterprise information includes: business license, company name, unified social credit code, legal representative name, legal representative ID number, bank name, bank account number.
 * Business license must be in JPG/JPEG/PNG/PDF format and file size less than 10 MB.
 * Company name, unified social credit code, and legal representative name must match the information on the business license.
 
-After confirming the information is correct, click "Next". When the enterprise information verification passes, the legal representative facial recognition step begins. The system generates a facial recognition QR code. The legal representative scans the code with a mobile device and completes facial recognition on the mobile device, as shown below:
-![](.topwrite/assets/image_1747639041666.png)
+After confirming the information is correct, click "Next". When the enterprise information verification passes, the legal representative facial recognition step begins. The system generates a facial recognition QR code. The legal representative scans the code with a mobile device and completes facial recognition on the mobile device.
 
 ## Individual Identity Verification
 
-Go to Account Home -> Select "Verification Upgrade" -> Select "Individual Verification" to enter the individual identity verification page. The verification process consists of two steps: fill in personal identity information -> complete individual facial recognition, as shown below:
-![](.topwrite/assets/image_1747639086741.png)
-![](.topwrite/assets/image_1747639102052.png)
-![](.topwrite/assets/image_1747639142744.png)
+Go to Account Home -> Select "Verification Upgrade" -> Select "Individual Verification" to enter the individual identity verification page. The verification process consists of two steps: fill in personal identity information, then complete individual facial recognition.
 
 * Required personal information includes: name, ID number.
 
-After confirming the name and ID number match and are correct, click "Next" to enter the individual facial recognition step. Scan the QR code with a mobile device and complete facial verification on the mobile device, as shown below:
-![](.topwrite/assets/image_1747639179450.png)
+After confirming the name and ID number match and are correct, click "Next" to enter the individual facial recognition step. Scan the QR code with a mobile device and complete facial verification on the mobile device.
 
 ## Additional Notes
 

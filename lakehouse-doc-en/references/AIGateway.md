@@ -49,11 +49,11 @@ response = client.chat.completions.create(
 
 | Goal | Where to Go |
 |------|--------|
-| Understand AI Gateway features and positioning | [Product Introduction](Introduction.md) |
+| Understand AI Gateway features and positioning | [Product Introduction](introduction.md) |
 | Complete setup and call the first model in 10 minutes | [Quick Start](quickstart.md) |
 | View supported models and pricing | [Model Pricing](pricing-ai-gateway.md) |
-| Integrate your own third-party model (BYOK) | [Product Introduction → BYOK](Introduction.md) |
-| Manage API Keys, set usage limits | [Product Introduction → API Key Management](Introduction.md) |
+| Integrate your own third-party model (BYOK) | [Product Introduction → BYOK](introduction.md) |
+| Manage API Keys, set usage limits | [Product Introduction → API Key Management](introduction.md) |
 | Call LLMs in SQL for data analysis | [Call LLMs in SQL](lakehouse-ai-sql-analysis.md) |
 | Analyze images in SQL | [Analyze Images in SQL](lakehouse-multimodal-ai-pipeline.md) |
 

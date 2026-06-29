@@ -8,9 +8,9 @@ Data quality rules are used to verify whether the quality of data objects meets 
 
 Before reading this guide, it is recommended to complete reading and understanding the following documents:
 
-* [Lakehouse Product Introduction](what_is_clickzetta_lakehouse.md)
-* [Key Concepts](key_concepts.md)
-* [Lakehouse Studio Quick Tour](lakehousestudiotour.md)
+* [Lakehouse Product Introduction](datalake_overview.md)
+* [Key Concepts](key-concepts.md)
+* [Lakehouse Studio Quick Tour](lakehouse-studio-101.md)
 
 ## Operation Guide
 
@@ -50,23 +50,19 @@ You can use the "Data Quality" feature provided by Lakehouse Studio to configure
 6. After creation, you can see the newly added rule in the quality rule list page.
 
 
-7. You can click the "Trial Run" button to test the configuration and verification of the quality rule. On the "Verification Results" tab, you can view the specific results, as shown below: the quality rule was triggered to run, the verification result matches expectations, and everything is normal.
-   ![](.topwrite/assets/image_1749450092151.png)
-   ![](.topwrite/assets/image_1749450096317.png)
+7. You can click the "Trial Run" button to test the configuration and verification of the quality rule. On the "Verification Results" tab, you can view the specific results: the quality rule was triggered to run, the verification result matches expectations, and everything is normal.
 
 8. Wait for the scheduled task's timing to arrive and observe the quality rule triggering.
 
-   * In "Task Operations", you can view the triggering and running status of quality rules through the logs of periodic task instance execution.
-     ![](.topwrite/assets/image_1749450116093.png)
+   * In "Task Operations", you can view the triggering and running status of quality rules through the logs of periodic task instance execution. The log entries show the rule name, trigger timestamp, and whether the verification passed.
 
    * In "Data Quality" > "Verification Results", you can see the newly added verification record, with the trigger method being "Periodic Task Triggered".
-     ![](.topwrite/assets/image_1749450124984.png)
 
-9. At this point, the configuration of quality rules and observation of verification execution have been completed. After completing the data quality rule configuration, if you need to promptly receive monitoring and alerting information when quality rule verification fails, you also need to configure monitoring. The specific operations are omitted here. For details, see the [Data Quality](dataquality.md) help document.
+9. At this point, the configuration of quality rules and observation of verification execution have been completed. After completing the data quality rule configuration, if you need to promptly receive monitoring and alerting information when quality rule verification fails, you also need to configure monitoring. The specific operations are omitted here. For details, see the [Data Quality](lakehouse-dqc-guide.md) help document.
 
 ## Related Documents
 
-* You can read the [Data Quality](dataquality.md) help document to understand the complete usage guide for the Data Quality module.
+* You can read the [Data Quality](lakehouse-dqc-guide.md) help document to understand the complete usage guide for the Data Quality module.
 
 ## Next Steps
 

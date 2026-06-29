@@ -8,6 +8,8 @@ Use cases: vector retrieval, image/text semantic search, RAG knowledge base quer
 
 ## SQL Commands Involved
 
+[Create External Table Syntax](create-external-table.md)
+
 | Command / Function                      | Purpose                                                    | When to Use                                      |
 | --------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------ |
 | `CREATE STORAGE CONNECTION`             | Create OSS access credentials                              | Run once when first connecting to OSS            |

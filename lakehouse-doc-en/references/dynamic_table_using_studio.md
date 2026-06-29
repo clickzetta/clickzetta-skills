@@ -9,60 +9,44 @@ The dynamic table development process in Web-IDE uses a visual wizard to guide y
 
 * Step 1: Create a new dynamic table task
 
-In the Studio IDE development environment, create a new task and select "Dynamic Table" as the task type.
+In the Studio IDE development environment, create a new task and select "Dynamic Table" as the task type. The task creation panel lists available task types; select "Dynamic Table" to proceed.
 
-![](.topwrite/assets/image_1722413586664.png)
-
-When creating the task, specify a task name and a save location for the task code.
-
-![](.topwrite/assets/image_1722413608121.png =280)
+When creating the task, specify a task name and a save location for the task code in the dialog that appears.
 
 * Step 2: Name the dynamic table and write its SELECT query
 
-First, fill in the schema location where the dynamic table will be saved after submission, and enter the dynamic table name.
-
-![](.topwrite/assets/image_1722413623690.png)
+First, fill in the schema location where the dynamic table will be saved after submission, and enter the dynamic table name. These fields appear at the top of the configuration panel.
 
 Next, write and test the dynamic table query in the SQL code area.
 
 Write the SELECT statement for your data transformation in the SQL code area, and set the cluster name to use when running the SQL (this cluster will be used by default when the dynamic table runs its refresh tasks). You can also click the run button to test the SELECT statement and verify the logic is correct.
 
-![](.topwrite/assets/image_1722413647339.png)
-
 Finally, use the Explain button to validate the query syntax and save the dynamic table model definition.
 
 Click the button to check the syntax of the SELECT query and verify that field names and data types are as expected. After confirming everything looks correct, click "OK and Continue" in the pop-up window. The system saves the dynamic table definition and exits the SQL code editing state.
-
-![](.topwrite/assets/image_1722413661168.png)
 
 * Step 3: Review and adjust the dynamic table configuration, then submit for deployment
 
 After completing the SQL code and exiting SQL editing mode, you will see the default configuration, including basic information, runtime parameters, SQL code, fields, partitions, and bucketing settings.
 
-![](.topwrite/assets/image_1722413674413.png)
-
 Before submitting the dynamic table model to the Lakehouse data environment, review and update the following configuration items to meet your production requirements.
 
 | Configuration Item | Default Value | Description | Example |
 | ------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
-| Dynamic Table Lifecycle | Permanent | Optional. Specify a data lifecycle for the dynamic table. | ![](.topwrite/assets/image_1722413761168.png) |
+| Dynamic Table Lifecycle | Permanent | Optional. Specify a data lifecycle for the dynamic table. | A dropdown allows selecting permanent or a specific number of days. |
 | Owner | Task script creator | Optional. Reassign the task owner. | |
 | Dynamic Table Description | None | Optional. Add a comment for the dynamic table. | |
-| Running Cluster | Cluster specified during IDE development | Optional. Select a different compute cluster to run the dynamic table refresh task, based on your deployment environment's cluster plan. | ![](.topwrite/assets/image_1722413783296.png) |
-| Refresh Method | Manual refresh | Optional. ***For production use, automatic refresh is recommended.*** Supports scheduling intervals in minutes, hours, or days, with a minimum interval of 1 minute. | ![](.topwrite/assets/image_1722413797691.png) |
-| Parameter Configuration | None | Optional. Advanced runtime parameters for the dynamic table. These are only needed in specific optimization scenarios (typically provided by the platform team for particular use cases) and do not need to be set by default. | ![](.topwrite/assets/image_1722413810954.png) |
-| SQL Code | Last saved code | Optional. If you want to adjust the SQL code after saving, you can edit and save it again. | ![](.topwrite/assets/image_1722413830727.png) |
-| Edit Fields | None | When editing fields, you can: set field comments; designate partition fields (supporting regular partitions and Transform partitions); set bucket fields and bucket count (default is 256 buckets when bucketing is enabled); and set sort fields (one or more fields, with a specified sort order). | ![](.topwrite/assets/image_1722413842446.png) |
+| Running Cluster | Cluster specified during IDE development | Optional. Select a different compute cluster to run the dynamic table refresh task, based on your deployment environment's cluster plan. | A dropdown lists available clusters in the current workspace. |
+| Refresh Method | Manual refresh | Optional. ***For production use, automatic refresh is recommended.*** Supports scheduling intervals in minutes, hours, or days, with a minimum interval of 1 minute. | Options include manual refresh and automatic refresh with configurable interval (e.g., every 5 minutes). |
+| Parameter Configuration | None | Optional. Advanced runtime parameters for the dynamic table. These are only needed in specific optimization scenarios (typically provided by the platform team for particular use cases) and do not need to be set by default. | A key-value input area for entering advanced runtime parameters. |
+| SQL Code | Last saved code | Optional. If you want to adjust the SQL code after saving, you can edit and save it again. | The SQL editor displays the current SELECT statement with an Edit button to re-enter editing mode. |
+| Edit Fields | None | When editing fields, you can: set field comments; designate partition fields (supporting regular partitions and Transform partitions); set bucket fields and bucket count (default is 256 buckets when bucketing is enabled); and set sort fields (one or more fields, with a specified sort order). | A field list panel where each field can be configured with type, partition role, bucket role, and sort order. |
 
 * Step 4: Submit and deploy the dynamic table model to the target environment
 
-After completing SQL development and dynamic table configuration, you can click "DDL Preview" to view the complete DDL definition of the dynamic table model.
+After completing SQL development and dynamic table configuration, you can click "DDL Preview" to view the complete DDL definition of the dynamic table model. The preview panel displays the full `CREATE DYNAMIC TABLE` statement generated from your configuration.
 
-![](.topwrite/assets/image_1722413857683.png)
-
-Once you confirm it looks correct, click the "Submit" button on the right side of the dynamic table task. The system displays a diff comparing the current content with the last saved version:
-
-![](.topwrite/assets/image_1722413868003.png)
+Once you confirm it looks correct, click the "Submit" button on the right side of the dynamic table task. The system displays a diff comparing the current content with the last saved version, highlighting any changes before final submission.
 
 After confirming the submission, the system executes the DDL commands in the Lakehouse target data environment to create the dynamic table object. Lakehouse will then automatically schedule and run the dynamic table according to its refresh strategy.
 
@@ -72,9 +56,7 @@ After confirming the submission, the system executes the DDL commands in the Lak
 
 Dynamic table tasks successfully submitted through the Studio Web-IDE can be viewed on the "Dynamic Table" tab under "Task Operations" in the "Operations Monitoring" section. Note that **the operations module only supports managing tasks created through the Web-IDE dynamic table node. It does not support viewing dynamic tables created manually with SQL commands (for those objects, you can still monitor refresh tasks using `SHOW DYNAMIC TABLE REFRESH HISTORY`)**.
 
-The following information is available on the dynamic table operations monitoring list page.
-
-![](.topwrite/assets/image_1722416553405.png)
+The following information is available on the dynamic table operations monitoring list page. The list shows each task as a row with columns for task name, dynamic table name, task status, schema, and action buttons.
 
 **Column Descriptions**
 
@@ -101,19 +83,15 @@ Clicking a dynamic table task name lets you view its upstream dependencies, help
 * The Manual Refresh button at the top manually triggers a refresh of the dynamic table.
 * The Offline button at the top takes the dynamic table offline, which deletes it.
 
-![](.topwrite/assets/image_1722416571859.png)
+The task detail panel displays the upstream dependency graph on the left and the dynamic table's basic configuration on the right, with action buttons (Edit, Pause, Manual Refresh, Offline) in the top toolbar.
 
 #### Node Code
 
-View the creation statement for the dynamic table.
-
-![](.topwrite/assets/image_1722416583152.png)
+View the creation statement for the dynamic table. The Node Code tab displays the full `CREATE DYNAMIC TABLE` DDL that was executed when the task was submitted.
 
 #### Operation Log
 
-Records the operation audit events throughout the dynamic table task lifecycle, from deployment to going offline. This includes task submission, pause scheduling, resume scheduling, manual refresh, and offline operations.
-
-![](.topwrite/assets/image_1722416592033.png)
+Records the operation audit events throughout the dynamic table task lifecycle, from deployment to going offline. This includes task submission, pause scheduling, resume scheduling, manual refresh, and offline operations. Each log entry shows the operation type, operator, and timestamp.
 
 #### Refresh History
 
@@ -134,7 +112,7 @@ The refresh history provides a real-time record of dynamic table refresh executi
 * Search by job ID
 * Filter by duration, job status, execution time, and cluster
 
-![](.topwrite/assets/image_1722416609512.png)
+The refresh history table lists each execution with the columns described above, color-coded by job status (e.g., green for success, red for failure).
 
 # Monitoring Alerts
 
@@ -150,7 +128,7 @@ The refresh history provides a real-time record of dynamic table refresh executi
 
   * Checks the number of dynamic table refresh failures at a specified time. If the count reaches the configured threshold, an alert is triggered.
 
-![](.topwrite/assets/image_1722416626731.png)
+The monitoring alert configuration form lets you set the scope (workspace, task name, or owner), the alert type (timeout or failure count), the threshold value, and the notification recipients.
 
 # Relationship Between Studio Dynamic Table Tasks and Dynamic Table Objects
 

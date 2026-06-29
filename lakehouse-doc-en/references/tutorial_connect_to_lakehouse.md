@@ -28,7 +28,7 @@ Recommended: **cz-cli** — configure a Profile once, and all subsequent SQL and
 
 Recommended: **JDBC Driver** — standard database connection interface that integrates directly into frameworks like Spring and Flink.
 
-→ [JDBC Driver](JDBC-Driver.md)
+→ [JDBC Driver](jdbc-driver.md)
 
 ### Python Developer / Data Scientist
 

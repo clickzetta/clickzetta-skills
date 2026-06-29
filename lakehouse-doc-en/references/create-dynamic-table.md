@@ -15,7 +15,7 @@ A Dynamic Table is like an "auto-updating formula sheet": you only need to defin
 
 A Dynamic Table is a data object that automatically refreshes incrementally based on a query definition. The data processing logic is defined via SQL query at creation time, and during refresh, incremental data from source tables is automatically retrieved and computed using incremental algorithms.
 
-For more usage methods, refer to [Dynamic Table Introduction](dynamic-table-introduce.md) and [Incremental Computation Principles](dynamic-table.md).
+For more usage methods, refer to [Dynamic Table Introduction](sql_dynamic_table_guide.md) and [Incremental Computation Principles](dynamic-table.md).
 
 ## Creation Syntax
 
@@ -451,7 +451,7 @@ SELECT * FROM doc_dt_user_purchase_analysis ORDER BY user_id;
 * [Restore Dynamic Table to a Specific Version](restore.md)
 * [View Dynamic Table Version History](desc-history.md)
 * [View Dynamic Table Data at a Specific Version](timetravel-summary.md)
-* [Dynamic Table Introduction](dynamic-table-introduce.md)
+* [Dynamic Table Introduction](sql_dynamic_table_guide.md)
 
 ---
 

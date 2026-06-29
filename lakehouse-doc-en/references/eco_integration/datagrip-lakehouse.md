@@ -18,22 +18,17 @@ Before starting, please ensure you meet the following conditions:
 
 1. Open DataGrip and enter the main interface.
 2. Click "New Project" to create a new project. In the new project interface, click "Driver" and select the "+" button to add a new driver. Name the driver Lakehouse.
-![Add Lakehouse Driver](.topwrite/assets/image_1693482390581.png)
 
 ## Step 2: Connect to Singdata Lakehouse Using DataGrip
 
 1. In the "Data Sources" window, select the Lakehouse data source you just created.
 2. Click the "Test Connection" button to ensure the connection is normal. If the connection fails, please check your Lakehouse service and JDBC driver settings.
 3. Click the "OK" button to complete the data source configuration.
-4. From the Lakehouse service homepage, copy the JDBC connection string. Please refer to the following example:
-
-![Lakehouse Homepage JDBC Address](.topwrite/assets/image_1693482409292.png)
+4. From the Lakehouse service homepage, copy the JDBC connection string. The format is: `jdbc:clickzetta://<instance>.<region>.api.singdata.com/<workspace>?virtualcluster=<vcluster>&schema=<schema>`.
 
 ## Step 3: Manage Singdata Lakehouse Using DataGrip
 
 1. In the "Database" panel on the left side of DataGrip, you can see all the schemas and tables.
-
-![View Schemas and Tables](.topwrite/assets/image_1693482418469.png)
 
 2. Right-click any schema or table and select "SQL Script" to open the SQL editor.
 3. In the SQL editor, you can write and execute SQL queries. For example, you can execute the following query to get the first 10 rows of a table:
@@ -51,5 +46,3 @@ Due to different versions of DataGrip having various changes, some versions may 
 ```
 set  cz.sql.double.quoted.identifiers=true;
 ```
-
-![](../.topwrite/assets/image_1733814698645.png)

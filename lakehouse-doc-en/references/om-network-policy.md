@@ -30,4 +30,4 @@ ALTER USER analyst SET NETWORK_POLICY = office_policy;
 
 - [Network Policy Details](network_policy.md)
 - [Dynamic Masking](om-dynamic-mask.md)
-- [Row-Level Permission](om-row-level-permission.md)
+- [Row-Level Permission](row-filter.md)

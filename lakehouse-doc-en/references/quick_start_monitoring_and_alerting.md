@@ -8,9 +8,9 @@ If you have configured an ETL pipeline, such as completing the [Getting Started:
 
 Before reading this guide, it is recommended to complete reading and understanding the following documents:
 
-* [Lakehouse Product Introduction](what_is_clickzetta_lakehouse.md)
-* [Key Concepts](key_concepts.md)
-* [Lakehouse Studio Quick Tour](lakehousestudiotour.md)
+* [Lakehouse Product Introduction](datalake_overview.md)
+* [Key Concepts](key-concepts.md)
+* [Lakehouse Studio Quick Tour](lakehouse-studio-101.md)
 
 ## Operation Guide
 
@@ -33,9 +33,7 @@ Users with `workspace_admin`, `workspace_dev`, or `workspace_sre` role permissio
 
 As mentioned above, the product has built-in global monitoring rules available for selection and activation.
 
-1. As shown below, there are mainly two types of built-in monitoring rules: "Periodic Task Instance Execution Failed" and "Data Quality Check Failed":
-
-:-: &#x20;  ![](.topwrite/assets/image_1749455660655.png)
+1. As mentioned above, the product has built-in global monitoring rules available for selection and activation. There are mainly two types of built-in monitoring rules: "Periodic Task Instance Execution Failed" and "Data Quality Check Failed".
 
 2. Click a specific monitoring rule to view its detailed configuration definition. Taking "Data Quality Check Failed - Strong Rule" as an example, the following figure shows its core information such as monitoring items, alert notification methods, and notification recipients.
 

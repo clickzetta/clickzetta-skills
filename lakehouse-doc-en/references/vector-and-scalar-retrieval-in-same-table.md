@@ -15,11 +15,6 @@ The `github_event_issuesevent_embedding` table in Singdata Lakehouse stores text
 
 This solution supports storing text data, vector data, as well as inverted indexes and vector indexes simultaneously in the same table and the same VCluster. Compared to traditional approaches, it no longer requires three separate systems (data warehouse, text retrieval database, vector database), minimizing the number of data copies and avoiding data synchronization across three systems.
 
-![](/.topwrite/assets/image_1768390312153.png)
-
-^
-^
-
 ### Key Singdata Lakehouse Features Used
 
 * [Vector Storage](vector-type.md): Native Vector data type, allowing Vector type fields to be added directly to regular tables.
@@ -61,11 +56,7 @@ This solution supports storing text data, vector data, as well as inverted index
 ## Fused Retrieval
 
 * Refer to and complete the vector and scalar storage in the same table in the Singdata Lakehouse.
-* Retrieval Process
-
-![](/.topwrite/assets/image_1768390271906.png)
-
-^
+* Retrieval Process: fused retrieval combines vector similarity search with scalar filter conditions in a single query, executed within the same VCluster against the same table.
 
 ## Source Code
 

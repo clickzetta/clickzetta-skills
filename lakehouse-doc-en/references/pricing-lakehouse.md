@@ -43,7 +43,7 @@ The billing principles for each computing resource item are as follows:
 When a general-purpose computing cluster starts and reaches the "running" state, it begins to generate corresponding CRU consumption based on the cluster's specification size and number of instances. When the computing cluster enters the "stopping" state, it stops generating CRU consumption.
 
 > 🗒️ **Billing Formula**:&#x20;
-> General-purpose Computing Cluster = Runtime (hours) × Cluster Specification (CRU) × CRU Unit Price (RMB/CRU\*hour)
+> General-purpose Computing Cluster = Runtime (hours) × Cluster Specification (CRU) × CRU Unit Price (USD/CRU\*hour)
 
 The minimum specification for general-purpose computing resources is 1 CRU, the maximum is 256 CRU, with a step size of 1 CRU. The table below shows the specifications and corresponding hourly CRU consumption:
 
@@ -64,7 +64,7 @@ The billing principle of analytical computing clusters is the same as that of ge
 Analytical computing clusters support automatic instance scaling on top of the specifications. When query concurrency exceeds the maximum concurrency that all current instances can handle, the system will automatically scale out instances. Each additional instance increases the consumption of a computing cluster of the same specification. When reducing one instance still meets the current concurrency, the system will automatically scale in and reduce analytical computing resource consumption. Analytical clusters have elastic scaling enabled by default upon creation, with a default minimum of 1 instance and maximum of 2 instances. You can also manually set the minimum and maximum instance values for auto-scaling, with up to 25 instances.
 
 > 🗒️ **Billing Formula**:&#x20;
-> Analytical Computing Cluster = Runtime (hours) × Number of Instances × Cluster Specification (CRU) × CRU Unit Price (RMB/CRU\*hour)
+> Analytical Computing Cluster = Runtime (hours) × Number of Instances × Cluster Specification (CRU) × CRU Unit Price (USD/CRU\*hour)
 
 The minimum specification for analytical computing resources is 1 CRU, the maximum is 256 CRU, with a step size of 2^n CRU. The table below shows the hourly CRU consumption for 1 to 5 instances:
 
@@ -85,16 +85,16 @@ The minimum specification for analytical computing resources is 1 CRU, the maxim
 Synchronous computing clusters are used for running data integration tasks, including offline integration and real-time integration. Multiple integration tasks can be submitted to the same synchronous computing cluster to reuse resources. The billing principle of synchronous computing clusters is the same as that of general-purpose computing clusters, measured from the start time of the "running" state until entering the "stopping" state.
 
 > 🗒️ **Billing Formula**:&#x20;
-> Synchronous Computing Cluster = Runtime (hours) × Cluster Specification (CRU) × CRU Unit Price (RMB/CRU\*hour)
+> Synchronous Computing Cluster = Runtime (hours) × Cluster Specification (CRU) × CRU Unit Price (USD/CRU\*hour)
 
 Note: **The synchronous computing cluster is currently in trial operation**.During this period, to help you manage and account for offline and real-time business costs more precisely, the system will record billing details separately under the "Offline Integration" and "Real-time Integration" billing items on a per-job basis according to actual resource consumption. The CRU\*hour unit price remains unchanged under this billing model. When creating a synchronous cluster, you can use the "[Specification Estimation](https://www.singdata.com/documents/virtual-cluster)" feature to help determine the appropriate size.
 
 Offline integration tasks can automatically wake up the synchronous computing cluster and automatically stop it after the task is completed; real-time integration tasks require their synchronous computing cluster to remain in the "running" state.
 
 > 🗒️ **Billing Formulas during Trial Operation**:&#x20;
-> Offline Integration = Runtime (hours) × CRU consumed by offline integration (CRU) × CRU Unit Price (RMB/CRU\*hour)
+> Offline Integration = Runtime (hours) × CRU consumed by offline integration (CRU) × CRU Unit Price (USD/CRU\*hour)
 >
-> Real-time Integration = Runtime (hours) × CRU consumed by real-time integration (CRU) × CRU Unit Price (RMB/CRU\*hour)
+> Real-time Integration = Runtime (hours) × CRU consumed by real-time integration (CRU) × CRU Unit Price (USD/CRU\*hour)
 
 After the trial operation ends, data integration fees will be merged into the "Synchronous Computing Cluster" billing item. When the new billing model changes, we will notify you one month in advance to ensure you have sufficient time for business evaluation.
 
@@ -121,7 +121,7 @@ For offline integration tasks, Singdata Lakehouse provides a small amount of com
 For real-time integration tasks, Singdata Lakehouse similarly provides a small amount of computing resources for job submission and scheduling management. These resources begin metering after the real-time integration task starts and end after the task is officially running. Computing resource consumption during this period will be metered.
 
 > 🗒️ **Billing Formula**:&#x20;
-> Task Scheduling = Runtime (hours) × Cluster Specification (CRU) × CRU Unit Price (RMB/CRU\*hour)
+> Task Scheduling = Runtime (hours) × Cluster Specification (CRU) × CRU Unit Price (USD/CRU\*hour)
 
 #### Serverless Jobs
 
@@ -130,7 +130,7 @@ Serverless jobs refer to jobs that do not require users to actively create compu
 The current CRU\*hour unit price for serverless jobs is the same as that of general-purpose computing clusters.
 
 > 🗒️ **Billing Formula**:&#x20;
-> Serverless Jobs = Runtime (hours) × Cluster Specification (CRU) × CRU Unit Price (RMB/CRU\*hour)
+> Serverless Jobs = Runtime (hours) × Cluster Specification (CRU) × CRU Unit Price (USD/CRU\*hour)
 
 ### 2. Storage Capacity Billing
 
@@ -145,7 +145,7 @@ When you perform SQL queries, to reduce the consumption of computing resources f
 **Time Travel and Result Cache are currently free of charge**. You will be notified one month in advance when the billing status changes.
 
 > 🗒️ **Billing Formula**:&#x20;
-> Storage = Storage Duration (days) / 30 (days) × Daily Average Storage (GiB) × Storage Unit Price (RMB/GiB/month)
+> Storage = Storage Duration (days) / 30 (days) × Daily Average Storage (GiB) × Storage Unit Price (USD/GiB/month)
 
 ### 3. Data Transmission Billing
 
@@ -156,7 +156,7 @@ When you use other data sources to transfer data into Lakehouse through the Inte
 When you use dedicated lines, Private Link, or other network products to achieve cross-cloud vendor, cross-region, or cross-VPC network connectivity, the network connectivity itself will incur data transmission fees. These fees may be charged by multiple parties due to different network connectivity methods. Data transmission fees generated on the Singdata Lakehouse side are charged by Singdata, while data transmission fees generated in your cloud platform account are charged directly by the cloud platform.
 
 > 🗒️ **Billing Formula**:&#x20;
-> Data Transmission = Data Transfer Volume (GB) × Data Transmission Unit Price (RMB/GB)
+> Data Transmission = Data Transfer Volume (GB) × Data Transmission Unit Price (USD/GB)
 
 ### 4. Other Cloud Resource Billing
 
@@ -166,84 +166,49 @@ When Singdata Lakehouse performs metadata management, parses SQL statements, gen
 
 ### 1. CRU Hour Price
 
-**Standard Edition**：
-
-| Cloud Provider | Region    | Version          | Unit Price          |
-| -------------- | --------- | ---------------- | ------------------- |
-| Alibaba Cloud  | Shanghai  | Standard Edition | 3.5 RMB/CRU\* hour  |
-|                | Beijing   | Standard Edition | 3.5 RMB/CRU\* hour  |
-|                | Hangzhou  | Standard Edition | 3.5 RMB/CRU\* hour  |
-|                | Singapore | Standard Edition | 0.8 USD/CRU\* hour  |
-| Tencent Cloud  | Beijing   | Standard Edition | 3.5 RMB/CRU\* hour  |
-|                | Shanghai  | Standard Edition | 3.5 RMB/CRU\* hour  |
-|                | Guangzhou | Standard Edition | 3.5 RMB/CRU\* hour  |
-| AWS            | Beijing   | Standard Edition | 9.95 RMB/CRU\* hour |
-|                | Singapore | Standard Edition | 1.24 USD/CRU\* hour |
-
-**Enterprise Edition**：
-
 | Cloud Provider | Region    | Version            | Unit Price          |
 | -------------- | --------- | ------------------ | ------------------- |
-| Alibaba Cloud  | Shanghai  | Enterprise Edition | 5.25 RMB/CRU\* hour |
-|                | Beijing   | Enterprise Edition | 5.25 RMB/CRU\* hour |
-|                | Hangzhou  | Enterprise Edition | 5.25 RMB/CRU\* hour |
-|                | Singapore | Enterprise Edition | 1.2 USD/CRU\* hour  |
-| Tencent Cloud  | Beijing   | Enterprise Edition | 5.25 RMB/CRU\* hour |
-|                | Shanghai  | Enterprise Edition | 5.25 RMB/CRU\* hour |
-|                | Guangzhou | Enterprise Edition | 5.25 RMB/CRU\* hour |
-| AWS            | Beijing   | Enterprise Edition | 15 RMB/CRU\* hour   |
-|                | Singapore | Enterprise Edition | 1.86 USD/CRU\* hour |
-
-Note: In addition to the Standard Edition, the platform also offers an Enterprise Edition with enhanced data governance and security capabilities. The CRU hour unit price for the Enterprise Edition is higher than that of the Standard Edition. For a detailed comparison of features between the two editions, please refer to the product documentation at [Editions Overview](editionsoverview.md).
+| Alibaba Cloud  | Singapore | Enterprise Edition | 1.2 USD/CRU\* hour  |
+| AWS            | Singapore | Enterprise Edition | 1.86 USD/CRU\* hour |
 
 ### 2.Storage Capacity Price
 
-| Cloud Provider | Region    | Version                               | Storage Capacity Price |
-| -------------- | --------- | ------------------------------------- | ---------------------- |
-| Alibaba Cloud  | Shanghai  | Enterprise Edition & Standard Edition | 0.12 RMB/GiB/month     |
-|                | Singapore | Enterprise Edition & Standard Edition | 0.017 USD/GiB/month    |
-| Tencent Cloud  | Beijing   | Enterprise Edition & Standard Edition | 0.12 RMB/GiB/month     |
-|                | Shanghai  | Enterprise Edition & Standard Edition | 0.12 RMB/GiB/month     |
-|                | Guangzhou | Enterprise Edition & Standard Edition | 0.12 RMB/GiB/month     |
-| AWS            | Beijing   | Enterprise Edition & Standard Edition | 0.195 RMB/GiB/month    |
-|                | Singapore | Enterprise Edition & Standard Edition | 0.025 USD/GiB/month    |
+| Cloud Provider | Region    | Version            | Storage Capacity Price |
+| -------------- | --------- | ------------------ | ---------------------- |
+| Alibaba Cloud  | Singapore | Enterprise Edition | 0.017 USD/GiB/month    |
+| AWS            | Singapore | Enterprise Edition | 0.025 USD/GiB/month    |
 
 Note: Since the billing cycle for storage is measured in days, the monthly unit price shown above is prorated on a 30-day basis for daily deductions.
 
 ### 3. Data Transmission Pricing
 
-| Cloud Provider | Region    | Edition                               | Internet Data Transfer Price |
-| -------------- | --------- | ------------------------------------- | ---------------------------- |
-| Alibaba Cloud  | Shanghai  | Enterprise Edition & Standard Edition | 0.8 RMB/GB                   |
-|                | Singapore | Enterprise Edition & Standard Edition | 0.081 USD/GB                 |
-| Tencent Cloud  | Beijing   | Enterprise Edition & Standard Edition | 0.8 RMB/GB                   |
-|                | Shanghai  | Enterprise Edition & Standard Edition | 0.8 RMB/GB                   |
-|                | Guangzhou | Enterprise Edition & Standard Edition | 0.8 RMB/GB                   |
-| AWS            | Beijing   | Enterprise Edition & Standard Edition | 0.933 RMB/GB                 |
-|                | Singapore | Enterprise Edition & Standard Edition | 0.12 USD/GB                  |
+| Cloud Provider | Region    | Edition            | Internet Data Transfer Price |
+| -------------- | --------- | ------------------ | ---------------------------- |
+| Alibaba Cloud  | Singapore | Enterprise Edition | 0.081 USD/GB                 |
+| AWS            | Singapore | Enterprise Edition | 0.12 USD/GB                  |
 
 ## Cost Examples in Common Scenarios
 
 ### General-purpose Computing Cluster Cost Example
 
-Taking an AWS Singapore Standard Edition service instance in SaaS mode as an example:
+Taking an AWS Singapore Enterprise Edition service instance in SaaS mode as an example:
 
-* A general-purpose computing cluster with a specification of 2 CRU, running for 1 hour, with a unit price of 1.24 USD per CRU\*hour, the cost is:
+* A general-purpose computing cluster with a specification of 2 CRU, running for 1 hour, with a unit price of 1.86 USD per CRU\*hour, the cost is:
 
-  * 1 hour × 2 CRU × 1.24 USD/CRU\*hour = **2.48 USD**
-* A general-purpose computing cluster with a specification of 1 CRU, running for 1 minute and 20 seconds (approximately 1.33 minutes), with a unit price of 1.24 USD per CRU\*hour, the cost is:
+  * 1 hour × 2 CRU × 1.86 USD/CRU\*hour = **3.72 USD**
+* A general-purpose computing cluster with a specification of 1 CRU, running for 1 minute and 20 seconds (approximately 1.33 minutes), with a unit price of 1.86 USD per CRU\*hour, the cost is:
 
-  * 1.33/60 minutes × 1 CRU × 1.24 USD/CRU\*hour = **0.027 USD**
-* A general-purpose computing cluster with a specification of 1 CRU running from 10:00-10:02 for 2 minutes, and another general-purpose computing cluster with a specification of 2 CRU running from 10:00-10:10 for 10 minutes, with a unit price of 1.24 USD per CRU\*hour, the cost is:
+  * 1.33/60 minutes × 1 CRU × 1.86 USD/CRU\*hour = **0.041 USD**
+* A general-purpose computing cluster with a specification of 1 CRU running from 10:00-10:02 for 2 minutes, and another general-purpose computing cluster with a specification of 2 CRU running from 10:00-10:10 for 10 minutes, with a unit price of 1.86 USD per CRU\*hour, the cost is:
 
-  * (2/60 minutes × 1 CRU × 1.24 USD/CRU\*hour) + (10/60 minutes × 2 CRU × 1.24 USD/CRU\*hour) = 0.041 USD + 0.413 USD = **0.455 USD**
+  * (2/60 minutes × 1 CRU × 1.86 USD/CRU\*hour) + (10/60 minutes × 2 CRU × 1.86 USD/CRU\*hour) = 0.062 USD + 0.620 USD = **0.682 USD**
 
 ### Analytical Computing Cluster Cost Example
 
-Taking an AWS Singapore Standard Edition service instance in SaaS mode as an example:
+Taking an AWS Singapore Enterprise Edition service instance in SaaS mode as an example:
 
-* An analytical cluster with a specification of 1 CRU, running for 30 minutes with 1 instance, and then running for 30 minutes with 2 instances, with a unit price of 1.24 USD per CRU\*hour, the cost is:
-  * (30/60 minutes × 1 instance × 1 CRU × 1.24 USD/CRU\*hour) + (30/60 minutes × 2 instances × 1 CRU × 1.24 USD/CRU\*hour) = 0.62 USD + 1.24 USD = **1.86 USD**
+* An analytical cluster with a specification of 1 CRU, running for 30 minutes with 1 instance, and then running for 30 minutes with 2 instances, with a unit price of 1.86 USD per CRU\*hour, the cost is:
+  * (30/60 minutes × 1 instance × 1 CRU × 1.86 USD/CRU\*hour) + (30/60 minutes × 2 instances × 1 CRU × 1.86 USD/CRU\*hour) = 0.93 USD + 1.86 USD = **2.79 USD**
 
 ### Offline Integration Task Cost Example
 
@@ -254,14 +219,14 @@ An offline integration task requires computing resources for scheduling and conc
 > 🗒️ **Estimation Formula**:&#x20;
 > Offline Integration Task Resource Consumption ≈ Scheduling Resource Specification (CRU) + Concurrency × Scheduling Resource Specification (CRU)
 
-Taking an AWS Singapore Standard Edition service instance in SaaS mode as an example:
+Taking an AWS Singapore Enterprise Edition service instance in SaaS mode as an example:
 
-* A single-concurrent offline integration task running for 10 minutes, with actual hourly computing resource consumption of 0.1 CRU, and a unit price of 1.24 USD per CRU\*hour, the cost is:
+* A single-concurrent offline integration task running for 10 minutes, with actual hourly computing resource consumption of 0.1 CRU, and a unit price of 1.86 USD per CRU\*hour, the cost is:
 
-  * 10/60 minutes × 0.1 CRU × 1.24 USD/CRU\*hour = **0.021 USD**
-* A single-concurrent offline integration task running from 10:00-10:10 for 10 minutes with actual hourly consumption of 0.1 CRU, and another 5-concurrent offline integration task running from 10:05-10:25 for 20 minutes with actual hourly consumption of 0.3 CRU, with a unit price of 1.24 USD per CRU\*hour, the cost is:
+  * 10/60 minutes × 0.1 CRU × 1.86 USD/CRU\*hour = **0.031 USD**
+* A single-concurrent offline integration task running from 10:00-10:10 for 10 minutes with actual hourly consumption of 0.1 CRU, and another 5-concurrent offline integration task running from 10:05-10:25 for 20 minutes with actual hourly consumption of 0.3 CRU, with a unit price of 1.86 USD per CRU\*hour, the cost is:
 
-  * (5/60 minutes × 0.1 CRU × 1.24 USD/CRU\*hour) + (5/60 minutes × 0.4 CRU × 1.24 USD/CRU\*hour) + (15/60 minutes × 0.3 CRU × 1.24 USD/CRU\*hour) = 0.010 USD + 0.041 USD + 0.093 USD = **0.145 USD**
+  * (5/60 minutes × 0.1 CRU × 1.86 USD/CRU\*hour) + (5/60 minutes × 0.4 CRU × 1.86 USD/CRU\*hour) + (15/60 minutes × 0.3 CRU × 1.86 USD/CRU\*hour) = 0.016 USD + 0.062 USD + 0.140 USD = **0.217 USD**
 
 ### Real-time Integration Task Cost Example
 
@@ -269,26 +234,26 @@ During the trial operation period, in addition to offline integration tasks, the
 
 Unlike offline integration tasks, real-time integration tasks run continuously after startup and perform real-time data caching and state management in memory. Therefore, the execution resource consumption of real-time tasks does not have a simple linear relationship with concurrency, but mainly depends on the complexity of data processing and the required state cache size. A single-concurrent real-time integration task will incur at least approximately 0.05 CRU of scheduling resource consumption and approximately 0.0625 CRU of execution consumption, totaling at least approximately 0.1125 CRU per hour.
 
-Taking an AWS Singapore Standard Edition service instance in SaaS mode as an example:
+Taking an AWS Singapore Enterprise Edition service instance in SaaS mode as an example:
 
-* A single-concurrent real-time integration task running for 24 hours, with actual hourly resource consumption of 0.1125 CRU, and a unit price of 1.24 USD per CRU\*hour, the cost is:
-  * 24 hours × 0.1125 CRU × 1.24 USD/CRU\*hour = **3.348 USD**
-* A multi-concurrent real-time integration task consuming 1 CRU per hour running from January 1-5 for 5 days, and another multi-concurrent real-time integration task consuming 2 CRU per hour running from January 3-10 for 8 days, with a unit price of 1.24 USD per CRU\*hour, the cost is:
-  * (2 × 24 hours × 1 CRU × 1.24 USD/CRU\*hour) + (3 × 24 hours × 3 CRU × 1.24 USD/CRU\*hour) + (5 × 24 hours × 2 CRU × 1.24 USD/CRU\*hour) = 59.52 USD + 267.84 USD + 297.60 USD = **624.96 USD**
+* A single-concurrent real-time integration task running for 24 hours, with actual hourly resource consumption of 0.1125 CRU, and a unit price of 1.86 USD per CRU\*hour, the cost is:
+  * 24 hours × 0.1125 CRU × 1.86 USD/CRU\*hour = **5.022 USD**
+* A multi-concurrent real-time integration task consuming 1 CRU per hour running from January 1-5 for 5 days, and another multi-concurrent real-time integration task consuming 2 CRU per hour running from January 3-10 for 8 days, with a unit price of 1.86 USD per CRU\*hour, the cost is:
+  * (2 × 24 hours × 1 CRU × 1.86 USD/CRU\*hour) + (3 × 24 hours × 3 CRU × 1.86 USD/CRU\*hour) + (5 × 24 hours × 2 CRU × 1.86 USD/CRU\*hour) = 89.28 USD + 402.48 USD + 446.40 USD = **938.16 USD**
 
 ### Synchronous Computing Cluster Cost Example
 
 After the trial operation ends, synchronous computing clusters will be billed according to this standard.
 
-Taking an AWS Singapore Standard Edition service instance in SaaS mode as an example:
+Taking an AWS Singapore Enterprise Edition service instance in SaaS mode as an example:
 
-* A synchronous cluster with a specification of 2 CRU, running for 1 hour, with a unit price of 1.24 USD per CRU\*hour, the cost is:
+* A synchronous cluster with a specification of 2 CRU, running for 1 hour, with a unit price of 1.86 USD per CRU\*hour, the cost is:
 
-  * 1 hour × 2 CRU × 1.24 USD/CRU\*hour = **2.48 USD**
-* A real-time integration task consuming 0.2 CRU per hour running from January 1-5 for 5 days, with an additional offline integration task consuming 0.1 CRU running for 1 hour on January 2 from 0:00-1:00, with a unit price of 1.24 USD per CRU\*hour, the cost is:
+  * 1 hour × 2 CRU × 1.86 USD/CRU\*hour = **3.72 USD**
+* A real-time integration task consuming 0.2 CRU per hour running from January 1-5 for 5 days, with an additional offline integration task consuming 0.1 CRU running for 1 hour on January 2 from 0:00-1:00, with a unit price of 1.86 USD per CRU\*hour, the cost is:
 
-  * "**Fixed" mode** total cost: 5 × 24 hours × 0.5 CRU × 1.24 USD/CRU\*hour = **74.40 USD**
-  * "**Elastic Scaling" mode** total cost: (1 × 24 hours × 0.25 CRU × 1.24 USD/CRU\*hour) + (1 hour × 0.5 CRU × 1.24 USD/CRU\*hour) + ((23 + 3×24) hours × 0.25 CRU × 1.24 USD/CRU\*hour) = 7.44 USD + 0.62 USD + 29.45 USD = **37.51 USD**
+  * "**Fixed" mode** total cost: 5 × 24 hours × 0.5 CRU × 1.86 USD/CRU\*hour = **111.60 USD**
+  * "**Elastic Scaling" mode** total cost: (1 × 24 hours × 0.25 CRU × 1.86 USD/CRU\*hour) + (1 hour × 0.5 CRU × 1.86 USD/CRU\*hour) + ((23 + 3×24) hours × 0.25 CRU × 1.86 USD/CRU\*hour) = 11.16 USD + 0.93 USD + 44.22 USD = **56.31 USD**
 
 As shown in the examples above, to better save synchronous computing resource costs, it is recommended to reuse synchronous computing cluster resources as much as possible and avoid using overly large specifications.
 
@@ -296,21 +261,21 @@ As shown in the examples above, to better save synchronous computing resource co
 
 When executing Python script tasks, the cost is calculated based on the task execution time and the computing resources consumed. Generally, when a Python script runs for 1 hour, the computing resources used are 0.125 CRU.
 
-Taking an AWS Singapore Standard Edition service instance in SaaS mode as an example:
+Taking an AWS Singapore Enterprise Edition service instance in SaaS mode as an example:
 
-* A Python script task with an execution time of 10 minutes, with a unit price of 1.24 USD per CRU\*hour, the cost is:
-  * 10/60 minutes × 0.125 CRU × 1.24 USD/CRU\*hour = **0.026 USD**
+* A Python script task with an execution time of 10 minutes, with a unit price of 1.86 USD per CRU\*hour, the cost is:
+  * 10/60 minutes × 0.125 CRU × 1.86 USD/CRU\*hour = **0.039 USD**
 
 ### Storage Capacity Cost Example
 
-Taking an AWS Singapore Standard Edition service instance in SaaS mode as an example:
+Taking an AWS Singapore Enterprise Edition service instance in SaaS mode as an example:
 
 * A workspace with a daily storage capacity low point of 910 GiB, high point of 1100 GiB, and daily average of 1000 GiB, with a monthly storage unit price of 0.025 USD/GiB/month (calculated on a 30-day basis), the storage cost for that day is:
   * 1/30 month × 1000 GiB × 0.025 USD/GiB/month = **0.833 USD**
 
 ### Data Transmission Cost Example
 
-Taking an AWS Singapore Standard Edition service instance in SaaS mode as an example:
+Taking an AWS Singapore Enterprise Edition service instance in SaaS mode as an example:
 
 * A task generating 10 GB of outbound network data transmission traffic, with a data transmission unit price of 0.12 USD/GB, the data transmission cost is:
   * 10 GB × 0.12 USD/GB = **1.20 USD**

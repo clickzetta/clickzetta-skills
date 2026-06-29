@@ -3,7 +3,7 @@
 This document helps you quickly understand the core features offered by Lakehouse Studio. In Lakehouse Studio, you can perform data analysis and engineering tasks, monitor queries, data loading/synchronization, data transformation, and workflow activities, explore your Lakehouse objects, and manage your Lakehouse, including managing costs and adding users and roles.
 
 > You can use this document to quickly understand Studio's features. We also strongly recommend referring to the [Getting Started Guide](lakehouse-studio-101.md) series to get started quickly.
-
+ 
 
 
 ^
@@ -169,7 +169,7 @@ When you log in as a user with the **account administrator role**, you can view 
 For details, refer to the following documentation:
 
 * [Understanding Workspaces](workspace-introduction.md)
-* [Managing Accounts](manage-accounts.md)
+* [Managing Accounts](account_user_management.md)
 * [Managing Users](account_user_management.md)
 * [Managing Service Instances](managing-instance.md)
 * [User and Permission Management](authority-management.md)

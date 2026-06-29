@@ -25,23 +25,15 @@ Before starting, please ensure you meet the following conditions:
 1. After starting SQL Workbench/J, the system will automatically pop up the "Select Connection Profile" dialog box. If it does not pop up, click the "Driver" menu and select "Manage Drivers".
 2. In the "Manage Drivers" dialog box, click the "Add Driver" button in the lower left corner to create a new driver. Enter a custom driver name and upload the downloaded Singdata JDBC driver JAR package. After completion, click the "OK" button to complete the driver configuration. Note that after uploading the Lakehouse JDBC driver, configure the "Classname" as `com.clickzetta.client.jdbc.ClickZettaDriver`.
 
-![Add Driver Interface](.topwrite/assets/image_1693482142270.png)
-
 ## Step 3: SQL Workbench/J Connects to Singdata Lakehouse
 
 1. In the Profile configuration interface on the right side of the "Select Connection Profile" dialog box, select the newly created Singdata driver. Copy the JDBC connection string from the Lakehouse homepage.
-
-![Select Driver Interface](.topwrite/assets/image_1693482159154.png)
-
-![Lakehouse Homepage JDBC Address](.topwrite/assets/image_1693482172849.png)
 
 2. In the "Connection" tab of the Profile configuration interface, paste the copied JDBC connection string. If necessary, you can also set other connection parameters in the "Advanced" tab, such as SSL, maximum connections, etc.
 
 ## Step 4: Use SQL Workbench/J to Manage Singdata Lakehouse
 
 1. After a successful connection, you can view all schemas and tables in the left menu bar.
-
-![View Schema and Table](.topwrite/assets/image_1693482182988.png)
 
 2. In the SQL editor on the right, you can write and execute SQL queries. For example, try executing the following query to view the data of a specific table:
 ```sql

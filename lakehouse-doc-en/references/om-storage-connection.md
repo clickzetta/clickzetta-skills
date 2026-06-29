@@ -44,4 +44,4 @@ CREATE STORAGE CONNECTION my_s3_conn
 
 - [CREATE STORAGE CONNECTION](create-storage-connection.md) — Full syntax
 - [External Volume](om-external-volume.md) — Mount object storage using a Storage Connection
-- [Connection Overview](connection-guide.md)
+- [Connection Overview](create-connection.md)

@@ -56,8 +56,6 @@ You need to authorize the Singdata Lakehouse sub-account to access your bucket. 
 
 ### Step 2: Fill in Storage Information
 
-![](/.topwrite/assets/image_1760182222984.png)
-
 Fill in the following in the configuration window that pops up:
 
 1) **Name** [Required]: Must start with a letter (A-Z, a-z) or underscore ("\_"), with a length of 3~28 characters. Must be unique within your service instance. Cannot be changed after saving.

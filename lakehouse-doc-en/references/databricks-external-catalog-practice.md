@@ -23,6 +23,7 @@ Singdata Lakehouse queries tables in Databricks Unity Catalog directly through a
 | `SHOW SCHEMAS IN` | List schemas in a Databricks Catalog |
 | `SHOW TABLES IN` | List tables in a schema |
 | `SELECT` | Query Databricks table data |
+| `INSERT` | Append data (append only; UPDATE / DELETE not supported) |
 
 ---
 
@@ -364,4 +365,4 @@ The table is a Databricks Managed Table — data is stored in Databricks-control
 
 - [Create Catalog Connection](create-catalog-connection.md) — Complete DDL syntax and parameter descriptions
 - [Create Databricks External Catalog](create-external-catalog.md) — External Catalog DDL syntax
-- [Federation Query Usage Guide](SQL_External_Catalog_Guide.md) — Complete federation query examples
+- [Federation Query Usage Guide](sql_external_catalog_guide.md) — Complete federation query examples

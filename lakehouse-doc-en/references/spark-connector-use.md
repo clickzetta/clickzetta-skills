@@ -189,7 +189,7 @@ df.write.format("clickzetta")
 ```
 ### Using lakehouse sqlline to View Data
 
-![](.topwrite/assets/image_1723098127647.png)
+After running the DataFrame write operation, use the Lakehouse sqlline client to query the table and confirm the written row is present with all field values matching those specified in the Spark code above.
 
 ## Using Spark to Read Data from Lakehouse
 ```Bash
@@ -222,4 +222,5 @@ for (row <- result2) {
   println(row.toString())
 }
 ```
-![](.topwrite/assets/image_1723098183566.png)
+
+Both the DataFrame select and the SQL query return the expected row, confirming that Spark can read data from Lakehouse successfully.

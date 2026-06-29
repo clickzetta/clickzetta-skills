@@ -1,59 +1,57 @@
-# Accessing Iceberg Tables in Snowflake Open Catalog via External Catalog
+# Accessing Snowflake Open Catalog Iceberg Tables via External Catalog
 
-## **Overview**
+## Overview
 
 Lakehouse supports connecting to third-party Iceberg REST APIs through the Catalog Integration feature, enabling seamless integration with external data catalogs. This document describes how to connect to and use Snowflake's Open Catalog feature.
 
 **Features**:
 
-* **Unified data access**: Access Iceberg tables in Snowflake Open Catalog through a unified interface
-* **Real-time data synchronization**: Directly read the latest data in Snowflake without data replication
-* **Metadata mapping**: Automatically map table structures and metadata from Snowflake
-* **OAuth authentication**: Support for secure OAuth 2.0 authentication mechanism
+* **Unified Data Access**: Access Iceberg tables in Snowflake Open Catalog through a unified interface
+* **Real-Time Data Sync**: Read the latest data directly from Snowflake without data copying
+* **Metadata Mapping**: Automatically map table schemas and metadata information from Snowflake
+* **OAuth Authentication**: Supports secure OAuth 2.0 authentication
 
-## **Environment Preparation**
+## Environment Setup
 
 Snowflake Open Catalog provides two types of catalogs:
 
 **Internal Catalog**:
 
 * **Features**: Lakehouse supports full read and write operations
-* **Data management**: Supports full lifecycle operations including table structure changes, data inserts, updates, and deletes
+* **Data Management**: Supports table schema changes, data insertion, updates, deletions, and other full lifecycle operations
 
 **External Catalog**:
 
-* **Features**: Lakehouse only supports read-only operations
-* **Data access**: Supports complex queries and cross-table analysis, but does not support data modification operations
+* **Features**: Lakehouse supports read-only operations only
+* **Data Access**: Supports complex queries and join analysis, but does not support data modification
 
-Prepare Iceberg tables in Snowflake and register them in Snowflake Open Catalog. Please refer to the [Snowflake official documentation](https://docs.snowflake.com/en/user-guide/tables-iceberg-open-catalog-sync)
+To prepare Iceberg tables in Snowflake and register them in Snowflake Open Catalog, refer to the [Snowflake official documentation](https://docs.snowflake.com/en/user-guide/tables-iceberg-open-catalog-sync).
 
-Result: A table in the Snowflake engine is registered in Snowflake Open Catalog:
+Expected result: A table hosted in the Snowflake engine is registered in Snowflake Open Catalog with the following details:
 
-* Database name: ICEBERG_TABLES_DB_FLATTEN
-* Schema name: ICEBERG_SCHEMA
-* Iceberg table name: czcustomer (lowercase required. In Snowflake's CREATE TABLE DDL, use double quotes to prevent the table name from being automatically converted to uppercase)
+* Database name: ICEBERG\_TABLES\_DB\_FLATTEN
+* Schema name: ICEBERG\_SCHEMA
+* Iceberg table name: czcustomer (must be lowercase; use double quotes in Snowflake DDL to prevent the table name from being auto-converted to uppercase)
 
-> Note: When creating a Database in the Snowflake engine, add the `CATALOG_SYNC_NAMESPACE_MODE` and `CATALOG_SYNC_NAMESPACE_FLATTEN_DELIMITER` parameters to adjust the Catalog hierarchy. With the following configuration, in Snowflake Open Catalog, Database and Schema are merged into a single level: "`ICEBERG_TABLES_DB_FLATTEN_ICEBERG_SCHEMA`"
+> ⚠️ **Note**: When creating a Database in the Snowflake engine, include the `CATALOG_SYNC_NAMESPACE_MODE` and `CATALOG_SYNC_NAMESPACE_FLATTEN_DELIMITER` parameters to adjust the catalog hierarchy. With the configuration below, the Database and Schema are merged into a single level in Snowflake Open Catalog: `"ICEBERG_TABLES_DB_FLATTEN_ICEBERG_SCHEMA"`
 >
-> ```
+> ```SQL
 > CREATE OR REPLACE DATABASE iceberg_tables_db_flatten
 > CATALOG_SYNC_NAMESPACE_MODE = 'FLATTEN'
 > CATALOG_SYNC_NAMESPACE_FLATTEN_DELIMITER = '_';
 > ```
 
-![](.topwrite/assets/20250901-112722.jpeg)
-
-## **Configuration Steps**
+## Configuration Steps
 
 ### Step 1: Create a Catalog Connection
 
-Use the following SQL statement to create a connection to Snowflake Open Catalog:
+Use the following SQL to create a connection to Snowflake Open Catalog:
 
-```
-CREATE CATALOG CONNECTION snow_opencatalog
-    TYPE ICEBERG_REST
+```SQL
+CREATE CATALOG CONNECTION snow_opencatalog 
+    TYPE ICEBERG_REST 
     URI='https://lhnrdre-derekmeng.snowflakecomputing.com/polaris/api/catalog'
-    ACCESS_REGION = 'ap-southeast-1'
+    ACCESS_REGION = 'ap-southeast-1' 
     OAUTH_CLIENT_ID='d3r3cuhHitrI+fUpFtvXxxxxxxx'
     OAUTH_CLIENT_SECRET='gY3ZWOGoSMM1tKK7QaqQYKpSdTcPY1ruVv7xxxxxxx'
     OAUTH_SCOPE='PRINCIPAL_ROLE:ALL'
@@ -65,25 +63,25 @@ CREATE CATALOG CONNECTION snow_opencatalog
     );
 ```
 
-| Parameter             | Description                                    | Example                                                       |
-| --------------------- | ---------------------------------------------- | ------------------------------------------------------------- |
-| TYPE                  | Connection type, fixed as `ICEBERG_REST`       | `ICEBERG_REST`                                                |
-| URI                   | Snowflake Polaris API endpoint                 | <https://account.snowflakecomputing.com/polaris/api/catalog>  |
-| ACCESS_REGION         | Region where the accessed object is located    | `ap-southeast-1`                                              |
-| OAUTH_CLIENT_ID       | OAuth client ID                                | Obtained when creating a Service connection in Snowflake Open Catalog |
-| OAUTH_CLIENT_SECRET   | OAuth client secret                            | Obtained when creating a Service connection in Snowflake Open Catalog |
-| OAUTH_SCOPE           | OAuth authorization scope                      | `PRINCIPAL_ROLE:ALL`                                          |
-| NAMESPACE             | The second level in Snowflake Open Catalog     | `ICEBERG_TABLES_DB_FLATTEN_ICEBERG_SCHEMA`                    |
-| WAREHOUSE             | Snowflake Open Catalog's Catalog name          | `singdata`                                                    |
+| Parameter             | Description                                          | Example                                                               |
+| --------------------- | ---------------------------------------------------- | --------------------------------------------------------------------- |
+| TYPE                  | Connection type, fixed as `ICEBERG_REST`             | `ICEBERG_REST`                                                        |
+| URI                   | Snowflake Polaris API endpoint                       | https://account.snowflakecomputing.com/polaris/api/catalog            |
+| ACCESS_REGION         | Region where the target object resides               | `ap-southeast-1`                                                      |
+| OAUTH_CLIENT_ID       | OAuth client ID                                      | Obtained when creating a Service connection in Snowflake Open Catalog |
+| OAUTH_CLIENT_SECRET   | OAuth client secret                                  | Obtained when creating a Service connection in Snowflake Open Catalog |
+| OAUTH_SCOPE           | OAuth authorization scope                            | `PRINCIPAL_ROLE:ALL`                                                  |
+| NAMESPACE             | Second-level namespace in Snowflake Open Catalog     | `ICEBERG_TABLES_DB_FLATTEN_ICEBERG_SCHEMA`                            |
+| WAREHOUSE             | Catalog name in Snowflake Open Catalog               | `singdata`                                                            |
 
 ### Step 2: Create an External Table
 
-Create an external table to map tables in Snowflake Open Catalog:
+Create an external table to map the table in Snowflake Open Catalog:
 
 ```SQL
--- Create external table mapping to the table in Snowflake Open Catalog (table name must match)
+-- Create external table mapped to the table in Snowflake Open Catalog (names must match)
 CREATE EXTERNAL TABLE IF NOT EXISTS `czcustomer`
-USING ICEBERG
+USING ICEBERG 
 CONNECTION snow_opencatalog;
 ```
 
@@ -91,24 +89,20 @@ CONNECTION snow_opencatalog;
 
 ### Step 3: Verify and Query
 
-Verify the table structure and query data:
+Verify the table schema and query data:
 
 ```SQL
--- View table structure
+-- View table schema
 DESC EXTENDED `czcustomer`;
 
 -- Query data
 SELECT * FROM `czcustomer` LIMIT 10;
 ```
 
-![](.topwrite/assets/opencatalog_3.jpeg)
+## Limitations
 
-## Usage Limitations
-
-* When connecting to S3-based Snowflake-managed Iceberg tables, write and update operations are not supported
-* External table names must exactly match the source table names in Snowflake
-* Currently only lowercase table names are supported
+* Write and update operations are not supported when connecting to S3-based Snowflake-managed Iceberg tables
+* The external table name must exactly match the source table name in Snowflake
+* Only lowercase table names are currently supported
 * Table name conversion is not supported
-* Credential Vending must be enabled on the target Catalog service side
-
-![](.topwrite/assets/credentials_vending.jpeg)
+* Credential Vending must be enabled on the target catalog service side
