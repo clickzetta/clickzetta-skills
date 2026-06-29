@@ -93,10 +93,9 @@ order by
 
 The first execution took 12.1 seconds. By checking the Job Profile for job running information, the job read a large amount of data from the disk.
 
-![](.topwrite/assets/4590d8b1-4fd3-45b6-abd2-816d8ca58242.png)
+
 
 The second time this query was executed, the job reused the result cache from the previous query and returned the result within 15ms.
-![](.topwrite/assets/result_cache_query_output.png)
-![](.topwrite/assets/383621f0-27c0-4f17-b217-0c0ad3bbc686.png)
+
 When viewing the Job Profile of the job, you can see in the execution plan diagram on the diagnostics page that the job used "JOB RESULT REUSE", indicating that the job directly queried the result data.
-![](.topwrite/assets/image_1713780060450.png)
+

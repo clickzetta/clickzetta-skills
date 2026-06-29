@@ -4,6 +4,8 @@ Data Engineering Agent is an AI-powered agent built on top of Singdata Lakehouse
 
 Data Agent is not just a tool that makes data teams more productive. It is a **data intelligence collaboration system** that enables everyone in the company to work with data.
 
+![](.topwrite/assets/data-engineering-agent.svg)
+
 ^
 
 ## User Value
@@ -27,6 +29,8 @@ You only need to focus on your goal. There's no need to learn complex product op
 Click "Data Agent" at the top of the menu bar to open the feature.
 
 Describe your needs directly to the agent in natural language and let it operate the platform for you.
+
+![](/.topwrite/assets/DataAgent_1780918584053.svg)
 
 For example:
 

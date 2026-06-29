@@ -2,7 +2,7 @@
 
 Singdata Lakehouse uses a four-tier organization structure to manage resources and data: Instance → Catalog → Schema → Data Objects.
 
-![](/.topwrite/assets/20-org-hierarchy.png)
+![](/.topwrite/assets/20-org-hierarchy.svg)
 
 ```
 Instance

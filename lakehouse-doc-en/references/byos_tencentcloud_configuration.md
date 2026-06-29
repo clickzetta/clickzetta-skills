@@ -20,8 +20,6 @@ If you choose to create a new bucket dedicated to the Singdata Lakehouse:
 
 2. **Click "Create Bucket"**
 
-![](/.topwrite/assets/ef4ec49e-2d3e-459b-b649-da670fe4a345.jpeg)
-
 **Configure Bucket Basic Information**
 
 | Item                     | Setting                                         | Description                                                                                   |

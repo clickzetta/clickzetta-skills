@@ -1,6 +1,6 @@
 # Pricing and Billing
 
-Singdata bills by "product + resource type". Lakehouse is billed by three resource types — compute (CRU), storage, and network data transfer. AI Gateway is billed by tokens, with unit prices varying by model. Analytics Agent is a separate paid product with its own subscription-based pricing; for details please contact Singdata sales. The bills of each product are independent and can be viewed separately in the Billing Center of the console.
+Singdata bills by "product + resource type". Lakehouse is billed by three resource types — compute (CRU), storage, and network data transfer. AI Gateway is billed by tokens, with unit prices varying by model. Analytics Agent is a subscription-based product with additional token usage fees. The bills of each product are independent and can be viewed separately in the Billing Center of the console. 
 
 <table style="width:100%; table-layout:auto;">
 <tr>
@@ -21,6 +21,19 @@ Token-based billing for unified access to mainstream LLMs (Anthropic Claude, Ope
 
 [View AI Gateway Pricing →](pricing-ai-gateway.md)
 
+</td>
+</tr>
+<tr>
+<td style="width:50%; vertical-align:top; padding:0 16px 16px 0; overflow-wrap:break-word;">
+
+**Analytics Agent**
+
+Subscription-based pricing with pay-as-you-go token billing and an overage tiered fee for high-volume usage.
+
+[View Analytics Agent Pricing →](pricing-analytics-agent.md)
+
+</td>
+<td style="width:50%; vertical-align:top; padding:0 0 16px 16px; overflow-wrap:break-word;">
 </td>
 </tr>
 </table>

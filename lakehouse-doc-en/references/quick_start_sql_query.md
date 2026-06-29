@@ -8,7 +8,7 @@ Lakehouse provides an integrated engine for data processing, transformation, and
 
 Before reading this guide, we recommend reviewing the following documents:
 
-* [Lakehouse Product Introduction](what_is_clickzetta_lakehouse.md)
+* [Lakehouse Product Introduction](datalake_overview.md)
 * [Key Concepts](key-concepts.md)
 * [Lakehouse Studio Quick Tour](lakehousestudio-tour.md)
 

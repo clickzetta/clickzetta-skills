@@ -537,7 +537,7 @@ Complete data lake acceleration pipeline: Volume mount → Pipe ingestion → Dy
 
 - [Volume + Pipe Data Lake Acceleration](lakehouse-volume-pipe-acceleration-guide.md) — File auto-ingestion, the upstream step for this article
 - [Multi-Cloud Unified Data Lake Acceleration](lakehouse-multi-cloud-acceleration.md) — Same SQL runs on Alibaba Cloud/Tencent Cloud/AWS
-- [Dynamic Table Introduction](dynamic-table-introduce.md) — Incremental computation mechanism and scheduling principles
+- [Dynamic Table Introduction](sql_dynamic_table_guide.md) — Incremental computation mechanism and scheduling principles
 - [CREATE DYNAMIC TABLE](create-dynamic-table.md) — Complete DDL syntax
 - [Incremental Computing Overview](incremental-computing.md) — DT incremental refresh support matrix
 - [Medallion from Scratch (ZettaPark Approach)](medallion-lakehouse-from-scratch.md) — Python API version covering the same topic

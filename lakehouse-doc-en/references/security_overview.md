@@ -66,10 +66,10 @@ Supports both ACL (direct grants) and RBAC (role-based grants); RBAC is recommen
 
 ### Identity Authentication
 
-- **MFA**: Bind Google Authenticator; a dynamic verification code is required at login to prevent single-point password compromise
+- **MFA**: Bind a virtual MFA device (any TOTP-compatible authenticator app); a dynamic verification code is required at login to prevent single-point password compromise
 - **SSO**: Integrate with enterprise IdPs (such as Okta, Azure AD) so the enterprise manages account creation, deactivation, and permission lifecycle centrally
 
-Reference: [Identity Authentication](identity-auth.md) · [Bind Google Authenticator (MFA)](using-google-authenticator.md) · [SSO Configuration](sso-configuration.md)
+Reference: [Identity Authentication](identity-auth.md) · [Bind a Virtual MFA Device](using-google-authenticator.md) · [SSO Configuration](sso-configuration.md)
 
 ### Network Isolation
 

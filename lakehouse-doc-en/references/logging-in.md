@@ -39,7 +39,7 @@ Once you have successfully registered, you can log in with your account name, us
 
 ## Your Singdata Lakehouse account identifier
 
-All access to Singdata Lakehouse is through your account identifier. See [Manage Account](manageaccounts.md) for details.
+All access to Singdata Lakehouse is through your account identifier. See [Manage Account](account_user_management.md) for details.
 
 ^
 
@@ -63,6 +63,6 @@ However, connecting to Singdata Lakehouse using these other methods requires add
 
 ^
 
-For more information about the tasks you can perform in Singdata Lakehouse  Studio, refer to [Singdata Lakehouse  Studio quick tour](lakehousestudiotour.md).
+For more information about the tasks you can perform in Singdata Lakehouse  Studio, refer to [Singdata Lakehouse  Studio quick tour](lakehouse-studio-101.md).
 
 For more information about the detail manual guides of Singdata Lakehouse  Studio, refer to [Singdata Lakehouse  Studio manual guides](studio_manual.md).

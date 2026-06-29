@@ -316,7 +316,7 @@ In practice, you should fully understand the user hierarchy, properly plan role 
 *Reference Documents*
 
 * [Lakehouse User Identity Management Document](user-identification.md)
-* [Lakehouse Role and Permission Management Document](role-privlilige-manage.md)
+* [Lakehouse Role and Permission Management Document](role-privilege-manage.md)
 * [Security Feature Overview](security_overview.md)
 
 ^

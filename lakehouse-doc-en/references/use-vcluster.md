@@ -55,4 +55,3 @@ SELECT COUNT(*) FROM doc_test.orders;
 - The specified compute resource must already exist and be in an available state. You can view all available compute resources using `SHOW VCLUSTERS`.
 - If the compute resource is in `SUSPENDED` state, it will automatically wake up when SQL is first executed after switching, which may cause a brief delay.
 
-![](.topwrite/assets/image_1741317824124.png)

@@ -4,7 +4,7 @@
 
 Through this tutorial, you will learn how to use Lakehouse Dynamic Table to build a complete real-time data ETL processing flow. The scenario design is as follows:
 
-![](https://studio-prod-sh.oss-cn-shanghai.aliyuncs.com/fe-asset/tutorials/resources/tutorial_dt_scenario.jpg?OSSAccessKeyId=LTAI5tBH4MDxrfQw7VTx4w2B\&Expires=2034679003\&Signature=gewhAp%2FJ80Uu%2BFq1sNEH3fwQI54%3D)
+![](https://studio-prod-sh.oss-cn-shanghai.aliyuncs.com/fe-asset/tutorials/resources/tutorial_dt_scenario.jpg)
 
 This tutorial will implement a streaming data processing pipeline case with minute-level latency through data import tasks, data cleaning and transformation based on dynamic tables, and data aggregation tasks.
 
@@ -31,7 +31,7 @@ First, create a behavior log table and write test data through the INSERT INTO t
 
 This tutorial provides SQL scripts for creating data tables and inserting test data in the "Development" module. Open the \[Tutorial\_Working\_With\_Dynamic\_Table->Step01.Preparation] script file, configure a 1-minute interval scheduling strategy, and submit the deployment to simulate real-time data import.
 
-![](https://studio-prod-sh.oss-cn-shanghai.aliyuncs.com/fe-asset/tutorials/resources/tutorial_dt_insert.gif?OSSAccessKeyId=LTAI5tBH4MDxrfQw7VTx4w2B\&Expires=2034681423\&Signature=m9w14ltjxHYgEUBkADmFSenqmeU%3D)
+![](https://studio-prod-sh.oss-cn-shanghai.aliyuncs.com/fe-asset/tutorials/resources/tutorial_dt_insert.gif)
 
 ## Transform Layer Dynamic Table Model Development
 
@@ -39,7 +39,7 @@ In the \[Development] module, open the \[Tutorial\_Working\_With\_Dynamic\_Table
 
 Refer to the figure below to configure the "Run Cluster" and "Scheduling Parameters":
 
-![](https://studio-prod-sh.oss-cn-shanghai.aliyuncs.com/fe-asset/tutorials/resources/tutourial_dt_transform.gif?OSSAccessKeyId=LTAI5tBH4MDxrfQw7VTx4w2B\&Expires=2034682100\&Signature=z8F6by8Cae7HFYeTggx0VR7NGxQ%3D)
+![](https://studio-prod-sh.oss-cn-shanghai.aliyuncs.com/fe-asset/tutorials/resources/tutourial_dt_transform.gif)
 
 ## Submit Deployment
 
@@ -50,7 +50,7 @@ In the [Development] module, open the [Tutorial_Working_With_Dynamic_Table->Step
 
 Please refer to the following image for scheduling configuration and submitting the run:
 
-![](https://studio-prod-sh.oss-cn-shanghai.aliyuncs.com/fe-asset/tutorials/resources/tutourial_dt_agg.gif?OSSAccessKeyId=LTAI5tBH4MDxrfQw7VTx4w2B\&Expires=2034682137\&Signature=jcNW0LS9R3H2TuyP9xY17097tPk%3D)
+![](https://studio-prod-sh.oss-cn-shanghai.aliyuncs.com/fe-asset/tutorials/resources/tutourial_dt_agg.gif)
 
 ## Verify Incremental Update Results
 

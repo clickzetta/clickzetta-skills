@@ -33,4 +33,4 @@ CREATE CATALOG CONNECTION my_hive_conn
 
 - [CREATE CATALOG CONNECTION](create-catalog-connection.md) — full syntax
 - [External Catalog Federated Queries](external-catalog-concept.md)
-- [Connection Overview](connection-guide.md)
+- [Connection Overview](create-connection.md)

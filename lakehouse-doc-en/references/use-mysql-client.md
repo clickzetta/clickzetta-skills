@@ -165,8 +165,6 @@ Troubleshoot issues through the Lakehouse job history. After connecting via the 
 * Schema: The schema name specified in the BI report
 * Click the refresh button in the upper right corner to monitor SQL sent by the BI report
 
-![](.topwrite/assets/image_1722596643860.png)
-
 ## Examples
 
 * Using mysql client to connect
@@ -181,4 +179,4 @@ mysql -h cn-shanghai-alicloud-mysql.api.singdata.com -u user_name@instance_name.
 mysql -h cn-shanghai-alicloud-mysql.api.singdata.com -u user_name@instance_name.workspace_name -Dpublic -p -A --enable-cleartext-plugin --default-auth=mysql_native_password
 ```
 
-* Use [Power BI to connect to Lakehouse](PowerBI.md)
+* Use [Power BI to connect to Lakehouse](powerbi.md)

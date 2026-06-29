@@ -122,7 +122,7 @@ From the Lakehouse implementation perspective, Dynamic Tables evolved from tradi
 
 You can use SQL commands to monitor the refresh history of Dynamic Tables. To get an overview of the refresh status of all Dynamic Tables, use the following SQL statement:
 
-```SQL
+```sql
 SHOW DYNAMIC TABLE REFRESH HISTORY [WHERE <condition>];
 ```
 
@@ -130,7 +130,7 @@ SHOW DYNAMIC TABLE REFRESH HISTORY [WHERE <condition>];
 
 You can use the `WHERE` clause to filter by specific fields. For example, to view the refresh history of a Dynamic Table named `my_dy`:
 
-```SQL
+```sql
 SHOW DYNAMIC TABLE REFRESH HISTORY WHERE name='my_dy';
 ```
 
@@ -154,11 +154,9 @@ SHOW DYNAMIC TABLE REFRESH HISTORY WHERE name='my_dy';
 
 ### View Single Job Refresh Details via Job Profile
 
-In addition to SQL commands, you can view the refresh details of a single job through Job Profile.
+In addition to SQL commands, you can view the refresh details of a single job through Job Profile. Navigate to **Compute → Job History**, find the refresh job, and click into it to open the profile. The profile shows execution time, input/output row counts, and the incremental SQL execution plan.
 
-![](.topwrite/assets/image_1716280617859.png)
-
-* You can also use the input records in the job profile to determine whether data was read incrementally.
+* Use the input records shown in the job profile to confirm whether data was read incrementally.
 
 ## Cost of Dynamic Tables
 
@@ -218,7 +216,7 @@ Real-time dataset availability: Currently, the `ecommerce_events_multicategoryst
 
 1. **Write a SQL script to define scheduling and process data using DDL**
 
-```SQL
+```sql
 CREATE  DYNAMIC TABLE event_type_count
 REFRESH interval 1 minute vcluster default
 as
@@ -233,21 +231,17 @@ REFRESH DYNAMIC TABLE event_type_count;
 
 **Use a command to view Dynamic Table refresh**
 
-```SQL
+```sql
 SHOW DYNAMIC TABLE REFRESH HISTORY WHERE name='event_type_count';
 ```
 
 **View Dynamic Table refresh history in job history**
 
-![](.topwrite/assets/image_1716280651911.png)
-
-Click into the details to view the input records and see how many incremental rows were retrieved. In the diagnostics section, you can view the execution plan of the incremental SQL.
-
-![](.topwrite/assets/image_1716280668286.png)
+Go to **Compute → Job History** and filter by the Dynamic Table name or the job tag. Click into any job to view input records and confirm how many incremental rows were retrieved. In the diagnostics section, you can view the execution plan of the incremental SQL.
 
 3. **After seeing incremental refresh data in the job history, you can view the data changes**
 
-```SQL
+```sql
 SELECT    *   FROM      event_type_count;
 +-------------+--------------+
 | event_type  | events_count |
@@ -278,7 +272,7 @@ In this demonstration, we simulate incremental data insertion and show the effec
 
 1. Data preparation
 
-```SQL
+```sql
 CREATE TABLE event_tb (
     event STRING,
     process DOUBLE,
@@ -293,11 +287,9 @@ INSERT INTO event_tb VALUES
 
 2. Data processing
 
-* Create a new SQL script "1. Time Processing dt" to process the prepared data using SQL to create a dynamic table
+* Create a new SQL script named **"1. Time Processing dt"** in the **Development** module to process the prepared data and create a dynamic table:
 
-  ![](.topwrite/assets/image_1716280688236.png)
-
-```SQL
+```sql
 CREATE dynamic TABLE IF NOT EXISTS event_gettime AS
 SELECT    event,
           process,
@@ -313,7 +305,7 @@ REFRESH   dynamic TABLE event_gettime;
 
 * Create a new SQL script "2. Aggregate dy" to perform aggregation on the data processed in the previous step
 
-  * ```SQL
+  * ```sql
     CREATE dynamic TABLE IF NOT EXISTS event_group_minute AS
     SELECT    event,
               event_hour,
@@ -329,21 +321,15 @@ REFRESH   dynamic TABLE event_gettime;
 
 3. Build dependencies and scheduling relationships
 
-* Task one "1. Time Processing dy" — configure to run on a 1-minute schedule
+* Task one **"1. Time Processing dy"** — in the task scheduling settings, set the refresh interval to 1 minute.
 
-  * ![](.topwrite/assets/image_1716280711741.png)
+* Task two **"2. Aggregate dy"** — set the refresh interval to 1 minute, then add a **dependency on task one "1. Time Processing dy"** in the scheduling dependencies to ensure upstream data is ready before the aggregation runs.
 
-* Task two "2. Aggregate dy" — configure to run on a 1-minute schedule and set a **dependency on task one "1. Time Processing dy"** in the scheduling dependencies
-
-  * ![](.topwrite/assets/image_1716280739978.png)
-
-* In the data development interface, click to submit each task
-
-  * ![](.topwrite/assets/image_1716280770050.png)
+* In the Development interface, click **Submit** on each task to activate the schedule.
 
 4. Verify incremental refresh
 
-```SQL
+```sql
 --Manually insert data
 INSERT INTO event_tb VALUES
   ('event-0', 20.0, TIMESTAMP '2024-01-20 14:43:13');

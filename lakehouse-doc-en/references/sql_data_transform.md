@@ -13,7 +13,7 @@ Singdata Lakehouse covers four data transformation patterns: auto-incremental re
 | Multi-layer pipeline with automatic incremental refresh | Dynamic Table | [Dynamic Table Overview](dynamic-table.md) · [Create Dynamic Table](create-dynamic-table.md) |
 | End-to-end real-time ETL example | Dynamic Table tutorial | [Real-time ETL with Dynamic Tables](tutorials-streaming-data-pipeline-with_dynamic-table.md) |
 | Near-real-time incremental processing pipeline | Dynamic Table + Table Stream | [Build a Near-Real-Time Incremental Pipeline with Dynamic Tables](streaming_pipeline_with_dynamic_table.md) |
-| CDC data processing (real-time database change processing) | Multi-table real-time sync + Dynamic Table | [Complete CDC and Data Processing Example](czguide-intro-to-cdc-using-clickzetta-rtsync-dynamic-tables.md) |
+| CDC data processing (real-time database change processing) | Multi-table real-time sync + Dynamic Table | [Complete CDC and Data Processing Example](sql_table_stream_guide.md) |
 | Implement SCD (Slowly Changing Dimensions) | Table Stream + task | [SCD Implementation Guide](slowly-changing-dimensions-with-streams-and-tasks.md) |
 
 > **Dynamic Table vs. Materialized View**: Dynamic Tables are designed for data processing pipelines where results don't need to be instantly up-to-date. Materialized Views are designed for query acceleration and require data to always be current to support query rewriting. See [Dynamic Table Overview](dynamic-table.md) for details.

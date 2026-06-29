@@ -23,7 +23,7 @@ The agent uses `cz-cli` commands to perform data warehouse operations—one comm
 
 **cz-cli advantages:**
 
-- **Self-describing and discoverable**: `cz-cli --help` and `cz-cli <subcommand> --help` are self-describing. Agents query on demand without preloading any documentation. `cz-cli ai-guide` generates a more compact task-oriented command reference.
+- **Self-describing and discoverable**: `cz-cli --help` and `cz-cli <subcommand> --help` are self-describing. Agents query on demand without preloading any documentation.
 - **Business-semantic encapsulation**: Each command maps to one complete business action—agents get it done in one step, no multi-step composition, no pagination, authentication, or error code handling.
 - **Covers capabilities beyond SQL**: Studio task management, run inspection, backfill, data source browsing—all unreachable via JDBC.
 - **Built-in guardrails**: Write operations require `--write`; high-risk operations require `-y` confirmation, reducing agent error risk.
@@ -64,7 +64,6 @@ Anthropic's Research feature uses the same architecture—benchmarks show a 90.2
 | `cz-cli job` | SQL Jobs | SQL Job performance diagnostics |
 | `cz-cli datasource` | Studio external data sources | Browse schemas/tables in data sources, test connectivity |
 | `cz-cli agent` | *(Agent only)* Local AI Agent | Start AI Agent session, operate Lakehouse in natural language |
-| `cz-cli ai-guide` | *(Agent only)* Command documentation | Generate compact command reference for agents to load |
 
 ## Quick Start
 
@@ -108,7 +107,7 @@ For detailed installation and configuration steps, see the [Installation and Con
 
 ## LLM Source
 
-The LLM model used by `cz-cli agent` is provided uniformly by **[AI Gateway](AIGateway.md)**. New users are recommended to complete configuration in one step via the CLI connection string (Singdata built-in LLM, no separate API Key required). External LLMs can also be integrated via `cz-cli agent llm add`—in this case, enter the AI Gateway Endpoint as an OpenAI-compatible gateway:
+The LLM model used by `cz-cli agent` is provided uniformly by **[AI Gateway](aigateway.md)**. New users are recommended to complete configuration in one step via the CLI connection string (Singdata built-in LLM, no separate API Key required). External LLMs can also be integrated via `cz-cli agent llm add`—in this case, enter the AI Gateway Endpoint as an OpenAI-compatible gateway:
 
 ```bash
 cz-cli agent llm add my-gateway \

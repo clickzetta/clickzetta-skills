@@ -4,8 +4,6 @@ A Dynamic Table is an **incremental-computation data processing object** in the 
 
 Think of a Dynamic Table as an "automatically running data processing pipeline" — when upstream data changes, the system only computes the delta rather than rescanning the entire table. This is different from a Materialized View: a Materialized View's core purpose is **query rewriting** (the optimizer automatically uses pre-computed results to accelerate queries), while a Dynamic Table's core purpose is **incremental computation** (processing only the delta to build ODS → DWD → DWS data pipelines).
 
-![](/.topwrite/assets/11-dynamic-table.png)
-
 ## Comparison with Other Table Types
 
 | Aspect             | Dynamic Table                                        | Materialized View                                                  | View                                            | Table                          |
@@ -76,7 +74,7 @@ Create a Dynamic Table and view the results:
 
 ```sql
 CREATE DYNAMIC TABLE dws_category_sales
-    REFRESH INTERVAL 10 MINUTE VCLUSTER default
+    REFRESH INTERVAL 10 MINUTE VCLUSTER DEFAULT
 AS
 SELECT
     p.category,
@@ -208,7 +206,7 @@ Field descriptions:
 ```sql
 -- Modify refresh interval (requires CREATE OR REPLACE)
 CREATE OR REPLACE DYNAMIC TABLE dws_category_sales
-    REFRESH INTERVAL 30 MINUTE VCLUSTER default
+    REFRESH INTERVAL 30 MINUTE VCLUSTER DEFAULT
 AS SELECT ...;
 
 -- Drop a Dynamic Table (note: cannot use DROP TABLE)

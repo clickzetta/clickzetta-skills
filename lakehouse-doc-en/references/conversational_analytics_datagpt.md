@@ -1,3 +1,0 @@
-## Lakehouse DataGPT
-
-Lakehouse DataGPT is a new generation conversational data analysis tool, built on a cloud-native Lakehouse architecture. It combines the natural language understanding capabilities of large language models (LLM) with the processing power of the Lakehouse enterprise-grade data engine, transforming data analysis into an intuitive conversational experience. With DataGPT, even business personnel without a technical background can easily explore data value and drive data-driven intelligent decisions. For detailed usage instructions, please refer to [Conversational AI Data Analysis Tool DataGPT](datagpt_introduction.md)

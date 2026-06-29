@@ -40,7 +40,7 @@ LOCATION 'file_path'
 
 * `USING DELTA|HUDI`: Specify the file format, currently supporting Delta Lake and Hudi formats.
 
-* `CONNECTION connection_name`: Authentication information for connecting to an external data source, where `connection_name` is the name of the connection object defined in Lakehouse. It is used for authentication connection information and connection object storage. For specific creation documentation, refer to [Object Storage Connection (STORAGE CONNECTION)](datalake_storageconnection.md).
+* `CONNECTION connection_name`: Authentication information for connecting to an external data source, where `connection_name` is the name of the connection object defined in Lakehouse. It is used for authentication connection information and connection object storage. For specific creation documentation, refer to [Object Storage Connection (STORAGE CONNECTION)](datalake-storage-connection.md).
   * Create oss connection
   ```
   CREATE STORAGE CONNECTION my_conn 

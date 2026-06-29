@@ -6,7 +6,7 @@ Pipe is the **continuous data ingestion object** in Singdata Lakehouse. Once cre
 
 Analogy: Pipe is like a continuously running conveyor belt. Once files are uploaded to an OSS subdirectory, Pipe automatically detects and loads them within about 30 seconds. When Kafka messages are written, Pipe continuously consumes and writes them in batch intervals. Unlike scheduled tasks, Pipe runs persistently and processes new data as it arrives.
 
-![](/.topwrite/assets/14-pipe.png)
+![](/.topwrite/assets/14-pipe.svg)
 
 ---
 

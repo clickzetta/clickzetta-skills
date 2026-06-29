@@ -104,8 +104,8 @@ bulkload_stream.commit()
 | --------- | --------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | username  | Y        | Username                                                                                                                             |
 | password  | Y        | Password                                                                                                                              |
-| service   | Y        | The address to connect to Lakehouse, e.g., <region\_id>.api.singdata.com. You can find the JDBC connection string in Lakehouse Studio under **Management** -> **Workspace**![](../.topwrite/assets/image_1728887857029.png) |
-| instance  | Y        | You can find the JDBC connection string in Lakehouse Studio under **Management** -> **Workspace**![](../.topwrite/assets/image_1729051500396.png)                                        |
+| service   | Y        | The address to connect to Lakehouse, e.g., <region\_id>.api.singdata.com. You can find the JDBC connection string in Lakehouse Studio under **Management** -> **Workspace**. |
+| instance  | Y        | You can find the instance ID in the JDBC connection string in Lakehouse Studio under **Management** -> **Workspace**.                                        |
 | workspace | Y        | Workspace to use                                                                                                                         |
 | vcluster  | Y        | VC to use                                                                                                                           |
 | schema    | Y        | Schema name to access                                                                                                                      |

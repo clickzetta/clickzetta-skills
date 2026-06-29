@@ -1,8 +1,6 @@
 # Create LLM Function to Analyze Company Industry
 
-Objective: Use a large language model (LLM) service to fill in the national standard **primary industry** and **secondary industry** information based on the **company name** column in the Lakehouse customer table. The effect is shown below:
-
-![](.topwrite/assets/20250612-171447.jpeg =675)
+Objective: Use a large language model (LLM) service to fill in the national standard **primary industry** and **secondary industry** information based on the **company name** column in the Lakehouse customer table. For each company name, the LLM returns a JSON object containing the `primary_industry` and `secondary_industry` fields, which are then written back into the Lakehouse table.
 
 > ⚠️ **Note**: To complete this example, you need:
 >
@@ -139,11 +137,7 @@ Run the following in the development environment terminal:
 [root@docker cz_llm]# pip install dashscope -t .
 ```
 
-At this point, the directory structure should look like:
-
-![](.topwrite/assets/external_func_2.jpeg)
-
-^
+At this point, the directory structure should contain `cz_llm.py` along with the downloaded `dashscope` package directory and its metadata files, all located under `/root/cz_llm`.
 
 ### Step 3: Local Debugging
 
@@ -210,7 +204,7 @@ Use the Lakehouse JDBC client (see [Lakehouse JDBC Client](connect-with-cli.md))
 PUT '/Users/derekmeng/Downloads/transform_company_id.zip' to USER VOLUME;
 ```
 
-![](.topwrite/assets/external_functions_3.jpeg)
+After the PUT command completes successfully, the zip file is available in the Lakehouse USER VOLUME and ready for use in function creation.
 
 ### Step 5: Create and Use the Function
 
@@ -240,6 +234,4 @@ SELECT    public.fc_cz_llm (
           ) AS llm_result;
 ```
 
-The execution result is shown below:
-
-![](.topwrite/assets/external_function_4.jpeg =660)
+The execution result returns a row with a `llm_result` column containing a JSON string such as `{"primary_industry":"Internet","secondary_industry":"Software and IT Services"}`, confirming the function is working correctly.

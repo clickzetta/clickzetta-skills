@@ -21,7 +21,7 @@ FILE_FORMAT = ( TYPE = { CSV  | PARQUET | JSON }  [ formatTypeOptions ]  )
 * COPY INTO: Indicates appending data to the directory
 
 * VOLUME supports external\_volume\_name: For detailed introduction, refer to [Volume Introduction](datalake_volume.md)
-  * external\_volume\_name: The external storage location specified by the customer, Singdata only retains the path metadata. Supported storage products include: Alibaba Cloud OSS, Tencent Cloud COS, Amazon S3. The creation process can be referred to in [CONNECTION Creation](datalake_storageconnection.md) and [VOLUME Creation](datalake_volume_object.md)
+  * external\_volume\_name: The external storage location specified by the customer, Singdata only retains the path metadata. Supported storage products include: Alibaba Cloud OSS, Tencent Cloud COS, Amazon S3. The creation process can be referred to in [CONNECTION Creation](datalake-storage-connection.md) and [VOLUME Creation](datalake_volume_object.md)
   * Table Volume: Internal storage of Lakehouse, stored together with internal table objects under the specified Schema path
   * User Volume: The file storage area associated with the user account, Workspace User has default management permissions for this area. Each Workspace by default has a User Volume with management permissions
 ```SQL
@@ -88,7 +88,7 @@ REMOVE TABLE VOLUME birds  FILE 'dau_unload/part00001.csv';
   * header: Whether to parse the header, default is false. Boolean type, for example: `header='true'`
   * timeZone: Configures the time zone, no default value. Used to specify the time zone for the time format in the file. For example: `timeZone = 'Asia/Shanghai'`
   * escape: Used to escape quotes within quoted values, default value is "\", for example: `escape='\'`
-  * nullValue: Used to determine what content should be Null, default value is `""`, for example nullValue='\\\N' or nullValue=r'\N'. Using r can avoid needing escape characters, refer to [Regular Expression Escaping](regexp-statement.md)
+  * nullValue: Used to determine what content should be Null, default value is `""`, for example nullValue='\\\N' or nullValue=r'\N'. Using r can avoid needing escape characters, refer to [Regular Expression Escaping](sql_functions/scalar_functions/string_functions/regexp-statement.md)
   * multiLine: Whether there are multi-line CSV records, default value is `false`. If there are such records, configure `multiLine='true'`
   * headerQuotingStyle: Default value is "needed", optional values are "none". "needed" always adds quotes around the header, "none" does not add quotes and raises an error when encountering control characters.
    * dataQuotingStyle: Default value is "needed", optional values are "none-unsafe". "needed" always adds quotes around the header, "none-unsafe" never adds quotes and does not raise an error when encountering control characters (does not conform to CSV specification but is supported by us)
@@ -248,7 +248,7 @@ SHOW  TABLE VOLUME  DIRECTORY  birds SUBDIRECTORY 'dau_unload/';
 --Delete the file to avoid occupying storage
 REMOVE  TABLE  VOLUME birds  FILE 'dau_unload/part00001.csv';
 ```
-Exporting to an external volume requires creating a VOLUME and CONNECTION. The creation process can be referenced in [CONNECTION creation](datalake_storageconnection.md) and [VOLUME creation](datalake_volume_object.md).
+Exporting to an external volume requires creating a VOLUME and CONNECTION. The creation process can be referenced in [CONNECTION creation](datalake-storage-connection.md) and [VOLUME creation](datalake_volume_object.md).
 
 **Export data to OSS**
 ```SQL

@@ -319,7 +319,7 @@ GRANT SELECT ON TABLE <table_name> TO SHARE <share_name>;
 
 ## 9. Reference Information
 
-* [Data Sharing](datasharing.md)
+* [Data Sharing](data-sharing.md)
 * [Cross-Enterprise Real-Time Data Sharing](quickstart_datashare_between_companies.md)
 * [CREATE SHARE Syntax](create-share.md)
 * [CREATE SCHEMA FROM SHARE Syntax](create-schema-from-share.md)

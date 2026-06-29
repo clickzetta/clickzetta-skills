@@ -201,4 +201,4 @@ Flink connector is built on the RealtimeStream SDK and used for real-time data s
 
 [Using Java SDK to Read Kafka Data for Real-time Upload](use-java-sdk-realtime-uploaddata.md)
 
-[Singdata Lakehouse Multi-table Real-time Sync Implementing CDC](czguide-intro-to-cdc-using-clickzetta-rtsync-dynamic-tables.md)
+[Singdata Lakehouse Multi-table Real-time Sync Implementing CDC](sql_table_stream_guide.md)

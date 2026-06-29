@@ -11,7 +11,7 @@ This connector supports bidirectional data movement between Lakehouse and Spark 
 * Read tables from Lakehouse and convert them into Spark DataFrames
 * Write data from Spark DataFrames into tables in Lakehouse.
 
-![](.topwrite/assets/image_1726132853684.png)
+
 
 Data Transfer Process
 

@@ -245,4 +245,4 @@ Insert new data into the data source to view the results of incremental synchron
 
 [Multi-table Real-time Synchronization](realtime_sync.md)
 
-[Capture Change Data (CDC) and Data Processing through Multi-table Real-time Synchronization and Dynamic Tables in Singdata Lakehouse](czguide-intro-to-cdc-using-clickzetta-rtsync-dynamic-tables.md)
+[Capture Change Data (CDC) and Data Processing through Multi-table Real-time Synchronization and Dynamic Tables in Singdata Lakehouse](sql_table_stream_guide.md)

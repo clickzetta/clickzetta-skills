@@ -320,9 +320,9 @@ Tested on AWS Singapore instance (`aws_singapore_prod`), **20/20 all passed** (i
 
 ### Dynamic Table (GIC)
 
-- [Dynamic Table Overview](dynamic-table-overview.md): Declarative incremental computation principles and architecture
-- [Dynamic Table SQL Reference](dynamic-table-sql.md): Full CREATE DYNAMIC TABLE syntax
-- [Dynamic Table Usage Guide](SQL_DynamicTable_Guide.md): Unified batch-streaming pipeline examples
+- [Dynamic Table Overview](sql_dynamic_table_guide.md): Declarative incremental computation principles and architecture
+- [Dynamic Table SQL Reference](sql_dynamic_table_guide.md): Full CREATE DYNAMIC TABLE syntax
+- [Dynamic Table Usage Guide](sql_dynamic_table_guide.md): Unified batch-streaming pipeline examples
 
 ### Other Migration Guides
 

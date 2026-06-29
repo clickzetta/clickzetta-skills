@@ -91,7 +91,7 @@ SELECT public.upper_udf('hello');
 - [CREATE EXTERNAL FUNCTION](create_external_function.md)
 - [External Function Usage Guide](remotefunction-best-practice.md)
 - [External Function Development Guide (Python 3)](remotefunction-dev-guide-python3.md)
-- [External Function Development Guide (Java)](external-function-dev-guide-java.md)
+- [External Function Development Guide (Java)](bulkloadv1-java-sdk.md)
 - [DROP FUNCTION](drop-function.md)
 - [DESC FUNCTION](desc-function.md)
 - [SHOW FUNCTIONS](show-functions.md)

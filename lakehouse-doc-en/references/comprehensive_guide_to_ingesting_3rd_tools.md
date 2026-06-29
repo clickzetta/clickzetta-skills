@@ -8,4 +8,4 @@
 
 [Loading Data Collected by Octoparse into Lakehouse via MySQL Protocol](simpletosimple_bazhuayu_datagpt.md)
 
-[Real-Time Data Synchronization from Oracle Database to Singdata Lakehouse via Bluepipe](bluepipeoraclelakehouse_datasync.md)
+[Real-Time Data Synchronization from Oracle Database to Singdata Lakehouse via Bluepipe](comprehensive_guide_to_ingesting_3rd_tools.md)

@@ -373,7 +373,7 @@ The following results are from actual testing on an Alibaba Cloud Shanghai insta
 - [Volume Overview](volume-overview.md) — Volume concepts, types, and file operations
 - [Object Storage Pipe](pipe-storage-object.md) — LIST_PURGE and EVENT_NOTIFICATION complete configuration
 - [Pipe Overview](pipe-overview.md) — Pipe vs Table Stream comparison
-- [Dynamic Table Overview](dynamic-table-introduce.md) — Incremental computation mechanism
+- [Dynamic Table Overview](sql_dynamic_table_guide.md) — Incremental computation mechanism
 - [Create External Volume](create-external-volume.md) — Complete DDL syntax
 - [Import Data from Volume](from_volume_to_table.md) — COPY INTO syntax
 - [Export Data to Volume](from_lakehouse_to_volume.md) — Export syntax

@@ -256,7 +256,7 @@ After execution: Stream `customer_table_changes` begins listening for INSERT / U
 
 SQL Task: 12\_volume\_creation\_for\_datalake
 
-Creating a Volume requires a Connection to Alibaba Cloud OSS. Refer to [Create Connection](connection-guide.md).
+Creating a Volume requires a Connection to Alibaba Cloud OSS. Refer to [Create Connection](create-connection.md).
 
 ```SQL
 --external data lake
@@ -629,7 +629,7 @@ View Task Instances:
 
 ## Resources
 
-[Connection](connection-guide.md)
+[Connection](create-connection.md)
 
 [External Volume](datalake_volume.md)
 

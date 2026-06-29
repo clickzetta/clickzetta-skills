@@ -4,7 +4,7 @@ Compute resources are the **compute layer in Lakehouse's storage-compute separat
 
 Think of a VCluster as an "on-demand compute engine": start it when you need it, stop it when you're done, and pay only for the minutes it actually runs. Unlike traditional databases, compute and storage are completely decoupled here — resizing a cluster requires no data migration, and different teams can use independent clusters to access the same table without competing for resources.
 
-![](/.topwrite/assets/18-compute.png)
+![](/.topwrite/assets/18-compute.svg)
 
 ## Choosing a Cluster Type
 

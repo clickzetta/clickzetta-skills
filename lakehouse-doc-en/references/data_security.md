@@ -50,7 +50,7 @@ Singdata Lakehouse security capabilities cover six areas: user permissions, data
 
 | Scenario | Reference |
 |------|---------|
-| Enable multi-factor authentication (MFA) | [Bind Google Authenticator](using-google-authenticator.md) |
+| Enable multi-factor authentication (MFA) | [Bind a Virtual MFA Device](using-google-authenticator.md) |
 | Configure Single Sign-On (SSO) | [SSO Configuration](sso-configuration.md) |
 
 ---

@@ -75,17 +75,13 @@ You need to create a **permission policy** and a **role** in AWS IAM under the a
 * Log in to the AWS cloud platform and go to the **Identity and Access Management (IAM)** product console
 * In the IAM page, navigate to **Roles** -> **Create Role** -> **AWS Account**, select **Another AWS Account**, and enter `028022243208` (China site) / `014617434350` (international site) in the Account ID
 
-> ⚠️ **Note**: To prevent the ROLE\_ARN from being obtained by third parties for unauthorized data access, you can check **Options** and select **Require external ID (best practice for third parties assuming this role)**. After checking, you can fill in `000000` as a placeholder in the **EXTERNAL ID** field to be filled in later. `EXTERNAL ID` serves as an additional layer of verification, ensuring that access is only allowed when the request includes the preset `EXTERNAL ID`. This means that even if a third party knows some other access information (such as the role ARN), they cannot access the resources without the correct `EXTERNAL ID`.
-
-![](.topwrite/assets/image_1728551322654.png)
+> ⚠️ **Note**: To prevent the ROLE\_ARN from being obtained by third parties for unauthorized data access, you can check **Options** and select **Require external ID (best practice for third parties assuming this role)**. After checking, you can fill in `000000` as a placeholder in the **EXTERNAL ID** field to be filled in later. `EXTERNAL ID` serves as an additional layer of verification, ensuring that access is only allowed when the request includes the preset `EXTERNAL ID`. This means that even if a third party knows some other access information (such as the role ARN), they cannot access the resources without the correct `EXTERNAL ID`. Select **Another AWS Account** and enter the appropriate Account ID as shown in the note above.
 
 * Select **Next**, on the Add permissions page, choose the policy created in STEP1 `LakehouseAccess`, then select **Next**
 * Fill in the Role name (e.g., `LakehouseVolumeRole`) and description, click **Create Role** to complete the role creation
 * In the role details page, obtain the value of **Role ARN** to use when creating the STORAGE CONNECTION
 
-![](.topwrite/assets/image_1728551348143.png)
-
-^
+When creating the role, enable the **Require external ID** option under **Options** as described above. The role trust relationship will initially use `000000` as a placeholder for the external ID, which you will update in STEP3 after obtaining the actual external ID from Lakehouse.
 
 ### STEP3: Create STORAGE CONNECTION on Singdata Lakehouse Side:
 
@@ -105,8 +101,6 @@ CREATE STORAGE CONNECTION aws_bj_conn_arn
 DESC CONNECTION aws_bj_conn_arn;
 ```
 
-![](.topwrite/assets/20240626-215920.jpeg)
-
-^
+The `DESC` result includes an `EXTERNAL_ID` field. Copy its value to use in the next step.
 
 * In the AWS IAM console, navigate to **Roles** in the left sidebar, find the role created in STEP2 and go to the role details page. In **Trust relationships**, replace the value of `sts:ExternalId` `000000` with `EXTERNAL_ID` from the DESC result. Click **Update** to complete the role policy update.

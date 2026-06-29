@@ -84,4 +84,4 @@ python py_zettapark_save_as_table.py
 
 #### Resources
 
-[Zettapark Quick Start](zettaparkquickstart.md)
+[Zettapark Quick Start](lakehousepython-zettapark.md)

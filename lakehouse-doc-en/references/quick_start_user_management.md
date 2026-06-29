@@ -11,9 +11,9 @@ After completing product [registration and login](logging-in.md), you will recei
 
 Before reading this guide, we recommend you review and understand the following documents:
 
-* [Singdata Lakehouse Product Introduction](what_is_clickzetta_lakehouse.md)
-* [Key Concepts](key_concepts.md)
-* [Lakehouse Studio Quick Tour](lakehousestudiotour.md)
+* [Singdata Lakehouse Product Introduction](datalake_overview.md)
+* [Key Concepts](key-concepts.md)
+* [Lakehouse Studio Quick Tour](lakehouse-studio-101.md)
 
 ## Step-by-Step Guide
 
@@ -58,7 +58,7 @@ Before reading this guide, we recommend you review and understand the following 
 
 You can read the following documents for more details on managing accounts and users:
 
-* [Manage Accounts](manageaccounts.md)
+* [Manage Accounts](account_user_management.md)
 * [Manage Users](account_user_management.md)
 
 ## Next Steps

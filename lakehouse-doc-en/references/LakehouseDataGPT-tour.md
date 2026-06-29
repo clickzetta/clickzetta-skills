@@ -4,7 +4,7 @@ Lakehouse DataGPT is a cutting-edge, cloud-based conversational data analysis to
 
 Embrace the future of data analysis with DataGPT, where the power of artificial intelligence meets the diversity of data sources. Whether your data resides in the powerful Lakehouse or in personal files (such as Excel, CSV, or PDF), DataGPT helps you unlock its analytical potential. This innovative tool breaks down the barriers to data accessibility, ensuring that no matter where your data is stored, you can leverage DataGPT's AI capabilities to discover insights, make informed decisions, and drive success in the era of advanced data analytics.
 
-To learn more about DataGPT concepts and technical architecture, refer to [DataGPT Introduction](datagpt_intro.md).
+To learn more about DataGPT concepts and technical architecture, refer to [DataGPT Introduction](datagpt_introduction.md).
 
 ## Supported Data Sources
 

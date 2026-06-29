@@ -27,7 +27,7 @@ This document details how to use the Lakehouse SQL engine to import data from ob
 
 ### Import CSV Data from OSS using Volume
 
-This document details how to use Lakehouse's Volume and COPY command to import the public dataset of [Brazilian E-commerce](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce?select=olist_customers_dataset.csv) from Alibaba Cloud Object Storage Service (OSS). Alternatively, you can directly download the dataset for this case through [this link](https://czsampledata.oss-cn-shanghai.aliyuncs.com/eCommerce/BrazilianECommerce/olist_customers_dataset.csv?Expires=1713960305\&OSSAccessKeyId=TMP.3Kj9FumEnKg87NyAXLcgdBykW427fGRqHzTyiLfNtki6Vagmg1zMHEfVcqov1PXETvKM7DKauBXyah4YNWhfdgHNufoq2j\&Signature=afXWkoRTi%2BercYhvlsPKdrpv0Fg%3D\&x-oss-request-payer=requester) and then upload it to OSS. This process includes table creation, object storage connection configuration, Volume management, and data loading and status checking.
+This document details how to use Lakehouse's Volume and COPY command to import the public dataset of [Brazilian E-commerce](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce?select=olist_customers_dataset.csv) from Alibaba Cloud Object Storage Service (OSS). Alternatively, you can directly download the dataset for this case through [this link](https://czsampledata.oss-cn-shanghai.aliyuncs.com/eCommerce/BrazilianECommerce/olist_customers_dataset.csv) and then upload it to OSS. This process includes table creation, object storage connection configuration, Volume management, and data loading and status checking.
 
 #### Prerequisites
 
@@ -103,7 +103,7 @@ Check the job execution status in the job run history of Lakehouse to confirm wh
 
 ### Import Data from OSS Using COPY Command
 
-This article introduces how to use Lakehouse's COPY command to import a public dataset of [Brazilian E-commerce](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce?select=olist_customers_dataset.csv) from Alibaba Cloud Object Storage Service (OSS), or you can directly download the dataset for this case through [this link](https://czsampledata.oss-cn-shanghai.aliyuncs.com/eCommerce/BrazilianECommerce/olist_geolocation_dataset.csv?Expires=1713960430\&OSSAccessKeyId=TMP.3Kj9FumEnKg87NyAXLcgdBykW427fGRqHzTyiLfNtki6Vagmg1zMHEfVcqov1PXETvKM7DKauBXyah4YNWhfdgHNufoq2j\&Signature=2bCPx2sokSkMGpwfkipZqfmoWlE%3D\&x-oss-request-payer=requester) and then upload it to OSS. This process involves creating the data table, connecting and configuring the Volume, as well as loading the data and checking the status.
+This article introduces how to use Lakehouse's COPY command to import a public dataset of [Brazilian E-commerce](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce?select=olist_customers_dataset.csv) from Alibaba Cloud Object Storage Service (OSS), or you can directly download the dataset for this case through [this link](https://czsampledata.oss-cn-shanghai.aliyuncs.com/eCommerce/BrazilianECommerce/olist_geolocation_dataset.csv) and then upload it to OSS. This process involves creating the data table, connecting and configuring the Volume, as well as loading the data and checking the status.
 
 #### Prerequisites
 
