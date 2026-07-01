@@ -1,0 +1,5 @@
+# Singdata Lakehouse — Other
+
+- [User Agreement](https://singdata.com/documents/service-aggrement): The Singdata Service Agreement (effective January 10, 2025), setting legal terms for account registration, service use, member responsibilities, account security, and liability limitations.
+- [Privacy Policy](https://singdata.com/documents/privacy-policy): Singdata privacy policy (2024.08) detailing collection, use, disclosure, transfer, retention, and destruction of personal data, plus security measures, cookies, and user rights to access or correct data.
+- [Product Trial Agreement](https://singdata.com/documents/product-trial-agreement): Legal product trial agreement for Singdata, covering service description, user responsibilities, company rights, intellectual property, disclaimers, and dispute resolution during the testing phase.
