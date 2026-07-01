@@ -1,8 +1,7 @@
 ---
 name: clickzetta-dbt-modeling
 description: |
-  dbt-clickzetta data modeling wizard. Autonomously discovers Lakehouse data sources,
-  infers modeling strategies, generates sources.yml and model files, and runs the full test suite.
+  dbt-clickzetta data modeling wizard: discovers Lakehouse data sources, infers modeling strategies, generates sources.yml and model files, and runs the full test suite.
   Presents choices rather than blank forms — explores data first, then proposes a justified plan for user confirmation.
   Trigger when the user wants to turn raw Lakehouse data into usable analytical tables — mentions dbt
   (dbt modeling, dbt model, sources.yml, incremental, dbt run, dbt test), wants ETL transformation,

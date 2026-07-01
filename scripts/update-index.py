@@ -53,7 +53,10 @@ def extract_description(content):
     text = text.strip().strip('"').strip("'").strip()
     text = re.sub(r'\s+', ' ', text)
     # Keep only the first sentence to stay concise (Anthropic suggests ~250 bytes).
-    sentence = re.match(r'.*?[.。!?！？]', text)
+    # A sentence ends at .!? only when followed by whitespace/quote/end — this avoids
+    # splitting inside tokens like "sources.yml" or "information_schema.job_history".
+    # CJK 。!? always terminate.
+    sentence = re.match(r'.*?(?:[.!?](?=\s|["\')]|$)|[。！？])', text)
     return sentence.group(0).strip() if sentence else text
 
 

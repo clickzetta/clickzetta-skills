@@ -1,9 +1,8 @@
 ---
 name: clickzetta-dbt-project-setup
 description: |
-  dbt-clickzetta project initialization wizard. Helps build a dbt project from scratch connected
-  to ClickZetta Lakehouse: installation verification, profiles.yml configuration, layering standards,
-  and dbt_project.yml generation. Hands off to clickzetta-dbt-modeling after completion.
+  dbt-clickzetta project initialization wizard: builds a dbt project connected to ClickZetta Lakehouse, covering installation checks, profiles.yml, layering standards, and dbt_project.yml generation.
+  Hands off to clickzetta-dbt-modeling after completion.
   Trigger when the user wants to build a data warehouse or start a dbt project in ClickZetta —
   "I want to build a data warehouse with dbt", "dbt beginner guide", "dbt project init",
   "dbt from scratch", "how to connect dbt to ClickZetta", "dbt profiles configuration",

@@ -1,10 +1,8 @@
 ---
 name: clickzetta-data-science
 description: |
-  End-to-end data science workflow guide for ClickZetta Lakehouse. Covers
-  environment setup (Python 3.10+, Jupyter, ZettaPark), project structure,
-  data discovery and quality assessment, feature engineering (SQL + ZettaPark),
-  and model inference deployment (BITMAP profiling, UDF batch inference, vector search).
+  End-to-end data science workflow guide for ClickZetta Lakehouse, covering environment setup, data discovery, feature engineering (SQL + ZettaPark), and model inference deployment.
+  Details: Python 3.10+/Jupyter/ZettaPark setup, project structure, data quality assessment, and inference (BITMAP profiling, UDF batch inference, vector search).
   Trigger when the user wants to do data science, ML, or analytical work using
   ClickZetta Lakehouse — connecting Jupyter to Lakehouse, doing EDA, building features,
   running ML inference, user profiling, audience segmentation, or batch scoring.

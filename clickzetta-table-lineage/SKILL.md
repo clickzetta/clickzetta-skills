@@ -1,9 +1,7 @@
 ---
 name: clickzetta-table-lineage
 description: |
-  Table lineage visualization tool for ClickZetta Lakehouse. Retrieves table dependency relationships
-  and cost data by analyzing actual jobs (information_schema.job_history), exports CSV and embeds
-  into an HTML template to generate an interactive lineage graph.
+  Table lineage visualization tool for ClickZetta Lakehouse: analyzes information_schema.job_history for table dependencies and cost, then renders an interactive HTML lineage graph.
   Trigger when user says "table lineage", "dependency graph", "data flow", "upstream/downstream analysis",
   "lineage visualization", or "pipeline visualization".
   Keywords: table lineage, dependency graph, data flow, upstream, downstream, visualization

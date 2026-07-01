@@ -41,7 +41,7 @@
     },
     {
       "name": "clickzetta-data-science",
-      "description": "End-to-end data science workflow guide for ClickZetta Lakehouse.",
+      "description": "End-to-end data science workflow guide for ClickZetta Lakehouse, covering environment setup, data discovery, feature engineering (SQL + ZettaPark), and model inference deployment.",
       "files": [
         "SKILL.md",
         "references/bitmap-profile.md",
@@ -54,7 +54,7 @@
     },
     {
       "name": "clickzetta-dbt-modeling",
-      "description": "dbt-clickzetta data modeling wizard.",
+      "description": "dbt-clickzetta data modeling wizard: discovers Lakehouse data sources, infers modeling strategies, generates sources.yml and model files, and runs the full test suite.",
       "files": [
         "SKILL.md",
         "references/grant-patterns.md",
@@ -65,7 +65,7 @@
     },
     {
       "name": "clickzetta-dbt-project-setup",
-      "description": "dbt-clickzetta project initialization wizard.",
+      "description": "dbt-clickzetta project initialization wizard: builds a dbt project connected to ClickZetta Lakehouse, covering installation checks, profiles.yml, layering standards, and dbt_project.yml generation.",
       "files": [
         "SKILL.md",
         "references/dbt-clickzetta-adapter.md",
@@ -83,7 +83,7 @@
     },
     {
       "name": "clickzetta-dw-modeling",
-      "description": "ClickZetta Lakehouse data warehouse modeling wizard.",
+      "description": "ClickZetta Lakehouse data warehouse modeling wizard: explores the data landscape, then designs layered models (Traditional DW ODS/DWD/DWS/ADS, Medallion, or hybrid) with DDL and pipeline config together.",
       "files": [
         "SKILL.md",
         "references/modeling-patterns.md"
@@ -91,7 +91,7 @@
     },
     {
       "name": "clickzetta-dynamic-table",
-      "description": "ClickZetta Dynamic Table usage guide and routing hub.",
+      "description": "ClickZetta Dynamic Table usage guide and routing hub, covering consultation (best practices, performance, incremental config), creation, and modification (ALTER, suspend/resume, columns).",
       "files": [
         "SKILL.md"
       ]
@@ -153,7 +153,7 @@
     },
     {
       "name": "clickzetta-semantic-view",
-      "description": "Create and query ClickZetta Lakehouse Semantic Views.",
+      "description": "Create and query ClickZetta Lakehouse Semantic Views — schema-level logical models that encapsulate multi-table JOINs and aggregations into a business-friendly layer of dimensions, metrics, and filters.",
       "files": [
         "SKILL.md",
         "references/semantic-view-reference.md"
@@ -210,14 +210,14 @@
     },
     {
       "name": "clickzetta-table-lineage",
-      "description": "Table lineage visualization tool for ClickZetta Lakehouse.",
+      "description": "Table lineage visualization tool for ClickZetta Lakehouse: analyzes information_schema.job_history for table dependencies and cost, then renders an interactive HTML lineage graph.",
       "files": [
         "SKILL.md"
       ]
     },
     {
       "name": "clickzetta-table-stream-pipeline",
-      "description": "Build and manage ClickZetta Table Stream change data capture pipelines.",
+      "description": "Build and manage ClickZetta Table Stream change data capture pipelines, covering source change tracking, Stream creation, offset management, and idempotent incremental-ETL consumption.",
       "files": [
         "SKILL.md"
       ]
@@ -232,7 +232,7 @@
     },
     {
       "name": "clickzetta-zettapark",
-      "description": "Use the ZettaPark Python library to work with ClickZetta Lakehouse data.",
+      "description": "Use the ZettaPark Python library to work with ClickZetta Lakehouse data through a pandas-like DataFrame API that translates Python transformations into distributed SQL — no manual SQL needed.",
       "files": [
         "SKILL.md",
         "references/zettapark-api.md"

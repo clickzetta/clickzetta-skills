@@ -1,9 +1,7 @@
 ---
 name: clickzetta-zettapark
 description: |
-  Use the ZettaPark Python library to work with ClickZetta Lakehouse data. ZettaPark provides
-  a pandas-like DataFrame API that translates Python operations into SQL for distributed execution
-  in Lakehouse — no need to write SQL manually for data transformations.
+  Use the ZettaPark Python library to work with ClickZetta Lakehouse data through a pandas-like DataFrame API that translates Python transformations into distributed SQL — no manual SQL needed.
   Covers Session creation, DataFrame construction and transformation (filter/select/join/groupBy),
   result collection (collect/to_pandas/show), writing tables (save_as_table),
   file operations (PUT/GET), and executing SQL.
