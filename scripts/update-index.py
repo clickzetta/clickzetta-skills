@@ -3,6 +3,44 @@
 
 import json, os, re
 
+def extract_description(content):
+    """Extract the first paragraph of the frontmatter `description` as a single line.
+
+    Handles block scalars (| and >), plain, and quoted styles. Returns the
+    summary paragraph (up to the first blank line) collapsed to one line, so
+    multi-line descriptions are not truncated mid-sentence.
+    """
+    fm = re.match(r'---\s*\n(.*?)\n---', content, re.DOTALL)
+    if not fm:
+        return ''
+    block = fm.group(1)
+    m = re.search(r'^description:[ \t]*(.*)$', block, re.MULTILINE)
+    if not m:
+        return ''
+    inline = m.group(1).strip()
+    lines = block[m.end():].lstrip('\n').split('\n')
+
+    if inline and inline[0] not in '|>':
+        # Plain or quoted single-line start; may continue onto indented lines.
+        parts = [inline]
+        for ln in lines:
+            if re.match(r'^\w[\w-]*:', ln) or ln.strip() == '':
+                break
+            parts.append(ln.strip())
+        text = ' '.join(parts)
+    else:
+        # Block scalar (| or >): collect indented lines until first blank line.
+        parts = []
+        for ln in lines:
+            if ln.strip() == '' or re.match(r'^\w[\w-]*:', ln):
+                break
+            parts.append(ln.strip())
+        text = ' '.join(parts)
+
+    text = text.strip().strip('"').strip("'").strip()
+    return re.sub(r'\s+', ' ', text)
+
+
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(root)
 
@@ -14,11 +52,7 @@ for d in sorted(os.listdir('.')):
     if not os.path.exists(skill_md):
         continue
     content = open(skill_md).read()
-    # Extract first line of description from frontmatter
-    desc_match = re.search(r'description:\s*\|?\s*\n(.*?)(?=\n\s*\w+:|\n---)', content, re.DOTALL)
-    if not desc_match:
-        desc_match = re.search(r'description:\s*[>|]?\s*\n?\s*(.+?)(?=\n\s*\w+:|\n---)', content)
-    desc = desc_match.group(1).strip().split('\n')[0].strip() if desc_match else ''
+    desc = extract_description(content)
     # Collect files
     files = ['SKILL.md']
     refs_dir = os.path.join(d, 'references')
