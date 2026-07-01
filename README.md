@@ -6,7 +6,7 @@ The repository turns ClickZetta operational knowledge into reusable routing rule
 
 ## Repository Contents
 
-The repository currently contains 26 top-level `clickzetta-*` skills, one official documentation knowledge base, and one independent skill (`singsight_install`):
+The repository currently contains 27 top-level `clickzetta-*` skills, one official documentation knowledge base, and one independent skill (`singsight_install`):
 
 - `lakehouse-doc-en`: English ClickZetta Lakehouse official documentation index and reference corpus.
 - `clickzetta-*`: task-oriented skills for ingestion, Studio tasks, dbt, modeling, dynamic tables, connectors, external integrations, governance, and operations.
@@ -36,6 +36,7 @@ The repository currently contains 26 top-level `clickzetta-*` skills, one offici
 | Modeling and analytics | [clickzetta-dynamic-table](./clickzetta-dynamic-table/) | Dynamic Table creation, refresh configuration, incremental computation, ALTER workflows, refresh history, and best practices. |
 | Modeling and analytics | [clickzetta-data-science](./clickzetta-data-science/) | Data science workflows using SQL, ZettaPark, notebooks, EDA, feature engineering, inference, and vector retrieval. |
 | Modeling and analytics | [clickzetta-semantic-view](./clickzetta-semantic-view/) | Semantic View modeling with logical tables, dimensions, metrics, filters, and semantic layer queries. |
+| SDK and integrations | [clickzetta-cmt-api](./clickzetta-cmt-api/) | CMT v2 API operations: discover migration sources, plan and start runs, monitor progress, verify outcomes, inspect run logs, and clean up failed runs. |
 | SDK and integrations | [clickzetta-zettapark](./clickzetta-zettapark/) | ZettaPark DataFrame API, Session setup, reads, transformations, writes, file operations, and SQL execution. |
 | SDK and integrations | [clickzetta-spark-flink-connector](./clickzetta-spark-flink-connector/) | Spark Connector reads/writes and Flink Write Connector CDC or append-only writes. |
 | SDK and integrations | [clickzetta-external-function](./clickzetta-external-function/) | External Functions, Python/Java UDF packaging, and cloud function integration. |
