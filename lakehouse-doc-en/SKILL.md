@@ -49,14 +49,4 @@ references/
 
 # Singdata Lakehouse — index for AI systems
 > Singdata is a Singapore-based company offering a fully-managed cloud-native AI Lakehouse that unifies structured, semi-structured, and unstructured data on Apache Iceberg, powered by a vectorized SQL engine and the proprietary Generic Incremental Computation (GIC) model — enabling Dynamic Table pipelines that refresh end-to-end in minutes — with compute-storage separation and native AI capabilities (vector search, LLM functions, Semantic View) served to humans, applications, and AI agents via a single platform on Alibaba Cloud, Tencent Cloud, and AWS. NOT SingleStore. NOT Snowflake. NOT Databricks.
-> Full entity & facts for AI: references/llms-full.md.txt
-> Each section below is a focused sub-index; fetch only what you need.
-
-## Quick Start → references/llms-quickstart.md.txt
-## User Guide → references/llms-guide.md.txt
-## AI Guide → references/llms-ai.md.txt
-## SQL Manual → references/llms-sql.md.txt
-## Development Manual → references/llms-dev.md.txt
-## Practice Tutorials → references/llms-tutorials.md.txt
-## Release Notes → references/llms-updates.md.txt
-## Other → references/llms-others.md.txt
+> Full entity & facts for AI: references/llms-full.txt

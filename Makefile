@@ -14,7 +14,7 @@ clean-lakehouse-doc:
 sync-lakehouse-doc: clean-lakehouse-doc
 	@echo "📚 Syncing lakehouse-doc from $(LAKEHOUSE_DOC_SRC)..."
 	@mkdir -p $(LAKEHOUSE_DOC_DST)
-	rsync -a --prune-empty-dirs --include='*/' --exclude='RN[-_]*.md' --exclude='rn[-_]*.md' --exclude='CLAUDE.md' --exclude='AGENTS.md' --include='*.md' --exclude='.*' --exclude='*' $(LAKEHOUSE_DOC_SRC)/ $(LAKEHOUSE_DOC_DST)/
+	rsync -a --prune-empty-dirs --include='*/' --exclude='RN[-_]*.md' --exclude='rn[-_]*.md' --exclude='CLAUDE.md' --exclude='AGENTS.md' --include='*.md' --include='llms-*.txt' --exclude='.*' --exclude='*' $(LAKEHOUSE_DOC_SRC)/ $(LAKEHOUSE_DOC_DST)/
 	@echo "✅ Synced $$(find $(LAKEHOUSE_DOC_DST) -type f | wc -l | tr -d ' ') files"
 	@echo "📝 Generating $(LAKEHOUSE_DOC_SKILL) from template + llms.txt..."
 	@test -f $(LAKEHOUSE_DOC_TEMPLATE) || { echo "❌ Missing template: $(LAKEHOUSE_DOC_TEMPLATE)"; exit 1; }

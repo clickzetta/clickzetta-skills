@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Rewrite https://www.singdata.com/documents/<slug> URLs to references/<file> paths.
+# Rewrite https://www.singdata.com/documents/<slug>[.txt] URLs to references/<file> paths.
 # Reads llms.txt on stdin, writes transformed content to stdout.
 # For slugs whose <slug>.md doesn't exist under references/, use explicit overrides.
 set -euo pipefail
@@ -26,16 +26,22 @@ override_for() {
 
 content=$(cat)
 
-slugs=$(printf '%s' "$content" \
-  | grep -oE 'https://(www\.)?singdata\.com/documents/[A-Za-z0-9_-]+' \
-  | sed 's|.*/||' \
+content=$(printf '%s' "$content" \
+  | sed -E '/^> Each section below is a focused sub-index; fetch only what you need\.$/d; /^## (Quick Start|User Guide|AI Guide|SQL Manual|Development Manual|Practice Tutorials|Release Notes|Other) → https:\/\/(www\.)?singdata\.com\/documents\/llms-[A-Za-z0-9_-]+\.txt$/d')
+
+urls=$(printf '%s' "$content" \
+  | grep -oE 'https://(www\.)?singdata\.com/documents/[A-Za-z0-9_-]+(\.txt)?' \
   | sort -u)
 
-while IFS= read -r slug; do
-  [[ -z "$slug" ]] && continue
+while IFS= read -r url; do
+  [[ -z "$url" ]] && continue
+  name="${url##*/}"
+  slug="${name%.txt}"
   override=$(override_for "$slug")
   if [[ -n "$override" ]]; then
     target="references/$override"
+  elif [[ "$name" == *.txt && -f "$REFS_DIR/$name" ]]; then
+    target="references/$name"
   elif [[ -f "$REFS_DIR/$slug.md" ]]; then
     target="references/$slug.md"
   else
@@ -48,7 +54,8 @@ while IFS= read -r slug; do
     fi
   fi
   esc_target=${target//\//\\/}
-  content=$(printf '%s' "$content" | sed "s|https://www\.singdata\.com/documents/${slug}|${esc_target}|g; s|https://singdata\.com/documents/${slug}|${esc_target}|g")
-done <<< "$slugs"
+  escaped_url=$(printf '%s' "$url" | sed 's/[.[\*^$()+?{}|]/\\&/g')
+  content=$(printf '%s' "$content" | sed -E "s|${escaped_url}|${esc_target}|g")
+done <<< "$urls"
 
 printf '%s' "$content"
