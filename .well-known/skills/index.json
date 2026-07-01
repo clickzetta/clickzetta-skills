@@ -2,7 +2,7 @@
   "skills": [
     {
       "name": "clickzetta-ai-function",
-      "description": "Use ClickZetta built-in AI functions: AI_COMPLETE (call LLMs) and AI_EMBEDDING (text vectors). Covers CREATE API CONNECTION (TYPE ai_function), AI_COMPLETE, AI_EMBEDDING. Keywords: AI_COMPLETE, AI_EMBEDDING, LLM, text embedding, semantic search, built-in AI function",
+      "description": "Use ClickZetta built-in AI functions: AI_COMPLETE (call LLMs) and AI_EMBEDDING (text vectors).",
       "files": [
         "SKILL.md",
         "references/ai-function-ddl.md"
@@ -10,14 +10,14 @@
     },
     {
       "name": "clickzetta-batch-sync-pipeline",
-      "description": "Create and manage ClickZetta Lakehouse batch sync tasks, supporting both single-table and multi-table modes. Single-table mode is suitable for simple source-to-target table sync; multi-table mode supports full database mirror, multi-table mirror, and sharded table merge. Triggered when the user says \"batch sync\", \"offline sync\", \"sync database to Lakehouse\", \"full database migration\", \"multi-table sync\", \"periodic sync\", \"scheduled data sync\", \"sharded table merge\", \"offline data migration\". Covers single-table/multi-table batch sync task creation, data source configuration, column mapping, sync rules, scheduling, deployment, and task operations — all ClickZetta Studio specific logic. Keywords: batch sync, offline sync, full load, mirror, multi-table sync, scheduled sync",
+      "description": "Create and manage ClickZetta Lakehouse batch sync tasks, supporting both single-table and multi-table modes.",
       "files": [
         "SKILL.md"
       ]
     },
     {
       "name": "clickzetta-cdc-sync-pipeline",
-      "description": "Create and manage ClickZetta Lakehouse multi-table real-time sync (CDC) tasks, syncing MySQL/PostgreSQL databases to Lakehouse. Three sync modes: full database mirror, multi-table mirror, sharded table merge. Binlog/WALs-based with full load + incremental sync. Triggered when the user says \"multi-table real-time sync\", \"full database sync\", \"database mirror\", \"CDC full database\", \"multi-table CDC\", \"sharded table merge\", \"MySQL full database sync\", \"PostgreSQL full database sync\", \"database migration\", \"sync operations\", \"sync SOP\", \"Binlog position expired\", \"full re-sync\", \"add sync table\". Covers source DB preparation, sync mode selection, task deployment, operations SOP, monitoring/alerting, and troubleshooting — all ClickZetta Studio specific logic. Keywords: CDC, real-time sync, MySQL, PostgreSQL, change data capture, mirror, merge, multi-table",
+      "description": "Create and manage ClickZetta Lakehouse multi-table real-time sync (CDC) tasks, syncing MySQL/PostgreSQL databases to Lakehouse.",
       "files": [
         "SKILL.md",
         "references/troubleshooting.md"
@@ -34,14 +34,14 @@
     },
     {
       "name": "clickzetta-data-ingest-pipeline",
-      "description": "Router skill: selects the best data ingestion method for ClickZetta Lakehouse based on data source, latency, sync scope, and continuity requirements. Routes to specialized skills: Kafka Pipe, OSS/S3/COS Pipe, Studio batch sync, Studio real-time sync, Studio CDC, file/URL import, or programmatic ingestion guidance. Trigger: user wants to get external data INTO Lakehouse but hasn't chosen a method, OR asks which ingestion approach fits their scenario. Covers: Kafka, MySQL, PostgreSQL, SQL Server, TiDB, OSS, S3, COS, local files, URLs, programmatic application writes, Python/ZettaPark. Does NOT cover: querying data, pipeline monitoring/diagnosis, Dynamic Table tuning, internal table transformations, or data export. Keywords: data ingestion, import, sync, ETL, migrate, load data, ingest, pipeline selection",
+      "description": "Router skill: selects the best data ingestion method for ClickZetta Lakehouse based on data source, latency, sync scope, and continuity requirements.",
       "files": [
         "SKILL.md"
       ]
     },
     {
       "name": "clickzetta-data-science",
-      "description": "End-to-end data science workflow guide for ClickZetta Lakehouse. Covers environment setup (Python 3.10+, Jupyter, ZettaPark), project structure, data discovery and quality assessment, feature engineering (SQL + ZettaPark), and model inference deployment (BITMAP profiling, UDF batch inference, vector search). Trigger when the user wants to do data science, ML, or analytical work using ClickZetta Lakehouse — connecting Jupyter to Lakehouse, doing EDA, building features, running ML inference, user profiling, audience segmentation, or batch scoring. Keywords: data science, ML, ZettaPark, Jupyter, feature engineering, EDA, profiling, inference",
+      "description": "End-to-end data science workflow guide for ClickZetta Lakehouse.",
       "files": [
         "SKILL.md",
         "references/bitmap-profile.md",
@@ -54,7 +54,7 @@
     },
     {
       "name": "clickzetta-dbt-modeling",
-      "description": "dbt-clickzetta data modeling wizard. Autonomously discovers Lakehouse data sources, infers modeling strategies, generates sources.yml and model files, and runs the full test suite. Presents choices rather than blank forms — explores data first, then proposes a justified plan for user confirmation. Trigger when the user wants to turn raw Lakehouse data into usable analytical tables — mentions dbt (dbt modeling, dbt model, sources.yml, incremental, dbt run, dbt test), wants ETL transformation, dimension/fact tables, or asks \"how do I turn these tables into a queryable dataset\". Keywords: dbt, dbt modeling, sources.yml, incremental, dbt run, dbt test, dimension table, fact table, ETL",
+      "description": "dbt-clickzetta data modeling wizard.",
       "files": [
         "SKILL.md",
         "references/grant-patterns.md",
@@ -65,7 +65,7 @@
     },
     {
       "name": "clickzetta-dbt-project-setup",
-      "description": "dbt-clickzetta project initialization wizard. Helps build a dbt project from scratch connected to ClickZetta Lakehouse: installation verification, profiles.yml configuration, layering standards, and dbt_project.yml generation. Hands off to clickzetta-dbt-modeling after completion. Trigger when the user wants to build a data warehouse or start a dbt project in ClickZetta — \"I want to build a data warehouse with dbt\", \"dbt beginner guide\", \"dbt project init\", \"dbt from scratch\", \"how to connect dbt to ClickZetta\", \"dbt profiles configuration\", \"how do I write profiles.yml\". Keywords: dbt, project setup, profiles.yml, dbt-clickzetta, initialization, ELT, data warehouse setup",
+      "description": "dbt-clickzetta project initialization wizard.",
       "files": [
         "SKILL.md",
         "references/dbt-clickzetta-adapter.md",
@@ -74,7 +74,7 @@
     },
     {
       "name": "clickzetta-dbt-studio-pipeline",
-      "description": "Publish all dbt models to Studio as assets and configure scheduled execution. All dbt model SQL code is centrally managed in Studio; models needing periodic execution get scheduling configuration. Reads dbt manifest.json, rewrites incremental SQL for scheduling parameters, guides user confirmation, then deploys automatically. Trigger when the user wants dbt models to run or be scheduled in Studio — mentions \"publish dbt to Studio\", \"dbt scheduling\", \"dbt asset management\", \"dbt manifest\", \"dbt Studio tasks\", \"dbt pipeline deployment\", or asks \"how do I schedule dbt\". Keywords: dbt Studio, publish dbt, dbt scheduling, dbt manifest, Studio asset, dbt deployment",
+      "description": "Publish all dbt models to Studio as assets and configure scheduled execution.",
       "files": [
         "SKILL.md",
         "references/parameter-guide.md",
@@ -83,7 +83,7 @@
     },
     {
       "name": "clickzetta-dw-modeling",
-      "description": "ClickZetta Lakehouse data warehouse modeling wizard. Autonomously explores data landscape, then presents justified recommendations — never asks questionnaire-style questions. Covers three layering patterns: Traditional DW (ODS/DWD/DWS/ADS), Medallion (Bronze/Silver/Gold), and hybrid. Pipeline and modeling designed together — DDL and pipeline config output simultaneously. Core principle: use Dynamic Table for aggregation layers, not Materialized View. Trigger when the user says: \"data warehouse modeling\", \"layering design\", \"ODS/DWD/DWS\", \"Medallion\", \"Bronze/Silver/Gold\", \"fact table\", \"dimension table\", \"star schema\", \"layered architecture\", \"modeling wizard\", \"build a data warehouse\", \"DW architecture\", \"design my data layers\". Keywords: data warehouse, modeling, star schema, medallion, ODS, DWD, DWS, ADS, layering",
+      "description": "ClickZetta Lakehouse data warehouse modeling wizard.",
       "files": [
         "SKILL.md",
         "references/modeling-patterns.md"
@@ -91,14 +91,14 @@
     },
     {
       "name": "clickzetta-dynamic-table",
-      "description": "ClickZetta Dynamic Table usage guide and routing hub. Covers general consultation (introduction, best practices, performance, incremental configuration), creation guidance (SQL support matrix, refresh history), and modification (ALTER, suspend/resume, add/drop columns). SQL conversion requests are delegated to the sql-to-dt sub-skill. Trigger when the user says: \"dynamic table\", \"DT introduction\", \"dynamic table best practices\", \"dynamic table performance\", \"incremental computation\", \"REFRESH INTERVAL\", \"create dynamic table\", \"dynamic table scheduling\", \"dynamic table alerts\", \"ALTER DYNAMIC TABLE\". Keywords: dynamic table, DT, REFRESH INTERVAL, incremental, suspend, resume, sql-to-dt",
+      "description": "ClickZetta Dynamic Table usage guide and routing hub.",
       "files": [
         "SKILL.md"
       ]
     },
     {
       "name": "clickzetta-external-function",
-      "description": "Create and use External Functions (custom UDFs) in ClickZetta Lakehouse using Python or Java, deployed on Alibaba Cloud FC / Tencent Cloud SCF / AWS Lambda. Covers CREATE API CONNECTION (TYPE CLOUD_FUNCTION), CREATE EXTERNAL FUNCTION, Python/Java UDF code structure and packaging. Keywords: external function, UDF, Python UDF, Java UDF, custom function, cloud function",
+      "description": "Create and use External Functions (custom UDFs) in ClickZetta Lakehouse using Python or Java, deployed on Alibaba Cloud FC / Tencent Cloud SCF / AWS Lambda.",
       "files": [
         "SKILL.md",
         "references/external-function-ddl.md"
@@ -106,14 +106,14 @@
     },
     {
       "name": "clickzetta-file-import-pipeline",
-      "description": "Import data from URLs, local files, or Volume paths into ClickZetta tables. Covers the complete workflow: file download, format inference, table creation, COPY INTO import, and result verification. Includes ClickZetta USER VOLUME mechanism, COPY INTO syntax, format inference rules, and write mode semantics.",
+      "description": "Import data from URLs, local files, or Volume paths into ClickZetta tables.",
       "files": [
         "SKILL.md"
       ]
     },
     {
       "name": "clickzetta-kafka-ingest-pipeline",
-      "description": "Build Kafka-to-Lakehouse ingestion pipelines using READ_KAFKA Pipe or Kafka External Table + Table Stream. Covers: connection validation, JSON/CSV parsing, Pipe DDL, SASL auth, VCluster sizing, latency monitoring, tuning. Trigger when the user says: \"Kafka ingestion\", \"Kafka Pipe\", \"read_kafka\", \"Kafka external table\", \"Kafka consumer\", \"message queue import\", \"Kafka backlog\", \"ingest from Kafka\", \"stream data to Lakehouse\", \"real-time Kafka pipeline\", \"Kafka to ODS\". Keywords: Kafka, Pipe, read_kafka, message queue, streaming ingestion, real-time ETL",
+      "description": "Build Kafka-to-Lakehouse ingestion pipelines using READ_KAFKA Pipe or Kafka External Table + Table Stream.",
       "files": [
         "SKILL.md",
         "references/kafka-pipe-syntax.md",
@@ -122,14 +122,14 @@
     },
     {
       "name": "clickzetta-oss-ingest-pipeline",
-      "description": "Build ClickZetta object storage (OSS/S3/COS) data ingestion pipelines, covering both continuous ingestion (PIPE) and one-time batch import scenarios. Continuous ingestion supports LIST_PURGE scan mode and EVENT_NOTIFICATION message notification mode; batch import supports Volume + INSERT INTO and Volume + COPY INTO methods. Triggered when user says \"object storage import\", \"OSS data pipeline\", \"S3 data import\", \"PIPE continuous ingestion\", \"auto file loading\", \"bucket data sync\", \"COS import\", \"batch import from OSS\", \"load data from OSS\", \"Volume import\". Includes PIPE continuous ingestion (two INGEST_MODEs), batch import (Volume + COPY/INSERT), Connection/Volume creation, monitoring and management — all ClickZetta-specific logic. Keywords: OSS, S3, COS, object storage, PIPE, COPY INTO, file ingestion",
+      "description": "Build ClickZetta object storage (OSS/S3/COS) data ingestion pipelines, covering both continuous ingestion (PIPE) and one-time batch import scenarios.",
       "files": [
         "SKILL.md"
       ]
     },
     {
       "name": "clickzetta-overview",
-      "description": "ClickZetta Lakehouse product overview: core concepts, object model, architecture, and Studio module introduction. Covers: Account/Instance/Workspace/Schema hierarchy, VCluster types and CRU billing, Dynamic Table, Table Stream CDC, Pipe, Synonym, permission system (RBAC/ACL), storage-compute separation, brand relationships (ClickZetta = Yunqi = Singdata), and Studio six modules. Trigger when user asks: \"what is a workspace\", \"what is a VCluster\", \"what is CRU\", \"Lakehouse architecture\", \"object hierarchy\", \"permission system\", \"compare concepts with Snowflake\", \"what is Studio\", \"storage-compute separation\", \"ClickZetta introduction\". Keywords: concepts, architecture, workspace, schema, VCluster, Studio, overview, object model",
+      "description": "ClickZetta Lakehouse product overview: core concepts, object model, architecture, and Studio module introduction.",
       "files": [
         "SKILL.md",
         "references/brands-and-endpoints.md",
@@ -139,21 +139,21 @@
     },
     {
       "name": "clickzetta-pipeline-review",
-      "description": "Comprehensive review and diagnosis of ClickZetta Lakehouse data pipelines. Starting from any entry point (task name / schema / table name / business domain keyword), autonomously discovers all pipeline objects (Studio tasks, Lakehouse tables, pipeline objects, run records), identifies missing scheduling dependencies, DDL idempotency issues, layer skipping, Dynamic Table anti-patterns, and other common problems. Delivers prioritized fix recommendations and executes them.",
+      "description": "Comprehensive review and diagnosis of ClickZetta Lakehouse data pipelines.",
       "files": [
         "SKILL.md"
       ]
     },
     {
       "name": "clickzetta-realtime-sync-pipeline",
-      "description": "Create and manage ClickZetta Lakehouse real-time sync tasks (single-table), syncing data from external sources to Lakehouse in real time. Supports Kafka, MySQL, PostgreSQL, and other data sources as the source, with Lakehouse as the target. Real-time sync tasks are continuously running streaming tasks — no scheduling required; they start running upon submission. Triggered when the user says \"Studio real-time sync\", \"realtime sync\", \"single-table CDC sync\", \"real-time data sync\", \"Kafka real-time sync to Lakehouse\", \"MySQL single-table real-time sync\", \"single-table real-time sync\", \"real-time data migration\". Covers real-time sync task creation, data source configuration, column mapping (including JSONPath computed columns), deployment, and operations — all ClickZetta Studio specific logic. Keywords: real-time sync, single table, Kafka source, MySQL source, streaming, CDC",
+      "description": "Create and manage ClickZetta Lakehouse real-time sync tasks (single-table), syncing data from external sources to Lakehouse in real time.",
       "files": [
         "SKILL.md"
       ]
     },
     {
       "name": "clickzetta-semantic-view",
-      "description": "Create and query ClickZetta Lakehouse Semantic Views. A Semantic View is a schema-level logical data model object that encapsulates complex multi-table JOINs and aggregation logic into a business-friendly semantic layer by declaring logical tables, dimensions, metrics, and filters. Query using the semantic_view() function without writing JOINs manually. Currently in invite-only preview (since version 1.3). Triggered when user says \"create semantic view\", \"semantic view\", \"semantic layer\", \"define metrics\", \"define dimensions\", \"how to use semantic_view()\", \"unified metric definitions\", \"business semantic model\", \"logical table\", \"DIMENSIONS\", \"METRICS\", \"FILTERS\", \"DROP SEMANTIC VIEW\", \"SHOW SEMANTIC VIEWS\". Keywords: semantic view, dimension, metric, logical model, unified metrics, semantic layer",
+      "description": "Create and query ClickZetta Lakehouse Semantic Views.",
       "files": [
         "SKILL.md",
         "references/semantic-view-reference.md"
@@ -161,7 +161,7 @@
     },
     {
       "name": "clickzetta-spark-flink-connector",
-      "description": "Write data to ClickZetta Lakehouse using the Spark Connector or Flink Write Connector. Covers Spark DataFrame read/write configuration (Maven dependencies, connection parameters, read/write code), Flink Table API writes (CDC mode igs-dynamic-table, append-only mode igs-dynamic-table-append-only), checkpoint configuration, buffer/flush tuning, and key constraints such as primary-key table limitations. Trigger when the user says \"Spark Connector\", \"Flink Connector\", \"Spark writes to Lakehouse\", \"Flink writes to Lakehouse\", \"spark-clickzetta\", \"igs-flink-connector\", \"Spark DataFrame write\", \"Flink CDC write\", \"Flink sink\", or \"spark.read.format clickzetta\". Keywords: Spark, Flink, DataFrame, connector, read, write, CDC, igs-dynamic-table",
+      "description": "Write data to ClickZetta Lakehouse using the Spark Connector or Flink Write Connector.",
       "files": [
         "SKILL.md",
         "references/flink.md",
@@ -170,7 +170,7 @@
     },
     {
       "name": "clickzetta-sql-migration",
-      "description": "Migration guide for SQL workloads moving to ClickZetta Lakehouse from Snowflake, Databricks, or Spark SQL. Covers object concept mapping, syntax differences, function mapping tables, MERGE INTO limitations, strict implicit type conversion, and migration pitfalls. For native ClickZetta SQL syntax reference the Lakehouse documentation. Triggered when the user mentions migration source platforms (Snowflake, Databricks, Spark SQL) together with ClickZetta, asks about specific functions/syntax (IFF, LISTAGG, FLATTEN, TARGET_LAG, APPLY CHANGES INTO, ZORDER, WITH RECURSIVE, WHEN NOT MATCHED BY SOURCE), or asks about compatibility/differences. Keywords: Snowflake migration, Databricks migration, Spark SQL migration, vs Snowflake, vs Spark, vs Databricks, syntax differences, function mapping, implicit type conversion",
+      "description": "Migration guide for SQL workloads moving to ClickZetta Lakehouse from Snowflake, Databricks, or Spark SQL.",
       "files": [
         "SKILL.md",
         "references/ddl-reference.md",
@@ -188,7 +188,7 @@
     },
     {
       "name": "clickzetta-sql-pipeline-manager",
-      "description": "Manage ClickZetta Lakehouse SQL pipeline objects: Dynamic Table, Materialized View, Table Stream, and Pipe. Covers full lifecycle: create, modify, suspend/resume, drop, and status inspection. SQL commands only — no Studio GUI involved.",
+      "description": "Manage ClickZetta Lakehouse SQL pipeline objects: Dynamic Table, Materialized View, Table Stream, and Pipe.",
       "files": [
         "SKILL.md",
         "references/dynamic-table.md",
@@ -201,7 +201,7 @@
     },
     {
       "name": "clickzetta-studio-task-manager",
-      "description": "Manage ClickZetta Lakehouse Studio tasks: task types (batch sync/multi-table batch sync/real-time sync/ multi-table real-time sync/data development), folder organization, cz-cli task commands, scheduling, dependency management, and troubleshooting. Implements \"separation of DDL and pipeline management\". Triggered when the user says \"create Studio task\", \"task folder\", \"task scheduling\", \"cz-cli task\", \"task dependency\", \"task failed\", \"task status\", \"ETL task orchestration\", \"task management\", \"DDL task\", \"scheduling DAG\", \"Studio task\", \"task types\", \"which sync to choose\". Keywords: Studio task, task management, cz-cli task, scheduling, DAG, DDL draft, ETL pipeline, task folder, task types",
+      "description": "Manage ClickZetta Lakehouse Studio tasks: task types (batch sync/multi-table batch sync/real-time sync/multi-table real-time sync/data development), folder organization, cz-cli task commands, scheduling, dependency management, and troubleshooting.",
       "files": [
         "SKILL.md",
         "references/engineering-sop.md",
@@ -210,21 +210,21 @@
     },
     {
       "name": "clickzetta-table-lineage",
-      "description": "Table lineage visualization tool for ClickZetta Lakehouse. Retrieves table dependency relationships and cost data by analyzing actual jobs (information_schema.job_history), exports CSV and embeds into an HTML template to generate an interactive lineage graph. Trigger when user says \"table lineage\", \"dependency graph\", \"data flow\", \"upstream/downstream analysis\", \"lineage visualization\", or \"pipeline visualization\". Keywords: table lineage, dependency graph, data flow, upstream, downstream, visualization",
+      "description": "Table lineage visualization tool for ClickZetta Lakehouse.",
       "files": [
         "SKILL.md"
       ]
     },
     {
       "name": "clickzetta-table-stream-pipeline",
-      "description": "Build and manage ClickZetta Table Stream change data capture pipelines. Covers end-to-end workflow from source table configuration, Stream creation, data consumption to incremental ETL. Includes change tracking setup, mode selection, offset management, metadata field usage, and idempotent consumption — all ClickZetta-specific logic.",
+      "description": "Build and manage ClickZetta Table Stream change data capture pipelines.",
       "files": [
         "SKILL.md"
       ]
     },
     {
       "name": "clickzetta-volume-manager",
-      "description": "Manage ClickZetta Lakehouse Volume objects for mounting object storage (OSS/COS/S3), querying files, and importing/exporting data. Covers creating External Volumes (OSS/COS/S3), User Volume file operations (PUT/GET/REMOVE), SELECT FROM VOLUME direct file queries, COPY INTO TABLE imports, COPY INTO VOLUME exports, and more. Triggered when users say \"create Volume\", \"mount OSS\", \"mount S3\", \"mount COS\", \"Volume management\", \"query OSS files\", \"query S3 files\", \"upload files to Volume\", \"PUT files\", \"GET files\", \"import data from Volume\", \"export to Volume\", \"COPY INTO VOLUME\", \"SELECT FROM VOLUME\", \"User Volume\", \"data lake files\", \"data export\", \"export data\", \"export CSV\", \"export Parquet\", \"COPY OVERWRITE INTO\". Keywords: Volume, OSS, COS, S3, mount, file query, COPY INTO, external storage",
+      "description": "Manage ClickZetta Lakehouse Volume objects for mounting object storage (OSS/COS/S3), querying files, and importing/exporting data.",
       "files": [
         "SKILL.md",
         "references/volume-ddl.md"
@@ -232,7 +232,7 @@
     },
     {
       "name": "clickzetta-zettapark",
-      "description": "Use the ZettaPark Python library to work with ClickZetta Lakehouse data. ZettaPark provides a pandas-like DataFrame API that translates Python operations into SQL for distributed execution in Lakehouse — no need to write SQL manually for data transformations. Covers Session creation, DataFrame construction and transformation (filter/select/join/groupBy), result collection (collect/to_pandas/show), writing tables (save_as_table), file operations (PUT/GET), and executing SQL.",
+      "description": "Use the ZettaPark Python library to work with ClickZetta Lakehouse data.",
       "files": [
         "SKILL.md",
         "references/zettapark-api.md"
