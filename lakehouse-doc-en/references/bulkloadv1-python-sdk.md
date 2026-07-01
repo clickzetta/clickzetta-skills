@@ -20,7 +20,7 @@ pip uninstall clickzetta-connector clickzetta-connector-python clickzetta-sqlalc
 pip show clickzetta-connector clickzetta-sqlalchemy clickzetta-ingestion-python clickzetta-ingestion-python-v2 clickzetta-connector-python
 ```
 
-Install the latest version (requires Python >= 3.7):
+Install the latest version (requires Python >= 3.10):
 
 ```bash
 pip install clickzetta-connector -U -i https://pypi.org/simple/
@@ -68,7 +68,7 @@ conn = connect(
     instance='your_instance',
     workspace='your_workspace',
     schema='public',
-    vcluster='default'
+    vcluster='DEFAULT'
 )
 
 bulkload_stream = conn.create_bulkload_stream(schema='public', table='bulkload_test')
@@ -96,7 +96,7 @@ bulkload_stream.commit()
        instance='your_instance',
        workspace='your_workspace',
        schema='public',
-       vcluster='default'
+       vcluster='DEFAULT'
    )
    ```
 
@@ -104,8 +104,8 @@ bulkload_stream.commit()
 | --------- | --------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | username  | Y        | Username                                                                                                                             |
 | password  | Y        | Password                                                                                                                              |
-| service   | Y        | The address to connect to Lakehouse, e.g., <region\_id>.api.singdata.com. You can find the JDBC connection string in Lakehouse Studio under **Management** -> **Workspace**![](../.topwrite/assets/image_1728887857029.png) |
-| instance  | Y        | You can find the JDBC connection string in Lakehouse Studio under **Management** -> **Workspace**![](../.topwrite/assets/image_1729051500396.png)                                        |
+| service   | Y        | The address to connect to Lakehouse, e.g., <region\_id>.api.singdata.com. You can find the JDBC connection string in Lakehouse Studio under **Management** -> **Workspace**. |
+| instance  | Y        | You can find the instance ID in the JDBC connection string in Lakehouse Studio under **Management** -> **Workspace**.                                        |
 | workspace | Y        | Workspace to use                                                                                                                         |
 | vcluster  | Y        | VC to use                                                                                                                           |
 | schema    | Y        | Schema name to access                                                                                                                      |

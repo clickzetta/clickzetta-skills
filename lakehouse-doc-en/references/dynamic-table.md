@@ -8,7 +8,7 @@ Dynamic Table DDL commands are used to create, modify, query, and delete dynamic
 
 | Page | Description |
 |------|-------------|
-| [Dynamic Table Introduction](dynamic-table-introduce.md) | How dynamic tables work, the incremental refresh mechanism, and differences from materialized views |
+| [Dynamic Table Introduction](sql_dynamic_table_guide.md) | How dynamic tables work, the incremental refresh mechanism, and differences from materialized views |
 | [CREATE DYNAMIC TABLE](create-dynamic-table.md) | Create a dynamic table, specifying refresh interval and defining SQL |
 | [ALTER DYNAMIC TABLE](alter-dynamic-table.md) | Modify refresh interval, suspend/resume refresh, rename |
 | [DYNAMIC TABLE DML](dynamic-table-dml-sql.md) | DML operations supported by dynamic tables (direct writes allowed in some scenarios) |

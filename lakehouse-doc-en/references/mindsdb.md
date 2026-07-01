@@ -1,11 +1,11 @@
-# Introduction to MindsDB
+# Connecting MindsDB to Singdata Lakehouse
 
 > ⚠️ **Note:** If your goal with MindsDB is to call AI models on your data, Singdata Lakehouse provides native AI capabilities — no need to deploy or maintain a MindsDB service:
 >
 > | Scenario | Recommended Solution | Description |
 > |----------|---------------------|-------------|
 > | Call large language models (LLMs) in SQL | [AI Gateway + AI_COMPLETE](lakehouseai-overview.md) | Call LLMs directly in SQL — text classification, summarization, and extraction in a single SQL statement |
-> | Call external AI services (Alibaba Cloud, Tencent Cloud, etc.) | [External Function](remotefunction-intro.md) | Register HTTP APIs as SQL functions and call them directly in queries |
+> | Call external AI services (Alibaba Cloud, Tencent Cloud, etc.) | [External Function](remotefunction-on-acr.md) | Register HTTP APIs as SQL functions and call them directly in queries |
 > | Vector semantic search, RAG retrieval | [Vector Index](vector-search.md) | Native vector storage and ANN retrieval, no additional vector database needed |
 > | Full-text search + semantic search combined | [Inverted Index + Vector Index](inverted-index.md) | Hybrid retrieval, suitable for knowledge base Q&A scenarios |
 > | Python data processing + AI inference | [Zettapark](zettapark-quick-start.md) | PySpark-like interface for running Python scripts on Lakehouse |

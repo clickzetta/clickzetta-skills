@@ -22,7 +22,7 @@ Open the browser and go to http://localhost:8088.
 ### Local Installation
 
 1. Install `clickzetta-sqlalchemy`:
-   `clickzetta-sqlalchemy` needs to be installed in an environment with Python version 3.7 or above.
+   `clickzetta-sqlalchemy` needs to be installed in an environment with Python version 3.10 or above.
 Installation command (ensure the current environment does not need to use clickzetta-sqlalchemy and clickzetta-connector, uninstall them to avoid dependency conflicts):
 ```
 pip uninstall -y clickzetta-sqlalchemy clickzetta-connector && pip install clickzetta-connector -U

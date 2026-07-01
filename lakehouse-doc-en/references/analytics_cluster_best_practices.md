@@ -92,7 +92,7 @@ Singdata Lakehouse supports elastic scaling of compute resources in two dimensio
 * The analytical Virtual Cluster supports multiple Replica features, with the default number of Replicas being 1. This can be modified during or after creation. Each Replica supports a specific query concurrency (determined by the MAX\_CONCURRENCY parameter, which defaults to 8). The total concurrency supported by each Virtual Cluster is: Replica Number \* MAX\_CONCURRENCY
 ![](.topwrite/assets/image_1718616850891.png)
   * Concurrency settings: Increasing concurrency may reduce the query performance of a single query when the size of the Virtual Cluster is fixed. In most cases, it is recommended that the concurrency limit does not exceed 100. The concurrency value is recommended to be a multiple of 8. An example is as follows:
-```SQL
+```sql
 --Create an analytical VC, enable elastic concurrency (min_replicas=1 max_replicas=3)
 create vcluster if not exists your_ap_vc vcluster_size='XSMALL' vcluster_type='Analytics'  AUTO_RESUME=TRUE AUTO_SUSPEND_IN_SECOND=300 min_replicas=1 max_replicas=3 ;
 —Modify the replicas parameter to increase the number of horizontal scaling replicas to enhance elastic concurrency
@@ -234,7 +234,7 @@ Suitable Usage Scenarios
 ## Usage Method
 
 Set the data object range for PRELOAD for specified computing resources, supporting enumeration and wildcard methods.
-```SQL
+```sql
 -- Set the data objects to PRELOAD when creating the compute cluster
 
 create vcluster if not exists <name>
@@ -247,9 +247,13 @@ PRELOAD_TABLES="s1.t1,s1.t2";
 
 ALTER VCLUSTER <name> SET PRELOAD_TABLES='schema01.tb01,schema01.tb02,schema01.tb03';
 ```
-View the current Preload configuration of computing resources:
+Use the following query to view the current Preload configuration of a VC:
 
-![](.topwrite/assets/image_1718616600431.png)
+```sql
+DESC VCLUSTER <name>;
+```
+
+The output includes a `preload_tables` field listing all configured preload targets, for example: `qn_demo.lineitem, schema01.*`.
 
 ## **Preload eliminates query jitter for new data in real-time analysis scenarios**
 
@@ -267,10 +271,10 @@ View the current Preload configuration of computing resources:
 
 #### Monitoring via **Web-UI**
 
-![](.topwrite/assets/image_1718616622179.png)
+Navigate to **Computing Resources** in Studio. Each VC displays its current state (RUNNING / SUSPENDED), replica count, and concurrency usage at a glance.
 
 #### Monitoring via **SQL API**
-```SQL
+```sql
 desc vcluster quning_ap_vc;
 ```
 | name                              | QUNING\_AP\_VC                                                          |
@@ -301,26 +305,27 @@ Scenario: Job failure, long-running jobs, monitoring jobs for specific users/VC,
 
 #### Monitoring through **Web-UI**
 
-![](.topwrite/assets/image_1718616681911.png)
+Navigate to **Jobs** in Studio. The job list shows each job's status, VC, submitter, start/end time, and duration. Use the filter bar to narrow results by status, VC name, or user.
 
 Add filter conditions: such as filtering specific jobs/job groups by TAG
-```SQL
+```sql
 -- Set query_tag at the session level
 set query_tag='aa';
 select 1;
 ```
-![](.topwrite/assets/image_1718616691133.png)
+
+In the Studio job list, enter the tag value in the **TAG** filter field to show only matching jobs.
 
 #### Monitor Recent Job Execution Success/Queue/Long Running Status via SHOW JOBS Command
 
 The SHOW JOBS command retrieves ongoing and recently completed jobs within the workspace's computing resources.
-```SQL
+```sql
 SHOW  JOBS  [IN VCLUSTER vc_name] [WHERE where_condition ] [LIMIT num];
 ```
 Note:
 
 List the most recently executed jobs, including both completed and running jobs. Users can use this command to list jobs they have permission for. By default, it displays tasks submitted in the last 7 days, with a maximum query limit of 10,000 entries.
-```SQL
+```sql
 -- View the recent job history within the Workspace
 show jobs limit 100;
 
@@ -355,7 +360,7 @@ limit 100;
 #### View Historical **Execution Jobs** through INFORMATION\_SCHEMA
 
 The data dictionary view of INFORMATION\_SCHEMA has a delay of about 10 minutes, which is suitable for analyzing long-term historical job data. For online real-time job analysis, use the SHOW JOBS command to obtain it.
-```SQL
+```sql
 -- View job history in the current workspace
 select * from information_schema.job_history limit 100;
 
@@ -363,5 +368,5 @@ select * from information_schema.job_history limit 100;
 select * from sys.information_schema.job_history limit 100;
 ```
 
-![](.topwrite/assets/image_1718616725992.png)
+Key columns returned include: `job_id`, `job_name`, `vcluster_name`, `creator`, `start_time`, `end_time`, `state`, `error_message`.
 

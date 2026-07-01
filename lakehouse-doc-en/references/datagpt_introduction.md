@@ -1,129 +1,149 @@
-# Conversational AI Data Analysis Tool: Analytics Agent
+# Data Analytics Agent (Analytics Agent)
 
-Analytics Agent is a next-generation agentic analysis assistant built on cloud-native Lakehouse architecture and other data platforms (formerly known as DataGPT). It deeply integrates AI cognitive capabilities with enterprise-grade data, going beyond simple query functionality. The agent can dynamically construct AI dashboards through natural language, providing imaginative visualization flexibility that surpasses traditional rigid BI tools. It also proactively embeds contextual AI insights into key chart metrics, instantly revealing anomalies and trends, and uncovering hidden data insights within static reports.
+Analytics Agent is a built-in enterprise-grade conversational data analytics Agent in Singdata Lakehouse. Business users ask questions in natural language, and the system automatically selects data, generates SQL, and returns tables and charts — no SQL required, no need to know table names.
 
-^
+It is not just "querying a database in plain language". Analytics Agent organizes data assets, field semantics, metric definitions, knowledge documents, Answer Builders, permissions, and auditing in Lakehouse, enabling large language models to complete analyses within a controlled enterprise context rather than freely accessing all data.
 
-![](/.topwrite/assets/datagpt_1.png)
-
-^
-
-## When to Use Analytics Agent
-
-| Scenario | Suitable? |
-| ---------------------------------------------------- | ------------------------------------ |
-| Business users querying data and viewing trends via natural language | ✅ Core use case |
-| Quickly generating AI dashboards without writing SQL | ✅ |
-| Automatic anomaly detection and alerting | ✅ |
-| Precise SQL logic control, complex ETL | ❌ Use Studio SQL tasks |
-| Vector search / RAG Q&A | ❌ Use vector search + AI functions |
+![](.topwrite/assets/anim-13-analytics-agent.svg)
 
 ## Quick Start
 
-**① Activate the service** (1 min)
+**① Activate the service** (1 minute)
 
 Find the Analytics Agent product card on the management center homepage and click "Free Activation". New users are recommended to check "Also activate a Lakehouse instance as the default data source" — the system will automatically configure sample data.
 
-**② Try with sample data** (5 min)
+**② Try with sample data** (5 minutes)
 
-Go to the product homepage, find the analysis domain marked "Sample", click "Start Analysis", and ask questions in natural language:
-- "What is the average second-hand housing price by district?"
-- "Which district has the highest listing volume?"
-- "Generate a housing price trend dashboard for me"
+Go to the product homepage, find the analysis domain marked "Sample", click "Start Analysis", and ask questions directly:
 
-**③ Connect your own data** (as needed)
+* "What is the average second-hand housing price by district?"
+* "Which district has the highest listing volume?"
 
-Add a data source (supports uploading Excel/CSV files or connecting Lakehouse data tables) → Create an analysis domain → Configure the semantic layer (business terms, metric definitions, table relationships, answer builders, knowledge documents, data annotations to help the Agent understand your business) → Start conversational analysis
+**③ Connect your own data** (completed by data developers)
 
-## Conceptual Framework:
+Add a data source → Create an analysis domain → Configure the semantic layer → Start conversational analysis. → [Detailed steps](datagpt_quickstart.md)
 
-**Core Concepts**:
-The core conceptual framework consists of two main components: Data Assets and Analysis Domains.
+Supported data sources: Lakehouse, Databricks, MySQL, StarRocks, and Excel/CSV uploads.
 
-**Data Assets**
-As the infrastructure for enterprise analytics, it encompasses all core elements available for intelligent analysis, enhanced through the Analytics Agent Semantic Layer:
+## When to Use
 
-* **Data Tables**: Structured basic data sources from Lakehouse.
+| Scenario                                                                   | Suitable?                                                                          |
+| -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Natural language queries, trend analysis, comparisons                      | ✅ Core use case                                                                    |
+| Quickly generating AI dashboards                                           | ✅                                                                                  |
+| Multi-department shared access with per-user data and permission isolation | ✅ Analysis domain + row-level permissions                                          |
+| Unifying high-frequency metric definitions                                 | ✅ Metrics + knowledge + Answer Builder                                             |
+| Precise SQL logic control, complex ETL                                     | ❌ Use Studio SQL tasks                                                             |
+| Vector search / RAG Q\&A                                                   | ❌ Use [Vector Search](vector_search_ai.md) + [AI Functions](AI_function_in_SQL.md) |
 
-* **Semantic Layer Elements**:
+## Core Concepts
 
-  * **Metric System**: Standardized measurement indicators built on data tables.
-  * **Business Terms**: Unified naming conventions and explanatory definitions designed to provide context for the agent.
 
-* **Dashboards**: Visual analytics panels built using AI based on the semantic layer and data tables.
 
-* **Documents**: A collection of knowledge documents supporting Agentic RAG-based Q&A.
+### Analysis Domain — Define Scope
 
-* **Indexes**: Indexes built on data table fields to accelerate retrieval.
+An analysis domain is the workspace for Q\&A and the **first layer of governance boundary**. A table that is not added to an analysis domain will not participate in Q\&A for that domain. It is recommended to create separate analysis domains for different business areas (sales, finance, operations) to avoid putting all tables and users into one large domain.
 
-:-: ![](/.topwrite/assets/DataGPT_2.png)
 
-^
 
-## User Roles and Responsibilities:
+### Semantic Layer — Define Meaning
 
-The Analytics Agent system is designed to serve two core user groups in data analysis scenarios: data developers and business analysts. These two types of users play unique and complementary roles in the process of extracting data value:
+The semantic layer lives inside the analysis domain and tells the model **what the enterprise's data means**.
 
-1. **Data Developers**: Lead the full data lifecycle management, including data ingestion, quality control, model building, and semantic layer design (covering metric systems and answer builders), while continuously optimizing the Q&A experience. They leverage system capabilities to prepare data for use by business analysts.
-2. **Business Analysts**: As the core users of the system, they explore data deeply through natural language interaction, quickly obtaining business insights and decision support. Through the feedback process, they communicate with data developers to further refine and explore data, gaining deeper understanding and insights.
+| Configuration   | Problem It Solves                                                                          |
+| --------------- | ------------------------------------------------------------------------------------------ |
+| Field semantics | What this field is called in the business, and whether it suits a dimension or measure     |
+| Virtual columns | When the underlying data lacks a ready-made field that needs to be derived or concatenated |
+| Metrics         | Unified calculation definitions for core KPIs                                              |
+| Answer Builder  | Fixed SQL templates for complex multi-table JOINs                                          |
+| Knowledge       | Business terms, synonyms, and metric definition explanations                               |
 
-## Technical Architecture:
 
-Multi-source and multi-type data enters the Lakehouse system through warehousing and data lake ingestion (when Lakehouse is chosen as the data engine):
 
-* Metadata is managed and access-controlled uniformly according to the data warehouse's permission system.
-* Data undergoes transformation processing and information extraction through our integrated Single Engine and AI engine.
-* Extraction results are stored in the form of tables, vectors, and inverted indexes, building an Agentic RAG Preparation Layer for the agent. These are then further processed by the Analytics Agent Semantic Layer, which performs automated feature analysis, knowledge graph construction, and index extraction.
-* Based on the DIKW model, the Agentic RAG layer provides "Information," while the Analytics Agent Semantic Layer elevates it to "Knowledge" by annotating, organizing, and summarizing context. This architecture enables the agent to autonomously plan and reason, laying a solid foundation for generative AI applications.
-* Agentic RAG: A Semantic Paradigm Shift
-  Analytics Agent transcends the linear "retrieve-then-generate" pipeline. By implementing Agentic RAG, we transform the LLM from a passive text generator into a proactive Reasoning Agent within the Analysis Domain.
-  * **LLM-Driven Understanding**: Rather than relying solely on vector distance (cosine similarity), Analytics Agent leverages the LLM's internal cognition to interpret user intent. The model determines "what is needed" rather than simply matching keywords.
+The relationship between the two: first define the scope with an analysis domain, then configure the semantic layer within the domain to define meaning. A complete trusted chain is: `Analysis domain isolation → Semantic layer configuration → Permissions / row-level permissions → NL Q&A → Charts / tables / SQL → Dashboards / scheduled tasks`.
 
-  * **Proactive Orchestration**: The agent acts as the central brain within the analysis domain. It autonomously decides which objects to interact with:
+→ [Usage Guide](datagpt-role-based-usage-guide.md) (all concepts and role responsibilities) · [Analysis Domain Planning Guide](datagpt-domain-planning-guide.md) · [Configuration Guide](datagpt_tutorial.md)
 
-    * Whether to query **Data Tables** via SQL
-    * Whether to read specific **Files**
-    * Whether to check **Metric** definitions
+## How It Works
 
-  * **Iterative Refinement**: If the initial retrieval information is insufficient, the agent self-corrects. It performs multi-step reasoning to obtain additional context, ensuring the final answer is comprehensive and accurate.
-    By internalizing retrieval logic into the LLM itself, Analytics Agent addresses the limitations of traditional RAG:
+Analytics Agent uses an Agentic RAG architecture, with the LLM actively planning and reasoning within a controlled context:
 
-  * **Semantic Fidelity**: We leverage the model's multi-dimensional understanding of business logic and nuances, breaking through the "ceiling" of standard vector search.
+1. **Understand intent** — Interprets the question and determines which tables to query and which metrics to read
+2. **Active orchestration** — Decides whether to execute SQL, read a file, or check a metric definition
+3. **Iterative refinement** — Self-corrects when initial results are insufficient, until the answer is complete
 
-  * **Complex Problem Solving**: The agent can handle multi-hop queries, synthesizing information from different data types (e.g., correlating a sales decline in a **dashboard** with a market report in a **file**).
+All LLMs are managed and controlled by **[AI Gateway](aigateway.md)**. Analytics Agent does not require a separate model API Key configuration.
 
-  * **Dynamic Adaptation**: As new assets are added to the analysis domain, the agent can adjust its reasoning strategies in real time, without relying on rigid, hard-coded index rules.
+***
 
-## Free Version Limitations:
+## Choose Your Path
 
-Thank you for using Singdata Analytics Agent. You are currently using the free version. To ensure you fully understand the product status, please note the following:
 
-1. Features in the current version are early-stage product features, and we reserve the right to optimize, adjust, or modify these features.
 
-2. Based on product development plans, some features may be upgraded to paid services or have their service scope adjusted. We will notify affected users in advance before such changes occur.
+## Analyze Data
 
-3. During the free usage period, the product features have the following limitations:
+**Goal: Ask questions, read results, use dashboards**
 
-&#x20;       ![](.topwrite/assets/20250114-221654.jpeg =258)
+[Question Asking Guide](datagpt-question-asking-guide.md) — How to ask better questions
+[Reading Analysis Results](datagpt-answer-reading-guide.md) — Understanding values, tables, and charts
+[Analysis Patterns Guide](datagpt-analysis-patterns-guide.md) — Lookup, comparison, trends, rankings
+[Using Data and Exploration](datagpt-data-exploration-guide.md) — See which tables and fields are in the current domain
+[Using Dashboards](datagpt-dashboard-bi-analyst-guide.md) — Save charts, share with your team
+[Handling Feedback](datagpt-feedback-loop-guide.md) — Submit corrections when answers are inaccurate
 
-If you have any suggestions for the product, please feel free to provide feedback through the following channels:
+→ [Analyst Guide](datagpt-analyst-guide.md) (complete directory)
 
-* **Phone**: 400-6767-862
 
-* **Email**: <service@singdata.com>
 
-* **Enterprise WeChat**: ![](.topwrite/assets/image_1736856313196.png =116)
+## Administration and Maintenance
 
-^
+**Goal: Configure the semantic layer, manage permissions, review audits**
 
-## Related Documentation
+[Analysis Domain Planning Guide](datagpt-domain-planning-guide.md) — Enterprise-level analysis domain division
+[Configure Analysis Domain](datagpt-domain-management-guide.md) — Create domains, add tables, configure field semantics
+[Metrics and Answer Builder](metrics_answer_build.md) — Lock in calculation definitions
+[Configure Knowledge](datagpt-knowledge-config-best-practices.md) — Business terms and metric definitions
+[Answer Builder Best Practices](datagpt-answer-builder-best-practices.md) — SQL template design
+[Troubleshoot Q\&A Accuracy Issues](datagpt-qa-accuracy-troubleshooting-guide.md) — Diagnose and fix
 
-| Document | Description |
-| ---------------------------------------------------- | -------------------------------------------- |
-| [Quick Start](datagpt_quickstart.md) | Get started with Analytics Agent in 5 minutes |
-| [User Guide](datagpt_tutorial.md) | Data source configuration, semantic layer setup, dashboard creation |
-| [Best Practices](datagpt_bestpractice.md) | Methods to improve Q&A accuracy |
-| [Q&A Accuracy Improvement](answer-accuracy-improve.md) | Semantic layer optimization, metric definition standards |
-| [Lakehouse DataGPT Tour](lakehousedatagpt-tour.md) | Feature demo videos and screenshots |
+→ [Configuration Guide](datagpt_tutorial.md) (complete directory)
 
-^
+
+
+
+
+## Governance
+
+**Goal: Users, roles, permissions, auditing**
+
+[Governance Overview](datagpt-governance-overview.md) — Permission layering, domain isolation, and audit loop
+[Manage Permissions](datagpt-permission-management-guide.md) — Accounts, roles, domain permissions
+[Configure Row-Level Permissions](datagpt-row-level-permission-guide.md) — Control data visibility per user
+[View Audit Logs](datagpt-audit-log-guide.md) — Track configuration changes
+[Bulk Download and Data Export Governance](datagpt-data-export-governance-guide.md) — Download permissions and export auditing
+
+
+
+## Go Live and Launch
+
+**Goal: From PoC to production**
+
+[From PoC to Production: Adoption Guide](datagpt-production-adoption-guide.md) — Adoption methodology and common pitfalls
+[Launch Checklist for Analysis Domain](datagpt-domain-health-check-and-launch-checklist.md) — Health check + pre-launch checklist
+[Validate Q\&A Quality](datagpt-domain-qa-validation-guide.md) — Validate configuration with typical questions
+[Analysis Domain Configuration Tips and FAQs](datagpt-domain-setup-tips.md) — Lessons learned and FAQs
+
+**Operations**
+
+[Message Notifications](datagpt-notification-guide.md) — Background task status
+[User Settings](datagpt-user-settings-guide.md) — Logo, theme, and color scheme
+
+
+
+***
+
+**Other**
+
+[Quick Start](datagpt_quickstart.md) · [Model Selection and Configuration](datagpt-model-config.md) · [AI Gateway](aigateway.md) · [Lakehouse Analytics Agent Quick Tour](LakehouseDataGPT-tour.md) · [Q&A Accuracy Improvement](answer-accuracy-improve.md) · [Web Data Retrieval and Conversational Data Analysis](simpletosimple_bazhuayu_datagpt.md)
+
+For suggestions or questions, contact us: **Phone** 400-6767-862 · **Email** <service@singdata.com>

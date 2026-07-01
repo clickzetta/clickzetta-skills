@@ -1,20 +1,20 @@
-# Incremental Computing Mechanism
+# Incremental Computing
 
-Incremental Computing is one of the core capabilities of the Singdata Lakehouse. It significantly reduces compute resource consumption by processing only the **changed data** since the last refresh, rather than recalculating all data each time, while maintaining exactly the same results as full computation.
+Incremental computing is a core capability of Singdata Lakehouse. It reduces compute resource usage by processing only the **data changed** since the last refresh instead of recalculating all data each time, while keeping results consistent with full computation.
 
 ## GIC: Generic Incremental Computation Model
 
-**GIC (Generic Incremental Computation**) is Singdata's proprietary incremental computation model and the underlying engine driving Dynamic Tables.
+**GIC (Generic Incremental Computation)** is Singdata's self-developed incremental computation model and the underlying engine for Dynamic Tables.
 
-Traditional incremental computation approaches can typically only handle specific operators (such as simple aggregations) or specific data patterns (such as Append-Only). They degrade to full recomputation when encountering JOINs, nested subqueries, UPDATE/DELETE, and similar scenarios. GIC's design goal is **generality**: decomposing the execution of any standard SQL query into operator-level incremental plans, where each operator independently processes upstream Deltas and outputs its own Delta downstream, forming a complete incremental execution pipeline.
+Traditional incremental computation approaches typically handle only specific operators, such as simple aggregations, or specific data patterns, such as append-only data. They fall back to full recomputation for JOINs, nested subqueries, UPDATE/DELETE, and similar scenarios. GIC is designed for **generality**: it decomposes any standard SQL query into operator-level incremental plans. Each operator processes upstream Deltas independently and outputs its own Delta downstream, forming a complete incremental execution pipeline.
 
 GIC's three core properties:
 
-* **Generality**: Supports incremental execution for all mainstream SQL operators including Filter, Project, Join, Aggregate, and Window — no restriction on query complexity
-* **Cost-awareness**: Dynamically selects incremental or full execution plans at each refresh based on data statistics, rather than static rule binding
-* **Semantic consistency**: Incremental execution results are strictly consistent with full recomputation results, guaranteed by MVCC version management with Exactly-Once semantics
+* **Generality**: Supports incremental execution for mainstream SQL operators, including Filter, Project, Join, Aggregate, and Window, without limiting query complexity.
+* **Cost awareness**: Dynamically selects incremental or full execution plans for each refresh based on data statistics instead of static rules.
+* **Semantic consistency**: Keeps incremental execution results consistent with full recomputation results, using MVCC version management and Exactly-Once semantics.
 
-It is precisely because of GIC's generality that Dynamic Tables can use standard SQL to cover both batch and streaming scenarios, while also allowing AI processing results (`AI_COMPLETE()`, `AI_EMBEDDING()` outputs) to flow back into the data processing pipeline in real time — after AI processing completes, downstream Dynamic Tables automatically detect the change and incrementally refresh, with no manual triggering or additional pipelines required.
+Because GIC is general, Dynamic Tables can use standard SQL for both batch and streaming scenarios. AI processing results, such as outputs from `AI_COMPLETE()` and `AI_EMBEDDING()`, can also flow back into the data processing pipeline in real time. After AI processing completes, downstream Dynamic Tables automatically detect the change and refresh incrementally, without manual triggers or extra pipelines.
 
 > **Target Audience**: Data Engineers, Architects
 > **Prerequisites**: Understanding of basic SQL queries and Dynamic Table concepts
@@ -28,14 +28,14 @@ Before incremental computing emerged, data processing mainly had two modes:
 
 | Mode                     | Characteristics                                                | Issues                                                                                                                                            |
 | ------------------------ | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Batch Processing**     | Full recalculation each time, T+1 day-level delivery           | As data volume grows, compute time and resources grow linearly, unable to meet near-real-time needs                                               |
-| **Streaming Processing** | Resident service, row-by-row processing, second-level delivery | Requires understanding of complex concepts like Watermark/Window/Trigger; state storage expands as windows grow; Retraction handling is difficult |
+| **Batch Processing**     | Full recalculation each time, T+1 or day-level delivery        | As data volume grows, compute time and resource usage grow linearly, making near-real-time delivery difficult.                                     |
+| **Streaming Processing** | Long-running service, row-by-row processing, second-level delivery | Requires complex concepts such as Watermark, Window, and Trigger; state storage expands as windows grow; Retraction handling is difficult.      |
 
-To simultaneously meet "low latency" and "low cost", enterprises were often forced to adopt the **Lambda Architecture**: one batch processing pipeline + one streaming processing pipeline, maintaining two sets of code, making data consistency difficult to guarantee.
+To meet both low latency and low cost requirements, enterprises often had to adopt the **Lambda Architecture**: one batch processing pipeline and one streaming processing pipeline. This means maintaining two sets of code and makes data consistency harder to guarantee.
 
 ![](/.topwrite/assets/anim-01-lambda-vs-kappa.svg)
 
-**The goal of incremental computing**: Using a single standard SQL, covering both batch and streaming processing scenarios, eliminating the Lambda architecture and achieving the **Kappa Architecture** (one engine, full pipeline real-time).
+**Goal of incremental computing**: Use a single standard SQL definition for both batch and streaming scenarios, eliminate Lambda Architecture, and implement **Kappa Architecture** with one engine for real-time processing across the pipeline.
 
 ***
 
@@ -44,7 +44,7 @@ To simultaneously meet "low latency" and "low cost", enterprises were often forc
 | Dimension               | Batch Computing                             | Streaming Computing                                         | Incremental Computing                                                                |
 | ----------------------- | ------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------ |
 | **Design Goal**         | Throughput first                            | Freshness first                                             | Flexible balance of throughput, freshness, and latency                               |
-| **Trigger Method**      | Active computation (scheduled triggers)     | Passive computation (data-driven)                           | Active computation (supports scheduled + dependency-triggered + real-time triggered) |
+| **Trigger Method**      | Active computation (scheduled triggers)     | Passive computation (data-driven)                           | Active computation (scheduled, dependency-triggered, and real-time triggered)        |
 | **Compute Model**       | Full computation                            | Streaming computing model (a specialization of incremental) | General Incremental Computing model (GIC)                                            |
 | **Storage Model**       | Static storage                              | Pipe pipeline data model (without full set)                 | Dynamic Data (supports full/incremental reads and writes)                            |
 | **Data Modeling**       | Standard dimensional modeling (ODS/DWD/ADS) | None (pipeline mode, intermediate data not queryable)       | Standard dimensional modeling (supports layering, intermediate data queryable)       |
@@ -54,9 +54,9 @@ To simultaneously meet "low latency" and "low cost", enterprises were often forc
 
 ### When to Choose Which?
 
-* **Choose Batch**: One-time historical data loading, full repair, insensitive to latency (T+1 acceptable)
-* **Choose Streaming**: Requires second-level response, involves complex time windows (sliding windows, session windows), out-of-order data processing
-* **Choose Incremental Computing**: Data arrives in batches, wants minute/hour-level freshness, requires significantly lower resource costs than streaming computing, wants to develop with standard SQL
+* **Choose batch processing**: One-time historical data loading, full repair, or workloads that are not sensitive to latency (T+1 is acceptable).
+* **Choose streaming processing**: Workloads that require second-level response, complex time windows (sliding windows or session windows), or out-of-order data processing.
+* **Choose incremental computing**: Workloads where data arrives in batches, minute-level or hour-level freshness is required, resource cost should be lower than streaming computing, and development should use standard SQL.
 
 ***
 
@@ -66,7 +66,7 @@ Incremental computing is built on three fundamental data concepts:
 
 ### 1. Snapshot
 
-A collection of all data in a dataset at a certain point in time.
+A collection of all data in a dataset at a specific point in time.
 
 ```
 Snapshot at T0: [A, B, C, D, E]
@@ -75,7 +75,7 @@ Snapshot at T1: [A, B, C, D, E, F, G]
 
 ### 2. Delta
 
-A set of data change records generated between two snapshots of a dataset.
+A set of data change records generated between two dataset snapshots.
 
 ```
 Delta(T0 -> T1): [+F, +G]
@@ -97,7 +97,7 @@ A standard database concept used to capture data changes. Each row change is gen
 Snapshot(T0) --[CDC]--> Delta(T0->T1) --[Apply]--> Snapshot(T1)
 ```
 
-The system abstracts input data into Delta sets through CDC. Jobs sense and consume upstream Deltas, output their own Deltas downstream, forming a complete incremental Pipeline.
+The system abstracts input data into Delta sets through CDC. Jobs detect and consume upstream Deltas, then output their own Deltas downstream, forming a complete incremental pipeline.
 
 ***
 
@@ -105,7 +105,7 @@ The system abstracts input data into Delta sets through CDC. Jobs sense and cons
 
 ### MVCC Mechanism
 
-The Lakehouse maintains multiple historical versions for each table. Each data change (INSERT/UPDATE/DELETE) generates a new version, while old versions remain accessible. Dynamic Tables precisely locate Delta data by recording the source table version checkpoint from the last refresh.
+Lakehouse maintains multiple historical versions for each table. Each data change (INSERT/UPDATE/DELETE) generates a new version, while old versions remain accessible. Dynamic Tables locate Delta data by recording the source table version checkpoint from the last refresh.
 
 ![](/.topwrite/assets/anim-02-core-formula.svg)
 
@@ -123,8 +123,8 @@ Different operators handle incremental data differently:
 | ------------- | -------------------------------------------------------------- | ----------------------------------------- |
 | **Filter**    | Apply filter conditions only to incremental data               | No                                        |
 | **Project**   | Apply column pruning/computation only to incremental data      | No                                        |
-| **Join**      | Join incremental data with right table historical data         | Yes, needs to read right table history    |
-| **Aggregate** | Merge incremental data with own historical aggregation results | Yes, needs to read own historical results |
+| **Join**      | Join incremental data with historical data from the right table | Yes, needs to read right table history    |
+| **Aggregate** | Merge incremental data with existing aggregation results       | Yes, needs to read its own historical results |
 
 ### Example: Coffee Sales Statistics
 
@@ -147,12 +147,12 @@ CREATE TABLE orders (
 
 Business requirement: Calculate total sales for each type of coffee, excluding lattes.
 
-**Declarative Definition (user only needs to write this**):
+**Declarative definition (the user only writes this)**:
 
 ```sql
 CREATE DYNAMIC TABLE dt_coffee_sales
     REFRESH INTERVAL 10 MINUTE
-    VCLUSTER default
+    VCLUSTER DEFAULT
 AS
 SELECT p.product_name,
        SUM(o.price) AS total_sales
@@ -162,7 +162,7 @@ WHERE p.product_name != 'Latte'
 GROUP BY p.product_name;
 ```
 
-**Internal Incremental Execution Process of the System**:
+**Internal incremental execution process**:
 
 ```
 1. Record last refresh checkpoint: Version 5
@@ -174,20 +174,20 @@ GROUP BY p.product_name;
 4. Update checkpoint: Version 6
 ```
 
-The entire process only processes the 3 newly added rows, rather than re-scanning the entire orders table.
+The process handles only the 3 newly added rows instead of scanning the entire `orders` table again.
 
 ***
 
 ## Scheduling Modes
 
-Incremental computing supports three scheduling modes. **The same SQL can seamlessly switch** without modifying query logic:
+Incremental computing supports three scheduling modes. **The same SQL can switch between them** without changing query logic:
 
 ### 1. Immediate Consumption on Data Arrival (Real-Time Triggered)
 
 When a data change occurs on the source table, incremental computing is triggered immediately.
 
 * **Latency**: Second-level
-* **Applicable**: Scenarios requiring extremely high freshness, such as risk control and real-time monitoring
+* **Best for**: Scenarios that require very high freshness, such as risk control and real-time monitoring
 * **Note**: Higher compute overhead; query complexity should not be too high
 
 ### 2. Periodic Scheduling by Time Interval
@@ -197,13 +197,13 @@ Triggered periodically at preset intervals (minutes/hours/days).
 ```sql
 CREATE DYNAMIC TABLE dt_name
     REFRESH INTERVAL 10 MINUTE
-    VCLUSTER default
+    VCLUSTER DEFAULT
 AS SELECT ...;
 ```
 
 * **Latency**: Depends on refresh interval
-* **Applicable**: Most near-real-time scenarios (minute-level/hourly reports)
-* **Advantage**: Can accumulate data for batch processing, leverage cluster elasticity, easier capacity planning
+* **Best for**: Most near-real-time scenarios, such as minute-level or hourly reports
+* **Advantage**: Can accumulate data for batch processing, use cluster elasticity, and simplify capacity planning
 
 ### 3. Dependency-Triggered Scheduling (DAG Cascading)
 
@@ -213,10 +213,10 @@ Downstream computation is automatically triggered after upstream tasks complete,
 ODS layer load complete -> Trigger DWD layer cleansing -> Trigger DWS layer aggregation -> Trigger ADS layer reporting
 ```
 
-* **Applicable**: Data warehouse layering scenarios where you want to monitor leaf node freshness with automatic upstream adaptation
-* **Advantage**: Only need to configure leaf node scheduling; upstream is automatically arranged
+* **Best for**: Data warehouse layering scenarios where you want to monitor leaf-node freshness and let upstream tasks adapt automatically
+* **Advantage**: Only leaf-node scheduling needs to be configured; upstream tasks are arranged automatically
 
-> **Design Philosophy**: "One SQL + Multiple Scheduling Strategies". SQL only expresses business logic, not scheduling details. Switching scheduling modes does not require changing the SQL.
+> **Design principle**: "One SQL + multiple scheduling strategies." SQL expresses business logic, not scheduling details. Switching scheduling modes does not require SQL changes.
 
 ***
 
@@ -224,20 +224,20 @@ ODS layer load complete -> Trigger DWD layer cleansing -> Trigger DWS layer aggr
 
 ### Comparison with Streaming Computing
 
-In typical scenarios, incremental computing saves resources compared to streaming computing engines like Apache Flink, mainly because:
+In typical scenarios, incremental computing uses fewer resources than streaming computing engines such as Apache Flink, mainly because:
 
-1. **No Persistent State Storage**: Streaming computing needs to maintain full state within windows + Checkpoints; incremental computing is based on MVCC, reading on demand
-2. **Vectorized Execution Engine**: Native Vector Engine is several to dozens of times more efficient than Java row-based processing
-3. **Batch Join Optimization**: Incremental Join is a left-table incremental rows single-pass Hash Join with the right table; the right table is read only once, utilizing storage cache
+1. **No long-running state storage**: Streaming computing must maintain full window state and checkpoints. Incremental computing is based on MVCC and reads data on demand.
+2. **Vectorized execution engine**: The Native Vector Engine can be several times to tens of times more efficient than Java row-based processing.
+3. **Batch Join optimization**: Incremental Join performs a single-pass Hash Join between incremental rows from the left table and the right table. The right table is read only once and can use the storage cache.
 
 ### 4 Factors Affecting Performance
 
 | Factor                   | Impact                      | Description                                                                                      |
 | ------------------------ | --------------------------- | ------------------------------------------------------------------------------------------------ |
-| **Query Complexity**     | Higher means greater cost   | Outer Join + large amounts of historical data connection may generate many retraction operations |
-| **Data Change Type**     | Append-Only has lowest cost | Update/Delete requires interaction with historical data, higher compute cost                     |
-| **Data Change Rate**     | Faster means greater cost   | 1 million rows/sec new vs 10,000 rows/sec new, significant resource consumption difference       |
-| **Scheduling Frequency** | Higher means greater cost   | Higher frequency increases system fixed overhead (Plan generation, resource allocation) ratio    |
+| **Query Complexity**     | Higher complexity means higher cost | Outer joins with large amounts of historical data may generate many retraction operations. |
+| **Data Change Type**     | Append-only data has the lowest cost | Update/Delete requires interaction with historical data, which increases compute cost.     |
+| **Data Change Rate**     | Higher change rates mean higher cost | 1 million new rows per second costs much more than 10,000 new rows per second.             |
+| **Scheduling Frequency** | Higher frequency means higher cost   | Higher frequency increases the share of fixed system overhead, such as plan generation and resource allocation. |
 
 ```
 Resource Consumption
@@ -252,34 +252,34 @@ Resource Consumption
 
 ### Cost-Based Optimization Framework
 
-Singdata Lakehouse adopts **Cost-based** incremental optimization, not Rule-based:
+Singdata Lakehouse uses **cost-based** incremental optimization instead of rule-based optimization:
 
-* **Rule-based**: Fixed incremental execution plan when SQL is defined, cannot adapt to dynamic data changes
-* **Cost-based**: During each refresh, dynamically selects the optimal execution plan (full or incremental, operator algorithm selection) based on comprehensive data statistics, cluster resources, and incremental data volume
+* **Rule-based**: The incremental execution plan is fixed when the SQL is defined and cannot adapt to changing data.
+* **Cost-based**: During each refresh, the system dynamically selects the optimal execution plan, including full or incremental execution and operator algorithms, based on data statistics, cluster resources, and incremental data volume.
 
 The system will automatically fall back to full computation in the following situations:
 
 * Source table historical versions exceed Time Travel retention period
-* Incremental data volume is too large, full computation is actually better
-* Dynamic Table SQL definition has changed
+* Incremental data volume is so large that full computation is more efficient
+* The Dynamic Table SQL definition has changed
 
 ***
 
 ## Applicable Scenarios
 
-Incremental computing is the optimal choice when the business simultaneously meets the following conditions:
+Incremental computing is a good fit when the workload meets the following conditions:
 
 * [x] Computation logic can be described with standard SQL or UDF
-* [x] Data arrives in batches, forming a continuous incremental dataset
-* [x] Wants minute/hour-level freshness while requiring significantly lower costs than streaming computing
-* [x] Does not involve complex time windows (sliding windows, session windows) or Watermark mechanisms
-* [x] Wants to progressively upgrade the data warehouse architecture, gradually verifying near-real-time effects
+* [x] Data arrives in batches and forms a continuous incremental dataset
+* [x] Minute-level or hour-level freshness is required, with lower cost than streaming computing
+* [x] The workload does not involve complex time windows (sliding windows or session windows) or Watermark mechanisms
+* [x] The team wants to upgrade the data warehouse architecture gradually and validate near-real-time results step by step
 
 ### Inapplicable Scenarios
 
 * Requires sub-second latency (consider streaming processing)
 * Involves complex out-of-order data processing and Watermark mechanisms
-* One-time full data loading (use INSERT INTO or COPY INTO directly)
+* Performs one-time full data loading (use INSERT INTO or COPY INTO directly)
 
 ***
 
@@ -287,21 +287,12 @@ Incremental computing is the optimal choice when the business simultaneously mee
 
 ### Non-Deterministic Functions
 
-Scenarios involving random functions weaken the advantages of incremental computing because already-computed results are no longer stable, forcing existing data to be recomputed.
-
-| Function                        | Impact                                                          | Workaround                                                      |
-| ------------------------------- | --------------------------------------------------------------- | --------------------------------------------------------------- |
-| `CURRENT_TIMESTAMP()`           | Results change on every refresh, approaching full recomputation | Avoid direct use in Dynamic Tables                              |
-| `CURRENT_DATE()`                | Changes daily, stable within the day                            | Can be used in T+1 scenarios                                    |
-| `RAND()`                        | Different results on every execution                            | Avoid using                                                     |
-| `DATE_FORMAT(NOW(), 'yyyy-MM')` | Stable within a month, changes across months                    | Acceptable, incremental computing works normally within a month |
-
-**Recommendation**: If random functions can remain stable within a certain time range (e.g., by month/day), incremental computing can still work effectively.
+Non-deterministic functions can be used in Dynamic Table definitions without causing a creation error, but they can cause row-level data inconsistency. Incremental computation re-executes SQL only for changed rows, while unchanged rows retain their old values. As a result, values in the same column may come from different execution times. For related Dynamic Table limitations, see [Dynamic Table Overview](dynamic_table_summary.md).
 
 ### Other Limitations
 
-* When source table changes are too large, incremental computing may approach full computation load
-* Some complex queries (e.g., multi-level nested subqueries + non-equi Join) may not be able to execute incrementally; the system will automatically fall back to full computation
+* When source table changes are too large, incremental computing may approach the cost of full computation.
+* Some complex queries, such as multi-level nested subqueries with non-equi joins, may not support incremental execution. The system automatically falls back to full computation.
 
 ***
 
@@ -311,12 +302,12 @@ Scenarios involving random functions weaken the advantages of incremental comput
 
 ### Business Scenario
 
-An internet company wants to understand user operations on different pages in real-time, associating operations with user basic information (age, gender, region) for precise analysis.
+An internet company wants to analyze user actions on different pages in real time and associate those actions with user attributes such as age, gender, and region.
 
 **Data Sources**:
 
 * User behavior logs: Kafka real-time event stream
-* User info dimension table: MySQL CDC -> Kafka
+* User information dimension table: MySQL CDC -> Kafka
 
 ### Step 1: Real-Time Log Data Loading
 
@@ -324,7 +315,7 @@ An internet company wants to understand user operations on different pages in re
 CREATE PIPE PIPE_USER_BEHAVIOR_LOG
     VIRTUAL_CLUSTER = 'CZCODE_DI'
     BATCH_INTERVAL_IN_SECONDS = '60'
-AS
+AS 
 COPY INTO USER_BEHAVIOR_LOG_RT
 FROM (
     SELECT
@@ -389,7 +380,7 @@ WHEN NOT MATCHED AND B.row_num = 1 THEN
 ```sql
 CREATE DYNAMIC TABLE DT_USER_BEHAVIOR_ENRICHED
     REFRESH INTERVAL 1 MINUTE
-    VCLUSTER default
+    VCLUSTER DEFAULT
 AS
 SELECT
     A.EVENT_TIME, A.USER_ID, A.EVENT_TYPE, A.PAGE_ID, A.ACTION,
@@ -427,10 +418,10 @@ Kafka (User Dimension) --[Pipe]--> USER_PROFILE_RT (ODS)
                                     |                      +--[DT 1min]--> DT_USER_BEHAVIOR_ANALYTICS (DWS)
 ```
 
-* **Data Ingestion**: Pipe automatically loads from Kafka in batches, supporting Append and CDC writes
-* **ETL Processing**: Dynamic Table declarative definition, automatic incremental refresh
-* **Data Warehouse Layering**: ODS -> DWD -> DWS, complete layering thinking
-* **No Manual Intervention**: System automatically completes scheduling, incremental optimization, dependency propagation
+* **Data ingestion**: Pipe automatically loads from Kafka in batches and supports append and CDC writes.
+* **ETL processing**: Dynamic Tables use declarative definitions and refresh incrementally.
+* **Data warehouse layering**: ODS -> DWD -> DWS, showing a layered warehouse design.
+* **No manual intervention**: The system handles scheduling, incremental optimization, and dependency propagation automatically.
 
 ***
 
@@ -452,31 +443,30 @@ Kafka (User Dimension) --[Pipe]--> USER_PROFILE_RT (ODS)
 SHOW DYNAMIC TABLE REFRESH HISTORY WHERE name = 'dt_name' LIMIT 10;
 ```
 
-Check the refresh mode and duration in the output. If a particular refresh takes significantly longer than usual, a full refresh may have been triggered.
+Check the refresh mode and duration in the output. If a refresh takes much longer than usual, a full refresh may have been triggered.
 
 ### Q: What happens to downstream Dynamic Tables after a full refresh?
 
-Downstream Dynamic Tables perceive the upstream full refresh and automatically adapt during their next refresh. If all upstream data changes, downstream may also execute a computation close to full.
+Downstream Dynamic Tables detect the upstream full refresh and adapt during their next refresh. If all upstream data changes, downstream computation may also be close to a full computation.
 
 ### Q: How to avoid unnecessary full refreshes?
 
-* Ensure `data_retention_days` is long enough to avoid source table historical versions expiring
-* Avoid using non-deterministic functions in Dynamic Table SQL
-* Before modifying SQL definitions, evaluate whether the change is truly needed
+* Ensure `data_retention_days` is long enough to prevent source table historical versions from expiring.
+* Avoid using non-deterministic functions in Dynamic Table SQL.
+* Before modifying SQL definitions, evaluate whether the change is necessary.
 
 ### Q: Can incremental computing guarantee Exactly-Once semantics?
 
-Yes. Based on MVCC version management, each refresh is based on a determined source table version checkpoint. After fault recovery, recomputation can start from the last checkpoint, ensuring results are consistent with full computation.
+Yes. Based on MVCC version management, each refresh uses a specific source table version checkpoint. After fault recovery, recomputation can start from the last checkpoint, keeping results consistent with full computation.
 
 ***
 
 ## Related Documentation
 
-* [Dynamic Table Introduction](dynamic-table-introduce.md) -- Complete Dynamic Table concepts
-* [Create Dynamic Table](create-dynamic-table.md) -- DDL syntax and parameter descriptions
-* [View Refresh History](refresh-history.md) -- Monitor refresh status and mode
-* [Time Travel](time-travel-concept.md) -- MVCC version management fundamentals
-* [Pipe Continuous Ingestion](pipe-introduction.md) -- External data real-time ingestion
-* [Table Stream](table_stream.md) -- Incremental data consumption and CDC output
-
-^
+* [Dynamic Table](om-dynamic-table.md) — object concept, use cases, and limits
+* [Dynamic Table Overview](dynamic_table_summary.md) — getting started and hands-on demo
+* [Create Dynamic Table](create-dynamic-table.md) — DDL syntax and parameter descriptions
+* [View Refresh History](refresh-history.md) — monitor refresh status and mode
+* [Time Travel](time-travel-concept.md) — MVCC version management fundamentals
+* [Pipe Continuous Ingestion](pipe-introduction.md) — external data real-time ingestion
+* [Table Stream](table_stream.md) — incremental data consumption and CDC output

@@ -131,7 +131,7 @@ Most mainstream BI tools connect via JDBC / ODBC.
 
 | Scenario | Solution | Reference |
 |----------|----------|-----------|
-| Ask questions in natural language, AI auto-generates SQL | Data Analytics Agent (DataGPT) | [DataGPT Introduction](datagpt_intro.md) · [DataGPT Tutorial](lakehousedatagpt-tour.md) |
+| Ask questions in natural language, AI auto-generates SQL | Data Analytics Agent (DataGPT) | [DataGPT Introduction](datagpt_introduction.md) · [DataGPT Tutorial](lakehousedatagpt-tour.md) |
 | Semantic search / RAG applications | Vector search | [Vector Search](vector-search.md) · [Vector Search and RAG Applications in Practice](sql_vector_search_guide.md) |
 | Call large language models in SQL | AI functions | [AI Function Usage Guide](ai_function_in_sql.md) |
 | Query using business terms (no JOIN needed) | Semantic views | [Semantic View Overview](semantic-view-overview.md) |

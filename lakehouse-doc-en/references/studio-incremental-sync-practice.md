@@ -24,24 +24,27 @@ doc_github_clean (standardized fields, ready for direct query and analysis)
 
 ---
 
-## Step 1: Shell Task — Pull Raw Data
+## Shell Task: Pull Raw Data
 
 ### Script
 
+The Shell layer sets task parameters and calls embedded Python:
+
 ```bash
 #!/bin/bash
-# Task parameter: biz_date = $[yyyy-MM-dd]
 BIZ_DATE='${biz_date}'
 echo "Fetch date: $BIZ_DATE"
+```
 
-python3 - << PYEOF
+The embedded Python code handles table creation, API fetching, and writing to the raw layer (executed via `python3 - << PYEOF ... PYEOF` heredoc):
+
+```python
 import urllib.request, json
 from clickzetta_dbutils import get_active_lakehouse_engine
 from sqlalchemy import text
 
 biz_date = '$BIZ_DATE'
 
-# ── 1. Create table (idempotent) ──────────────────────────────────────────
 engine = get_active_lakehouse_engine(schema="doc_connector_demo")
 with engine.connect() as conn:
     conn.execute(text("CREATE SCHEMA IF NOT EXISTS doc_connector_demo"))
@@ -57,14 +60,12 @@ with engine.connect() as conn:
         )
     """))
 
-# ── 2. Fetch GitHub Releases API ──────────────────────────────────────────
 url = "https://api.github.com/repos/clickzetta/dbt-clickzetta/releases?per_page=10"
 req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
 with urllib.request.urlopen(req, timeout=15) as r:
     releases = json.loads(r.read())
 print(f"API returned {len(releases)} records")
 
-# ── 3. Idempotent write to raw layer ──────────────────────────────────────
 with engine.connect() as conn:
     conn.execute(text(f"DELETE FROM doc_connector_demo.doc_github_raw WHERE load_date = '{biz_date}'"))
     for rel in releases:
@@ -79,7 +80,6 @@ with engine.connect() as conn:
         ))
 print(f"Wrote {len(releases)} raw records, load_date={biz_date}")
 
-# ── 4. Verify ─────────────────────────────────────────────────────────────
 with engine.connect() as conn:
     result = conn.execute(text(
         f"SELECT tag_name, published_at FROM doc_connector_demo.doc_github_raw "
@@ -87,7 +87,6 @@ with engine.connect() as conn:
     ))
     for row in result:
         print(f"  {row[0]:15s} {row[1]}")
-PYEOF
 ```
 
 ### Creating and Executing the Task
@@ -106,7 +105,7 @@ PYEOF
 cz-cli task create github_raw_fetch --type shell --profile <your-profile>
 cz-cli task save-content github_raw_fetch --file github_raw_fetch.sh \
   --params '{"biz_date": "$[yyyy-MM-dd]"}' --profile <your-profile>
-cz-cli task save-config github_raw_fetch --vcluster default --retry-count 1 --profile <your-profile>
+cz-cli task save-config github_raw_fetch --vcluster DEFAULT --retry-count 1 --profile <your-profile>
 cz-cli task save-cron github_raw_fetch --cron "0 1 * * *" --profile <your-profile>
 cz-cli task online github_raw_fetch -y --profile <your-profile>
 cz-cli task execute github_raw_fetch --param "biz_date=2024-12-01" --profile <your-profile>
@@ -125,9 +124,11 @@ Wrote 10 raw records, load_date=2024-12-01
 
 ---
 
-## Step 2: Python Task — Clean and Standardize
+## Python Task: Clean and Standardize
 
 ### Script
+
+Task parameters and Session creation:
 
 ```python
 from clickzetta_dbutils import get_active_lakehouse_engine
@@ -136,12 +137,9 @@ from clickzetta.zettapark import functions as F
 from urllib.parse import urlparse, parse_qs
 import re
 
-# ── Task parameters ───────────────────────────────────────────────────────
-# biz_date = $[yyyy-MM-dd]
 biz_date = '${biz_date}'
 print(f"Cleaning date: {biz_date}")
 
-# ── 1. Create ZettaPark Session ───────────────────────────────────────────
 engine = get_active_lakehouse_engine(schema="doc_connector_demo")
 url_str = str(engine.url)
 parsed = urlparse(url_str.replace('clickzetta://', 'https://'))
@@ -154,25 +152,25 @@ session = Session.builder.configs({
     "magic_token": params['magic_token'][0],
     "workspace":   parsed.path.lstrip('/'),
     "schema":      params.get('schema', ['public'])[0],
-    "vcluster":    params.get('virtualcluster', ['default'])[0],
+    "vcluster":    params.get('virtualcluster', ['DEFAULT'])[0],
 }).getOrCreate()
 
 print(f"Session ready: {session.get_current_catalog()}.{session.get_current_schema()}")
+```
 
-# ── 2. Read from raw layer ────────────────────────────────────────────────
+Read from the raw layer and convert to pandas for cleaning:
+
+```python
 raw = session.table("doc_connector_demo.doc_github_raw").filter(
     F.col("load_date") == biz_date
 )
 print(f"Raw layer record count: {raw.count()}")
 
-# ── 3. Convert to pandas for cleaning ────────────────────────────────────
 df = raw.to_pandas()
 
-# Deduplication: keep only one record per tag_name
 df = df.drop_duplicates(subset=['tag_name'], keep='first')
 print(f"After deduplication: {len(df)} records")
 
-# Parse version number: v1.7.5 → major=1, minor=7, patch=5
 def parse_version(tag):
     m = re.match(r'v?(\d+)\.(\d+)\.(\d+)', tag)
     if m:
@@ -183,14 +181,16 @@ df[['major', 'minor', 'patch']] = df['tag_name'].apply(
     lambda t: parse_version(t)
 ).apply(lambda x: x if x else (None, None, None)).tolist()
 
-# Filter out invalid versions (tags that don't match the vX.Y.Z format)
 df = df.dropna(subset=['major'])
 df['major'] = df['major'].astype(int)
 df['minor'] = df['minor'].astype(int)
 df['patch'] = df['patch'].astype(int)
 print(f"Valid versions: {len(df)} records")
+```
 
-# ── 4. Create table and write back to clean layer ─────────────────────────
+Create table, write back to clean layer, and print summary:
+
+```python
 session.sql("""
     CREATE TABLE IF NOT EXISTS doc_connector_demo.doc_github_clean (
         load_date    STRING,
@@ -212,7 +212,6 @@ result_df = session.create_dataframe(
 result_df.write.mode("append").save_as_table("doc_connector_demo.doc_github_clean")
 print(f"Wrote to clean layer: {len(df)} records, load_date={biz_date}")
 
-# ── 5. Summary output ─────────────────────────────────────────────────────
 summary = (
     session.table("doc_connector_demo.doc_github_clean")
     .filter(F.col("load_date") == biz_date)
@@ -238,14 +237,19 @@ session.close()
 
 **cz-cli**
 
-```bash
-# First get the task_id of github_raw_fetch (needed for configuring the dependency)
-cz-cli task list --profile <your-profile>
+First get the task_id of `github_raw_fetch` (needed for configuring the dependency):
 
+```bash
+cz-cli task list --profile <your-profile>
+```
+
+Then create the task and configure the dependency:
+
+```bash
 cz-cli task create github_clean --type python --profile <your-profile>
 cz-cli task save-content github_clean --file github_clean.py \
   --params '{"biz_date": "$[yyyy-MM-dd]"}' --profile <your-profile>
-cz-cli task save-config github_clean --vcluster default --retry-count 1 \
+cz-cli task save-config github_clean --vcluster DEFAULT --retry-count 1 \
   --deps replace \
   --dep-tasks '[{"taskId": <github_raw_fetch_task_id>, "taskName": "github_raw_fetch"}]' \
   --profile <your-profile>

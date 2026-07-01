@@ -1,8 +1,6 @@
 # **External AI Function**: Create Embedding Function
 
-Objective: Use the Alibaba Cloud Bailian platform's Embedding function to vectorize text and image file data, enabling image-to-image search scenarios. The effect is shown below:
-
-![](.topwrite/assets/image_search.png)
+Objective: Use the Alibaba Cloud Bailian platform's Embedding function to vectorize text and image file data, enabling image-to-image search scenarios. Given an input image URL, the function returns a vector that can be compared against stored image vectors to find visually similar images.
 
 > ⚠️ **Note**: To complete this example, you need:
 >
@@ -136,9 +134,7 @@ Run the following in the development environment terminal:
 [root@docker embeddings]# pip install openai -t .
 ```
 
-At this point, the directory structure should look like:
-
-![](.topwrite/assets/vector2.jpeg)
+At this point, the directory structure should look like: the `embeddings` directory containing `gen_embeddings.py` along with the installed `openai` package and its dependencies as subdirectories.
 
 ### Step 3: Local Debugging
 
@@ -203,7 +199,7 @@ Use the Lakehouse JDBC client (see [Lakehouse JDBC Client](connect-with-cli.md))
 PUT '/Users/derekmeng/Downloads/embeddings.zip' to USER VOLUME;
 ```
 
-![](.topwrite/assets/image2.jpeg)
+After running this command, the file is uploaded to your USER VOLUME and is ready to be referenced when creating the external function.
 
 ### Step 5: Create and Use the Function
 
@@ -231,14 +227,8 @@ Verify:
 select public.fc_embeddings('multimodal', 'http://viapi-test.oss-cn-shanghai.aliyuncs.com/viapi-3.0domepic/imagerecog/RecognizeFood/RecognizeFood5.jpg', '${api_key}', 'multimodal-embedding-v1');
 ```
 
-Execution result:
+Execution result: the function returns a JSON array of floating-point numbers representing the embedding vector for the input image (e.g., `[0.0234, -0.1823, 0.4512, ...]` with the number of dimensions specified by the model).
 
-![](.topwrite/assets/images.jpeg)
+The next steps are the core steps for implementing the image-to-image search feature. This query takes an image URL, vectorizes it, and then compares it against all image vectors in the data table (`food_images_data_vec`). The table `food_images_data_vec` stores rows of food image URLs alongside their precomputed embedding vectors.
 
-The next steps are the core steps for implementing the image-to-image search feature. This query takes an image URL, vectorizes it, and then compares it against all image vectors in the data table (`food_images_data_vec`). The contents of the table `food_images_data_vec` are as follows:
-
-![](.topwrite/assets/image_search.jpeg)
-
-Result of vector-based image search:
-
-![](.topwrite/assets/image_vec2.jpeg)
+Result of vector-based image search: the query returns a ranked list of food image URLs from the table whose embedding vectors are closest to the query image's vector, enabling visually similar image retrieval.

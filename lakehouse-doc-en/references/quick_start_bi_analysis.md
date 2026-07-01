@@ -20,13 +20,12 @@ Enterprise business intelligence (BI) generally obtains raw data from the enterp
 
 ### Workflow Diagram
 
-![](.topwrite/assets/image_1692343510673.png =648)
+
 
 ### Business Requirements
 
 The business requirements in this example simulate common BI analysis scenarios in e-commerce, generating a wide table at the detailed layer of the data warehouse by associating user behavior log data with dimension tables such as products, stores, and time zones. This wide table is then provided to downstream data application layers, and BI tools are used for sales and order statistics, funnel conversion models, popular product displays, etc.
 
-![](.topwrite/assets/image_1692975150801.png =704)
 
 ^
 
@@ -54,7 +53,6 @@ Configure task dependencies in the order of data integration tasks first, follow
 
 Deploy all tasks to the production environment.
 
-![](.topwrite/assets/image_1693020935459.png =627)
 
 ^
 
@@ -64,7 +62,7 @@ Refer to the **Preparations** in the previous chapter. Before starting the "Quic
 
 ^
 
-![](.topwrite/assets/9865a42db031a5516b4caf79bf0f4bb.png =715)
+![](/.topwrite/assets/image_1780998919773.png)
 
 ^
 
@@ -78,26 +76,24 @@ In the initialized product environment, you may already have the following objec
 ^
 
 Figure 1 —— User
-
-![](.topwrite/assets/image_1692348046212.png =354)
+![](/.topwrite/assets/image_1780998366942.png)
 
 ^
 
 Figure 2 —— Workspace: QuickStart\_WorkSpace
-
-![](.topwrite/assets/image_1692586908866.png =512)
+![](/.topwrite/assets/image_1780998669158.png)
 
 ^
 
 Figure 3 —— Schema: Public
 
-![](.topwrite/assets/image_1692583856135.png =730)
+![](/.topwrite/assets/image_1780998800756.png)
 
 ^
 
 Figure 4 —— Computing Cluster: Default
 
-![](.topwrite/assets/image_1692586859163.png =728)
+![](/.topwrite/assets/image_1780998850270.png)
 
 ###
 
@@ -117,34 +113,21 @@ Studio provides two ways to create a new data source:
 ^
 
 Figure 1 —— Method 1
-![](.topwrite/assets/image_1692588245122.png =785)
+![](/.topwrite/assets/image_1780999019336.png)
 
 ^
 
 Figure 2 —— Method 2
-![](.topwrite/assets/image_1692588445515.png =719)
-
-^
-
-![](.topwrite/assets/image_1692589881885.png =676)
+![](/.topwrite/assets/image_1780999067659.png)
 
 ^
 
 Select the MySQL type data source on the new data source page and click Next.
 
-![](.topwrite/assets/image_1692605359674.png =399)
-
-^
-
 Enter the database connection information and click connectivity test. If the configuration is correct, a green \[Connection Successful] will be displayed. If the connection test fails, you need to verify the configuration information or change the database's access whitelist policy. \*If you need to add specific IP whitelist entries, please contact Singdata customer service or your account manager.
-
-![](.topwrite/assets/image_1692605303319.png =553)
-
-^
 
 After successful creation, the data source can be seen in the list.
 
-![](.topwrite/assets/image_1692605636158.png =733)
 
 ^
 
@@ -152,17 +135,13 @@ After successful creation, the data source can be seen in the list.
 
 #### 【Create Data Integration Task】
 
-Let us go back to the \[Development] menu and create an \[Offline Synchronization Task]
-
-![](.topwrite/assets/image_1692588445515.png)
+Let us go back to the \[Development] menu and create an \[Offline Synchronization Task] by clicking the “+” button and selecting “Offline Sync”.
 
 Temporarily name the task “MYSQL Data Integration Task” here and click OK.
 
 ![](.topwrite/assets/image_1692605970219.png =658)
 
 You can see the task you just created at ① in the list. Click ② to select the data source type as MYSQL at ③, and select the data source name we just created: BizData\_Demo
-
-![](.topwrite/assets/image_1692606182111.png)
 
 Select the database at ①, select the table at ②, add filter conditions at ③, and click the button at ④ to preview the data. *splitPk is a split key for multi-concurrent data extraction. It splits data based on the INT type primary key of the table in the database. It is not required and will not be demonstrated in depth here*.
 
@@ -172,9 +151,7 @@ After clicking the \[Preview] button, a small amount of data will be previewed b
 
 ![](.topwrite/assets/image_1692608871867.png =668)
 
-Since we are synchronizing data from the MySQL data source to Singdata Lakehouse, the target data source is naturally the Lakehouse type, as shown in steps ① → ② → ③ below
-
-![](.topwrite/assets/image_1692609388901.png)
+Since we are synchronizing data from the MySQL data source to Singdata Lakehouse, the target data source is naturally the Lakehouse type. Select the target type as "Lakehouse", then choose the appropriate workspace and Schema.
 
 The namespace at ① can first select the default public. Since this is the first time creating a task and the table has not been created on the Lakehouse side, the data object at ② provides a convenient one-click table creation feature.
 
@@ -236,15 +213,7 @@ After clicking \[Run] to start the task, the \[Run] button at ① will become th
 
 ^
 
-![](.topwrite/assets/image_1692869694189.png)
-
-^
-
-The log information is shown as follows:
-
-^
-
-![](.topwrite/assets/image_1692869803721.png)
+The log information displays the execution progress, including the number of rows processed, data read/write speeds, and task completion status.
 
 ^
 
@@ -411,9 +380,7 @@ Next, modify the script content in the data development task to complete the joi
 
 ^
 
-Select the upstream scheduling dependencies through fuzzy search.
-
-![](.topwrite/assets/image_1693186498403.png)
+Select the upstream scheduling dependencies through fuzzy search. Type part of the task name in the dependency search box to find and add the relevant upstream tasks.
 
 ^
 
@@ -443,8 +410,6 @@ After the task is submitted to production, we will introduce some basic operatio
 
 When we click to enter the \[Task Operations] module, the page defaults to the \[Task Instances] tab ④, because operations personnel generally care about the daily running status and results of task instances. Task instances are divided into \[Periodic Instances] ⑥ and \[Temporary Instances] ⑦, with running statuses of \[Running Successfully] ⑧, \[Running] ⑨, and \[Running Failed] ⑩.
 
-![](.topwrite/assets/image_1693193833131.png)
-
 ^
 
 Here we need to understand the difference between \[Tasks] and \[Instances]: A task refers to a preset workflow configuration, while an instance is the instantiation of these workflow configurations, i.e., the actual execution example.
@@ -453,19 +418,13 @@ Here we need to understand the difference between \[Tasks] and \[Instances]: A t
 
 We click the periodic task tab to view our published SQL data development tasks and enter the task details page.
 
-![](.topwrite/assets/image_1693202818256.png)
+^
+
+The task details page, in addition to its own information \[Task Details] ①, also provides tabs for viewing \[Task Instances] ②, \[Node Code] ③, and \[Operation Logs] ④. The upper part of the task details shows some metadata information about the task, including task name, scheduling configuration, and creation information.
 
 ^
 
-The task details page, in addition to its own information \[Task Details] ①, also provides tabs for viewing \[Task Instances] ②, \[Node Code] ③, and \[Operation Logs] ④. Here, only the task details tab is displayed. The upper part of the task details shows some metadata information about the task.
-
-![](.topwrite/assets/image_1693203132344.png)
-
-^
-
-The lower part shows the dependency relationships between the task and its upstream and downstream tasks.
-
-![](.topwrite/assets/image_1693202961210.png)
+The lower part shows the dependency relationships between the task and its upstream and downstream tasks, displayed as a directed acyclic graph where each node represents a task and the edges indicate data dependencies.
 
 ^
 
@@ -580,9 +539,7 @@ Create a dashboard to reference the dataset for arrangement. Interested users ca
 
 ^
 
-Through certain dashboard style designs, we can create colorful BI dashboards.
+Through certain dashboard style designs, we can create colorful BI dashboards that display sales trends, order statistics, funnel conversion rates, popular products, and other key business metrics in an intuitive visual format.
 *The following images are demo examples based on mock data*
-
-![](.topwrite/assets/image_1693211438223.png)
 
 ^

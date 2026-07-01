@@ -48,7 +48,6 @@ When uploading data, you can usually create a new table for the data at the same
 
 8. After confirming all the information, click "Next". The system will automatically parse the field information in the file based on the uploaded file information.
 
-   ![](.topwrite/assets/image_1736307305607.png =441)
 
 9. Check and judge whether the automatically parsed field names and field types meet expectations. If confirmed to be correct, click "Confirm" to complete the data upload and create a new table.
    If there is a problem with field parsing, you can modify the **File Properties** configuration item to refresh and obtain the automatically parsed field names, field types, etc. Or manually modify the field names or field types. Note: The modified field types may not match the system's parsing, resulting in unsuccessful uploads.

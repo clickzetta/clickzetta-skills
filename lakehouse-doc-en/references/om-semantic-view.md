@@ -6,6 +6,8 @@ A Semantic View is the **business semantic layer** in the Lakehouse, creating an
 
 Without a semantic view, different reports and applications write their own JOIN and aggregation logic, and the same "monthly active users" might be calculated differently in different places. A semantic view centrally manages metric definitions, ensuring a unified definition across the entire organization.
 
+![](/.topwrite/assets/13-semantic-view.svg)
+
 ## Comparison with Regular Views
 
 | Comparison Item | Regular View | Semantic View |

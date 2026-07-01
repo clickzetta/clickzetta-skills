@@ -18,7 +18,7 @@ Account funds are currently divided into two categories: cash account and vouche
 ## Navigation Path
 
 Log in to Lakehouse Studio -> Cost Center -> Account Funds, as shown below:
-![](.topwrite/assets/image_1748336067204.png)
+![](/.topwrite/assets/image_1781009682426.png)
 * Cash balance: The tenant's current available balance. Amounts topped up through corporate bank transfer, WeChat Pay, Alipay, etc., will be deducted in real time based on consumption.
 * Unsettled amount: The tenant's current unsettled amount. When the cash balance is 0 and there are no available vouchers, continuing to use services will incur unsettled amounts. When unsettled amounts exist, prompt top-up is required to avoid affecting normal service operation.
 * Vouchers: The number of vouchers currently available to the tenant.
@@ -38,15 +38,15 @@ Supports WeChat Pay, Alipay online top-up, and offline corporate bank transfer. 
 Top-Up and Transfer Operation Guide:
 
 On the cash account page, click the "Top-Up & Transfer" button to enter the top-up and transfer page, as shown below:
-![](.topwrite/assets/image_1748336104481.png)
+
 If choosing online top-up, the first top-up requires agreeing to the "Singdata Technology User Agreement". Click WeChat Pay or Alipay to select the top-up method, enter the top-up amount, and click "Top Up Now" to generate a payment QR code. Use the corresponding app on your mobile device to scan the QR code and complete payment, as shown below:
-![](.topwrite/assets/image_1747637006371.png)
+
 If choosing corporate bank transfer, enter the transfer page to view Singdata's receiving information. Transfer the required amount to Singdata's account according to the receiving information, and contact your business representative to complete the receipt. As shown below:
-![](.topwrite/assets/image_1747637124644.png)
+
 After completing the top-up, return to the cash account page to view the corresponding top-up transaction details. When there is an outstanding balance, the topped-up amount will be used in real time to offset the outstanding amount upon arrival.
 
 Exception handling: If online top-up is selected but the payment is not completed within the timeout period, a top-up failure message will be displayed, as shown below. In this case, you need to refresh the page and re-initiate the top-up.
-![](.topwrite/assets/topup_failed.jpeg)
+
 
 **About Invoices**: If you need to issue an invoice, please contact your business representative. Invoices will be issued based on your consumption records on the Singdata platform, not based on the actual top-up amount. Please be aware.
 
@@ -55,7 +55,7 @@ Exception handling: If online top-up is selected but the payment is not complete
 #### Transaction Details
 
 Transaction details show the income and expense records of the cash account, allowing you to view the account balance change history, as shown below:
-![](.topwrite/assets/image_1747637294249.png)
+
 * Transaction ID: Unique credential for platform transactions
 * Transaction Time: Time when the transaction occurred
 * Type: Includes three types: consumption, top-up, and refund
@@ -68,7 +68,7 @@ Transaction details show the income and expense records of the cash account, all
 ### Vouchers
 
 Click "Vouchers" at the top of the account funds page to enter the vouchers page. By default, it displays the tenant's currently available vouchers. You can switch to "All" or "Unavailable" to view vouchers in corresponding states, as shown below:
-![](.topwrite/assets/image_1747637516784.png)
+
 * Available Vouchers: Vouchers that are within their validity period and have an available balance
 * Unavailable Vouchers: Vouchers that have not yet reached their validity period, vouchers that have expired, or vouchers that are within their validity period but have exhausted their balance. Among these, vouchers that have not yet reached their validity period will automatically become available when the validity period begins; expired vouchers cannot be recovered.
 **Note**: All vouchers are issued by the Singdata platform and cannot be transferred or cashed out.
@@ -76,8 +76,7 @@ Click "Vouchers" at the top of the account funds page to enter the vouchers page
 #### Voucher Details
 
 Click the "View Details" button to view voucher consumption details, as shown below:
-![](.topwrite/assets/image_1747637759011.png)
-![](.topwrite/assets/image_1747637740486.png)
+
 * Voucher Status: Active, Not Yet Active, Expired
 * Voucher Face Value: The initial total amount of the issued voucher
 * Balance: The remaining amount of the voucher

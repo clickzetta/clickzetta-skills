@@ -104,8 +104,7 @@ IP resolution is implemented based on the Lakehouse built-in function `get_ip_in
   ./geoip2-csv-converter -block-file GeoLite2-City-Blocks-IPv6.csv \
     -include-range -output-file IPv6_Blocks_Converted.csv
   ```
-  This document uses the following two CSV files, which are the network IP address range table and the Chinese geographic information table:
-  ![](../../../.topwrite/assets/image_1744721445413.png)
+  This document uses two CSV files: `IPv4_Blocks_Converted.csv` (network IP address range table) and a Chinese geographic information table (`GeoLite2-City-Locations-zh-CN.csv`).
 
 #### 2. Data Modeling
 

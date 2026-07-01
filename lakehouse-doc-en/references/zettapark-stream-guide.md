@@ -13,11 +13,11 @@ from clickzetta.zettapark import functions as F
 session = Session.builder.configs({
     "username": "your_username",
     "password": "your_password",
-    "service":  "cn-shanghai-alicloud.api.singdata.com",
+    "service":  "cn-shanghai-alicloud.api.clickzetta.com",
     "instance": "your_instance",
     "workspace": "your_workspace",
     "schema":   "public",
-    "vcluster": "default"
+    "vcluster": "DEFAULT"
 }).create()
 ```
 
@@ -59,7 +59,7 @@ session.sql("""
 """).collect()
 ```
 
-> 💡 **Tip:** `change_tracking` must be enabled via `ALTER TABLE SET PROPERTIES`. Specifying it at table creation time has no effect.
+> 💡 `change_tracking` must be enabled via `ALTER TABLE SET PROPERTIES`. Specifying it at table creation time has no effect.
 
 ---
 
@@ -131,7 +131,7 @@ deletes = stream_df.filter(
 ).select("id")
 ```
 
-> ⚠️ **Note:** The `__change_type` column name contains double underscores. Reference it with backticks: `` F.col("`__change_type`") ``
+> ⚠️ The `__change_type` column name contains double underscores. Reference it with backticks: `` F.col("`__change_type`") ``
 
 ---
 

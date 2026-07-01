@@ -1,6 +1,5 @@
 ## Overview
 
-> **[Public Preview]** This feature is currently in public preview phase.
 
 This document describes how to create an external table connected to the Kafka messaging system in SQL. By defining an external table, you can easily read data streams from Kafka and query and analyze this data as a table.
 

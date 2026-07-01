@@ -33,7 +33,7 @@ Cleaning, deduplication (QUALIFY), aggregation, date truncation — the core SQL
 
 | | Original (Snowflake) | After Migration (Lakehouse) |
 |---|---|---|
-| Compute resource | `WAREHOUSE = compute_wh` | `VCLUSTER default` |
+| Compute resource | `WAREHOUSE = compute_wh` | `VCLUSTER DEFAULT` |
 | Refresh strategy | `TARGET_LAG = '5 minutes'` | `REFRESH INTERVAL '5' MINUTE` |
 | Dependency propagation | `TARGET_LAG = 'DOWNSTREAM'` (auto cascade) | No such concept; each layer refreshes independently |
 | Manual refresh | `ALTER DYNAMIC TABLE ... REFRESH` | `REFRESH DYNAMIC TABLE ...` |
@@ -142,7 +142,7 @@ Lakehouse:
 ```sql
 CREATE OR REPLACE DYNAMIC TABLE bsg_dynamic_tables.bronze_orders
   REFRESH INTERVAL '5' MINUTE
-  VCLUSTER default
+  VCLUSTER DEFAULT
 AS
 SELECT ...
 ```

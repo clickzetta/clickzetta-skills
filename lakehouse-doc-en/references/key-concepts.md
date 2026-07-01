@@ -9,9 +9,10 @@ An account is the contractual entity between your company and Singdata, equivale
 An account is the business relationship entity of Singdata Lakehouse, representing the organization or individual that has established a partnership with Singdata.
 
 **Core Responsibilities**:
-- The account is responsible for recharging, issuing bills, paying fees, and ordering/modifying Singdata products
-- All service instances and their resource objects belong to a specific account
-- The account is the highest level of permissions and billing management
+
+* The account is responsible for recharging, issuing bills, paying fees, and ordering/modifying Singdata products
+* All service instances and their resource objects belong to a specific account
+* The account is the highest level of permissions and billing management
 
 **Account URL**: Each account has a unique access URL in the format `<account_name>.accounts.clickzetta.com`.
 
@@ -22,9 +23,10 @@ A user is a specific operator under an account, similar to an employee account i
 A user is a specific operator under an account. An account can create multiple users, and different users are assigned access to data and resources through permission controls.
 
 **Relationship with Account**:
-- Users belong to an account and cannot cross accounts
-- Users need to join a workspace to use its objects
-- Permissions can be granted to users or roles
+
+* Users belong to an account and cannot cross accounts
+* Users need to join a workspace to use its objects
+* Permissions can be granted to users or roles
 
 ## Lakehouse Instance
 
@@ -33,10 +35,11 @@ A lakehouse instance is a complete Lakehouse environment you deploy in a cloud r
 A lakehouse instance is the carrier of Singdata Lakehouse product services, containing all resources including compute, storage, and metadata.
 
 **Key Features**:
-- One account can create one or more lakehouse instances
-- Instances have a regional attribute; compute, data, and other service resources reside within the region of the cloud service provider
-- Different instances are isolated from each other by default
-- Within an instance, unified metadata management governs data objects, compute resources, and job tasks
+
+* One account can create one or more lakehouse instances
+* Instances have a regional attribute; compute, data, and other service resources reside within the region of the cloud service provider
+* Different instances are isolated from each other by default
+* Within an instance, unified metadata management governs data objects, compute resources, and job tasks
 
 ## Workspace
 
@@ -45,10 +48,11 @@ A workspace is a team's independent development environment, similar to differen
 A workspace is a logical container for organizing Lakehouse resource objects (data objects, compute resources, users, etc.) and provides supporting data development capabilities.
 
 **Core Capabilities**:
-- Organize and manage data objects such as Schemas, tables, and views
-- Provide tools for data integration, development scheduling, and operations monitoring
-- Workspaces are isolated from each other by default; users must join a workspace to use its objects
-- Cross-workspace authorization enables sharing of objects between different workspaces within the same instance
+
+* Organize and manage data objects such as Schemas, tables, and views
+* Provide tools for data integration, development scheduling, and operations monitoring
+* Workspaces are isolated from each other by default; users must join a workspace to use its objects
+* Cross-workspace authorization enables sharing of objects between different workspaces within the same instance
 
 **Relationship with Workflow**: One instance can have multiple workspaces, each with an independent development environment and scheduling system.
 
@@ -57,25 +61,27 @@ A workspace is a logical container for organizing Lakehouse resource objects (da
 This is one of the most commonly confused concepts in Lakehouse.
 
 **Workspace** is a native Lakehouse concept with two layers of meaning:
-- **Platform layer**: The top-level namespace for data objects, equivalent to a Database in traditional databases (three-level structure: `workspace.schema.table`)
-- **Studio layer**: An isolated unit for the data development environment, containing independent users, roles, VClusters, Studio task scheduling, and more
+
+* **Platform layer**: The top-level namespace for data objects, equivalent to a Database in traditional databases (three-level structure: `workspace.schema.table`)
+* **Studio layer**: An isolated unit for the data development environment, containing independent users, roles, VClusters, Studio task scheduling, and more
 
 **Catalog** is a more general term introduced with federation queries to uniformly describe "top-level namespaces":
 
-| Category | Description | How to create |
-|---|---|---|
-| `MANAGED` | Native Workspace with both platform-layer and Studio-layer capabilities | Create a Workspace in the console |
-| `EXTERNAL` | External Catalog mapping external data sources (Hive/Databricks/Iceberg, etc.) | `CREATE EXTERNAL CATALOG` |
-| `SHARED` | System-shared datasets (e.g., TPC-H, TPC-DS benchmark data) | System built-in |
+| Category   | Description                                                                    | How to create                     |
+| ---------- | ------------------------------------------------------------------------------ | --------------------------------- |
+| `MANAGED`  | Native Workspace with both platform-layer and Studio-layer capabilities        | Create a Workspace in the console |
+| `EXTERNAL` | External Catalog mapping external data sources (Hive/Databricks/Iceberg, etc.) | `CREATE EXTERNAL CATALOG`         |
+| `SHARED`   | System-shared datasets (e.g., TPC-H, TPC-DS benchmark data)                    | System built-in                   |
 
-- `SHOW WORKSPACES` and `SHOW CATALOGS` return the same results
-- `current_workspace()` and `current_catalog()` return the same value
-- Three-level naming supports both `workspace.schema.table` and `catalog.schema.table`
+* `SHOW WORKSPACES` and `SHOW CATALOGS` return the same results
+* `current_workspace()` and `current_catalog()` return the same value
+* Three-level naming supports both `workspace.schema.table` and `catalog.schema.table`
 
 **Non-MANAGED types do not support write operations**: EXTERNAL, SHARED, and the system built-in `sys` namespace are all read-only. Attempting to create tables or execute DML in them will raise permission errors:
-- SHARED: `NoPermission: Only read actions are allowed on shared object`
-- SYS: `NoPermission: Workspace sys is readonly, AT_CREATE_TABLE operation is not allowed`
-- EXTERNAL: Depends on the external data source type; typically write operations are also not supported
+
+* SHARED: `NoPermission: Only read actions are allowed on shared object`
+* SYS: `NoPermission: Workspace sys is readonly, AT_CREATE_TABLE operation is not allowed`
+* EXTERNAL: Depends on the external data source type; typically write operations are also not supported
 
 These three namespace types can be queried via three-level naming (`catalog.schema.table`), but cannot be used as write targets and have no Studio layer (no VCluster, user management, or task scheduling).
 
@@ -83,11 +89,11 @@ These three namespace types can be queried via three-level naming (`catalog.sche
 
 For users familiar with traditional databases (PostgreSQL, MySQL, Snowflake, etc.), Workspace is the **Database** in ClickZetta:
 
-| Traditional Database | ClickZetta Lakehouse |
-|---|---|
-| Database | Workspace |
-| Schema | Schema |
-| Table | Table |
+| Traditional Database    | ClickZetta Lakehouse     |
+| ----------------------- | ------------------------ |
+| Database                | Workspace                |
+| Schema                  | Schema                   |
+| Table                   | Table                    |
 | `database.schema.table` | `workspace.schema.table` |
 
 The two are fully equivalent at the SQL level with the same three-level naming structure. The main difference is that Workspace, in addition to serving as a namespace like a Database, also includes the Studio development environment (VCluster, user management, task scheduling, etc.) — making it a heavier concept.
@@ -102,17 +108,18 @@ A Virtual Cluster consists of multi-instance virtual compute clusters and the co
 
 **Three Types**:
 
-| Type | Use Case | Characteristics |
-|---|---|---|
-| **General (GP VC / GENERAL)** | Offline ETL, data development | Jobs share resources, fair scheduling |
-| **Analytics (AP VC / ANALYTICS)** | Online queries, high-concurrency analysis | Multiple compute instances, automatic scaling |
-| **Sync (Integration VC / SYNC)** | Data sync jobs | Optimized specifically for data synchronization |
+| Type                              | Use Case                                  | Characteristics                                 |
+| --------------------------------- | ----------------------------------------- | ----------------------------------------------- |
+| **General (GP VC / GENERAL**)     | Offline ETL, data development             | Jobs share resources, fair scheduling           |
+| **Analytics (AP VC / ANALYTICS**) | Online queries, high-concurrency analysis | Multiple compute instances, automatic scaling   |
+| **Sync (Integration VC / SYNC**)  | Data sync jobs                            | Optimized specifically for data synchronization |
 
 **Billing Method**: Charged by CRU (Compute Resource Unit) × hours; different cluster types have different CRU step sizes.
 
 **Elasticity**:
-- Analytics clusters support automatic scaling, adjusting compute instances based on concurrency
-- All clusters support automatic suspension and resumption, pausing automatically when idle to save costs
+
+* Analytics clusters support automatic scaling, adjusting compute instances based on concurrency
+* All clusters support automatic suspension and resumption, pausing automatically when idle to save costs
 
 ## Schema
 
@@ -121,9 +128,10 @@ A Schema is a namespace within a workspace used to organize tables, views, dynam
 A Schema is a namespace for a group of data objects within a workspace, including tables, views, dynamic tables, materialized views, and more.
 
 **Relationship with Workspace**:
-- One workspace can contain multiple Schemas
-- A Schema is the direct container for objects such as tables
-- Full three-level naming: `workspace.schema.table` (similar to `database.schema.table` in PostgreSQL/Snowflake)
+
+* One workspace can contain multiple Schemas
+* A Schema is the direct container for objects such as tables
+* Full three-level naming: `workspace.schema.table` (similar to `database.schema.table` in PostgreSQL/Snowflake)
 
 ## Table
 
@@ -142,18 +150,21 @@ A dynamic table is a data table that updates automatically. You simply define th
 A dynamic table is a data object that refreshes automatically and incrementally based on a query definition. At creation, the data processing logic is defined through a SQL query; during refresh, it automatically retrieves incremental data from the source table and processes it using incremental algorithms.
 
 **Core Advantages**:
-- **Incremental Computation**: Only processes data that has changed since the last refresh, significantly reducing compute resource consumption
-- **Automatic Refresh**: Configurable refresh interval (minutes/hours/days), no manual triggering required
-- **Version Management**: Supports Time Travel for querying historical versions and UNDROP for recovering accidental deletions
+
+* **Incremental Computation**: Only processes data that has changed since the last refresh, significantly reducing compute resource consumption
+* **Automatic Refresh**: Configurable refresh interval (minutes/hours/days), no manual triggering required
+* **Version Management**: Supports Time Travel for querying historical versions and UNDROP for recovering accidental deletions
 
 **Use Cases**:
-- DWD/DWS/ADS layer data processing
-- Metric aggregation and report wide tables
-- Replacing traditional periodic full-refresh ETL tasks
+
+* DWD/DWS/ADS layer data processing
+* Metric aggregation and report wide tables
+* Replacing traditional periodic full-refresh ETL tasks
 
 **Difference from Materialized Views**:
-- Dynamic tables focus on data processing and do not rely on the query optimizer's query rewriting
-- Materialized views focus on query acceleration; the optimizer automatically identifies and uses pre-stored results for query rewriting
+
+* Dynamic tables focus on data processing and do not rely on the query optimizer's query rewriting
+* Materialized views focus on query acceleration; the optimizer automatically identifies and uses pre-stored results for query rewriting
 
 ## Materialized View
 
@@ -162,9 +173,10 @@ A materialized view stores pre-computed results of commonly used queries. Querie
 A materialized view is a special view that pre-computes and stores query results. Unlike regular views, materialized views physically exist in the Lakehouse and consume storage resources.
 
 **Core Features**:
-- The query optimizer automatically identifies and uses materialized views for query rewriting
-- Uses periodic refresh mechanisms to keep data up to date
-- Suitable for scenarios requiring pre-computed and reusable query results
+
+* The query optimizer automatically identifies and uses materialized views for query rewriting
+* Uses periodic refresh mechanisms to keep data up to date
+* Suitable for scenarios requiring pre-computed and reusable query results
 
 ## View
 
@@ -173,8 +185,9 @@ A view is a saved query shortcut that does not store data itself. It executes th
 A view is a virtual table that does not store actual data, only saving the query definition. The underlying SQL is executed dynamically at query time.
 
 **Use Cases**:
-- Simplifying complex queries and providing a logical abstraction layer
-- Scenarios with low query complexity that do not involve heavy data processing
+
+* Simplifying complex queries and providing a logical abstraction layer
+* Scenarios with low query complexity that do not involve heavy data processing
 
 ## Table Stream
 
@@ -183,23 +196,26 @@ A Table Stream is the Lakehouse's Change Data Capture (CDC) mechanism, equivalen
 A Table Stream is the Lakehouse's Change Data Capture (CDC) mechanism used to capture change data from table objects.
 
 **How It Works**:
-- A Table Stream **does not store actual data**; it only records and maintains the data version offset of the source table
-- When queried, it returns all change records from the initial offset to the current latest version
-- When consumed through DML operations (INSERT/DELETE/UPDATE/MERGE), the offset updates automatically
+
+* A Table Stream **does not store actual data**; it only records and maintains the data version offset of the source table
+* When queried, it returns all change records from the initial offset to the current latest version
+* When consumed through DML operations (INSERT/DELETE/UPDATE/MERGE), the offset updates automatically
 
 **Two Types**:
 
-| Type | Tracking Scope | Use Case |
-|---|---|---|
-| **STANDARD** | All DML changes (INSERT, UPDATE, DELETE) | ETL scenarios requiring complete change data capture |
-| **APPEND_ONLY** | INSERT operations only | Log/event scenarios with append-only data |
+| Type             | Tracking Scope                           | Use Case                                             |
+| ---------------- | ---------------------------------------- | ---------------------------------------------------- |
+| **STANDARD**     | All DML changes (INSERT, UPDATE, DELETE) | ETL scenarios requiring complete change data capture |
+| **APPEND\_ONLY** | INSERT operations only                   | Log/event scenarios with append-only data            |
 
 **Relationship with Dynamic Tables**:
-- Table Stream is the underlying CDC mechanism responsible for capturing changes
-- Dynamic tables are advanced data processing features that perform data transformation based on incremental computation
-- The two can work together: Table Stream captures changes → Dynamic Table performs transformation and aggregation
+
+* Table Stream is the underlying CDC mechanism responsible for capturing changes
+* Dynamic tables are advanced data processing features that perform data transformation based on incremental computation
+* The two can work together: Table Stream captures changes → Dynamic Table performs transformation and aggregation
 
 **Typical Operations**:
+
 ```sql
 -- Create a Table Stream
 CREATE TABLE STREAM my_stream ON TABLE source_table
@@ -216,22 +232,24 @@ A Pipe is a continuously running data ingestion pipeline, similar to a water pip
 A Pipe is the Lakehouse's continuous data ingestion pipeline object, used to continuously ingest data from Kafka or object storage (OSS/S3/COS) into tables.
 
 **Core Features**:
-- A Pipe is a **SQL object** created and managed through DDL
-- After creation it runs continuously, automatically reading data from the source and writing to the target table
-- No need to configure Cron scheduling; the Pipe itself is a continuously running streaming task
+
+* A Pipe is a **SQL object** created and managed through DDL
+* After creation it runs continuously, automatically reading data from the source and writing to the target table
+* No need to configure Cron scheduling; the Pipe itself is a continuously running streaming task
 
 **Difference from Studio Sync Tasks**:
 
-| Dimension | Pipe | Studio Sync Task |
-|---|---|---|
-| Creation Method | SQL DDL | Studio visual interface |
-| Management Method | SQL commands | Studio interface + cz-cli |
-| Data Sources | Kafka, object storage | Relational databases, Kafka, object storage |
-| Use Case | Users familiar with SQL | Users preferring visual configuration |
+| Dimension         | Pipe                    | Studio Sync Task                            |
+| ----------------- | ----------------------- | ------------------------------------------- |
+| Creation Method   | SQL DDL                 | Studio visual interface                     |
+| Management Method | SQL commands            | Studio interface + cz-cli                   |
+| Data Sources      | Kafka, object storage   | Relational databases, Kafka, object storage |
+| Use Case          | Users familiar with SQL | Users preferring visual configuration       |
 
 **Two Types**:
-- **Kafka Pipe**: Continuously consumes data from Kafka topics and writes to Lakehouse tables
-- **Object Storage Pipe**: Continuously scans new files from OSS/S3/COS and ingests them
+
+* **Kafka Pipe**: Continuously consumes data from Kafka topics and writes to Lakehouse tables
+* **Object Storage Pipe**: Continuously scans new files from OSS/S3/COS and ingests them
 
 ## Volume
 
@@ -241,19 +259,21 @@ A Volume is the Lakehouse's object storage mount point, used to access files in 
 
 **Four Types**:
 
-| Type | Description | Creation Method | Storage Location |
-|---|---|---|---|
-| **External Volume** | Mounts user-owned object storage (OSS/COS/S3), data stays in place | `CREATE EXTERNAL VOLUME` | User-owned cloud storage |
-| **Managed Volume** | Lakehouse-managed internal storage, platform handles storage management | `CREATE VOLUME` | Lakehouse internal storage |
-| **User Volume** | Per-user file space for uploading temporary files, import/export | Created automatically by the system | Lakehouse internal storage |
-| **Table Volume** | Per-table file space storing the table's data files | Created automatically (one per table) | Lakehouse internal storage |
+| Type                | Description                                                             | Creation Method                       | Storage Location           |
+| ------------------- | ----------------------------------------------------------------------- | ------------------------------------- | -------------------------- |
+| **External Volume** | Mounts user-owned object storage (OSS/COS/S3), data stays in place      | `CREATE EXTERNAL VOLUME`              | User-owned cloud storage   |
+| **Managed Volume**  | Lakehouse-managed internal storage, platform handles storage management | `CREATE VOLUME`                       | Lakehouse internal storage |
+| **User Volume**     | Per-user file space for uploading temporary files, import/export        | Created automatically by the system   | Lakehouse internal storage |
+| **Table Volume**    | Per-table file space storing the table's data files                     | Created automatically (one per table) | Lakehouse internal storage |
 
 **Relationship with Tables**:
-- Volume manages **files**; Table manages **structured data**
-- Volume is the channel for data entering the lake; Table is the target of data processing
-- Use `COPY INTO` to import file data from Volume into Table
+
+* Volume manages **files**; Table manages **structured data**
+* Volume is the channel for data entering the lake; Table is the target of data processing
+* Use `COPY INTO` to import file data from Volume into Table
 
 **Typical Operations**:
+
 ```sql
 -- View file list in an External/Managed Volume
 SELECT * FROM DIRECTORY(VOLUME schema_name.vol_name);
@@ -278,19 +298,21 @@ Time Travel lets you look back at historical data like a "time machine" — you 
 Time Travel is the Lakehouse's historical data access feature that allows users to access data at any point in time within a defined time range.
 
 **Core Mechanism**:
-- Based on MVCC (Multi-Version Concurrency Control), each data change generates a new version
-- Retains 1 day of historical data by default, configurable from 0 to 90 days
-- Supports querying historical versions, recovering accidentally dropped tables (UNDROP), and rolling back data (RESTORE)
+
+* Based on MVCC (Multi-Version Concurrency Control), each data change generates a new version
+* Retains 1 day of historical data by default, configurable from 0 to 90 days
+* Supports querying historical versions, recovering accidentally dropped tables (UNDROP), and rolling back data (RESTORE)
 
 **Three Capabilities**:
 
-| Capability | Command | Use Case |
-|---|---|---|
-| Historical Query | `SELECT * FROM table TIMESTAMP AS OF '...'` | Compare data changes at different points in time |
-| Recover Dropped Table | `UNDROP TABLE table_name` | Recover a table after it has been DROPped |
-| Rollback Data | `RESTORE TABLE table_name TO TIMESTAMP AS OF '...'` | Rollback after data is mistakenly modified/deleted |
+| Capability            | Command                                             | Use Case                                           |
+| --------------------- | --------------------------------------------------- | -------------------------------------------------- |
+| Historical Query      | `SELECT * FROM table TIMESTAMP AS OF '...'`         | Compare data changes at different points in time   |
+| Recover Dropped Table | `UNDROP TABLE table_name`                           | Recover a table after it has been DROPped          |
+| Rollback Data         | `RESTORE TABLE table_name TO TIMESTAMP AS OF '...'` | Rollback after data is mistakenly modified/deleted |
 
 **Typical Operations**:
+
 ```sql
 -- Query data at a specific point in time (TIMESTAMP AS OF only accepts literals, not expressions)
 SELECT * FROM orders TIMESTAMP AS OF '2024-01-15 09:00:00';
@@ -309,8 +331,9 @@ Data Lifecycle is a mechanism that sets an "expiration date" on data. Data that 
 Data Lifecycle is the Lakehouse's automatic data cleanup mechanism; expired data that has not been updated is automatically reclaimed.
 
 **Difference from Time Travel**:
-- Time Travel: Retains historical versions for querying and recovery
-- Data Lifecycle: Automatically cleans up expired data for storage cost control
+
+* Time Travel: Retains historical versions for querying and recovery
+* Data Lifecycle: Automatically cleans up expired data for storage cost control
 
 ## External Catalog
 
@@ -319,20 +342,22 @@ An External Catalog allows you to query tables in external systems without movin
 An External Catalog is the Lakehouse's federated query feature for accessing data in external data sources (Hive, Databricks, Snowflake Iceberg, etc.) without needing to copy the data.
 
 **Core Features**:
-- **Read-Only Access**: INSERT/UPDATE/DELETE operations are not supported
-- **No Data Copy**: Data remains in the external system; the Lakehouse only reads metadata and data files
-- **Unified Entry Point**: Query external data through standard SQL just like querying local tables
+
+* **Read-Only Access**: INSERT/UPDATE/DELETE operations are not supported
+* **No Data Copy**: Data remains in the external system; the Lakehouse only reads metadata and data files
+* **Unified Entry Point**: Query external data through standard SQL just like querying local tables
 
 **Supported Data Sources**:
 
-| Data Source | Connection Method | Description |
-|---|---|---|
-| **Apache Hive** | Hive Metastore URIs | Access Hive tables through Hive Metastore |
-| **Databricks Unity Catalog** | Databricks API | Access tables in Databricks |
-| **Iceberg REST Catalog** | Iceberg REST API | Access any data catalog compatible with the Iceberg REST protocol |
-| **Snowflake Open Catalog** | Iceberg REST API + OAuth | Snowflake's managed catalog service based on the Iceberg REST protocol |
+| Data Source                  | Connection Method        | Description                                                            |
+| ---------------------------- | ------------------------ | ---------------------------------------------------------------------- |
+| **Apache Hive**              | Hive Metastore URIs      | Access Hive tables through Hive Metastore                              |
+| **Databricks Unity Catalog** | Databricks API           | Access tables in Databricks                                            |
+| **Iceberg REST Catalog**     | Iceberg REST API         | Access any data catalog compatible with the Iceberg REST protocol      |
+| **Snowflake Open Catalog**   | Iceberg REST API + OAuth | Snowflake's managed catalog service based on the Iceberg REST protocol |
 
 **Typical Operations**:
+
 ```sql
 -- Query a table in an external Catalog
 SELECT * FROM ext_catalog.ext_schema.ext_table;
@@ -350,11 +375,13 @@ Data Share lets you "grant" tables or views to other lakehouse instances. The re
 Data Share is the Lakehouse's cross-instance data sharing feature that allows real-time sharing of tables or views with other lakehouse instances without copying data.
 
 **Core Features**:
-- **No Copy**: The consumer reads the provider's original data directly when querying
-- **Real-Time Sync**: Changes on the provider side are immediately visible to the consumer
-- **Read-Only Access**: Consumers can only query; they cannot modify, delete, or re-share
+
+* **No Copy**: The consumer reads the provider's original data directly when querying
+* **Real-Time Sync**: Changes on the provider side are immediately visible to the consumer
+* **Read-Only Access**: Consumers can only query; they cannot modify, delete, or re-share
 
 **Operation Flow**:
+
 ```
 Provider: CREATE SHARE → GRANT TO SHARE → ALTER SHARE ADD INSTANCE
                                                     ↓
@@ -362,6 +389,7 @@ Consumer: SHOW SHARES → DESC SHARE → CREATE SCHEMA FROM SHARE → SELECT que
 ```
 
 **Typical Operations**:
+
 ```sql
 -- Provider: Create Share and grant privileges
 CREATE SHARE my_share;
@@ -380,15 +408,16 @@ Lakehouse Studio is the web-based operational interface of Singdata Lakehouse, e
 Lakehouse Studio is the web-based graphical interface provided by Singdata Lakehouse. It is a **unified data development and governance platform** that integrates data integration, development scheduling, operations monitoring, data catalog, and other capabilities.
 
 **Main Modules**:
-- **Data Sync**: Configure offline/real-time data sync tasks
-- **Task Development**: Web IDE for SQL/Python/Shell task development
-- **Task Scheduling**: Configure Cron expressions and task dependencies
-- **Operations Monitoring**: View task execution status, logs, and alerts
-- **Data Catalog**: Global search and filter for table metadata
-- **Data Quality**: Configure data quality check rules
-- **Compute Management**: Manage compute clusters
-- **Agent**: AI Agent integration, supporting conversational data analysis and MCP Server management
 
----
+* **Data Sync**: Configure offline/real-time data sync tasks
+* **Task Development**: Web IDE for SQL/Python/Shell task development
+* **Task Scheduling**: Configure Cron expressions and task dependencies
+* **Operations Monitoring**: View task execution status, logs, and alerts
+* **Data Catalog**: Global search and filter for table metadata
+* **Data Quality**: Configure data quality check rules
+* **Compute Management**: Manage compute clusters
+* **Agent**: AI Agent integration, supporting conversational data analysis and MCP Server management
+
+***
 
 See the [Product Object Model](object_model_design.md) for detailed product concepts.

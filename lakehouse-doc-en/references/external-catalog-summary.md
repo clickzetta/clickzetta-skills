@@ -1,38 +1,33 @@
-# Overview
-**[Preview Release] This feature is currently in public preview.**
+# External Catalog
 
-External Catalog is a secure object in Lakehouse that maps databases from external data systems, allowing users to perform read-only queries on these data systems within Lakehouse. Through External Catalog, users can leverage Lakehouse's query capabilities to access and analyze data stored in external databases.
+External Catalog is the federated query entry point in Lakehouse, mapping the metadata catalogs of external data systems (Hive, Databricks, Snowflake, etc.) into Lakehouse, allowing you to query external data directly with standard SQL — no data copying required.
 
-# External Catalog Use Cases
-* **Unified Metadata Management**: Manage metadata from multiple data sources in a unified manner, simplifying data governance.
-- **Data Federation Query**: With External Catalog, users can perform federated queries across different data sources as if they were data within the same database. Through federated queries, users can access and analyze data stored in external systems in real-time without waiting for data synchronization.
-- **Data Import**: Import data scattered across different data sources into Lakehouse to build a unified data lake, facilitating big data analysis and machine learning. Retain historical data or infrequently accessed data in external storage and import it into Lakehouse through External Catalog to optimize data warehouse storage and performance.
+**Difference from External Schema**: External Catalog is an independent top-level catalog accessed with three-level naming `catalog.schema.table`; External Schema is a Schema mounted into the current workspace, accessed with two-level naming `schema.table`, which is better suited for integrating Hive databases into an existing workspace. See [Organization Hierarchy](org-hierarchy.md).
 
-# Using External Catalog
+## Supported Data Sources
 
-1. **Create Connection**: First, you need to create a connection in Catalog Connection. This connection is a secure object that specifies the path and authentication information for accessing the external database system.
-2. **Create External Catalog**: Using the created connection, you can create an external catalog. This catalog exists as a secure object in External Catalog, mirroring the database structure in the external data system.
-3. **Execute Query**: Once the external catalog is created, users can write SQL queries in Lakehouse.
+| Data Source | Connection Method |
+|--------|---------|
+| Apache Hive | Hive Metastore URIs |
+| Databricks Unity Catalog | Databricks API |
+| Iceberg REST Catalog | Iceberg REST API |
+| Snowflake Open Catalog | Iceberg REST API + OAuth |
 
-# Supported Data Sources
+## Use Cases
 
-Lakehouse supports Apache Hive connection access through the Multi-Catalog feature.
+- **Cross-platform federated queries**: Query Lakehouse local data and Hive/Databricks data simultaneously — no ETL required
+- **In-place data lake acceleration**: Keep data in OSS/HDFS and use Lakehouse to replace Spark/Hive for ETL or Presto/Trino for ad-hoc queries
+- **Gradual migration**: Maintain business continuity through External Catalog during migration; switch over after verifying data consistency
 
-# EXTERNAL CATALOG Related Syntax
-- Create External Catalog
-Refer to [CREATE EXTERNAL CATALOG](<create-external-catalog.md>)
-- List Catalog
-Refer to [SHOW CATALOG](<show-catalog.md>)
-- View SCHEMA under Catalog
-Refer to [View SCHEMA under EXTERNAL CATALOG](<show-catalog-schema.md>)
-- List Tables under CATALOG
-Refer to [List Tables under CATALOG](<show-catalog-table.md>)
-- Query Tables under CATALOG
-Refer to [Query Tables under CATALOG](<show-catalog-table.md>)
-- Create Table Structure under CATALOG
-Refer to [View Table Structure under CATALOG](<desc-catalog-table.md>)
+## Permissions
 
-# Permissions
-Currently, only the instance admin role can query the created CATALOG.
-# Use Cases
-Refer to [Create HIVE CATALOG](<create-hive-catalog.md>)
+Currently, only the `instance_admin` role can query the created External Catalog.
+
+## Related Documentation
+
+- [In-Place Lake Acceleration Implementation Guide](lakehouse-acceleration-guide.md) — Rapid POC validation, replacing Spark/Hive and Presto/Trino without moving data
+- [External Catalog Federated Queries](external-catalog-concept.md) — Detailed usage guide, operation examples, architecture principles
+- [Create External Catalog](create-external-catalog.md) — CREATE EXTERNAL CATALOG syntax
+- [Create Hive Catalog](create-hive-catalog.md) — Hive connection configuration
+- [External Schema](external-schema.md) — Mount an external Hive database into a workspace
+- [Organization Hierarchy](org-hierarchy.md) — External Catalog vs External Schema selection guide

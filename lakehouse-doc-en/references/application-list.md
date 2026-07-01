@@ -10,10 +10,8 @@ You must have already applied for resource permissions. For related operation in
 
 Click **Approval > Application** in the left menu to enter the **Application Records** page.
 
-![](.topwrite/assets/image_1736245885982.png)
-
 You can perform the following operations:
-![](.topwrite/assets/image_1736245926683.png)
+
 
 * **View work order details**: Click a **Work Order ID** in the list. In the pop-up side panel, you can view details of the work order, including application details, requested resources, approval status, etc.
 

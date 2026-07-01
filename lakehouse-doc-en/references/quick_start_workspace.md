@@ -8,7 +8,6 @@ To achieve both isolation and ease of data exchange within a service instance, p
 
 When a user has permissions for data objects within a workspace, they can perform cross-space queries or other operations within the scope of their permissions on these data objects in other workspaces.
 
-:-: ![](.topwrite/assets/workspace_1735992503899.png =814)
 
 As shown in the figure above, multiple workspaces can be created within a Lakehouse service instance. A service instance user can be added to multiple workspaces simultaneously and be granted permissions for objects within those workspaces.
 
@@ -37,11 +36,9 @@ After the service instance is activated, the system will create a workspace name
 
 In the "Account Home" of the control center, click on the activated service instance to enter the homepage of the service instance.
 
-:-: ![](.topwrite/assets/image_1721463116737.png =745)
 
 On the homepage of the service instance, click on any function in the left function menu such as "Development", "Computing", "Operations Monitoring", etc. The workspaces that the current account has permission to access will be listed in the upper right corner of the page, supporting switching. When using a single workspace, it defaults to the only workspace within the service instance. At this time, all task scripts and scheduling jobs are within this workspace.
 
-:-: ![](.topwrite/assets/image_1721463152612.png =743)
 
 ## Creating and Using Multiple Workspaces
 
@@ -55,7 +52,6 @@ The instance administrator (instance\_admin) role of the service instance can cr
 
 Enter the "Management - Workspace" menu, click "New Space" on the workspace management page, fill in the required information, and create it.
 
-:-: ![](.topwrite/assets/image_1721463203358.png =794)
 
 ^
 
@@ -65,7 +61,6 @@ The user who creates the new workspace will be granted the workspace administrat
 
 When using multiple workspaces, you can switch between different workspace environments through the workspace button in the upper right corner of the "Development", "Computing", "Operations Monitoring" and other function pages.
 
-:-: ![](.topwrite/assets/image_1736089880260.png =785)
 
 ^
 

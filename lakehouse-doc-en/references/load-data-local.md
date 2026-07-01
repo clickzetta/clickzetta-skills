@@ -8,7 +8,7 @@ This document provides a detailed introduction on how to import local data into 
 
 ## Reference Documents
 
-[Download data using the client COPY command](copy.md)
+[Download data using the client COPY command](sql_copy_into_guide.md)
 
 ## Application Scenarios
 

@@ -599,7 +599,7 @@ By following these best practices, you will be able to fully leverage the Singda
 
 1. [Singdata Table Stream Documentation](tablestream_summary.md) - Feature description and syntax reference
 2. [Singdata Table Stream Creation Syntax](create-table-stream.md) - Detailed creation syntax and parameter descriptions
-3. [Change Data Capture (CDC) Best Practices](czguide-intro-to-cdc-using-clickzetta-rtsync-dynamic-tables.md) - General best practices related to change data capture
+3. [Change Data Capture (CDC) Best Practices](sql_table_stream_guide.md) - General best practices related to change data capture
 4. [Singdata SQL Reference Manual](sql-reference.md) - Complete SQL syntax reference, including Table Stream related operations
 
 ***

@@ -468,6 +468,6 @@ DROP TABLE IF EXISTS doc_funnel_events;
 ## Related Documentation
 
 * [Window Functions](windowfunction.md)
-* [Date and Time Functions](datetime_patterns.md)
+* [Date and Time Functions](sql_functions/scalar_functions/datetime_functions/datetime_patterns.md)
 * [QUALIFY Clause](sql-qualify.md)
 * [GROUP BY Clause](groupby.md)

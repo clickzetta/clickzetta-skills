@@ -1,3 +1,5 @@
+# FineBI Connection Guide
+
 FineBI is a Business Intelligence product launched by FanRuan Software Co., Ltd. FineBI is a new-generation big data analytics BI tool designed to help business personnel fully understand and utilize their data. This article describes how to use the MySQL protocol to connect to Lakehouse.
 
 # Prerequisites

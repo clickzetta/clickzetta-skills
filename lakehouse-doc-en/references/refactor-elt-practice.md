@@ -28,7 +28,6 @@ Simplify the data task development and operations environment through Singdata L
 
 * [Task Scheduling and Operations](task-instance-maintenance.md): From Airflow to task scheduling and operations in Singdata Lakehouse Studio.
 
-  ![](.topwrite/assets/image_1734348698701.png =460)
 
 ### [Multi-Data-Type Support](data-type.md)
 
@@ -44,7 +43,6 @@ Singdata Lakehouse supports efficient storage and access for the following data 
 
 * Full-text inverted index
 
-  ![](.topwrite/assets/image_1734348746004.png =380)
 
 ### [Dynamic Table](dynamic-table.md)
 
@@ -56,7 +54,6 @@ The Dynamic Table provided by Singdata has the following typical features:
 * Easy Switching: A single command transitions from batch processing to streaming processing, balancing cost and freshness.
 * Observability: Dynamic Tables can be managed through the Singdata Lakehouse Web Console Studio, improving observability.
 
-  ![](.topwrite/assets/image_1734348809529.png =450)
 
 ^
 
@@ -82,7 +79,6 @@ Example GitHub event data:
 
 Next, we develop a Python task through Singdata Lakehouse Studio to extract data from the GH Archive website into data lake storage (this solution uses Alibaba Cloud OSS).
 
-![](.topwrite/assets/image_1734348912514.png)
 
 ^
 
@@ -161,7 +157,6 @@ if file_obj:
 
 Singdata Lakehouse Studio supports loading data from data lakes into Lakehouse tables via offline sync tasks, storing it in optimized formats and enabling fine-grained permission management.
 
-![](.topwrite/assets/image_1734348942887.png)
 
 ^
 
@@ -171,7 +166,6 @@ Singdata Lakehouse Dynamic Tables support incremental refresh optimization by pr
 
 This article uses Dynamic Tables for data cleaning and transformation.
 
-![](.topwrite/assets/image_1734348956194.png)
 
 ^
 
@@ -179,7 +173,6 @@ This article uses Dynamic Tables for data cleaning and transformation.
 
 Singdata Lakehouse has a built-in, convenient SQL query interface where you can freely write SQL code, use variables, select clusters, and perform flexible ad hoc data analysis. It is also convenient for debugging.
 
-![](.topwrite/assets/image_1734348969154.png)
 
 ^
 
@@ -187,7 +180,6 @@ Singdata Lakehouse has a built-in, convenient SQL query interface where you can 
 
 Based on the JDBC task nodes provided by Lakehouse Studio, you can conveniently connect to MindsDB for enhanced data analysis.
 
-![](.topwrite/assets/image_1734348988810.png)
 
 ^
 
@@ -195,7 +187,6 @@ Based on the JDBC task nodes provided by Lakehouse Studio, you can conveniently 
 
 Configure scheduling and dependency relationships for the ELT tasks just developed, ensuring tasks run on an hourly cycle. Submit and publish the tasks so that GitHub event data can be synced hourly from GHArchive (with a one-hour lag) and cleaned and transformed.
 
-![](.topwrite/assets/image_1734349005883.png)
 
 ^
 
@@ -205,7 +196,6 @@ For data backfill tasks in Singdata Lakehouse Studio, you can fully reuse the in
 
 Taking GHArchive data as an example, its website (http://www.gharchive.org/) has data starting from February 12, 2011. Configure the backfill task as shown below and run it to achieve full data sync. Backfill tasks can run concurrently with incremental data sync tasks, and there is no need to develop a new full sync task.
 
-![](.topwrite/assets/image_1734349021555.png)
 
 ^
 ^
@@ -216,7 +206,6 @@ Singdata Lakehouse Studio also provides comprehensive operations interfaces, suc
 
 ^
 
-![](.topwrite/assets/image_1734349033926.png)
 
 ^
 ^

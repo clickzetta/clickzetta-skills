@@ -16,16 +16,9 @@ The tutorial will be completed through the following steps:
 
 ## Step01. Preparation
 
-First, after logging into the Lakehouse Web console and entering the specified workspace, you can access the "Data" module to check whether the relevant tables under "clickzetta\_sample\_data.tpch\_100gb" exist in the data object list under data management.
-![](.topwrite/assets/image_1716285499384.png)
+First, after logging into the Lakehouse Web console and entering the specified workspace, go to **Data** and verify that the tables under `clickzetta_sample_data.tpch_100g` appear in the data object list.
 
-Next, we will temporarily create an independent compute cluster for query analysis for this test. You can create a new cluster through the "Compute → Clusters" menu in the Lakehouse Web console using the page wizard.
-![](.topwrite/assets/tpch_100g_vc.png)
-
-At the same time, you can also create a cluster using SQL commands. When operating with SQL commands, you can control cluster creation, scaling, pausing/resuming, and destruction through SQL commands during Ad-hoc or ETL development processes without leaving the SQL development context, which typically improves the efficiency of computing resource operations.
-
-In this tutorial, you can quickly create a cluster by creating a new SQL script task in the "Development" module and executing the following script.
-![](.topwrite/assets/image_1716953675576.png)
+Next, create an independent compute cluster for this test. You can do this through **Compute → Clusters** in the Web console, or by running the SQL command below in **Development**.
 
 ```sql
 -- Create analytical virtual computing resources
@@ -38,8 +31,7 @@ create vcluster if not exists TPCH_100GB vcluster_size='Medium' vcluster_type='A
 
 ## Step02. Perform TPC-H Queries on Sample Data
 
-In the "Development" module, create a new SQL script task, enter the 22 TPC-H query statements, select the test cluster you just created from the "Cluster" dropdown list, then select all scripts in the task and click the "Run" button to perform serial queries.
-![](.topwrite/assets/image_1716953736183.png)
+In **Development**, create a new SQL script, select the `TPCH_100GB` cluster from the **Cluster** dropdown, paste all 22 queries below, select all, and click **Run** to execute them serially.
 
 The query script is as follows:
 
@@ -738,31 +730,17 @@ order by
 
 ```
 
-After execution, you can view the runtime of this task through the current SQL Editor's execution history.
-![](.topwrite/assets/image_1716953511204.png)
+After execution, check the runtime of each query in the SQL Editor's **Execution History** tab at the bottom of the page.
 
-If you wish to perform performance testing, you can execute the query more than twice consecutively so that the compute cluster can fully cache the data for optimal performance. At the same time, Singdata Lakehouse also provides a system-level active caching (Cache) feature, which is not covered in this tutorial. Below is the result of the second run, showing the performance improvement after the compute cluster caches the data compared to the first run without caching.
-![](.topwrite/assets/image_1716954084738.png)
-
-If you wish to view the execution details of each of the 22 queries, you can access "Compute → Job History" and filter the query history by the query tag "tpch100g_benchmark".
-![](.topwrite/assets/image_1716285600039.png)
+If you wish to perform performance testing, run the queries at least twice so the cluster can fully warm up its cache. The second run typically shows significantly lower latency than the first. To view per-query execution details, go to **Compute → Job History** and filter by the tag `tpch100g_benchmark`.
 
 ## Step03. Expand the Cluster Size and Query the Sample Data with TPC-H Again
 
-Through the "Compute → Clusters" management page, you can modify the size of the test cluster you just created, for example, from M to L, where the L size is twice that of M.
-![](.topwrite/assets/tpch_vc_edit_to_L.png)
-
-Or execute the following command in the SQL script to modify:
+Through **Compute → Clusters**, modify the size of the test cluster from Medium to Large (Large provides twice the compute resources of Medium). Or run the SQL command below:
 
 ```sql
 -- Modify cluster size
 alter vcluster TPCH_100GB SET VCLUSTER_SIZE = 'LARGE';
 ```
 
-After modification, use the resized cluster to perform the query test again.
-![](.topwrite/assets/image_1716954399887.png)
-After the newly scaled compute nodes are fully cached, performance will continue to improve.
-![](.topwrite/assets/image_1716954453780.png)
-![](.topwrite/assets/image_1716954471528.png)
-
-By observing the running time of the jobs, it can be seen that with the same data scale and query tasks, the overall running time of the task is greatly reduced after expanding the compute cluster size. After two executions, as the data is cached, query performance is further improved.
+After modification, re-run the 22 TPC-H queries with the resized cluster. The first run after scaling establishes a fresh cache; the second run benefits from full cache warmup and shows further improvement. Overall task runtime is significantly reduced compared to the smaller cluster, demonstrating the linear performance scaling of Singdata Lakehouse compute resources.

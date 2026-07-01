@@ -8,9 +8,9 @@ One of the main tasks of a data warehouse engineer is building an offline data w
 
 Before reading this guide, it is recommended to complete reading and understanding the following documents:
 
-* [Lakehouse Product Introduction](what_is_clickzetta_lakehouse.md)
-* [Key Concepts](key_concepts.md)
-* [Lakehouse Studio Quick Tour](lakehousestudiotour.md)
+* [Lakehouse Product Introduction](datalake_overview.md)
+* [Key Concepts](key-concepts.md)
+* [Lakehouse Studio Quick Tour](lakehouse-studio-101.md)
 
 ## Operation Guide
 
@@ -22,25 +22,23 @@ Users with `workspace_admin` or `workspace_dev` role permissions are required to
 
 ### Creating a SQL Task
 
-1. Use the operation entry shown below to create a SQL task:
+1. Use the operation entry to create a SQL task.
 
-   ![](.topwrite/assets/image_1748425848352.png)
 
 2. In the task creation dialog, name the task "SQL_DWS_Aggregation" and create a dedicated folder named "Data Processing".
 
-   ![](.topwrite/assets/image_1748425859150.png)
+
 
 3. After the SQL task is created, as shown below, you can write specific SQL code in the editor area.
 
-   ![](.topwrite/assets/image_1748425869532.png)
+
 
 4. Previously, through the data sync task, MySQL data has been synced to the test_json table in Lakehouse. In the SQL task, perform aggregation processing based on this table's data, such as summing the c2_tinyint_column and c3_smallint_column fields respectively. Navigate to the "Data" tab, locate the target table test_json, and click "Data Query" in the action bar. This will automatically insert a SELECT code template into the editor, as shown below, helping to improve code writing efficiency.
 
-   ![](.topwrite/assets/image_1748425911494.png)
 
 5. Modify the above code template to the desired processing logic, then save. This is just for demonstration purposes, simplified processing, and the aggregation results are not written to a new table.
 
-   ![](.topwrite/assets/image_1748425934078.png)
+
 
    ```SQL
         SELECT   SUM(c2_tinyint_column),         
@@ -54,44 +52,42 @@ After completing the creation of the sync task and SQL task, to build a complete
 
 1. Open the sync task and click the "Schedule" button on the page to open the scheduling configuration.
 
-   ![](.topwrite/assets/image_1748426012421.png =633)
+
 
 2. Configure Scheduling Time: Configure to schedule daily, run multiple times, once every hour, as shown below. Use "Preview Schedule Time" to view the specific scheduled times corresponding to the configuration.
 
-   ![](.topwrite/assets/image_1748426023159.png =722)
 
-   ![](.topwrite/assets/image_1748426030471.png =397)
 
 3. Configure Instance Information: The main thing to configure here is "Instance Rerun Mode". Since this task does not have data idempotency issues when rerunning, it can be rerun. Therefore select "Can be rerun regardless of success or failure". Other properties can use default values.
 
-   ![](.topwrite/assets/image_1748426041609.png =386)
+
 
 4. Configure Scheduling Dependencies: The sync task is the first task in the pipeline and has no upstream dependencies, so leave this blank.
 
-   ![](.topwrite/assets/image_1748426049779.png =386)
+
 
 5. Configure Task Output: Task output is used to describe which table this task writes to, so that downstream tasks consuming this table can intelligently identify the corresponding upstream task. Click the "Smart Parse" button, and the system will automatically resolve the current task's output table through the task configuration and backfill it into the configuration.
 
-   ![](.topwrite/assets/image_1748426056766.png =386)
+
 
 6. After completing the above scheduling configuration, click the "OK" button at the bottom right of the page to save the configuration. Return to the task page, and as shown below, the "Submit" button will become clickable.
 
-   ![](.topwrite/assets/image_1748426062758.png)
+
 
 7. Click the "Submit" button, verify the information again in the popup dialog, then click OK. The sync task will be submitted to the production environment for periodic scheduled execution.
 
-   ![](.topwrite/assets/image_1748426068998.png)
+
 
 8. Switch to the SQL task, and click the "Schedule" button on the page to open the scheduling configuration. The properties to configure are the same as for the sync task, i.e.:
 
       1. Configure to schedule multiple times per day, once every hour.
       2. Configure the rerun property as "Can be rerun regardless of success or failure".
       3. Pay special attention to configuring the SQL task's dependency on the sync task. Click the "Smart Parse" button on the page to automatically identify the sync task that the SQL task depends on and backfill it automatically; you can also add it manually.
-      ![](.topwrite/assets/image_1748426078453.png =386)
+
 
 9. Similarly, after the SQL task's scheduling configuration is complete, click the "OK" button at the bottom right of the page to save the configuration. Return to the task page, and click the "Submit" button to also submit the SQL task for scheduled execution.
 
-   ![](.topwrite/assets/image_1748426087176.png)
+
 
 10. Enter "Task Operations" to view the actual results. There are two ways to enter:
 
@@ -99,19 +95,19 @@ After completing the creation of the sync task and SQL task, to build a complete
 
     * Method 2: Click the "Operations" button directly on the task to go directly to the task's details page in the Operations Center. This method is recommended.
 
-      ![](.topwrite/assets/image_1748426094142.png)
+
 
 11. View the task details, as shown below. As expected, the SQL task depends on the sync task:
 
-    ![](.topwrite/assets/image_1748426100418.png)
+
 
 12. Click the "Task Instances" tab to see the list of specific instances corresponding to the task. Instances have been generated according to the configured scheduled time (only instances after the task submission time are generated):
 
-    ![](.topwrite/assets/image_1748426139524.png)
+
 
 13. Click an instance ID to enter the instance details page for viewing. When the scheduled time arrives, the upstream sync task instance runs first. After it runs successfully, the downstream SQL task instance starts running. Two conditions must be simultaneously met for an instance to be triggered to run (necessary and sufficient conditions): the instance's own scheduled time has arrived, AND the upstream instance is in a successful state.
 
-    ![](.topwrite/assets/image_1748426146577.png)
+
 
 14. At this point, a complete ETL pipeline has been orchestrated, built, and submitted for periodic scheduling and execution.
 

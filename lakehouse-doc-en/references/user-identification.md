@@ -13,7 +13,7 @@ This documentation covers the following topics in detail:
 
 Users in Singdata can be divided into two levels based on their scope: **global account users** and **Lakehouse service instance users**. These two levels help enterprises manage all users under an account globally across multi-cloud and multi-region service instances, while also differentiating permission scopes for different users based on the service instance.
 
-:-: ![User Hierarchy](.topwrite/assets/用户层级.png =740)
+
 
 ^
 
@@ -21,7 +21,7 @@ Users in Singdata can be divided into two levels based on their scope: **global 
 
 Global users are users who perform global management and configuration on the Singdata platform. Each user has an independent identity in the system, with a unique username and password. Within an account, the username (user_name) must be unique to distinguish different user identities. Phone numbers, email addresses, and other information can be duplicated across different users.
 
-:-: ![](.topwrite/assets/image_1735044530952.png =800)
+
 
 ^
 
@@ -31,7 +31,6 @@ Service instance users are users within a specific service instance (instance) s
 
 Service instance users are granted the "instance_user" role by default, which has no data or functional permissions. They need to be further granted permissions within the instance or workspace before they can perform operations.
 
-:-: ![](.topwrite/assets/image_1735044611663.png =800)
 
 ***
 

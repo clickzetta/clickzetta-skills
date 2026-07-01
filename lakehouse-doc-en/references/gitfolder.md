@@ -7,7 +7,6 @@ If the address of the Git repository you need to associate is not public, you ne
 Operation entry: Left navigation menu -> More -> Associate Git
 
 Click Add to create an account link.
-![](/.topwrite/assets/image_1775805505891.png)
 
 Display Name: A user-defined name for the currently managed account.
 
@@ -18,7 +17,6 @@ Access Token: The access token created by the user in GitLab. Note that if you n
 ## Create Git Folder
 
 On the development page, click "New" and select the "Git Folder" type to create a special folder type associated with a Git repository.
-![](/.topwrite/assets/image_1775805519588.png)
 
 **Type**: Git Folders support two types. Only Git Folders of the same type can be created within the same workspace.
 
@@ -42,7 +40,6 @@ After creating a Git Folder, the content of the remote repository will be cloned
 > Singdata Studio will only clone content that complies with the Singdata task script specification. If there is content in the remote repository that does not comply with the specification, it will be automatically filtered out.
 
 Click the "Git" button on the toolbar to open the Git operation panel. Through this panel, you can implement version control, collaboration, and CI/CD with the remote Git repository. The Git panel supports operations including: Commit and Push, Pull, Branch Merge, and visual diff comparison during commits.
-![](/.topwrite/assets/image_1775805531974.png)
 
 1. The branch you are currently using. This is the branch you selected for cloning when creating the Git Folder. Switching to other branches is currently not supported.
 2. Commit your work to the working branch and push the updated branch to the remote Git repository.
@@ -55,3 +52,5 @@ Click the "Git" button on the toolbar to open the Git operation panel. Through t
 
 6. Add a commit message, and optionally add a detailed description of the changes.
 7. Display the current branch history.
+
+^

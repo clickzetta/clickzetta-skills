@@ -16,7 +16,6 @@ Suitable for manually importing small amounts of data, user debugging, and testi
 
 Navigate to Development -> Tasks, and click "+" to create a new SQL task (both methods below are implemented in the same task).
 
-:-: ![](.topwrite/assets/image_1736148597217.png =470)
 
 You can use the `INSERT INTO VALUES` statement to directly insert data. Multiple records are separated by commas.
 ```SQL

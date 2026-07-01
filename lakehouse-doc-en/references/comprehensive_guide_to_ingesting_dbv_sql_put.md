@@ -41,4 +41,4 @@ SHOW  VOLUME DIRECTORY ingest_demo;
 
 [JDBC Driver](jdbc-driver.md)
 
-[Database Management Tool](data-mamager-tool.md)
+[Database Management Tool](data-manager-tool.md)

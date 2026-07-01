@@ -1,5 +1,5 @@
 # Using UDF in Dynamic Tables
-> ⚠️ **Note**: This feature is currently in public preview.
+
 
 
 Dynamic tables extend support for user-defined functions. You can use custom functions created with External Function (including UDF, UDAF, and UDTF) in the SELECT clause of a dynamic table DDL. The system will automatically apply incremental computation optimization during refresh.

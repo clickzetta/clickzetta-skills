@@ -13,11 +13,11 @@ from clickzetta.zettapark import functions as F
 session = Session.builder.configs({
     "username": "your_username",
     "password": "your_password",
-    "service":  "cn-shanghai-alicloud.api.singdata.com",
+    "service":  "cn-shanghai-alicloud.api.clickzetta.com",
     "instance": "your_instance",
     "workspace": "your_workspace",
     "schema":   "public",
-    "vcluster": "default"
+    "vcluster": "DEFAULT"
 }).create()
 ```
 

@@ -6,8 +6,6 @@ Welcome to Lakehouse! This guide has designed a series of carefully orchestrated
 
 This guide includes the following experience content:
 
-:-: ![](.topwrite/assets/lakehouse-happy-path-diagram_1747811346312.svg =820)
-
 1. **Run Your First SQL Query** (2-3 minutes)
    Experience Lakehouse's easy-to-use SQL analysis environment.
 
@@ -40,7 +38,6 @@ Log into Lakehouse Studio and create a new workspace: `lakehouse_quick_experienc
 
 ^
 
-:-: ![](.topwrite/assets/image_1747812390227.png =618)
 
 ^
 
@@ -48,13 +45,13 @@ Enter the "Development" page and switch the workspace to the newly created works
 
 ^
 
-:-: ![](.topwrite/assets/image_1747812493874.png =622)
+
 
 ^
 
-Entry for creating a new SQL worksheet:
+Entry for creating a new SQL worksheet.
 
-:-: ![](.topwrite/assets/image_1747812869517.png =621)
+
 
 ^
 
@@ -62,7 +59,7 @@ Create a new SQL worksheet named "00\_Environment\_Preparation".
 
 ^
 
-:-: ![](.topwrite/assets/image_1747812698576.png =622)
+
 
 ^
 
@@ -77,11 +74,11 @@ USE SCHEMA happy_path;
 
 -- Create the first Virtual Compute Cluster (General type)
 -- Virtual Compute Clusters are the core concept of Lakehouse, representing on-demand allocatable computing resources
-CREATE VCLUSTER IF NOT EXISTS MY_FIRST_VC
-VCLUSTER_SIZE = 1
-VCLUSTER_TYPE = GENERAL
-AUTO_SUSPEND_IN_SECOND = 60
-AUTO_RESUME = TRUE
+CREATE VCLUSTER IF NOT EXISTS MY_FIRST_VC 
+VCLUSTER_SIZE = 1 
+VCLUSTER_TYPE = GENERAL 
+AUTO_SUSPEND_IN_SECOND = 60 
+AUTO_RESUME = TRUE 
 COMMENT 'My first virtual compute cluster (General)';
 
 -- Use this cluster
@@ -133,7 +130,7 @@ In this exercise, you will execute simple SQL queries, create tables, and perfor
      (103, 'Smart Watch', 1299.50, 'Wearables'),
      (104, 'Portable Power Bank', 159.90, 'Accessories'),
      (105, 'Mechanical Keyboard', 349.00, 'Computer Accessories');
-
+     
    -- Query the inserted data
    SELECT * FROM happy_path.my_first_table;
    ```
@@ -142,7 +139,7 @@ In this exercise, you will execute simple SQL queries, create tables, and perfor
 
    ```sql
    -- Count products and average price by category
-   SELECT
+   SELECT 
      category,
      COUNT(*) as product_count,
      AVG(price) as avg_price,
@@ -174,11 +171,11 @@ Next, let's create a different type of compute cluster to understand how to choo
    ```sql
    -- Create an Analytics-type Virtual Compute Cluster
    -- Analytics clusters optimize query performance, suitable for low-latency, high-concurrency analysis scenarios
-   CREATE VCLUSTER IF NOT EXISTS MY_SECOND_VC
-   VCLUSTER_SIZE = 1
-   VCLUSTER_TYPE = ANALYTICS
-   AUTO_SUSPEND_IN_SECOND = 60
-   AUTO_RESUME = TRUE
+   CREATE VCLUSTER IF NOT EXISTS MY_SECOND_VC 
+   VCLUSTER_SIZE = 1 
+   VCLUSTER_TYPE = ANALYTICS 
+   AUTO_SUSPEND_IN_SECOND = 60 
+   AUTO_RESUME = TRUE 
    COMMENT 'My second virtual compute cluster (Analytics)';
    ```
 
@@ -283,7 +280,7 @@ Compute-storage separation is a core architectural feature of Lakehouse, allowin
    INSERT INTO happy_path.demo_dataset VALUES
      (6, 432.10, 'Text-6', CURRENT_TIMESTAMP()),
      (7, 789.65, 'Text-7', CURRENT_TIMESTAMP());
-
+     
    -- Query the updated dataset
    SELECT * FROM happy_path.demo_dataset ORDER BY id;
    ```
@@ -389,7 +386,7 @@ The Lakehouse unified architecture allows you to directly query files in multipl
      (1003, 205, DATE '2023-02-02', 1, 899.00, 'C5003'),
      (1004, 204, DATE '2023-02-03', 1, 599.00, 'C5001'),
      (1005, 202, DATE '2023-02-03', 1, 3799.00, 'C5004');
-
+     
    -- Export sales data to User Volume (CSV format)
    COPY INTO USER VOLUME
    SUBDIRECTORY 'lake_demo/sales_csv'
@@ -518,7 +515,7 @@ Lakehouse supports simultaneously processing both batch and streaming data on th
    SELECT * FROM happy_path.all_orders ORDER BY order_time DESC;
 
    -- View order statistics
-   SELECT
+   SELECT 
      data_source,
      COUNT(*) as order_count,
      SUM(order_amount) as total_amount
@@ -538,7 +535,7 @@ Lakehouse supports simultaneously processing both batch and streaming data on th
 
    ```sql
    -- Query order statistics again
-   SELECT
+   SELECT 
      data_source,
      COUNT(*) as order_count,
      SUM(order_amount) as total_amount
@@ -577,13 +574,13 @@ Lakehouse supports efficient vector search and inverted index search, which can 
      description STRING,
      price DECIMAL(10,2),
      vec VECTOR(FLOAT, 16),  -- 16-dimensional vector representing product features
-
+     
      -- Create vector index
      INDEX product_vec_idx (vec) USING VECTOR PROPERTIES (
-       "scalar.type" = "f32",
+       "scalar.type" = "f32", 
        "distance.function" = "l2_distance"
      ),
-
+     
      -- Create inverted index for full-text search
      INDEX product_description_idx (description) INVERTED PROPERTIES (
        'analyzer' = 'chinese'
@@ -596,31 +593,31 @@ Lakehouse supports efficient vector search and inverted index search, which can 
    ```sql
    -- Insert sample data with vectors
    INSERT INTO happy_path.product_search_demo VALUES
-     (1001, 'Ultra-thin Laptop', 'Computers', 'Thin and lightweight high-performance business laptop with the latest processor and HD display', 6999.00,
+     (1001, 'Ultra-thin Laptop', 'Computers', 'Thin and lightweight high-performance business laptop with the latest processor and HD display', 6999.00, 
       vector(0.1, 0.2, 0.3, 0.4, 0.5, 0.1, 0.2, 0.3, 0.4, 0.5, 0.1, 0.2, 0.3, 0.4, 0.5, 0.1)),
-     (1002, 'Professional Gaming Laptop', 'Computers', 'High-performance gaming laptop with dedicated graphics card, suitable for playing large games and professional design', 9999.00,
+     (1002, 'Professional Gaming Laptop', 'Computers', 'High-performance gaming laptop with dedicated graphics card, suitable for playing large games and professional design', 9999.00, 
       vector(0.2, 0.3, 0.4, 0.5, 0.6, 0.2, 0.3, 0.4, 0.5, 0.6, 0.2, 0.3, 0.4, 0.5, 0.6, 0.2)),
-     (1003, 'Business Office Desktop', 'Computers', 'Stable and efficient office desktop computer, suitable for enterprise and home office environments', 4599.00,
+     (1003, 'Business Office Desktop', 'Computers', 'Stable and efficient office desktop computer, suitable for enterprise and home office environments', 4599.00, 
       vector(0.3, 0.4, 0.5, 0.6, 0.7, 0.3, 0.4, 0.5, 0.6, 0.7, 0.3, 0.4, 0.5, 0.6, 0.7, 0.3));
 
    -- Continue inserting more data
    INSERT INTO happy_path.product_search_demo VALUES
-     (1004, 'Professional Photography Camera', 'Digital Devices', 'High-resolution professional DSLR camera, suitable for landscape and portrait photography with clear and detailed image quality', 12999.00,
+     (1004, 'Professional Photography Camera', 'Digital Devices', 'High-resolution professional DSLR camera, suitable for landscape and portrait photography with clear and detailed image quality', 12999.00, 
       vector(0.4, 0.5, 0.6, 0.7, 0.8, 0.4, 0.5, 0.6, 0.7, 0.8, 0.4, 0.5, 0.6, 0.7, 0.8, 0.4)),
-     (1005, 'Portable Bluetooth Speaker', 'Audio Devices', 'Compact and portable Bluetooth speaker with clear sound quality and long battery life, suitable for outdoor use', 299.00,
+     (1005, 'Portable Bluetooth Speaker', 'Audio Devices', 'Compact and portable Bluetooth speaker with clear sound quality and long battery life, suitable for outdoor use', 299.00, 
       vector(0.5, 0.6, 0.7, 0.8, 0.9, 0.5, 0.6, 0.7, 0.8, 0.9, 0.5, 0.6, 0.7, 0.8, 0.9, 0.5)),
-     (1006, 'Wireless Noise-Cancelling Headphones', 'Audio Devices', 'Active noise cancellation technology, wireless connection, comfortable to wear, no ear pressure during long use', 1299.00,
+     (1006, 'Wireless Noise-Cancelling Headphones', 'Audio Devices', 'Active noise cancellation technology, wireless connection, comfortable to wear, no ear pressure during long use', 1299.00, 
       vector(0.6, 0.7, 0.8, 0.9, 1.0, 0.6, 0.7, 0.8, 0.9, 1.0, 0.6, 0.7, 0.8, 0.9, 1.0, 0.6)),
-     (1007, 'Smart Watch', 'Wearables', 'Smart watch supporting heart rate monitoring, activity tracking, and message notifications, compatible with various smartphones', 1599.00,
+     (1007, 'Smart Watch', 'Wearables', 'Smart watch supporting heart rate monitoring, activity tracking, and message notifications, compatible with various smartphones', 1599.00, 
       vector(0.7, 0.8, 0.9, 1.0, 0.1, 0.7, 0.8, 0.9, 1.0, 0.1, 0.7, 0.8, 0.9, 1.0, 0.1, 0.7));
 
    -- Continue inserting remaining data
    INSERT INTO happy_path.product_search_demo VALUES
-     (1008, 'Fitness Tracker', 'Wearables', 'Professional fitness tracking band, recording daily activity, sleep quality, and exercise data, waterproof design', 399.00,
+     (1008, 'Fitness Tracker', 'Wearables', 'Professional fitness tracking band, recording daily activity, sleep quality, and exercise data, waterproof design', 399.00, 
       vector(0.8, 0.9, 1.0, 0.1, 0.2, 0.8, 0.9, 1.0, 0.1, 0.2, 0.8, 0.9, 1.0, 0.1, 0.2, 0.8)),
-     (1009, 'Ultra HD Smart TV', 'Home Appliances', '65-inch 4K Ultra HD smart TV, supporting voice control and various streaming applications', 5999.00,
+     (1009, 'Ultra HD Smart TV', 'Home Appliances', '65-inch 4K Ultra HD smart TV, supporting voice control and various streaming applications', 5999.00, 
       vector(0.9, 1.0, 0.1, 0.2, 0.3, 0.9, 1.0, 0.1, 0.2, 0.3, 0.9, 1.0, 0.1, 0.2, 0.3, 0.9)),
-     (1010, 'Smart Air Purifier', 'Home Appliances', 'Efficiently filters PM2.5 and harmful gases, intelligently monitors air quality, automatically adjusts working mode', 1899.00,
+     (1010, 'Smart Air Purifier', 'Home Appliances', 'Efficiently filters PM2.5 and harmful gases, intelligently monitors air quality, automatically adjusts working mode', 1899.00, 
       vector(1.0, 0.1, 0.2, 0.3, 0.4, 1.0, 0.1, 0.2, 0.3, 0.4, 1.0, 0.1, 0.2, 0.3, 0.4, 1.0));
    ```
 
@@ -651,7 +648,7 @@ LIMIT 5;
 
    ```sql
    -- Use inverted index for keyword search - find products with "high-performance" in the description
-   SELECT
+   SELECT 
      product_id,
      product_name,
      category,
@@ -666,7 +663,7 @@ LIMIT 5;
 
    ```sql
    -- Hybrid query: find products similar to the reference vector and containing "gaming" in the description
-   SELECT
+   SELECT 
      product_id,
      product_name,
      category,
@@ -674,7 +671,7 @@ LIMIT 5;
      price,
      l2_distance(vec, vector(0.2, 0.3, 0.4, 0.5, 0.6, 0.2, 0.3, 0.4, 0.5, 0.6, 0.2, 0.3, 0.4, 0.5, 0.6, 0.2)) AS distance
    FROM happy_path.product_search_demo
-   WHERE
+   WHERE 
      match_phrase(description, 'gaming', MAP('analyzer', 'chinese')) AND
      l2_distance(vec, vector(0.2, 0.3, 0.4, 0.5, 0.6, 0.2, 0.3, 0.4, 0.5, 0.6, 0.2, 0.3, 0.4, 0.5, 0.6, 0.2)) < 10
    ORDER BY distance
@@ -685,7 +682,7 @@ LIMIT 5;
 
    ```sql
    -- Find products priced between 500-10000, with "high-performance" or "professional" in the description, and high vector similarity
-   SELECT
+   SELECT 
      product_id,
      product_name,
      category,
@@ -693,9 +690,9 @@ LIMIT 5;
      price,
      l2_distance(vec, vector(0.2, 0.3, 0.4, 0.5, 0.6, 0.2, 0.3, 0.4, 0.5, 0.6, 0.2, 0.3, 0.4, 0.5, 0.6, 0.2)) AS distance
    FROM happy_path.product_search_demo
-   WHERE
+   WHERE 
      price BETWEEN 500 AND 10000 AND
-     (match_phrase(description, 'high-performance', MAP('analyzer', 'chinese')) OR
+     (match_phrase(description, 'high-performance', MAP('analyzer', 'chinese')) OR 
       match_phrase(description, 'professional', MAP('analyzer', 'chinese'))) AND
      l2_distance(vec, vector(0.2, 0.3, 0.4, 0.5, 0.6, 0.2, 0.3, 0.4, 0.5, 0.6, 0.2, 0.3, 0.4, 0.5, 0.6, 0.2)) < 10
    ORDER BY distance
@@ -749,15 +746,15 @@ Lakehouse supports offline batch processing and transformation. Estimated time: 
    ```sql
    -- Create a date dimension table
    CREATE TABLE IF NOT EXISTS happy_path.date_dim AS
-   SELECT DISTINCT
+   SELECT DISTINCT 
      date_time::DATE as date_id,
      YEAR(date_time) as year,
      MONTH(date_time) as month,
      DAY(date_time) as day,
      DAYOFWEEK(date_time) as day_of_week,
-     CASE
-       WHEN DAYOFWEEK(date_time) IN (6, 7) THEN true
-       ELSE false
+     CASE 
+       WHEN DAYOFWEEK(date_time) IN (6, 7) THEN true 
+       ELSE false 
      END as is_weekend
    FROM happy_path.sales_data;
 
@@ -770,7 +767,7 @@ Lakehouse supports offline batch processing and transformation. Estimated time: 
    ```sql
    -- Create a sales summary table
    CREATE TABLE IF NOT EXISTS happy_path.sales_summary AS
-   SELECT
+   SELECT 
      d.date_id,
      d.year,
      d.month,
@@ -800,7 +797,7 @@ Lakehouse supports offline batch processing and transformation. Estimated time: 
 
    ```sql
    -- Analyze sales trends using window functions
-   SELECT
+   SELECT 
      date_id,
      category,
      total_sales,
@@ -816,7 +813,7 @@ Lakehouse supports offline batch processing and transformation. Estimated time: 
    ```sql
    -- Create a business insights view
    CREATE OR REPLACE VIEW happy_path.business_insights AS
-   SELECT
+   SELECT 
      category,
      year,
      month,
@@ -837,7 +834,7 @@ Lakehouse supports offline batch processing and transformation. Estimated time: 
 
    ```sql
    -- Analyze sales ranking and proportion by category
-   SELECT
+   SELECT 
      category,
      SUM(total_sales) as category_sales,
      RANK() OVER (ORDER BY SUM(total_sales) DESC) as sales_rank,
@@ -973,8 +970,8 @@ Now you can start applying Lakehouse to actual business scenarios and enjoy a si
 
 ## References
 
-[Key Concepts](key_concepts.md)
+[Key Concepts](key-concepts.md)
 [Virtual Compute Cluster](getting_started_with_vcluster_for_processing_analytics.md)
 [Volume](datalake_volume.md)
-[Vector Index](create-vector-index.md)
+[Vector Index](vector-search.md)
 [Inverted Index](inverted-index.md)

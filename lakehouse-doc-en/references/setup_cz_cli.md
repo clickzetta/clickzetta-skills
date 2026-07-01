@@ -22,7 +22,7 @@ With cz-cli, users can delegate tasks like "create a test data warehouse", "chec
 | Studio Tasks           | Create SQL, offline integration, real-time sync, and other tasks; configure scheduling, publish online, and manually execute | cz-cli task                                                  |
 | Run Inspection         | View task execution records, logs, dependencies, statistics; retry on failure and backfill data | cz-cli runs, cz-cli attempts                                  |
 | Performance Diagnostics | View SQL Job status, results, and execution profile              | cz-cli job, cz-cli sql --job-profile                          |
-| AI Agent Integration   | Enable Agents to invoke Singdata capabilities using natural language | cz-cli agent run, cz-cli ai-guide                             |
+| AI Agent Integration   | Enable Agents to invoke Singdata capabilities using natural language | cz-cli agent run                                              |
 | Data Source Management | Manage external data sources, preparing for sync and import tasks | cz-cli datasource                                            |
 
 ## Prerequisites
@@ -106,25 +106,15 @@ cz-cli --help
 
 A Profile is a local configuration that stores connection information for cz-cli. We recommend creating a separate profile for each environment, e.g., prod, uat, dev.
 
-### Create with Username and Password
+### Create a Profile Using cz-cli setup
 
-```SQL
-cz-cli profile create prod  --service api.clickzetta.com  --instance <instance_name>  --workspace <workspace_name>  --username <username>  --password '<password>'  --schema public  --vcluster DEFAULT
+For example:
+
+```sql
+cz-cli setup
 ```
 
-Example:
-
-```SQL
-cz-cli profile create prod  --service api.clickzetta.com  --instance demo_instance  --workspace analytics_prod  --username data_user  --password 'your_password'  --schema public  --vcluster DEFAULT
-```
-
-### Create from JDBC Connection String
-
-If you already have a JDBC connection string, you can create a profile directly:
-
-```Plain
-cz-cli profile create prod   --jdbc "jdbc:clickzetta://<instance_name>.<service_endpoint>/<workspace_name>?username=<username>&password=<password>&schema=public&virtualCluster=DEFAULT"
-```
+Then follow the guided prompts to register a new Singdata account, or enter your login address, credential string (generated after login), or JDBC connection string from an existing account.
 
 ### Create with CLI Credential
 
@@ -134,27 +124,19 @@ cz-cli setup --credencial <your cli Connection String>
 
 #### How to Obtain a PAT
 
-1\) Log in to your [Singdata account](https://accounts.singdata.com/login?ref=cz-cli), and select LakehouseMCP from the left menu.
-
-![](/.topwrite/assets/image_1779090472848.png)
+1\) Log in to your [Singdata account](https://accounts.singdata.com/login?ref=cz-cli), and select **LakehouseMCP** from the left menu.
 
 ^
 
-2\) If you have not created a PAT, please create one first.
-
-![](/.topwrite/assets/image_1779090523412.png)
+2\) If you have not created a PAT, click **Create PAT** to generate one.
 
 ^
 
-3\) After creation, switch to the CLI tab and copy your CLI connection string.
-
-![](/.topwrite/assets/image_1779090540263.png)
+3\) After creation, switch to the **CLI** tab and copy your CLI connection string.
 
 ^
 
-4\) If you already have a PAT, paste your PAT into the popup window for CLI creation, then click the "Generate Connection String" button.
-
-![](/.topwrite/assets/image_1779090555582.png)
+4\) If you already have a PAT, paste it into the popup window and click **Generate Connection String**.
 
 ^
 
@@ -165,6 +147,14 @@ cz-cli setup --credential <your cli Connection String >
 ```
 
 Once execution completes, the profile configuration is done.
+
+### Create from JDBC Connection String
+
+If you already have a JDBC connection string, you can create a profile directly:
+
+```Plain
+cz-cli profile create prod   --jdbc "jdbc:clickzetta://<instance_name>.<service_endpoint>/<workspace_name>?username=<username>&password=<password>&schema=public&virtualCluster=DEFAULT"
+```
 
 ## Viewing and Switching Profiles
 
@@ -324,14 +314,6 @@ If the current environment already has the LLM parameters configured for the cz-
 
 ```Plain
 cz-cli -p \<profile> agent run "Help me check today's failed scheduled tasks and categorize them by failure reason"
-```
-
-To generate command descriptions for external Agents:
-
-```Plain
-cz-cli ai-guide
-cz-cli ai-guide --wide
-cz-cli ai-guide -f json
 ```
 
 ### Using in Enterprise Bot Scenarios

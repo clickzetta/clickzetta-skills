@@ -18,7 +18,7 @@ This document introduces how to use the Java SDK's BulkloadStream to batch load 
 
 # Usage Example
 
-This example uses reading a local CSV file. The dataset used is the olist_order_items_dataset data from the [Brazilian E-commerce](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce?select=olist_order_items_dataset.csv) public dataset. If the data source is within the range supported by object storage or Lakehouse Studio data integration, it is recommended to use the COPY command or data integration features.
+This example uses reading a local CSV file. The dataset used is the olist\_order\_items\_dataset data from the [Brazilian E-commerce](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce?select=olist_order_items_dataset.csv) public dataset. If the data source is within the range supported by object storage or Lakehouse Studio data integration, it is recommended to use the COPY command or data integration features.
 
 ## Prerequisites
 
@@ -53,8 +53,8 @@ Add the Lakehouse Maven dependency to the project's `pom.xml` file. The latest v
 
 ### Writing Java Code
 
-1.  **Initialize Lakehouse Client and BulkloadStream**: Create the `BulkloadFile` class, initialize the Lakehouse connection and BulkloadStream object.
-2.  **Read Local CSV File and Write to Lakehouse**: Use Java IO streams to read the local CSV file and write data to Lakehouse line by line.
+1. **Initialize Lakehouse Client and BulkloadStream**: Create the `BulkloadFile` class, initialize the Lakehouse connection and BulkloadStream object.
+2. **Read Local CSV File and Write to Lakehouse**: Use Java IO streams to read the local CSV file and write data to Lakehouse line by line.
 
 ```java
 

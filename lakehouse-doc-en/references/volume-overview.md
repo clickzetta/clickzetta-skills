@@ -4,18 +4,18 @@ A Volume is a **storage object for managing files** in Lakehouse, used to store 
 
 Think of a Volume as the "file system" of Lakehouse — you can put files in, query them directly, or import them into tables. Unlike external object storage (OSS/S3), a Volume is a storage object natively managed by Lakehouse and requires no additional configuration to use.
 
-![](/.topwrite/assets/16-volume.png)
+![](/.topwrite/assets/16-volume.svg)
 
 ## Volume Types
 
 Volumes are divided into two major categories: **internal Volumes** and **external Volumes**:
 
-| Type | Category | Creation | Storage Location | Use Case |
-|------|------|------|------|---------|
-| **User Volume** | Internal | Created automatically | Internal storage | Upload local files, temporarily stage data for processing |
-| **Table Volume** | Internal | Created automatically (one per table) | Internal storage | Store ETL files associated with a specific table |
-| **Named Volume** | Internal | `CREATE VOLUME` (explicitly created by user) | Internal storage | Team file sharing, user-managed lifecycle |
-| **External Volume** | External | `CREATE EXTERNAL VOLUME` | External storage (OSS/COS/S3) | Access existing cloud storage data without migration |
+| Type                | Category | Creation                                     | Storage Location              | Use Case                                                  |
+| ------------------- | -------- | -------------------------------------------- | ----------------------------- | --------------------------------------------------------- |
+| **User Volume**     | Internal | Created automatically                        | Internal storage              | Upload local files, temporarily stage data for processing |
+| **Table Volume**    | Internal | Created automatically (one per table)        | Internal storage              | Store ETL files associated with a specific table          |
+| **Named Volume**    | Internal | `CREATE VOLUME` (explicitly created by user) | Internal storage              | Team file sharing, user-managed lifecycle                 |
+| **External Volume** | External | `CREATE EXTERNAL VOLUME`                     | External storage (OSS/COS/S3) | Access existing cloud storage data without migration      |
 
 **Internal Volume** data is stored inside Lakehouse and billed according to Lakehouse storage rates. User Volumes and Table Volumes are created automatically by the system; Named Volumes are explicitly created by users who manage their own lifecycle.
 
@@ -23,12 +23,12 @@ Volumes are divided into two major categories: **internal Volumes** and **extern
 
 ### Choosing the Right Volume
 
-| Scenario | Recommended | Reason |
-|---|---|---|
-| Upload CSV/Parquet from local to Lakehouse | User Volume | Ready to use out of the box, no configuration needed |
-| Existing OSS/S3 data you don't want to migrate | External Volume | Direct mount, zero data copy |
-| Shared file directory for a team | Named Volume | Configurable sharing permissions |
-| ETL intermediate files associated with a table | Table Volume | Bound to table permissions, automatically managed |
+| Scenario                                       | Recommended     | Reason                                               |
+| ---------------------------------------------- | --------------- | ---------------------------------------------------- |
+| Upload CSV/Parquet from local to Lakehouse     | User Volume     | Ready to use out of the box, no configuration needed |
+| Existing OSS/S3 data you don't want to migrate | External Volume | Direct mount, zero data copy                         |
+| Shared file directory for a team               | Named Volume    | Configurable sharing permissions                     |
+| ETL intermediate files associated with a table | Table Volume    | Bound to table permissions, automatically managed    |
 
 ## Core Mechanisms
 
@@ -42,17 +42,17 @@ Volumes are divided into two major categories: **internal Volumes** and **extern
 
 In addition to SQL keyword syntax such as `FROM USER VOLUME` and `FROM VOLUME vol_name`, Lakehouse provides a **Volume file protocol** for referencing files inside a Volume within string parameters. This protocol is primarily used for:
 
-- Specifying code package paths when creating external functions (`CREATE EXTERNAL FUNCTION ... USING FILE/ARCHIVE`)
-- `session.file.put()` / `session.file.get()` calls in the Zettapark SDK
-- Configuring Kerberos authentication file paths (`KERBEROS_KRB5_CONFIG_PATH`, `KERBEROS_KEYTAB_PATH`)
+* Specifying code package paths when creating external functions (`CREATE EXTERNAL FUNCTION ... USING FILE/ARCHIVE`)
+* `session.file.put()` / `session.file.get()` calls in the Zettapark SDK
+* Configuring Kerberos authentication file paths (`KERBEROS_KRB5_CONFIG_PATH`, `KERBEROS_KEYTAB_PATH`)
 
 ### Protocol Format Overview
 
-| Volume Type | Protocol Format | Example |
-|---|---|---|
-| External / Named Volume | `volume://[workspace.][schema.]volume_name/path` | `volume://my_vol/udfs/upper.jar` |
-| User Volume | `volume:user://~/path` | `volume:user://~/upper.jar` |
-| Table Volume | `volume:table://[workspace.][schema.]table_name/path` | `volume:table://my_table/data.csv` |
+| Volume Type             | Protocol Format                                       | Example                            |
+| ----------------------- | ----------------------------------------------------- | ---------------------------------- |
+| External / Named Volume | `volume://[workspace.][schema.]volume_name/path`      | `volume://my_vol/udfs/upper.jar`   |
+| User Volume             | `volume:user://~/path`                                | `volume:user://~/upper.jar`        |
+| Table Volume            | `volume:table://[workspace.][schema.]table_name/path` | `volume:table://my_table/data.csv` |
 
 ### Format Details
 
@@ -62,9 +62,9 @@ In addition to SQL keyword syntax such as `FROM USER VOLUME` and `FROM VOLUME vo
 volume://[{workspace}.][{schema}.]{volume_name}/{path_to_file}
 ```
 
-- `workspace`, `schema`: Optional. When omitted, the current context defaults are used.
-- `volume_name`: The name of the Volume.
-- `path_to_file`: The relative path to the file within the Volume.
+* `workspace`, `schema`: Optional. When omitted, the current context defaults are used.
+* `volume_name`: The name of the Volume.
+* `path_to_file`: The relative path to the file within the Volume.
 
 ```sql
 -- External function referencing a JAR in a Named Volume
@@ -80,9 +80,9 @@ CREATE EXTERNAL FUNCTION upper_udf(s STRING) RETURNS STRING
 volume:user://~/{path_to_file}
 ```
 
-- `user`: Fixed keyword indicating the User Volume protocol.
-- `~`: Fixed value representing the currently logged-in user.
-- `path_to_file`: The relative path to the file within the User Volume.
+* `user`: Fixed keyword indicating the User Volume protocol.
+* `~`: Fixed value representing the currently logged-in user.
+* `path_to_file`: The relative path to the file within the User Volume.
 
 ```sql
 -- External function referencing a code package in a User Volume
@@ -106,10 +106,10 @@ session.file.get("volume:user://~/png/photo.png", "tmp/")
 volume:table://[{workspace}.][{schema}.]{table_name}/{path_to_file}
 ```
 
-- `table`: Fixed keyword indicating the Table Volume protocol.
-- `workspace`, `schema`: Optional. When omitted, the current context defaults are used.
-- `table_name`: The name of the associated table.
-- `path_to_file`: The relative path to the file within that table's Table Volume.
+* `table`: Fixed keyword indicating the Table Volume protocol.
+* `workspace`, `schema`: Optional. When omitted, the current context defaults are used.
+* `table_name`: The name of the associated table.
+* `path_to_file`: The relative path to the file within that table's Table Volume.
 
 ```sql
 -- External function referencing a code package in a Table Volume
@@ -123,10 +123,10 @@ CREATE EXTERNAL FUNCTION process(s STRING) RETURNS STRING
 
 These two syntaxes serve different purposes and should not be mixed:
 
-| Purpose | Syntax Form | Example |
-|---|---|---|
-| Operate on Volume files within a SQL statement | Keyword syntax | `FROM USER VOLUME`, `FROM VOLUME vol_name` |
-| Reference a Volume file path in a string parameter | File protocol | `'volume:user://~/file.jar'` |
+| Purpose                                            | Syntax Form    | Example                                    |
+| -------------------------------------------------- | -------------- | ------------------------------------------ |
+| Operate on Volume files within a SQL statement     | Keyword syntax | `FROM USER VOLUME`, `FROM VOLUME vol_name` |
+| Reference a Volume file path in a string parameter | File protocol  | `'volume:user://~/file.jar'`               |
 
 Keyword syntax is used in SQL commands such as `COPY INTO`, `SELECT FROM VOLUME`, `PUT`, `GET`, and `LIST`. The file protocol is used in scenarios that require passing a string path (function definitions, SDK calls, configuration parameters).
 
@@ -212,7 +212,7 @@ LIST TABLE VOLUME my_table;
 
 For detailed syntax, see: [LIST](volume-list.md)
 
----
+***
 
 ### DIRECTORY() — Query File Metadata
 
@@ -231,9 +231,9 @@ FROM DIRECTORY(VOLUME my_oss_volume)
 WHERE relative_path LIKE '%.parquet';
 ```
 
----
+***
 
-### GET_PRESIGNED_URL() — Generate Pre-signed Access Links
+### GET\_PRESIGNED\_URL() — Generate Pre-signed Access Links
 
 Generates a time-limited pre-signed URL for a file in a Volume, allowing external applications (browsers, Remote Functions, AI services, etc.) to access the file directly without exposing storage credentials.
 
@@ -255,20 +255,20 @@ FROM DIRECTORY(VOLUME my_oss_volume);
 
 > ⚠️ **Note**: If the generated URL is not accessible from the public internet, the returned address is an internal object storage endpoint. Run `SET cz.sql.function.get.presigned.url.force.external = true` before executing to force an external URL.
 
-For detailed syntax, see: [GET_PRESIGNED_URL](sql_functions/scalar_functions/file_functions/get_presigned_url.md)
+For detailed syntax, see: [GET\_PRESIGNED\_URL](sql_functions/scalar_functions/file_functions/get_presigned_url.md)
 
----
+***
 
 ### Function Quick Reference
 
-| Function / Command | Purpose | Applicable Volume Types |
-|---|---|---|
-| `SHOW VOLUME DIRECTORY` | View file list (interactive) | Named / External |
-| `SHOW TABLE VOLUME DIRECTORY` | View file list for a table-associated Volume | Table Volume |
-| `SHOW USER VOLUME DIRECTORY` | View personal file list | User Volume |
-| `LIST` | List files with regex filtering | All |
-| `DIRECTORY()` | Query file metadata as a table | External (must be enabled) |
-| `GET_PRESIGNED_URL()` | Generate time-limited file access links | All |
+| Function / Command            | Purpose                                      | Applicable Volume Types    |
+| ----------------------------- | -------------------------------------------- | -------------------------- |
+| `SHOW VOLUME DIRECTORY`       | View file list (interactive)                 | Named / External           |
+| `SHOW TABLE VOLUME DIRECTORY` | View file list for a table-associated Volume | Table Volume               |
+| `SHOW USER VOLUME DIRECTORY`  | View personal file list                      | User Volume                |
+| `LIST`                        | List files with regex filtering              | All                        |
+| `DIRECTORY()`                 | Query file metadata as a table               | External (must be enabled) |
+| `GET_PRESIGNED_URL()`         | Generate time-limited file access links      | All                        |
 
 ## Relationship Between Volume and Pipe
 
@@ -284,8 +284,8 @@ Object Storage (OSS/COS/S3)
      [Table]  ── Lakehouse structured data
 ```
 
-- A Volume provides file access capability by mounting external object storage.
-- A Pipe provides continuous streaming capability, monitoring a Volume for new files and automatically importing them into a table.
+* A Volume provides file access capability by mounting external object storage.
+* A Pipe provides continuous streaming capability, monitoring a Volume for new files and automatically importing them into a table.
 
 ```SQL
 -- Typical usage: Volume + Pipe combination
@@ -323,8 +323,9 @@ COPY INTO VOLUME my_vol SUBDIRECTORY 'export/' FROM orders FILE_FORMAT = (TYPE =
 **Symptom**: The file list shows the file as uploaded, but the query returns an empty result.
 
 **Solution**:
-- Files uploaded with `PUT` are immediately available, but you must specify the correct filename (case-sensitive).
-- Use `SHOW USER VOLUME DIRECTORY` to confirm the filename and path.
+
+* Files uploaded with `PUT` are immediately available, but you must specify the correct filename (case-sensitive).
+* Use `SHOW USER VOLUME DIRECTORY` to confirm the filename and path.
 
 ### FAQ 2: External Volume file list not updating
 
@@ -333,9 +334,10 @@ COPY INTO VOLUME my_vol SUBDIRECTORY 'export/' FROM orders FILE_FORMAT = (TYPE =
 **Symptom**: External storage has new files, but Volume query results are stale.
 
 **Solution**:
-- External Volumes do not automatically refresh the directory cache by default.
-- Manually run `ALTER VOLUME <name> REFRESH` to refresh the directory.
-- Alternatively, enable `DIRECTORY = (ENABLE = TRUE, AUTO_REFRESH = TRUE)` at creation time.
+
+* External Volumes do not automatically refresh the directory cache by default.
+* Manually run `ALTER VOLUME <name> REFRESH` to refresh the directory.
+* Alternatively, enable `DIRECTORY = (ENABLE = TRUE, AUTO_REFRESH = TRUE)` at creation time.
 
 ### FAQ 3: User Volume files cannot be shared
 
@@ -344,21 +346,22 @@ COPY INTO VOLUME my_vol SUBDIRECTORY 'export/' FROM orders FILE_FORMAT = (TYPE =
 **Symptom**: User B runs `SELECT FROM USER VOLUME` and gets an empty result.
 
 **Solution**:
-- User Volumes are private to each user and cannot be accessed by others.
-- To share files, use a Named Volume (`CREATE VOLUME`) or an External Volume.
+
+* User Volumes are private to each user and cannot be accessed by others.
+* To share files, use a Named Volume (`CREATE VOLUME`) or an External Volume.
 
 ## Cost Considerations
 
 ### Storage Costs
 
-- Files in User Volumes and Table Volumes are stored in Lakehouse's internal object storage and billed based on actual space used.
-- Data in External Volumes is stored in external object storage (OSS/COS/S3) and billed at the cloud provider's standard rates.
-- After importing files from a User Volume into a table, the files remain in the Volume. Delete them manually if you want to reduce storage costs.
+* Files in User Volumes and Table Volumes are stored in Lakehouse's internal object storage and billed based on actual space used.
+* Data in External Volumes is stored in external object storage (OSS/COS/S3) and billed at the cloud provider's standard rates.
+* After importing files from a User Volume into a table, the files remain in the Volume. Delete them manually if you want to reduce storage costs.
 
 ### Compute Costs
 
-- Querying Volume files directly (`SELECT FROM VOLUME`) consumes VCluster CRU.
-- `COPY INTO` data ingestion consumes VCluster CRU, proportional to data volume and format complexity.
+* Querying Volume files directly (`SELECT FROM VOLUME`) consumes VCluster CRU.
+* `COPY INTO` data ingestion consumes VCluster CRU, proportional to data volume and format complexity.
 
 > 💡 **Tip**: For detailed billing rules, see the [Billing Documentation](billing.md).
 
@@ -391,7 +394,9 @@ DROP EXTERNAL VOLUME my_oss_vol;
 
 ## Related Documentation
 
-- [Internal Volume Details](internal_volume.md) — Complete operations for User Volume and Table Volume
-- [External Volume](om-external-volume.md) — Mount OSS/COS/S3
-- [Import Data from Volume into a Table](from_volume_to_table.md) — Complete COPY INTO syntax
-- [Export Data to a Volume](from_lakehouse_to_volume.md) — Export data files
+* [Internal Volume Details](internal_volume.md) — Complete operations for User Volume and Table Volume
+* [External Volume](om-external-volume.md) — Mount OSS/COS/S3
+* [Import Data from Volume into a Table](from_volume_to_table.md) — Complete COPY INTO syntax
+* [Export Data to a Volume](from_lakehouse_to_volume.md) — Export data files
+
+^

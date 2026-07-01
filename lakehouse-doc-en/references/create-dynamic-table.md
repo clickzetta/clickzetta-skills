@@ -15,7 +15,7 @@ A Dynamic Table is like an "auto-updating formula sheet": you only need to defin
 
 A Dynamic Table is a data object that automatically refreshes incrementally based on a query definition. The data processing logic is defined via SQL query at creation time, and during refresh, incremental data from source tables is automatically retrieved and computed using incremental algorithms.
 
-For more usage methods, refer to [Dynamic Table Introduction](dynamic-table-introduce.md) and [Incremental Computation Principles](dynamic-table.md).
+For more usage methods, refer to [Dynamic Table Introduction](sql_dynamic_table_guide.md) and [Incremental Computation Principles](dynamic-table.md).
 
 ## Creation Syntax
 
@@ -262,7 +262,7 @@ When refreshing a partitioned table, the `partition_spec` must be specified in t
   ```sql
   set dt.args.day='2024-11-13';
   set dt.args.hour='23';
-  REFRESH DYNAMIC TABLE dt PARTITION (day='2024-11-13', hour='23');
+  REFRESH DYNAMIC TABLE dt PARTITION (day='2024-11-13', hour='23'); 
   ```
 
 * **Invalid specification**: Skip an intermediate level (e.g., skip hour and directly specify min).
@@ -270,7 +270,7 @@ When refreshing a partitioned table, the `partition_spec` must be specified in t
   -- Error example: hour is skipped
   set dt.args.day='2024-11-13';
   set dt.args.min='30';
-  REFRESH DYNAMIC TABLE dt PARTITION (day='2024-11-13', min='30');
+  REFRESH DYNAMIC TABLE dt PARTITION (day='2024-11-13', min='30'); 
   ```
 
 
@@ -412,8 +412,8 @@ CREATE DYNAMIC TABLE doc_dt_user_purchase_analysis (
 )
 COMMENT 'Real-time user purchase behavior analysis table'
 REFRESH INTERVAL 1 HOUR VCLUSTER default
-AS
-SELECT
+AS 
+SELECT 
     u.user_id, u.user_name, u.city,
     COUNT(o.order_id) AS total_orders,
     SUM(o.amount) AS total_amount
@@ -451,7 +451,7 @@ SELECT * FROM doc_dt_user_purchase_analysis ORDER BY user_id;
 * [Restore Dynamic Table to a Specific Version](restore.md)
 * [View Dynamic Table Version History](desc-history.md)
 * [View Dynamic Table Data at a Specific Version](timetravel-summary.md)
-* [Dynamic Table Introduction](dynamic-table-introduce.md)
+* [Dynamic Table Introduction](sql_dynamic_table_guide.md)
 
 ---
 

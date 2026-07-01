@@ -2,7 +2,7 @@
 
 Data governance features help you manage historical versions, lifecycle, and change tracking for your data. The core capability is Time Travel — based on the MVCC mechanism, every data change retains historical versions, allowing you to query the data state at any point in time, recover accidentally deleted data, or roll back unintended operations.
 
-![](/.topwrite/assets/19-time-travel.png)
+![](/.topwrite/assets/19-time-travel.svg)
 
 ---
 

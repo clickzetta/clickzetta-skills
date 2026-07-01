@@ -33,7 +33,3 @@ ALTER VOLUME my_tx_volume refresh;
 
 SELECT * FROM DIRECTORY(VOLUME my_tx_volume);
 ```
-
-^
-
-![](.topwrite/assets/20240625-201914.jpeg)

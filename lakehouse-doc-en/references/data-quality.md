@@ -6,7 +6,9 @@ In the era of big data, data quality management is a critical step to ensure dat
 
 The data quality overview page provides an intuitive data quality monitoring dashboard, making it easy to view the overall status of quality rules and validation runs. Below are detailed explanations of some indicators:
 
-![](.topwrite/assets/image_1760004305684.png)
+![](/.topwrite/assets/image_1780673989475.png =740)
+
+^
 
 The definitions of some indicators are as follows:
 
@@ -23,7 +25,7 @@ The definitions of some indicators are as follows:
 
 The quality rules page displays all your configured quality rules in a list format. Use the filter area at the top to quickly find the rules you need.
 
-![](.topwrite/assets/image_1760004360956.png)
+^
 
 Use the top filter area to perform detailed searches.
 
@@ -31,23 +33,22 @@ Use the top filter area to perform detailed searches.
 
 1. In the quality rules list, or in the rule list of a validation object, click the "Create Rule" button to enter the new quality rule page.
 2. Fill in the required configuration items, such as data source, workspace, validation object, owner, description, parameter configuration, value filtering, validation method, expected result, trigger method, execution cluster, and timeout duration.
- ![](.topwrite/assets/image_1760004384816.png)
 
-| **Configuration Item**       | **Configuration Description**                                                                                                                                                                                                                                |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Data Source           | The type of data source. Currently only Lakehouse data sources are supported.                                                                                                                                                                                                                |
-| Workspace          | The workspace to which the validation object belongs.                                                                                                                                                                                                                             |
-| Validation Object          | When the validation object is a Lakehouse table, select its Schema and name (table name, view name, etc.).                                                                                                                                                                                              |
-| Owner           | The person responsible for the quality rule, affecting who receives alerts.                                                                                                                                                                                                                        |
-| Description            | A description defined for the quality rule.                                                                                                                                                                                                                              |
-| Parameter Configuration          | In the quality rule, when using value filtering and custom SQL to compute metric values, you can reference predefined dynamic parameter values. For example, define a parameter: partition = $[yyyyMMdd].                                                                                                                                                           |
-| Value Filtering          | Used to filter the range of objects to validate, such as filtering by partition. Supports parameter references: dt = ${partition}.                                                                                                                                                                                       |
-| Validation Method - Built-in Metrics   | System built-in validation metrics. Select as needed.                                                                                                                                                                                                                        |
-| Validation Method - Custom SQL | If the built-in metrics do not meet your needs, you can compute metric values using custom SQL. Important: The result of custom SQL must be a single numeric value to enable comparison.                                                                                                                                                               |
-| Expected Result          | Define the expected result for the metric value.                                                                                                                                                                                                                              |
-| Trigger Method          | Configures how the quality rule is triggered to run. 1. Scheduled trigger: The system triggers a single validation run at the specified time. 2. Periodic task trigger: Triggered by an associated periodic task instance after the instance runs successfully. For periodic scheduling triggers, there are two scheduling blocking options: A. Strong blocking: If validation fails, the associated task instance is marked as failed, blocking downstream instances. B. Non-blocking: The quality rule runs as a bypass and does not affect the task instance's run status. 3. Manual trigger: Manually triggered as needed. |
-| Execution Cluster          | Specifies the compute cluster within the workspace for running the quality rule.                                                                                                                                                                                                                     |
-| Timeout Duration          | If the quality rule validation does not complete within the set timeout, it will be automatically canceled by the system.                                                                                                                                                                                                       |
+| **Configuration Item**               | **Configuration Description**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Data Source                          | The type of data source. Currently only Lakehouse data sources are supported.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| Workspace                            | The workspace to which the validation object belongs.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| Validation Object                    | When the validation object is a Lakehouse table, select its Schema and name (table name, view name, etc.).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Owner                                | The person responsible for the quality rule, affecting who receives alerts.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| Description                          | A description defined for the quality rule.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| Parameter Configuration              | In the quality rule, when using value filtering and custom SQL to compute metric values, you can reference predefined dynamic parameter values. For example, define a parameter: partition = $\[yyyyMMdd].                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Value Filtering                      | Used to filter the range of objects to validate, such as filtering by partition. Supports parameter references: dt = ${partition}.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| Validation Method - Built-in Metrics | System built-in validation metrics. Select as needed.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| Validation Method - Custom SQL       | If the built-in metrics do not meet your needs, you can compute metric values using custom SQL. Important: The result of custom SQL must be a single numeric value to enable comparison.                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| Expected Result                      | Define the expected result for the metric value.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| Trigger Method                       | Configures how the quality rule is triggered to run. 1. Scheduled trigger: The system triggers a single validation run at the specified time. 2. Periodic task trigger: Triggered by an associated periodic task instance after the instance runs successfully. For periodic scheduling triggers, there are two scheduling blocking options: A. Strong blocking: If validation fails, the associated task instance is marked as failed, blocking downstream instances. B. Non-blocking: The quality rule runs as a bypass and does not affect the task instance's run status. 3. Manual trigger: Manually triggered as needed. |
+| Execution Cluster                    | Specifies the compute cluster within the workspace for running the quality rule.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| Timeout Duration                     | If the quality rule validation does not complete within the set timeout, it will be automatically canceled by the system.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 
 After filling in the required configuration items, click the "Confirm" button to create the rule.
 
@@ -57,28 +58,27 @@ After filling in the required configuration items, click the "Confirm" button to
 
 After creating a quality rule, it is recommended to use the "Test Run" feature to verify the correctness of the configuration. After a successful test run, you can view the results to adjust the rule.
 
-![](.topwrite/assets/image_1760004576132.png)
+^
 
 ### View Test Run Results
 
 After clicking "Test Run", follow the prompts to click "View Results" to see the test run validation results.
 
-![](.topwrite/assets/image_1699875850066.png)
+^
 
 ### Configure Monitoring Alerts
 
 To ensure data quality issues are addressed promptly, you can configure monitoring alerts for quality rules. There are two ways:
 
 1. **Enable global quality monitoring alerts**: In the monitoring and alerting module, search for "Data Quality Check Failed" and enable the system's built-in global quality validation monitoring rule.
-   ![](.topwrite/assets/image_1699875920709.png)
+
 2. **Configure custom quality monitoring alerts**: Create custom monitoring rules, select "Quality Rule Validation Failed" as the monitoring message, and set filter conditions such as workspace or specific validation object.
-   ![](.topwrite/assets/image_1699875932007.png)
 
 ## Validation Objects
 
 On the validation objects page, you can manage all quality rules by the validation object (table) dimension. Use the search filter area to quickly locate specific rules.
 
-![](.topwrite/assets/image_1699875683208.png)
+![](/.topwrite/assets/image_1780674038464.png)
 
 ## Validation Results
 
@@ -86,7 +86,7 @@ On the validation objects page, you can manage all quality rules by the validati
 
 On the validation results list page, you can view the run status of all quality rules. Use the search and filter area to precisely find the required validation results.
 
-![](.topwrite/assets/image_1699875971234.png)
+^
 
 ### Operations on Validation Results
 

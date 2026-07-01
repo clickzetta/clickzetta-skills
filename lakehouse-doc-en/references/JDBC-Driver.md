@@ -40,7 +40,6 @@ jdbc:clickzetta://<service_instance_name>.api.singdata.com/<workspace_name>?<con
 
   * `<service_instance_name>`: Lakehouse service instance name. When a Lakehouse service instance is activated in a specified Region, the system will automatically assign an instance name. You can find the Lakehouse instance name on the Singdata product console page.
 
-    ![](.topwrite/assets/image_1739867152425.png)
 
   * `<workspace_name>`: Workspace name.
 

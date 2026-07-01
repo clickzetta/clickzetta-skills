@@ -2,7 +2,7 @@
 
 ## Python Environment Setup
 
-This guide includes a data generator and several examples, requiring Python 3.8, Java, and some other libraries and utilities.
+This guide includes a data generator and several examples, requiring Python 3.10, Java, and some other libraries and utilities.
 
 To set up these dependencies, we will use conda.
 
@@ -22,7 +22,7 @@ dependencies:
   - pandas=1.5.3
   - pip=23.0.1
   - pyarrow=10.0.1
-  - python=3.8.20
+  - python=3.10
   - python-confluent-kafka
   - python-dotenv=0.21.0
   - python-rapidjson=1.5
@@ -554,20 +554,20 @@ You will use the [Singdata Lakehouse Studio](https://accounts.clickzetta.com/) w
 
 Navigate to Development -> Tasks, click `+` to create a new workspace and worksheet task, then select SQL Worksheet
 
-:-: ![](.topwrite/assets/image_1736147176792.png =481)
+
 
 Create a workspace to store all tasks and code for this project. Workspace name: 01\_Demo\_Data\_Ingest
 
 ^
 
-:-: ![](.topwrite/assets/image_1736147168499.png =474)
+
   
 
 Create the first task, select SQL as the type. Workspace task name: 01\_Setup\_Environment
 
 ^
 
-:-: ![](.topwrite/assets/image_1736147159234.png =460)
+
 
 ###
 
@@ -639,7 +639,7 @@ The config-ingest.json file contains your account login information for Singdata
   "instance": "Please enter your instance ID",
   "workspace": "Please enter your workspace, e.g., gharchive",
   "schema": "Please enter your schema, e.g., public",
-  "vcluster": "Please enter your virtual cluster, e.g., default_ap",
+  "vcluster": "Please enter your virtual cluster, e.g., DEFAULT_AP",
   "sdk_job_timeout": 10,
   "hints": {
     "sdk.job.timeout": 3,
@@ -654,16 +654,13 @@ The config-ingest.json file contains your account login information for Singdata
 
 Navigate to Management -> Data Sources, click "New Data Source" and select Postgres to create a Postgres data source, so that Postgres can be accessed by Singdata Lakehouse.
 
-:-: ![](.topwrite/assets/image_1736147121735.png =510)
 
 * Data Source Name: ingest\_demo\_from\_pg
 * Connection Parameters: Same as the environment connection parameters in the database environment settings.
 * Please make sure to configure the correct time zone of the database to avoid data synchronization failure.
 
-:-: ![](.topwrite/assets/image_1736147111452.png =484)
 
 Once the environment is created, it can be used.
 
-:-: ![](.topwrite/assets/image_1736147099360.png =481)
 
 Test the connection, and if it prompts success, it means the configuration is successful.

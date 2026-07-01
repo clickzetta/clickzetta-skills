@@ -1,6 +1,6 @@
 # Streaming SQL
 
-> **[Preview Release]** This feature is currently in an invitation-only preview phase. If you need access, please contact our technical support team for assistance.
+> \[**Preview Release**] This feature is currently in an invitation-only preview phase. If you need access, please contact our technical support team for assistance.
 
 Streaming SQL is a new SQL scheduling mode introduced by the Singdata Lakehouse platform. It uses a micro-batch processing mechanism that supports second-level data refresh intervals, similar to Spark Streaming's micro-batch execution model. Compared to traditional scheduled tasks, Streaming SQL significantly reduces the overhead of SQL submission and compilation by converting the submitted SQL into a persistent process that automatically triggers data execution and processing each time the configured interval elapses. Streaming SQL is designed for scenarios that require higher data freshness, and currently supports dt refresh and SQL processing that includes a table stream.
 
@@ -65,7 +65,6 @@ Streaming SQL brings greater flexibility and real-time capability to data proces
 ## Developing a Streaming SQL Task
 
 1. Create a new Streaming SQL node in Data Development.
-   ![](.topwrite/assets/image_1727083278915.png)
 
 2. Write the SQL task.
 
@@ -80,32 +79,27 @@ Streaming SQL requirements:
 **Configure the Processing Interval**
 
 Click the configuration button to set the refresh interval — how often the data is processed. The minimum interval is currently 1 second.
-![](.topwrite/assets/image_1727083303138.png)
 
 ## Running a Streaming SQL Task
 
 * Click the Submit button to submit the Streaming SQL job to the Operations Center.
-
-![](.topwrite/assets/image_1727083345312.png)
-
 * Start the Streaming SQL job. Go to the Operations Center and click the Start button. The Streaming SQL job will begin running.
 
-![](.topwrite/assets/image_1727083377948.png)
+^
 
 ## Operations
 
 * In the Operations Center, you can see a list of all Streaming SQL jobs in the current workspace.
-  ![](.topwrite/assets/image_1727083398406.png)
 
 * You can monitor the running status of a Streaming SQL job using its job ID.
 
-![](.topwrite/assets/image_1727083425696.png)
+^
 
 ## Monitoring and Alerts
 
 Monitoring and alerts support failure alerts for Streaming SQL task execution.
 
-![](.topwrite/assets/image_1727083445006.png)
+^
 
 # Use Cases
 
@@ -156,12 +150,9 @@ AND source_stream.__change_type = 'INSERT' THEN
 INSERT VALUES (target.id, target.name, target.age);
 ```
 
-![](.topwrite/assets/image_1727083470402.png)
+^
 
 4. Submit the Streaming SQL job and click Start in the Operations Center.
-
-![](.topwrite/assets/image_1727083486439.png)
-
 5. After updating the source table data and waiting for the Streaming SQL job to complete, the SCD table will reflect the same changes.
 
 * Execute the following SQL in a regular SQL node:
@@ -185,7 +176,6 @@ SELECT "test_table_offset_consume",* FROM continuous_job.test_table_offset_consu
 6. Clean up the environment.
 
 * Stop the Streaming SQL job in the Operations Center.
-  ![](.topwrite/assets/image_1727083510506.png)
 
 * Drop the schema.
 
@@ -235,11 +225,11 @@ GROUP BY
 refresh dynamic table event_group_minute;
 ```
 
-![](.topwrite/assets/image_1727083531426.png)
+^
 
 * Start the Streaming SQL job to begin refreshing the dynamic table.
 
-![](.topwrite/assets/image_1727083554105.png)
+^
 
 * Create a new regular SQL node, insert some data into the source table, and verify that the dynamic table is refreshed successfully.
 
@@ -254,3 +244,5 @@ refresh dynamic table event_group_minute;
   --Wait 10s and observe the dynamic table changes
   select * from event_group_minute;  
 ```
+
+^

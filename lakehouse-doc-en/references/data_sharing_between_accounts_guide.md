@@ -30,7 +30,6 @@ The core working principle of Data Share is:
 
 **Data Sharing Flow**:
 
-:-: ![](.topwrite/assets/image_1747735731291.png =322)
 
 The data provider retains full control and can update or remove shared data at any time. When source data is updated, the consumer immediately obtains the latest data without additional data sync operations.
 
@@ -69,7 +68,6 @@ ALTER SHARE taxi_data_share ADD INSTANCE target_instance_name;
 5. Under **Receiving Instances**, click **Add** and enter the consumer's service instance name.
 6. Click **Confirm** to complete creation.
 
-:-: ![](.topwrite/assets/image_1747742254855.png =699)
 
 #### 4.1.3 Creating a View for Partial Data Sharing
 
@@ -140,7 +138,6 @@ DESC SHARE source_instance_name.taxi_data_share;
 2. In the left navigation, select **Data Management** -> **Data Share**.
 3. Switch to the **Shared with Me** tab to see all received shares.
 
-:-: ![](.topwrite/assets/image_1747742432405.png =757)
 
 ### 5.2 Creating a Local Schema Linked to Shared Data
 
@@ -165,7 +162,6 @@ Where:
 3. In the popup, select the **Source Schema** and specify the schema name to be created locally.
 4. Click **Confirm** to complete the extraction.
 
-:-: ![](.topwrite/assets/image_1747742473685.png =373)
 
 ### 5.3 Using Shared Data
 
@@ -323,7 +319,7 @@ GRANT SELECT ON TABLE <table_name> TO SHARE <share_name>;
 
 ## 9. Reference Information
 
-* [Data Sharing](datasharing.md)
+* [Data Sharing](data-sharing.md)
 * [Cross-Enterprise Real-Time Data Sharing](quickstart_datashare_between_companies.md)
 * [CREATE SHARE Syntax](create-share.md)
 * [CREATE SCHEMA FROM SHARE Syntax](create-schema-from-share.md)

@@ -91,6 +91,7 @@ DESC PIPE my_pipe;
 
 ## Related Documents
 
+- [Real-Time Data Pipeline Selection Guide](realtime-pipeline-selection-guide.md): Comparison of Pipe, Table Stream, and Dynamic Table
 - [Pipe Introduction](pipe-summary.md)
 - [Kafka Pipe](pipe-kafka.md)
 - [Object Storage Pipe](pipe-storage-object.md)

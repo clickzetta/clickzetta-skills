@@ -38,44 +38,44 @@ The system calculates the difference between the **actual time the instance ente
 
 ### Scenario 1: Run Timeout Duration
 
-|              |                         |
-| ------------ | ----------------------- |
-| Time         | Event                   |
-| 14:00        | T1 starts running       |
-| 14:10        | Run time reaches the 10-minute limit; T1 is set to Failed |
+|                                        |                                                                                  |
+| -------------------------------------- | -------------------------------------------------------------------------------- |
+| Time                                   | Event                                                                            |
+| 14:00                                  | T1 starts running                                                                |
+| 14:10                                  | Run time reaches the 10-minute limit; T1 is set to Failed                        |
 | Subsequent instances from 14:05 onward | All self-dependent subsequent instances are suspended because upstream T1 failed |
 
-![](/.topwrite/assets/image_1780067288681.png)
+^
 
 ### Scenario 2: Schedule Wait Duration
 
-|       |                                       |
-| ----- | ------------------------------------- |
-| Time  | Event                                 |
-| 14:00 | T1 starts running normally (not affected by this setting) |
-| 14:05 | T2 reaches its trigger time and enters the waiting-for-upstream (T1) state |
-| 14:15 | T2's wait time reaches the 10-minute limit; T2 is set to Failed. T1 can continue running normally |
+|       |                                                                                                                |
+| ----- | -------------------------------------------------------------------------------------------------------------- |
+| Time  | Event                                                                                                          |
+| 14:00 | T1 starts running normally (not affected by this setting)                                                      |
+| 14:05 | T2 reaches its trigger time and enters the waiting-for-upstream (T1) state                                     |
+| 14:15 | T2's wait time reaches the 10-minute limit; T2 is set to Failed. T1 can continue running normally              |
 | 14:10 | T3 reaches its trigger time and enters the waiting state; its downstream tasks are suspended because T2 failed |
-| 14:20 | T3's wait time reaches the 10-minute limit; T3 is set to Failed. T1 completes normally |
+| 14:20 | T3's wait time reaches the 10-minute limit; T3 is set to Failed. T1 completes normally                         |
 
 > The schedule wait duration triggers independently for each instance; T1's normal execution is not affected.
-> ![](/.topwrite/assets/image_1780067342320.png)
+>
 
 ### Scenario 3: Delayed Run Skip Duration
 
-|       |                                                    |
-| ----- | -------------------------------------------------- |
-| Time  | Event                                              |
-| 14:00 | T1 starts running normally                         |
-| 14:05 | T2 reaches its trigger time and waits for T1 to complete |
+|       |                                                                                            |
+| ----- | ------------------------------------------------------------------------------------------ |
+| Time  | Event                                                                                      |
+| 14:00 | T1 starts running normally                                                                 |
+| 14:05 | T2 reaches its trigger time and waits for T1 to complete                                   |
 | 14:20 | T1 completes; T2 enters the running state. Delay = 14:20 − 14:05 = 15 minutes > 10 minutes |
-| 14:20 | T2 is dry-run skipped and set to Succeeded, triggering T3's scheduling |
+| 14:20 | T2 is dry-run skipped and set to Succeeded, triggering T3's scheduling                     |
 
 > A dry-run skip does not execute any actual business logic; it only marks the instance as Succeeded to keep the scheduling chain moving.
 
 ***
 
-![](/.topwrite/assets/image_1780067317383.png)
+^
 
 ***
 

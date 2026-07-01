@@ -13,10 +13,11 @@ Singdata Lakehouse integrates AI capabilities natively into the data platform �
 | Call an LLM in a SQL query (text classification, summarization, extraction, translation) | [AI Functions / AI\_COMPLETE](ai_complete.md) |
 | Manage and switch between multiple LLM models (OpenAI, Qwen, etc.) | [AI Gateway](aigateway.md) |
 | Semantic similarity search, RAG retrieval, image search | [Vector Search](vector_search_ai.md) |
-| Call external HTTP services (cloud functions, vision APIs, custom models) | [External Function](remotefunction-intro.md) |
+| Call external HTTP services (cloud functions, vision APIs, custom models) | [External Function](remotefunction-on-acr.md) |
 | Python data processing + AI inference with a PySpark-like interface | [Zettapark](zettapark-quick-start.md) |
 | Encapsulate business semantics for BI tools and AI Agents | [Semantic View](semantic-view-overview.md) |
-| Natural language conversational data analysis, zero-barrier data querying | [Data Analytics Agent (DataGPT)](ai_gateway.md) |
+| Natural language conversational data analysis, zero-barrier data querying | [Data Analytics Agent (DataGPT)](datagpt_introduction.md) |
+| Use natural language for ETL development, task management, operations diagnostics | [Data Engineering Agent](dataagent.md) |
 | Let an AI Agent operate Lakehouse directly | [CZ-CLI](cz-cli.md) |
 
 ***
@@ -29,13 +30,10 @@ Singdata Lakehouse integrates AI capabilities natively into the data platform �
 
 ```sql
 -- Sentiment analysis on each user review
--- Replace endpoint:my_llm with the LLM endpoint name configured in your AI Gateway
 SELECT
     review_id,
     review_text,
-    AI_COMPLETE('endpoint:my_llm',
-        'Classify the sentiment of the following review as "positive", "negative", or "neutral": '
-        || review_text) AS sentiment
+    AI_COMPLETE('Classify the sentiment of the following review as "positive", "negative", or "neutral": ' || review_text) AS sentiment
 FROM user_reviews;
 ```
 
@@ -49,10 +47,9 @@ Create vector indexes on tables to support approximate nearest neighbor (ANN) re
 
 ```sql
 -- Semantic similarity search: find the 5 most relevant documents
--- Replace endpoint:my_embedding with the Embedding endpoint name configured in your AI Gateway
 SELECT doc_id, content
 FROM knowledge_base
-ORDER BY cosine_distance(embedding, AI_EMBEDDING('endpoint:my_embedding', 'user question')) ASC
+ORDER BY cosine_distance(embedding, AI_EMBED('user question')) ASC
 LIMIT 5;
 ```
 
@@ -64,7 +61,7 @@ LIMIT 5;
 
 Register HTTP services such as Alibaba Cloud Function Compute or Tencent Cloud SCF as SQL functions, and call vision recognition, speech transcription, custom models, and other capabilities directly in queries.
 
-→ [External Function Introduction](remotefunction-intro.md) · [Development Guide (Python)](remotefunction-dev-guide-python3.md) · [Usage Guide](remotefunction-best-practice.md)
+→ [External Function Introduction](remotefunction-on-acr.md) · [Development Guide (Python)](remotefunction-dev-guide-python3.md) · [Usage Guide](remotefunction-best-practice.md)
 
 ***
 
@@ -81,6 +78,22 @@ Encapsulate multi-table JOINs and aggregation logic as business semantics. BI to
 A PySpark-like Python interface for running Python scripts on Lakehouse — suitable for feature engineering, model inference, and complex data processing scenarios that SQL cannot cover.
 
 → [Zettapark Quick Start](zettapark-quick-start.md) · [Credit Scoring Example](credit-scoring-with-zettapark.md) · [Feature Engineering Example](feature-engineering-with-zettapark.md)
+
+***
+
+### Data Engineering Agent — Drive the Data Platform with Natural Language
+
+An AI agent built on Lakehouse + Studio that uses natural language to complete ETL development, task management, daily operations, data source integration, and other tasks across the full data development lifecycle. No manual operation of the Studio interface required — just describe your requirements, and the Agent automatically breaks down tasks, calls tools, and executes.
+
+Typical uses:
+
+- **ETL development**: Describe your data warehouse layering design; automatically generate modeling specification documents and SQL code
+- **Ad-hoc queries**: Ask questions in natural language; automatically generate and execute SQL, returning results directly
+- **Daily operations**: Analyze failed tasks, locate root causes, quantify downstream impact, recommend fixes
+- **Task management**: Create and configure Studio tasks, set scheduling and dependency relationships
+- **Data source management**: Integrate and configure data sources, monitor sync status
+
+→ [Data Engineering Agent Full Documentation](dataagent.md)
 
 ***
 

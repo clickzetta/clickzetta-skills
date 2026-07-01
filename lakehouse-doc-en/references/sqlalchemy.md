@@ -46,8 +46,6 @@ In this section, we will introduce how to use Apache Superset to connect to Sing
 3. In the "SQLALCHEMY URI" field, fill in the Singdata Lakehouse connection parameters configured above.
 4. Click "Test Connection" to ensure the connection is successful.
 
-![Configure Superset Connection](.topwrite/assets/image_1668962209871.png)
-
 ### Data Query and BI Analysis
 
 Once the connection is successful, you can use Apache Superset for data queries and BI analysis. For example:
@@ -70,7 +68,5 @@ WHERE
 
 4. Click "Execute Query" to view the query results.
 5. Adjust the chart style and configuration as needed to complete the BI analysis.
-
-![Superset Data Query and BI Analysis](.topwrite/assets/image_1668962386077.png)
 
 By following the above steps, you can easily use Apache Superset to connect to Singdata Lakehouse for data querying and BI analysis.

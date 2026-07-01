@@ -23,7 +23,7 @@ Enter a number: 1
 service (cn-shanghai-alicloud.api.clickzetta.com): cn-shanghai-alicloud.api.clickzetta.com
 instance (your_instance): <your_instance>
 workspace (your_workspace): <your_workspace>
-vcluster (default_ap): default
+vcluster (default_ap): DEFAULT
 username (your_username): <user_name>
 schema (default schema): dbt_dev
 password (password): <your_passwd>
@@ -49,7 +49,7 @@ cz_dbt_project:
       password: <passwd>
       workspace: <your_workspace_name>
       schema: dbt_prod
-      vcluster: default
+      vcluster: DEFAULT
     dev:
       type: clickzetta
       service: cn-shanghai-alicloud.api.clickzetta.com
@@ -58,7 +58,7 @@ cz_dbt_project:
       password: <passwd>
       workspace: <your_workspace_name>
       schema: dbt_dev
-      vcluster: default
+      vcluster: DEFAULT
 ```
 
 4. Verify the configuration
@@ -99,7 +99,7 @@ Finally, run the model multiple times to observe the incremental processing beha
 
 Create a raw table and continuously import data through a data integration tool:
 
-```SQL
+```sql
 CREATE TABLE public.ecommerce_events_multicategorystore_live(
   `event_time` timestamp,
   `event_type` string,
@@ -118,22 +118,20 @@ Note: you must add `'change_tracking' = 'true'` to the table properties to enabl
 
 Create a Table Stream object on the source table to track its change records:
 
-```SQL
+```sql
 -- Create stream on source table
 CREATE TABLE STREAM public.stream_ecommerce_events 
 on table ecommerce_events_multicategorystore_live
 with PROPERTIES ('TABLE_STREAM_MODE' = 'APPEND_ONLY')
 ```
 
-Also create a `sources.yml` file under the `models` directory of `cz_dbt_project` to declare the 2 source tables:
-
-![](.topwrite/assets/image_1722603115937.png)
+Also create a `sources.yml` file under the `models` directory of `cz_dbt_project` to declare the 2 source tables. The file should reference `ecommerce_events_multicategorystore_live` and `stream_ecommerce_events` under the `public` schema.
 
 ## Develop the Model
 
 Create a dbt model named `events_enriched.sql` and declare it as an incremental model through configuration:
 
-```SQL
+```sql
 {{
    config(
        materialized='incremental'
@@ -203,7 +201,7 @@ dbt build --model events_enriched
 
 Observing the logs, the model is built with the following statement, performing an initial full-load transformation of the source table:
 
-```SQL
+```sql
 /* {"app": "dbt", "dbt_version": "1.8.x", "profile_name": "cz_dbt_project", "target_name": "dev", "node_id": "model.cz_dbt_project.events_enriched"} */
 create table dbt_dev.events_enriched
 as
@@ -231,7 +229,7 @@ Check the data objects in the Lakehouse target environment:
 
 ![](.topwrite/assets/image_1722603148172.png)
 
-```SQL
+```sql
 select count(*)  from events_enriched ;
 `count`(*) 
 ---------- 
@@ -250,7 +248,7 @@ dbt run --model events_enriched
 
 Following the dbt incremental model logic, dbt creates a temporary view in the target environment to represent the incremental data:
 
-```SQL
+```sql
 /* {"app": "dbt", "dbt_version": "1.8.x", "profile_name": "cz_dbt_project", "target_name": "dev", "node_id": "model.cz_dbt_project.events_enriched"} */
 
 create or replace view dbt_dev.events_enriched__dbt_tmp as
@@ -276,7 +274,7 @@ public.stream_ecommerce_events;
 
 dbt then uses the `materialized='incremental'` configuration to write the incremental data from the Table Stream into the target model via `MERGE INTO`:
 
-```SQL
+```sql
 /* {"app": "dbt", "dbt_version": "1.8.x", "profile_name": "cz_dbt_project", "target_name": "dev", "node_id": "model.cz_dbt_project.events_enriched"} */
 
     -- back compat for old kwarg name
@@ -310,7 +308,7 @@ Create a Dynamic Table model named `product_grossing.sql`.
 
 * Code definition
 
-```SQL
+```sql
 {{
    config(
        materialized = 'dynamic_table',
@@ -338,7 +336,7 @@ dbt build --model product_grossing
 
 Observing the logs, the model is built with the following statement, performing an initial full-load transformation of the source table:
 
-```SQL
+```sql
 /* {"app": "dbt", "dbt_version": "1.8.x", "profile_name": "cz_dbt_project", "target_name": "dev", "node_id": "model.cz_dbt_project.product_grossing"} */
 create or replace dynamic table dbt_dev.product_grossing
 refresh interval 5 minute
@@ -359,7 +357,7 @@ View the model lineage in dbt:
 
 Check the data objects in the Lakehouse target environment:
 
-```SQL
+```sql
 show tables;
 
 schema_name table_name               is_view is_materialized_view is_external is_dynamic 
@@ -372,7 +370,7 @@ dbt_dev     my_second_dbt_model      true    false                false       fa
 
 Use the `DESC` command to view the Dynamic Table details, focusing on confirming that the Virtual Cluster and refresh interval parameters are as expected:
 
-```SQL
+```sql
 desc extended product_grossing;
 
 column_name                  data_type                                                                                                                                                                                                                                                     
@@ -385,7 +383,7 @@ sum_price                    decimal(20,2)
 
 detailed table information：
 
-```SQL
+```sql
 schema                       dbt_dev                                                                                                                                                                                                                                                       
 name                         product_grossing                                                                                                                                                                                                                                              
 creator                      xxx                                                                                                                                                                                                                                                        
@@ -419,7 +417,7 @@ Dynamic Table dbt models are automatically scheduled by Lakehouse using the refr
 
 After the model is built in the target environment, you can check the Dynamic Table's refresh history on the Lakehouse platform with the following SQL:
 
-```SQL
+```sql
 show dynamic table refresh history where name ='product_grossing'
 
 workspace_name schema_name name             virtual_cluster start_time          end_time            duration             state   refresh_trigger  suspended_reason refresh_mode error_message source_tables                                                             stats                                     completion_target job_id                   

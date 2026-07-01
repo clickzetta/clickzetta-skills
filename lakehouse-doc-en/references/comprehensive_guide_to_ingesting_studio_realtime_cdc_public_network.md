@@ -16,25 +16,25 @@ Singdata Lakehouse Studio's real-time multi-table synchronization supports multi
 
 Navigate to Development -> Tasks, click "+", select "Real-time Multi-table Synchronization", and create a new real-time multi-table synchronization task.
 
-:-: ![](.topwrite/assets/image_1736147975347.png =494)
+
 
 Task Name: 06\_multi\_table\_rt\_sync\_from\_pg
 
 ##### Select "PostgreSQL" as the Source Data
 
-:-: ![](.topwrite/assets/image_1736147983573.png =502)
+
 
 ##### Select Synchronization Objects
 
 Singdata Lakehouse Studio will automatically synchronize the source database structure for selection:
 
-:-: ![](.topwrite/assets/image_1736147992225.png =467)
+
 
 ##### Database CDC Configuration
 
 Create a Slot
 
-:-: ![](.topwrite/assets/image_1736148001087.png =459)
+
 
 Plugin Type: pgoutput
 
@@ -44,49 +44,45 @@ Slot Name: slot\_for\_multi\_table\_ingest\_demo
 
 Rule Expression: multitable\_sync\_{SOURCE\_TABLE}. Add the prefix multitable\_sync\_{SOURCE\_TABLE} to the target table to distinguish it from tables synchronized by other methods.
 
-Check field mapping to ensure all mappings are successful:
+Check field mapping to ensure all mappings are successful.
 
-:-: ![](.topwrite/assets/image_1736148015509.png =445)
 
 ##### Configure Synchronization Rules
 
-:-: ![](.topwrite/assets/image_1736148027202.png =443)
+
 
 ##### Submit
 
-Submit the real-time multi-table synchronization task after configuration:
+Submit the real-time multi-table synchronization task after configuration.
 
-:-: ![](.topwrite/assets/image_1736148034594.png =427)
 
 ##### Operations and Maintenance
 
 Maintain the real-time multi-table synchronization task:
 
-:-: ![](.topwrite/assets/image_1736148045501.png =425)
+
 
 ##### Start
 
 Start the real-time multi-table synchronization task:
 
-:-: ![](.topwrite/assets/image_1736148052375.png =426)
 
-For the first start of this real-time multi-table synchronization task, select "Stateless Start" and "Full Data Synchronization":
 
-:-: ![](.topwrite/assets/image_1736148058726.png =426)
+For the first start of this real-time multi-table synchronization task, select "Stateless Start" and "Full Data Synchronization".
+
+
 
 After starting, you can view the detailed status of the task. Once the full synchronization is complete, the system will automatically begin incremental real-time synchronization.
 
 ##### Progress Monitoring
 
-Full synchronization in progress:
+Full synchronization in progress.
 
-:-: ![](.topwrite/assets/image_1736148083158.png =446)
 
 Full synchronization complete.
 
-Real-time synchronization begins:
+Real-time synchronization begins.
 
-:-: ![](.topwrite/assets/image_1736148107686.png =430)
 
 ##### Incremental Real-time Synchronization
 
@@ -236,7 +232,6 @@ python rt_data_generate_insert_into_pg.py 100000 100 10
 
 In Singdata Lakehouse Studio, view the real-time synchronization progress:
 
-:-: ![](.topwrite/assets/image_1736148122833.png =484)
 
 #### Next Steps
 
@@ -250,4 +245,4 @@ Insert new data into the data source to view the results of incremental synchron
 
 [Multi-table Real-time Synchronization](realtime_sync.md)
 
-[Capture Change Data (CDC) and Data Processing through Multi-table Real-time Synchronization and Dynamic Tables in Singdata Lakehouse](czguide-intro-to-cdc-using-clickzetta-rtsync-dynamic-tables.md)
+[Capture Change Data (CDC) and Data Processing through Multi-table Real-time Synchronization and Dynamic Tables in Singdata Lakehouse](sql_table_stream_guide.md)

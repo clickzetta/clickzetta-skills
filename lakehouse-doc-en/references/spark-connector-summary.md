@@ -11,7 +11,7 @@ This connector supports bidirectional data movement between Lakehouse and Spark 
 * Read tables from Lakehouse and convert them into Spark DataFrames
 * Write data from Spark DataFrames into tables in Lakehouse.
 
-![](.topwrite/assets/image_1726132853684.png)
+
 
 Data Transfer Process
 
@@ -252,7 +252,7 @@ By reading data existing in the Lakehouse, use Spark ML to train a recommendatio
   * ```SQL
     create table sample_movie_data(user_id int,movie_id int,rating float);
     ```
-* Install Python package version greater than 3.6
+* Install Python package version 3.10 or above
 
 * Install Pyspark
 ```SQL

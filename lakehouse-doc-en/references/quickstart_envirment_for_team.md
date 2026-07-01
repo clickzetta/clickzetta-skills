@@ -38,17 +38,14 @@ To achieve the above management goals, you need to create independent users for 
 
 Log in to the Singdata product using the default user created during account registration, go to the management center page, and switch to the "User Management" function:
 
-:-: ![](.topwrite/assets/quickstart_team_p1.png =801)
 
 ^
 
 Click the "New" button in the upper right corner and select "New User." Here, create two users: developer and analyst, as shown below:
 
-:-: ![](.topwrite/assets/quickstart_team_p2.png =361)
 
 ^
 
-:-: ![](.topwrite/assets/quickstart_team_p3.png =360)
 
 After successful creation, you can see these two users in the user list under user management.
 
@@ -58,23 +55,19 @@ In Lakehouse, a workspace is used to isolate computing resources and data, formi
 
 Log in using the user created during tenant registration, and click the name of the opened service instance in the management center to enter the service instance homepage.
 
-:-: ![](.topwrite/assets/quickstart_team_p4.png =797)
 
 ^
 
 On the service instance homepage, click "Management" - "Workspace" in the left menu to enter the workspace management page. Click the "+ New Space" button in the upper right corner:
 
-:-: ![](.topwrite/assets/quickstart_team_p5.png =774)
 
 ^
 
 Enter the workspace name in the pop-up window and click "OK" to complete the workspace creation:
 
-:-: ![](.topwrite/assets/quickstart_team_p6.png =382)
 
 ^
 
-:-: ![](.topwrite/assets/quickstart_team_p7.png =733)
 
 ^
 
@@ -84,11 +77,9 @@ In the Lakehouse workspace, schema is used to further categorize data tables and
 
 First, click "Develop" on the right side of the newly created dev\_envirment workspace to enter the development page, and execute the following SQL to create the schema:
 
-:-: ![](.topwrite/assets/quickstart_team_p8.png =730)
 
 ^
 
-:-: ![](.topwrite/assets/quickstart_team_p9.png =736)
 
 Create two tables in Schema STG and insert some sample data:
 
@@ -176,19 +167,16 @@ The above authorization operations, including adding users to the workspace and 
 
 Continue using the user who created the dev\_environment workspace, click on "Management" - "Workspace" in the left menu to enter the workspace list, find the dev\_environment workspace, and click to enter. On the "Users" tab of the workspace details page, click the "+ Add User" button on the right:
 
-:-: ![](.topwrite/assets/quickstart_team_p10.png =774)
 
 ^
 
 In the pop-up window, find the user developer and check the box (you can also find the analyst user and check the box together. However, since the permissions to be granted to the two users are different, operate separately here, only add the developer user first).
 
-:-: ![](.topwrite/assets/quickstart_team_p11.png =763)
 
 ^
 
 At this point, there are two buttons below, click the right "Add User" button to only perform the operation of adding the user to the workspace without any authorization. Click the left "Add User and Grant Role" button to further select the role to be granted. Suppose we click the left "Add User and Grant Role" button:
 
-:-: ![](.topwrite/assets/quickstart_team_p12.png =772)
 
 ^
 
@@ -208,10 +196,6 @@ Execute the following statement in the development function:
 SHOW GRANTS TO USER developer;
 ```
 
-The results are as follows:
-
-:-: ![](.topwrite/assets/quickstart_team_p13.png =738)
-
 ^
 
 ### 3.7 Team Member Login to the System
@@ -220,23 +204,19 @@ After completing the above operations, both the developer and analyst users can 
 
 Return to the Singdata login page <https://accounts.singdata.com/login>, and sequentially enter the account name, username, and password. The account name is provided after the account registration is successful and can be obtained from the URL after any user of the account logs in.
 
-:-: ![](.topwrite/assets/quickstart_team_p15.png =746)
 
 Now, use the developer user to log in at the .accounts.singdata.com/login URL, and click the "Enter" service instance button under the "Lakehouse" product to enter the Lakehouse service instance.
 
-:-: ![](.topwrite/assets/quickstart_team_p16.png =740)
 
 ### 3.8 Team Member Writing Development Tasks
 
 After the developer user logs in, go to the "Development" page in the left menu. Since the current developer user has only joined the dev\_environment workspace, there is no need to switch workspaces. If multiple workspaces are joined, you can switch to the required workspace for development in the upper right corner.
 
-:-: ![](.topwrite/assets/quickstart_team_p17.png =739)
 
 ^
 
 Click the "+" to create a new SQL script in the "Development" function, and write a query statement to query the data in the stg.employees table.
 
-:-: ![](.topwrite/assets/quickstart_team_p18.png =717)
 
 ^
 
@@ -244,25 +224,21 @@ Click the "+" to create a new SQL script in the "Development" function, and writ
 select * from stg.employees limit 10;
 ```
 
-:-: ![](.topwrite/assets/quickstart_team_p19.png =740)
 
 ^
 
 Click the "Save" button to save the task code, and the "Schedule" button to open the schedule configuration popup.
 
-:-: ![](.topwrite/assets/quickstart_team_p20.png =572)
 
 ^
 
 In the popup, configure the scheduling task's cycle, rerun method, and other information, then click the "OK" button to complete the scheduling configuration operation for the task.
 
-:-: ![](.topwrite/assets/quickstart_team_p21.png =730)
 
 ^
 
 After successfully configuring the schedule, the "Submit" button becomes clickable. After clicking "Submit," the task is submitted for periodic scheduling.
 
-:-: ![](.topwrite/assets/quickstart_team_p22.png =695)
 
 ^
 

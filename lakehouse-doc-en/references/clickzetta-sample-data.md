@@ -213,7 +213,7 @@ ORDER BY trips DESC;
 | `date_processed` | timestamp_ltz | Vector processing timestamp |
 
 **Use cases**:
-- Experience vector similarity retrieval (the `<=>` cosine distance operator)
+- Experience vector similarity retrieval (the `cosine_distance` function)
 - Build a RAG (Retrieval-Augmented Generation) Q&A system based on product documentation
 - Learn how to use the `AI_EMBEDDING` function together with vector indexes
 
@@ -224,7 +224,7 @@ SELECT
     filename,
     type,
     text,
-    embeddings <=> AI_EMBEDDING('动态表是什么') AS distance
+    cosine_distance(embeddings, AI_EMBEDDING('ai_gateway_conn:text-embedding-v4', 'What is a dynamic table')) AS distance
 FROM clickzetta_sample_data.clickzetta_doc_kb.dashscope_clickzetta_elements
 ORDER BY distance ASC
 LIMIT 5;
@@ -236,4 +236,4 @@ LIMIT 5;
 - [TPC-H Performance Benchmark](tpch-benchmark.md)
 - [Table Stream](om-table-stream.md)
 - [Vector Index](om-inverted-index.md)
-- [AI_EMBEDDING Function](ai_embedding.md)
+- [AI_EMBEDDING Function](sql_functions/ai_embedding.md)

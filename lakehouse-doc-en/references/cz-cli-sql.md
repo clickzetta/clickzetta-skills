@@ -6,21 +6,16 @@ This page covers cz-cli commands for SQL execution, schema and table management,
 
 ### Basic Usage
 
-```bash
-```
-
 Synchronous execution, returns results directly (default):
 
 ```bash
 cz-cli -p prod sql "SELECT current_timestamp()"
-
 ```
 
 Pass SQL with -e:
 
 ```bash
 cz-cli -p prod sql -e "SELECT * FROM public.orders LIMIT 10"
-
 ```
 
 Read SQL from a file:
@@ -33,21 +28,17 @@ cz-cli -p prod sql -f query.sql
 
 `cz-cli sql` executes synchronously by default (`--sync`), waiting for results before exiting. For long-running queries, you can submit asynchronously, get the job\_id, and then retrieve results:
 
-```bash
-```
 
 Submit asynchronously, returns job\_id immediately:
 
 ```bash
 cz-cli -p prod sql "SELECT * FROM huge_table" --async
-
 ```
 
 Check job status:
 
 ```bash
 cz-cli -p prod sql status <job_id>
-
 ```
 
 Or use the job command:
@@ -110,28 +101,23 @@ cz-cli -p prod sql --dry-run -f deploy.sql
 
 ### Output Control
 
-```bash
-```
 
 Do not truncate long fields:
 
 ```bash
 cz-cli -p prod sql "SELECT * FROM public.orders" --no-truncate
-
 ```
 
 Remove row limit (default 100 rows):
 
 ```bash
 cz-cli -p prod sql "SELECT * FROM public.orders" --no-limit
-
 ```
 
 Do not output column names:
 
 ```bash
 cz-cli -p prod sql "SELECT id, name FROM public.orders" --no-header
-
 ```
 
 Specify output format:
@@ -144,7 +130,7 @@ cz-cli -p prod sql "SELECT * FROM public.orders LIMIT 5" -o csv
 ### Full Parameter Reference
 
 | Parameter | Description | Default |
-|-----------|-------------|---------|
+| --------- | ----------- | ------- |
 | `--sync` / `--no-sync` | Wait synchronously for results | `true` |
 | `--async` | Submit asynchronously, returns job\_id immediately | `false` |
 | `--write` | Allow write operations (DDL/DML) | Off |
@@ -166,28 +152,22 @@ cz-cli -p prod sql "SELECT * FROM public.orders LIMIT 5" -o csv
 
 ## cz-cli schema — Schema Management
 
-```bash
-```
-
 List all schemas:
 
 ```bash
 cz-cli -p prod schema list
-
 ```
 
 View schema details (including table list):
 
 ```bash
 cz-cli -p prod schema describe public
-
 ```
 
 Create a schema:
 
 ```bash
 cz-cli -p prod schema create dwd
-
 ```
 
 Drop a schema (requires confirmation):
@@ -200,56 +180,47 @@ cz-cli -p prod schema drop old_schema
 
 ## cz-cli table — Table Management and Data Exploration
 
-```bash
-```
 
 List all tables in the current schema:
 
 ```bash
 cz-cli -p prod table list
-
 ```
 
 List tables in a specific schema:
 
 ```bash
 cz-cli -p prod -s dwd table list
-
 ```
 
 View table structure (column names, types, comments):
 
 ```bash
 cz-cli -p prod table describe public.orders
-
 ```
 
 Preview table data (default 10 rows):
 
 ```bash
 cz-cli -p prod table preview public.orders
-
 ```
 
 View table row count and recent job statistics:
 
 ```bash
 cz-cli -p prod table stats public.orders
-
 ```
 
 View table version history (Time Travel support):
 
 ```bash
 cz-cli -p prod table history public.orders
-
 ```
 
 Create a table from DDL:
 
 ```bash
 cz-cli -p prod table create --write "CREATE TABLE public.test (id INT, name STRING)"
-
 ```
 
 Drop a table (requires confirmation):
@@ -264,21 +235,17 @@ cz-cli -p prod table drop public.test
 
 Asynchronously submitted queries return a job\_id; use the `job` command to track them:
 
-```bash
-```
 
 View job status and execution summary:
 
 ```bash
 cz-cli -p prod job status <job_id>
-
 ```
 
 Get job query results (waits if still running):
 
 ```bash
 cz-cli -p prod job result <job_id>
-
 ```
 
 View job execution profile (analyze performance bottlenecks):
@@ -291,28 +258,23 @@ cz-cli -p prod sql --job-profile <job_id>
 
 ## cz-cli workspace — Workspace Switching
 
-```bash
-```
 
 View current workspace:
 
 ```bash
 cz-cli -p prod workspace current
-
 ```
 
 List all available workspaces:
 
 ```bash
 cz-cli -p prod workspace list
-
 ```
 
 Temporarily switch workspace (current command only):
 
 ```bash
 cz-cli -p prod workspace use analytics
-
 ```
 
 Persistent switch (saved to profile):
@@ -335,8 +297,6 @@ cz-cli -p prod table stats public.orders
 
 **Scenario 2: Debugging a slow query**
 
-```bash
-```
 
 Submit asynchronously first:
 
@@ -353,14 +313,11 @@ cz-cli -p prod sql --job-profile <job_id>
 
 **Scenario 3: Executing DDL in CI/CD**
 
-```bash
-```
 
 Validate syntax with dry-run first:
 
 ```bash
 cz-cli -p prod sql --dry-run -f migrations/v2.sql
-
 ```
 
 Execute after confirming no issues:
@@ -389,7 +346,7 @@ cz-cli -p prod sql \
 **Lakehouse Related Documentation**
 
 * [Workspace](workspace-introduction.md) — Workspace concepts, user management, permission system
-* [Compute Cluster](virtual-cluster.md) — VCluster type selection, specification configuration
+* [Virtual Cluster](virtual-cluster.md) — Virtual Cluster type selection, specification configuration
 * [Schema](schema.md) — Schema creation and management
 * [Time Travel](timetravel-summary.md) — Historical version queries (the underlying mechanism of the `table history` command)
 

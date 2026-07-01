@@ -29,7 +29,6 @@ where event_time between current_timestamp() - INTERVAL 5 minutes and current_ti
 ```
 
 You can view the details of the raw data, and see that the ecommerce\_events\_multicategorystore\_live table continuously has real-time data being inserted.
-![](.topwrite/assets/image_1716287777109.png)
 
 ## Step 2. Implement data cleaning by defining a dynamic table
 

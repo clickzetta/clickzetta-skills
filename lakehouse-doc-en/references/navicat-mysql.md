@@ -1,3 +1,5 @@
+# Navicat Connection Guide
+
 Navicat (full name Navicat Premium) is a powerful database management tool widely used for database development, management, and maintenance. This article describes how to use Navicat to connect to Lakehouse via the MySQL protocol.
 
 # Prerequisites

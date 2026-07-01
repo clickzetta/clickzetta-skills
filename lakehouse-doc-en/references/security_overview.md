@@ -1,41 +1,119 @@
-# Singdata Lakehouse Security Features Overview
+# Security Features Overview
 
-Singdata Lakehouse is committed to creating a secure and reliable cloud environment for customers, ensuring that their accounts, information, business, and data receive enterprise-level security protection. To achieve this goal, Singdata Lakehouse employs multi-layered security measures covering architecture security, network security, access control, auditing and monitoring, and data encryption. Below is a detailed analysis of these security features.
+Singdata Lakehouse provides security capabilities across five layers — identity authentication, access control, network isolation, data protection, and backup & recovery — covering mainstream compliance scenarios from enterprise security baselines to Classified Protection Level 3 and industry-specific regulations.
 
-## 1. Architecture Security and Multi-Tenant Isolation
+## Security Capability Landscape
 
-Singdata Lakehouse is deployed in a public cloud environment, using a high-availability architecture to ensure service stability and reliability. By using multi-replica redundant storage and various protection technologies (such as host security, WAF, anti-DDoS, etc.), it ensures the security of the service architecture and infrastructure.
+| Security Layer | Core Capabilities | Problems Addressed |
+|----------------|-------------------|--------------------|
+| Identity Authentication | MFA multi-factor authentication, SSO single sign-on | Account takeover, password leaks |
+| Access Control | RBAC role system, fine-grained GRANT/REVOKE | Excessive privileges, unauthorized access |
+| Network Isolation | IP allowlist, Private Link, private storage BYOS | Public internet exposure, traffic egress |
+| Data Protection | Dynamic data masking, AES-256 storage encryption | Sensitive column leaks, static data exposure |
+| Backup & Recovery | Time Travel, RESTORE TABLE, UNDROP | Accidental deletion or modification |
 
-To achieve data and computing resource isolation between different tenants, Singdata Lakehouse performs data integrity and correctness checks at the data transmission layer, ensuring data integrity and tamper resistance.
+## Typical Compliance Scenarios and Feature Combinations
 
-![](.topwrite/assets/Security_System_en.png)
+### Enterprise Internal Security Baseline
 
-## 2. Network Security
+For teams just starting to build a data platform, prioritize the following three items:
 
-Singdata Lakehouse supports SSL/TLS encrypted transmission to ensure data security during transmission. Tenants can control the range of network addresses that can access their Lakehouse service instances by setting IP whitelist policies. For example, tenants can add their company's internal IP addresses to the whitelist to allow access only from these addresses.
+- Establish a role system and use RBAC instead of direct grants for centralized permission management → [Access Control](access-control-general.md)
+- Enable MFA on administrator accounts to prevent account compromise due to password leaks → [Identity Authentication](identity-auth.md)
+- Configure an IP allowlist (network policy) to restrict access to corporate network segments → [Network Policy](network_policy.md)
 
-## 3. Access Control
+### Classified Protection Level 3
 
-Singdata Lakehouse achieves further isolation of data and computing resources through workspaces. Only users who have joined a workspace can access the data and computing resources within it. Additionally, Singdata Lakehouse provides two authorization methods: ACL (Access Control List) and RBAC (Role-Based Access Control), allowing users to customize roles based on business needs and grant table-level granular permissions.
+Level 3 has explicit technical requirements across five control domains: identity verification, access control, security auditing, data confidentiality, and communication network security. The corresponding Lakehouse features are:
 
-For example, an administrator can create a workspace for data analysts and assign them the appropriate roles and permissions so that they can access and process specific data tables.
+| Control Domain | Lakehouse Feature | Reference |
+|----------------|-------------------|-----------|
+| Identity Verification (two-factor authentication) | MFA / SSO | [Identity Authentication](identity-auth.md) |
+| Access Control (least privilege) | RBAC + GRANT/REVOKE | [Access Control](access-control-general.md) |
+| Security Audit (operation records) | Job history query, operation logs | [Security Compliance Audit Guide](security_compliance_audit_guide.md) |
+| Data Transmission Confidentiality | SSL/TLS (enabled by default) | — |
+| Data Storage Confidentiality | AES-256 storage encryption | [Storage Encryption](storage_encryption.md) |
+| Communication Network Security | Private network connection (Private Link) | [Private Network Connection Overview](private-link-general.md) |
 
-## 4. Auditing and Monitoring
+### Finance, Healthcare, and Other Sensitive Industries
 
-Singdata Lakehouse records all operations on data, with these historical records being read-only and uneditable, and retained for up to 6 months. The platform also provides monitoring and alerting functions to help users promptly detect job anomalies, data anomalies, and other situations, and send notifications based on the severity of the alerts.
+Scenarios handling personal information and transaction data require additional data protection measures on top of the baseline:
 
-For example, when a job execution fails, the system will automatically send an alert notification to the administrator so that they can take timely measures to resolve the issue.
+- **Dynamic Data Masking**: Controls the visibility of sensitive columns such as phone numbers, ID numbers, and amounts by role, without touching the original data → [Dynamic Data Masking](dynamic-mask.md)
+- **Storage Encryption (Custom KMS)**: Uses your own KMS key (ARN) so that key lifecycle is under your control; currently supports Alibaba Cloud and AWS → [Storage Encryption](storage_encryption.md)
+- **Private Network Connection**: All data traffic stays on the internal network, never traversing the public internet → [Private Network Connection Overview](private-link-general.md)
+- **Private Storage BYOS**: Data is written to your own object storage bucket; Singdata Lakehouse holds no data copies → [Private Storage BYOS](bring_your_own_storage.md)
 
-## 5. Data Encryption
+### Data Disaster Recovery and Business Continuity
 
-Singdata Lakehouse encrypts sensitive data (such as account information) for storage, ensuring data security throughout its lifecycle. Users can further protect their data by configuring the data encryption feature. When the data encryption feature is enabled, data will remain encrypted throughout its lifecycle after being written to Lakehouse, and will only be decrypted when processed by the tenant's dedicated computing nodes.
+Scenarios that must meet RPO/RTO targets or guard against accidental operations:
 
-For example, when a company needs to store and process data involving personal privacy, it can enable the data encryption feature to ensure data security.
+- **Time Travel**: Retains 1 day of historical versions by default, configurable up to 90 days per table; supports querying historical snapshots at any point in time → [Backup and Recovery](data-recover.md)
+- **RESTORE TABLE**: Rolls back table data to a specified point in time to recover from accidental overwrites
+- **UNDROP TABLE**: Recovers a table after an accidental `DROP TABLE`
 
-## 6. Data Disaster Recovery and Restoration
+## Security Module Overview
 
-Singdata Lakehouse relies on the storage services of cloud service providers at the IaaS layer, built on a multi-replica, high-availability cloud infrastructure, providing extremely high service availability and data reliability. Additionally, the platform by default provides a 1-day data recovery feature, effectively reducing the risk of accidental data deletion or modification, and enhancing data integrity protection.
+### Access Control
 
-For example, in the event of accidental data deletion, users can use the time travel feature to restore data to any state within the past 7 days, thereby avoiding the risk of data loss.
+Supports both ACL (direct grants) and RBAC (role-based grants); RBAC is recommended. Assign permissions to roles, then grant roles to users. Permission changes only require modifying the role definition rather than updating each user individually. There is no superuser in the system; all operations require explicit authorization.
 
-In summary, Singdata Lakehouse provides a secure and reliable cloud environment for users through multi-layered security measures. Users can flexibly configure and use these security features according to their needs and scenarios to ensure the security of their business and data.
+- [Access Control Overview](access-control-general.md)
+- [Configure Access Control](access-control-configuration.md)
+- [Roles](roles.md) · [Metadata Objects and Privilege Points](meta-objects-and-privileges.md)
+- [Explanation of Permissions for Built-in Workspace-Level Roles](permissions-of-built-in-workspace-level-roles.md)
+- [User Authorization Getting Started Guide](user_permission_grand_guide.md)
+
+### Identity Authentication
+
+- **MFA**: Bind a virtual MFA device (any TOTP-compatible authenticator app); a dynamic verification code is required at login to prevent single-point password compromise
+- **SSO**: Integrate with enterprise IdPs (such as Okta, Azure AD) so the enterprise manages account creation, deactivation, and permission lifecycle centrally
+
+Reference: [Identity Authentication](identity-auth.md) · [Bind a Virtual MFA Device](using-google-authenticator.md) · [SSO Configuration](sso-configuration.md)
+
+### Network Isolation
+
+Three methods can be layered as needed, with increasing protection depth:
+
+| Method | Protection Scope | Applicable Scenario |
+|--------|------------------|---------------------|
+| Network Policy (IP allowlist) | Blocks access requests from unauthorized IPs | Restricting connections to corporate network segments |
+| Private Network Connection (Private Link) | Access via cloud provider internal network; traffic stays within the VPC | Production environments that prohibit public internet access |
+| Private Storage (BYOS) | Data written to your own object storage bucket | Data sovereignty requirements; data must not reside on third-party infrastructure |
+
+- [Private Network Connection Overview](private-link-general.md) · [Alibaba Cloud Private Network Connection Configuration](private_link.md)
+- [Private Storage BYOS](bring_your_own_storage.md) · [Alibaba Cloud BYOS Configuration](alicloud_byos_configuration.md) · [Tencent Cloud BYOS Configuration](byos_tencentcloud_configuration.md)
+
+### Dynamic Data Masking
+
+A masking function is bound to a column. At query time the system dynamically rewrites the returned values based on the current user's identity or role, while the original data is always stored in full. Applicable to sensitive columns such as phone numbers, ID numbers, bank card numbers, and salary amounts. Masking policies can be bound at table creation time or added to or removed from existing table columns.
+
+→ [Dynamic Data Masking](dynamic-mask.md)
+
+### Storage Encryption
+
+Enables AES-256 server-side encryption for data in newly created tables within a workspace. Two key modes are supported:
+
+- **Managed Encryption**: Uses managed keys from the cloud provider's object storage service; no additional configuration required
+- **Custom KMS Encryption**: Uses your own KMS key (ARN); the key lifecycle is under your control. Currently supports Alibaba Cloud and AWS
+
+> **Note**: Once encryption is enabled on a table, it cannot be reverted to an unencrypted state. Encryption only applies to tables created after it is enabled; existing tables are not affected.
+
+→ [Storage Encryption](storage_encryption.md)
+
+### Backup and Recovery
+
+Data protection is provided through the Time Travel mechanism:
+
+- Retains 1 day of historical versions by default; configurable up to 90 days per table
+- Historical data snapshots at any point in time within the retention window can be queried
+- `RESTORE TABLE` rolls the table back to a specified point in time, overwriting current data
+- `UNDROP TABLE` recovers a table after an accidental `DROP TABLE`
+
+→ [Backup and Recovery](data-recover.md)
+
+## Related Documentation
+
+- [Security and Compliance](data_security.md) — Navigate all security features by scenario
+- [Security Compliance Audit Guide](security_compliance_audit_guide.md)
+- [Permission System Inventory Best Practices](security-system-inventory-based-information-schema.md)

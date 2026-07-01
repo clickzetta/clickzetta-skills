@@ -2,7 +2,7 @@
 
 This page provides complete, runnable examples of `clickzetta-connector` for common business scenarios.
 
-For connection configuration and basic usage, see [Singdata Connector Python SDK](connector.md).
+For connection configuration and basic usage, see [ClickZetta Connector Python SDK](connector.md).
 
 ---
 
@@ -21,7 +21,7 @@ conn = connect(
     instance='your_instance',
     workspace='your_workspace',
     schema='public',
-    vcluster='default'
+    vcluster='DEFAULT'
 )
 cursor = conn.cursor()
 ```

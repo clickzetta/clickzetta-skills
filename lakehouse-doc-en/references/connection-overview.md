@@ -4,7 +4,7 @@ A Connection is an object in Lakehouse that **stores authentication credentials 
 
 Think of a Connection as Lakehouse's "credential vault" — you store your cloud storage keys, Kafka addresses, and other credentials inside it. When accessing external data, you simply reference the Connection by name, and the system uses the saved credentials automatically.
 
-![](/.topwrite/assets/15-connection.png)
+![](/.topwrite/assets/15-connection.svg)
 
 ## Connection Types
 

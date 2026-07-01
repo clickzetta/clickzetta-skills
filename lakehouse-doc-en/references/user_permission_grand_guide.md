@@ -8,7 +8,7 @@ This guide also validates the process through a hands-on experiment.
 
 ^
 
-:-: ![](.topwrite/assets/image_1747735632210.png =796)
+
 
 ^
 
@@ -316,7 +316,7 @@ In practice, you should fully understand the user hierarchy, properly plan role 
 *Reference Documents*
 
 * [Lakehouse User Identity Management Document](user-identification.md)
-* [Lakehouse Role and Permission Management Document](role-privlilige-manage.md)
+* [Lakehouse Role and Permission Management Document](role-privilege-manage.md)
 * [Security Feature Overview](security_overview.md)
 
 ^

@@ -2,36 +2,46 @@
 
 ## Overview
 
-AMQP (Advanced Message Queuing Protocol) is an asynchronous messaging protocol widely used in IoT, microservice architecture, and enterprise system integration due to its high reliability and flexibility. By configuring an AMQP data source, you can achieve efficient data exchange with systems such as Alibaba Cloud IoT Platform.
+The AMQP data source is suited for connecting to AMQP-protocol message systems and is used for message consumption, event collection, and real-time data sync scenarios. After configuration in Lakehouse Studio, you can select this data source directly in supported sync tasks.
+
+## Scope
+
+The AMQP data source can currently be used as a source data source for single-table offline sync tasks. For task support scope, see [Data Source Support Scope](data-sources.md).
 
 ## Parameter Configuration
 
-When configuring an AMQP data source, you need to provide the following information to ensure a successful connection to the AMQP service:
+When creating an AMQP data source, the page requires the following information:
 
-* Data Source Name: Specify a unique and easily recognizable name for your AMQP data source.
-* Host: The access domain name of the AMQP service, usually in the format `${uid}.iot-amqp.${YourRegionId}.aliyuncs.com`. For details, please refer to [Alibaba Cloud Manage Instance Endpoint](https://help.aliyun.com/zh/iot/user-guide/manage-the-endpoint-of-an-instance#task-1545804)
-* Authentication Method: Currently supports authentication via RAM account and role-based authentication based on RAM account. Please choose the appropriate authentication method.
-* IOT INSTANCE ID: The ID of the IoT instance. You can view the current instance ID on the instance overview page of the [Alibaba Cloud IoT Platform Console](https://iot.console.aliyun.com/).
-* Data Source Description: (Optional) Add descriptive information to the data source to help you or other administrators understand the purpose or characteristics of the data source.
+* **Data source name**: Used to identify this data source within the Workspace. Use a name that reflects the business source or purpose.
+* **Host**: The AMQP service address. Enter the connection address provided by the message service and add the port as required.
+* **Authentication method**: Select the authentication method required by your message service. The page shows the corresponding authentication parameters based on your selection.
+* **IOT INSTANCE ID**: When the message service being connected requires an instance-level identifier, enter the corresponding instance ID.
+* **Data source description (optional)**: Add the purpose, environment, or owning system of the data source for easier future maintenance.
+* **Available Workspaces**: Specify which Workspaces this data source is authorized for. You can target specific Workspaces or authorize all Workspaces.
 
-## Authentication Method Configuration
+## Configuration Recommendations
 
-Choose the authentication method that suits you and configure the following parameters according to the actual situation:
+* **Include the environment in the name**: Include production, test, or other environment information in the data source name to reduce misuse.
+* **Confirm the connection address first**: The connection address, port, and authentication method can vary across AMQP services. Confirm with the message service administrator before configuring.
+* **Authorize Workspaces as needed**: If this message data serves only specific projects, authorize only the corresponding Workspaces.
 
-* Connect via RAM Account: This mode directly uses the RAM account for connection and requires the following parameters:
-  * AccessKey ID: The AccessKey ID and AccessKey Secret of the Alibaba Cloud main account or the corresponding RAM user. Log in to the Alibaba Cloud IoT Platform Console, move the mouse over the account avatar, and then click AccessKey Management to obtain the AccessKey ID and AccessKey Secret.
-  * AccessKey Secret: The AccessKey ID and AccessKey Secret of the Alibaba Cloud main account or the corresponding RAM user. Log in to the Alibaba Cloud IoT Platform Console, move the mouse over the account avatar, and then click AccessKey Management to obtain the AccessKey ID and AccessKey Secret.
-* RAM User Authorized by RAM Role: This mode is used to authorize another RAM account to access the data source through a RAM role and requires the following parameters:
-  * STS Endpoint: The access point for the STS Token acquisition service. For specific information, please refer to [Alibaba Cloud Service Endpoint](https://www.alibabacloud.com/help/zh/ram/developer-reference/api-sts-2015-04-01-endpoint)
-  * STS AccessKey ID: The AccessKey ID and AccessKey Secret of the RAM user who assumes the RAM role under the Alibaba Cloud account of the data-holding enterprise.
-  * STS Role ARN: The ARN of the RAM role to be assumed under the Alibaba Cloud account of the data-holding enterprise, in the format `acs:ram::<account-id>:role/<role-name>`
+## Testing Connectivity
 
-## Notes
+After filling in the parameters, click **Test Connection** at the bottom of the page to verify the configuration.
 
-* Ensure the security and stability of the AMQP server, and configure authentication and authorization mechanisms reasonably.
-* Protect your credential information to avoid leakage to unauthorized personnel.
-* When configuring, please refer to the relevant documentation and support resources of the AMQP server to ensure correctness.
-* After configuration, you can use the "Test Connectivity" function to verify the accessibility of the data source and the correctness of the configuration information.
-* After verification, you can select this AMQP data source in the data synchronization task to perform data reading and exporting.
+If the test fails, check the following in order:
 
-Please ensure that you have read and followed the above guidelines to successfully complete the configuration of the AMQP data source. If you need further assistance, please refer to the relevant documentation or contact technical support.
+* Whether the Host is correct and whether the port is open
+* Whether the authentication method matches the source service configuration
+* Whether the IOT INSTANCE ID is set to the correct instance
+* Whether network allowlists, firewalls, or dedicated-line network policies allow the current environment to access the message service
+
+## Usage Notes
+
+After saving the data source, you can select this AMQP data source in supported sync tasks. For task support scope and source/target combinations, follow what is available in the specific task page.
+
+## Related Documents
+
+- [Data Source Support Scope](data-sources.md)
+- [Data Source Management](config-datasource.md)
+- [Data Integration](data-integration.md)

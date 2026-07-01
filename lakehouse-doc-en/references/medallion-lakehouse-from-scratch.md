@@ -716,5 +716,6 @@ With 20/22 validations passing (the 2 warnings are source data quality issues, n
 - Spark SQL syntax migration: [Spark SQL Syntax Migration Guide](migration-spark-sql.md)
 - Volume usage guide: [Volume Usage Guide](zettapark-volume-guide.md)
 - Data type compatibility: [Data Type Compatibility Reference](migration-sql-compatibility.md)
-- Custom functions: [SQL Function](create-sql-function.md) · [External Function](om-external-function.md)
+- Custom functions: [SQL Function](create-sql-function.md) · [External Function](create_external_function.md)
+- Spark Connector: [Spark Connector Usage](spark-connector-use.md)
 - Spark Connector: [Using Spark Connector](spark-connector-use.md)

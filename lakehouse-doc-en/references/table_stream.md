@@ -307,5 +307,5 @@ DESC TABLE STREAM my_stream;
 - [DESC TABLE STREAM](desc-table-stream.md)
 - [SHOW TABLE STREAMS](show-table-streams.md)
 - [DROP TABLE STREAM](drop-table-stream.md)
-- [Dynamic Table Introduction](dynamic-table-introduce.md)
+- [Dynamic Table Introduction](sql_dynamic_table_guide.md)
 - [Realtime Data Pipeline Selection Guide](realtime-pipeline-selection-guide.md)

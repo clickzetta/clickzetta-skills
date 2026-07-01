@@ -1,3 +1,5 @@
+# Release Notes 2026-05-19
+
 ^
 
 **Product Upgrade Notice**: Starting with this release, DataGPT is officially renamed to **Analytics Agent**. Product capabilities remain unchanged; only the product name has been upgraded. Subsequent documentation and UI will gradually switch to the new name.
@@ -19,15 +21,15 @@ This release introduces a series of new features, enhancements, and fixes. Pleas
 
 * [Row-Level Permissions](https://www.singdata.com/documents/row_level_permission) Enhancements:
   * When configuring row-level permissions, administrators can now dynamically obtain permission scopes from other data tables using expressions (e.g., automatically retrieving a user's assigned store list from a store table), in addition to manually entering fixed values. Suitable for scenarios where permission values change frequently or need to follow business data updates automatically.
-* **Dashboard Version Management**:
+* [Dashboard Version Management](https://www.singdata.com/documents/dashboard-version-management-guide):
   * Each modification to a dashboard chart via ASK AI conversation automatically generates a version. Users can view thumbnail previews and modification history of historical versions in the version panel, with support for one-click preview and restore. Solves the pain point of "can't undo after breaking things" — revert at any time if unsatisfied.
-* **Open API**:
+* [Open API](https://www.singdata.com/documents/open-api-overview):
   * Supports initiating data analysis requests and retrieving results via API, making it easy to embed Analytics Agent's analysis capabilities into internal enterprise systems, workflows, or custom applications for automated data Q&A.
 * **Automatic Chart Error Correction**:
   * When AI generates charts, the system automatically detects rendering errors and attempts to fix them, reducing cases of "chart display anomalies" — users can get correct visualization results without manual retries.
 * **Scheduled Task Email: Chinese/English Bilingual and Multiple Recipients**:
   * Scheduled analysis report emails now support Chinese/English language adaptation and can be sent to multiple recipients simultaneously.
-* **Chart Auto-Refresh Configuration**:
+* [Chart Auto-Refresh Configuration](https://www.singdata.com/documents/chart-auto-refresh-guide):
   * Dashboard charts now support setting an auto-refresh interval (default: 24 hours). The system automatically updates chart data at the configured time without manual refresh.
 
 ## Improvements

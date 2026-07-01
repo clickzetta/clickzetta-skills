@@ -47,10 +47,6 @@ The differences in the table look significant, but their impact on migration eff
 
 ---
 
-![](.topwrite/assets/anim-05-f1-migration.svg)
-
----
-
 ## Project Background
 
 The data source is the F1 racing API ([Jolpica](https://jolpi.ca)), covering 125 races across the 2018–2023 seasons. The data architecture has two layers: `f1_processed` (ingestion layer) and `f1_presentation` (analytical layer).
@@ -108,7 +104,7 @@ session = Session.builder.configs({
     "instance":  os.environ["CLICKZETTA_INSTANCE"],
     "workspace": os.environ["CLICKZETTA_WORKSPACE"],
     "schema":    "f1_processed",
-    "vcluster":  os.environ.get("CLICKZETTA_VCLUSTER", "default_ap"),
+    "vcluster":  os.environ.get("CLICKZETTA_VCLUSTER", "DEFAULT_AP"),
 }).create()
 
 df = session.read.option("header", "true").csv("vol://f1_raw.formula1_raw_vol/raw/circuits.csv")
