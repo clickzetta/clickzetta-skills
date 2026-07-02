@@ -6,7 +6,7 @@ The repository turns ClickZetta operational knowledge into reusable routing rule
 
 ## Repository Contents
 
-The repository currently contains 27 top-level `clickzetta-*` skills, one official documentation knowledge base, and one independent skill (`singsight-install`):
+The repository currently contains 28 top-level `clickzetta-*` skills, one official documentation knowledge base, and one independent skill (`singsight-install`):
 
 - `lakehouse-doc-en`: English ClickZetta Lakehouse official documentation index and reference corpus.
 - `clickzetta-*`: task-oriented skills for ingestion, Studio tasks, dbt, modeling, dynamic tables, connectors, external integrations, governance, and operations.
@@ -43,6 +43,7 @@ The repository currently contains 27 top-level `clickzetta-*` skills, one offici
 | SDK and integrations | [clickzetta-ai-function](./clickzetta-ai-function/) | Built-in AI functions: AI_COMPLETE (call LLMs) and AI_EMBEDDING (text vectors) with API CONNECTION setup. |
 | Operations and governance | [clickzetta-volume-manager](./clickzetta-volume-manager/) | External Volume, User Volume, Table Volume, object storage mounting, file operations, import, and export. |
 | Operations and governance | [clickzetta-table-lineage](./clickzetta-table-lineage/) | Table lineage and cost visualization based on `information_schema.job_history` and generated HTML artifacts. |
+| Productivity | [clickzetta-screen-recording](./clickzetta-screen-recording/) | Screen recording narration workflow: pre-recording hook setup (auto-log user messages with Beijing timestamps) and post-recording footage manifest and shot script generation. |
 | Observability | [singsight-install](./singsight-install/) | Connect AI coding agents (Claude Code, Hermes, OpenClaw, Opencode) to the Singsight observability platform via OpenTelemetry. |
 
 ## Routing Guide

@@ -223,6 +223,15 @@
       ]
     },
     {
+      "name": "clickzetta-screen-recording",
+      "description": "Screen recording narration workflow: pre-recording hook setup (auto-log user messages with Beijing timestamps) and post-recording script generation (footage manifest and shot script).",
+      "files": [
+        "SKILL.md",
+        "references/before-recording.md",
+        "references/after-recording.md"
+      ]
+    },
+    {
       "name": "clickzetta-volume-manager",
       "description": "Manage ClickZetta Lakehouse Volume objects for mounting object storage (OSS/COS/S3), querying files, and importing/exporting data.",
       "files": [
