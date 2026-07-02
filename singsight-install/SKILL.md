@@ -1,10 +1,11 @@
 ---
-name: singsight_install
+name: singsight-install
 description: |
-  引导用户把 AI 编码助手（Claude Code、Hermes Agent、OpenClaw、Opencode）接入 Singsight
-  AI Agent 可观测性平台。通过 OpenTelemetry 自动上报每次 LLM 调用、工具执行、Token 用量和会话。
-  当用户说"接入 Singsight"、"安装 Singsight"、"配置 Singsight"、"Agent 可观测性"、
-  "OTel 接入"、"上报 Token 用量"、"监控 AI Agent"、"singsight install"时触发。
+  Guide users to connect their AI coding agents (Claude Code, Hermes Agent, OpenClaw, Opencode)
+  to the Singsight AI Agent observability platform. Automatically reports every LLM call, tool
+  execution, token usage, and session via OpenTelemetry.
+  Triggered when the user says "connect Singsight", "install Singsight", "configure Singsight",
+  "Agent observability", "OTel integration", "report token usage", "monitor AI Agent", "singsight install".
   Keywords: singsight, install, observability, opentelemetry, otel, agent telemetry, claude code, hermes, openclaw, opencode
 ---
 
@@ -43,7 +44,7 @@ Determine which agent to instrument:
 > **Note:** If the target is **OpenClaw**, skip this step — Step 5 has its own guided prompts for API Key and endpoint.
 
 You need two values:
-- **Endpoint** — the OTel collector URL (typically `http://<singsight-host>:4318`)
+- **Endpoint** — the OTel collector URL shown by the current Singsight project. Do not infer it from the web UI domain; hosted deployments may use a dedicated collector domain.
 - **API Key** — created in the Singsight web UI (header name: `x-singsight-apikey`)
 
 ### 2a. Probe for existing config
@@ -82,7 +83,7 @@ If reuse confirmed, store as `$ENDPOINT` and `$API_KEY` and skip to Step 3.
 > I need your Singsight **Endpoint** and **API Key** to complete the setup.
 >
 > Please open your Singsight web UI and:
-> 1. Go to **Settings → Quick Start** tab — the **Endpoint** URL is shown at the top (looks like `http://<host>:4318`)
+> 1. Go to **Settings → OTel Endpoint** or **Settings → Quick Start** tab — copy the **Endpoint** URL shown there
 > 2. Go to **Settings → API Keys** tab — click **Create API Key** (the full key is shown only once, copy it immediately)
 >
 > Paste both values here. I won't echo the API key back.
@@ -91,8 +92,10 @@ If reuse confirmed, store as `$ENDPOINT` and `$API_KEY` and skip to Step 3.
 
 ### 2c. Validate
 
-- Endpoint: must start with `http://` or `https://`, typically ends with port `4318` (HTTP) or `4317` (gRPC)
+- Endpoint: must start with `http://` or `https://`; use exactly the URL shown in Singsight Settings
 - API Key: non-empty string (Singsight keys are opaque UUIDs)
+
+> **Protocol:** Singsight collector only supports `http/protobuf` (OTLP over HTTP). All agents must use this protocol. Do NOT use gRPC (`:4317`). Set the explicit protocol variable whenever the target agent supports it.
 
 Store as `$ENDPOINT` and `$API_KEY` for the following steps.
 
@@ -179,7 +182,7 @@ Tell the user:
 > - **Metrics**: populates Token Usage and Overview dashboards
 > - **Logs/Events**: populates Users, tool call details
 >
-> Open `<endpoint>` in your browser to see data flow in.
+> Open the Singsight web UI and check Trace Explorer to see data flow in. Do not use the collector endpoint as the UI URL.
 
 Skip to **Step 7**.
 
@@ -301,7 +304,7 @@ Once you have the API Key, **ask the user to copy the config snippet.** Say exac
 >
 > Now open **Settings → Quick Start** tab, select **Openclaw → Config File**, and copy the JSON config shown there. Paste it here, or just confirm and I'll write the config using the endpoint shown on that page.
 >
-> Alternatively, tell me your Singsight endpoint URL (looks like `http://<host>:4318`) and I'll generate the config.
+> Alternatively, tell me the Singsight endpoint URL shown in Settings and I'll generate the config.
 
 **Wait for the user to respond.** They may paste the full config, or just give you the endpoint. Store endpoint as `$ENDPOINT`.
 
@@ -382,7 +385,7 @@ Skip to **Step 7**.
 
 ## Step 6 — Opencode
 
-Opencode uses the `@devtheops/opencode-plugin-otel` plugin.
+Opencode requires the `@devtheops/opencode-plugin-otel` plugin to export telemetry — **it must be installed first** before any OTel data will be sent. Configure OTLP over HTTP explicitly, and set both the Opencode-specific header variable and the generic OTel header variable so different plugin versions can read the API key consistently.
 
 ### 6a. Install the plugin
 
@@ -418,6 +421,8 @@ lines.extend([
     "# Singsight observability",
     "OPENCODE_ENABLE_TELEMETRY=1",
     f"OPENCODE_OTLP_ENDPOINT={endpoint}",
+    "OPENCODE_OTLP_PROTOCOL=http/protobuf",
+    f"OPENCODE_OTLP_HEADERS=x-singsight-apikey={key}",
     f"OTEL_EXPORTER_OTLP_HEADERS=x-singsight-apikey={key}",
 ])
 open(path, "w").write("\n".join(lines) + "\n")
@@ -442,10 +447,15 @@ Tell the user:
 
 ## Step 7 — Verify data in Singsight
 
-After the user runs their agent for at least one turn, verify data is flowing:
+> **Important — Restart required for most agents:**
+> Hermes, OpenClaw, and Opencode only load OTel plugin configuration at process startup. Enabling telemetry or changing OTel environment variables will **not** take effect in an already-running session. After completing setup, you must **start a new process** (or restart the gateway/CLI) before traces will appear in Singsight. Claude Code is the exception — it re-reads `settings.json` on each new session automatically.
+>
+> A good verification pattern: start a fresh session (e.g. `hermes chat -q "hello"`), then search Singsight Trace Explorer by the new session's timestamp.
+
+After the user runs their agent for at least one turn, optionally verify that the collector endpoint is reachable:
 
 ```bash
-# Check if the endpoint is reachable
+# Check if the endpoint exposes the health endpoint in this deployment
 curl -sS -o /dev/null -w "%{http_code}" "$ENDPOINT/actuator/health"
 # Expect: 200
 ```
@@ -454,12 +464,13 @@ Tell the user:
 
 > Your agent is now connected to Singsight. After your next conversation:
 >
-> 1. Open **`<endpoint>`** in your browser
+> 1. Open the Singsight web UI for the current project
 > 2. Go to **Trace Explorer** — you should see traces appear within ~5 minutes
 > 3. **Overview** dashboard will populate as data accumulates
 >
 > If no data appears after 5 minutes:
 > - Check that your agent actually ran (at least one LLM call)
+> - Make sure you **started a new session** after setup (Hermes/OpenClaw/Opencode do not hot-reload OTel config)
 > - Verify the endpoint is reachable from your machine
 > - Check the API key is valid (Settings → API Keys in Singsight UI)
 
