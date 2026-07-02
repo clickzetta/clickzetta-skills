@@ -1,3 +1,13 @@
+---
+name: singsight-install
+description: |
+  引导用户把 AI 编码助手（Claude Code、Hermes Agent、OpenClaw、Opencode）接入 Singsight
+  AI Agent 可观测性平台。通过 OpenTelemetry 自动上报每次 LLM 调用、工具执行、Token 用量和会话。
+  当用户说"接入 Singsight"、"安装 Singsight"、"配置 Singsight"、"Agent 可观测性"、
+  "OTel 接入"、"上报 Token 用量"、"监控 AI Agent"、"singsight install"时触发。
+  Keywords: singsight, install, observability, opentelemetry, otel, agent telemetry, claude code, hermes, openclaw, opencode
+---
+
 # Singsight — Install Skill for AI Coding Agents
 
 > **Note for the AI agent reading this file:**

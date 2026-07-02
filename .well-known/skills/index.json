@@ -237,6 +237,13 @@
         "SKILL.md",
         "references/zettapark-api.md"
       ]
+    },
+    {
+      "name": "singsight-install",
+      "description": "Guide users to connect their AI coding agents (Claude Code, Hermes Agent, OpenClaw, Opencode) to the Singsight AI Agent observability platform. Automatically reports every LLM call, tool execution, token usage, and session via OpenTelemetry. Triggered when the user says \"connect Singsight\", \"install Singsight\", \"configure Singsight\", \"Agent observability\", \"OTel integration\", \"report token usage\", \"monitor AI Agent\", \"singsight install\". Keywords: singsight, install, observability, opentelemetry, otel, agent telemetry, claude code, hermes, openclaw, opencode",
+      "files": [
+        "SKILL.md"
+      ]
     }
   ]
 }
