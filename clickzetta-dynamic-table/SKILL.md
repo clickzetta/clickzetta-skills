@@ -1,9 +1,7 @@
 ---
 name: clickzetta-dynamic-table
 description: |
-  ClickZetta Dynamic Table usage guide and routing hub. Covers general consultation (introduction,
-  best practices, performance, incremental configuration), creation guidance (SQL support matrix,
-  refresh history), and modification (ALTER, suspend/resume, add/drop columns).
+  ClickZetta Dynamic Table usage guide and routing hub, covering consultation (best practices, performance, incremental config), creation, and modification (ALTER, suspend/resume, columns).
   SQL conversion requests are delegated to the sql-to-dt sub-skill.
   Trigger when the user says: "dynamic table", "DT introduction", "dynamic table best practices",
   "dynamic table performance", "incremental computation", "REFRESH INTERVAL", "create dynamic table",

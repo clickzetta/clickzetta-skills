@@ -1,10 +1,8 @@
 ---
 name: clickzetta-table-stream-pipeline
 description: |
-  Build and manage ClickZetta Table Stream change data capture pipelines. Covers end-to-end workflow
-  from source table configuration, Stream creation, data consumption to incremental ETL.
-  Includes change tracking setup, mode selection, offset management, metadata field usage,
-  and idempotent consumption — all ClickZetta-specific logic.
+  Build and manage ClickZetta Table Stream change data capture pipelines, covering source change tracking, Stream creation, offset management, and idempotent incremental-ETL consumption.
+  Includes change tracking setup, mode selection, metadata field usage — all ClickZetta-specific logic.
 
   Trigger when the user says: "create Table Stream", "Table Stream CDC", "Table Stream pipeline",
   "Table Stream incremental consumption", "Stream consumption", "change data capture",
