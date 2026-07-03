@@ -1,11 +1,11 @@
 ---
-name: clickzetta-screen-recording
+name: screen-recording
 description: |
   Skill for screen-recording-assisted narration workflow. Covers two phases: pre-recording setup (create a promptSubmit hook to auto-log user messages with Beijing timestamps) and post-recording script generation (produce a footage manifest and shot script from the operation log).
 
-  Trigger when the user says: "开始录屏", "录屏前初始化", "创建录屏 Hook", "录完了", "录屏结束", "生成素材清单", "生成镜头脚本", "录屏后整理", "根据录屏后 md 生成脚本", "start screen recording", "generate shot script".
+  Trigger when the user says: "start recording", "initialize recording session", "create recording hook", "recording done", "recording finished", "generate footage manifest", "generate shot script", "wrap up recording", "generate script from recording log".
 
-  Keywords: screen recording, narration, footage manifest, shot script, recording hook, promptSubmit, operation log, 录屏, 素材清单, 镜头脚本, 旁白生成, before recording, after recording
+  Keywords: screen recording, narration, footage manifest, shot script, recording hook, promptSubmit, operation log, before recording, after recording
 ---
 
 # Screen Recording Narration Workflow
@@ -16,8 +16,8 @@ This skill has two phases. **Read only the reference file for the current phase 
 
 | User intent | Phase | Reference to load |
 |---|---|---|
-| "开始录屏", "录屏前初始化", "准备录屏", "start recording" | Phase 1 — Before | `references/before-recording.md` only |
-| "录完了", "录屏结束", "生成素材清单", "生成镜头脚本", "录屏后整理" | Phase 2 — After | `references/after-recording.md` only |
+| "start recording", "initialize recording session", "prepare to record" | Phase 1 — Before | `references/before-recording.md` only |
+| "recording done", "recording finished", "generate footage manifest", "generate shot script", "wrap up recording" | Phase 2 — After | `references/after-recording.md` only |
 
 ## Phase 1 — Before Recording
 
@@ -31,13 +31,13 @@ Stay in Phase 1 until the user explicitly signals that recording has ended (see 
 
 ## Phase 2 — After Recording
 
-Triggered **only when the user explicitly tells you the recording has ended** — for example: "录完了", "我们刚才录了一段视频", "开始整理录屏", "生成素材清单或镜头脚本".
+Triggered **only when the user explicitly tells you the recording has ended** — for example: "recording done", "we just recorded a demo", "start wrapping up the recording", "generate footage manifest or shot script".
 
 Do not enter Phase 2 on your own. Wait for the user's signal.
 
 Once triggered, read [`references/after-recording.md`](./references/after-recording.md) and follow its instructions to generate:
-- `素材清单-[date].md` — footage manifest for the editor
-- `镜头脚本-[date].md` — shot script for voiceover and post-production
+- `footage-manifest-[date].md` — footage manifest for the editor
+- `shot-script-[date].md` — shot script for voiceover and post-production
 
 ## Out of Scope
 

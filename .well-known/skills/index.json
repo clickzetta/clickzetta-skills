@@ -223,7 +223,7 @@
       ]
     },
     {
-      "name": "clickzetta-screen-recording",
+      "name": "screen-recording",
       "description": "Screen recording narration workflow: pre-recording hook setup (auto-log user messages with Beijing timestamps) and post-recording script generation (footage manifest and shot script).",
       "files": [
         "SKILL.md",
