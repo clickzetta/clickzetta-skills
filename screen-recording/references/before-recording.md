@@ -10,15 +10,15 @@ Before creating the hook, replace `<recording-dir>` with the actual path. Do not
 
 ## Hook Creation
 
-Create the following hook, then tell the user “Hook created, you can start recording anytime” and note that the log will be written to `<recording-dir>/recording-log.txt`.
+Create the following hook, then tell the user "Hook created, you can start recording anytime" and note that the log will be written to `<recording-dir>/recording-log.txt`.
 
 ```
 Name: Recording Operation Log
 Trigger event: promptSubmit
 Action type: runCommand
-Command: mkdir -p “<recording-dir>” && printf '[%s] %s\n' “$(TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M:%S')” “$KIRO_USER_MESSAGE” >> “<recording-dir>/recording-log.txt”
+Command: mkdir -p "<recording-dir>" && printf '[%s] %s\n' "$(TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M:%S')" "$KIRO_USER_MESSAGE" >> "<recording-dir>/recording-log.txt"
 ```
 
 Once the hook is created, every user message during the recording session will be automatically logged with a Beijing timestamp — no manual action needed.
 
-If the current environment does not support hooks, `promptSubmit`, or `$KIRO_USER_MESSAGE`, do not pretend the hook was created successfully. Explicitly tell the user “This environment cannot automatically log user messages” and ask them to manually provide the start/end times and a summary of key operations after recording ends.
+If the current environment does not support hooks, `promptSubmit`, or `$KIRO_USER_MESSAGE`, do not pretend the hook was created successfully. Explicitly tell the user "This environment cannot automatically log user messages" and ask them to manually provide the start/end times and a summary of key operations after recording ends.

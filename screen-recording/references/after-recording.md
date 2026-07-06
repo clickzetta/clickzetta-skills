@@ -33,7 +33,7 @@ Date format: `YYYYMMDD`, e.g. `footage-manifest-20260623.md`.
 
 When this skill is triggered after recording, also read `<recording-dir>/recording-log.txt` and map its timestamps to each step in the footage manifest.
 
-By default, generate only the footage manifest and shot script, output sequentially, separated by `---`.
+Write both files to `<recording-dir>/`; in your reply, list the file paths and provide a brief summary of each.
 
 ### Document 1: Footage Manifest (for the editor)
 
