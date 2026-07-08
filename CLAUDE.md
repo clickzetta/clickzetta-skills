@@ -20,6 +20,7 @@ clickzetta-skills/
 - Unified prefix: `clickzetta-<feature-name>`
 - Use lowercase + hyphens: `clickzetta-dynamic-table`, `clickzetta-volume-manager`
 - Names should reflect the functional domain, not be overly specific
+- **Sanctioned exceptions:** `cz-cli-agent` and `cz-cli-tool` use the `cz-cli-` prefix (the `cz-cli` product brand) instead of `clickzetta-`. They are the only two non-`clickzetta-` skills in the registry and are intentional — do not rename them to `clickzetta-*`.
 
 ## SKILL.md Specification
 
