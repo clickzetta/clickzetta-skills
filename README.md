@@ -6,7 +6,7 @@ The repository turns ClickZetta operational knowledge into reusable routing rule
 
 ## Repository Contents
 
-The repository currently contains 28 top-level `clickzetta-*` skills, 2 `cz-cli-*` operation skills, one official documentation knowledge base, and one independent skill (`singsight-install`):
+The repository currently contains 27 top-level `clickzetta-*` skills, 2 `cz-cli-*` operation skills, one official documentation knowledge base, and one independent skill (`singsight-install`):
 
 - `lakehouse-doc-en`: English ClickZetta Lakehouse official documentation index and reference corpus.
 - `clickzetta-*`: task-oriented skills for ingestion, Studio tasks, dbt, modeling, dynamic tables, connectors, external integrations, governance, and operations.

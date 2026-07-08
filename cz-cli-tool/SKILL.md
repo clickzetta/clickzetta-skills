@@ -6,7 +6,7 @@ description: |
 
 # cz-cli Tool — Direct Operator Manual
 
-Use `cz-cli` from `PATH` to operate ClickZetta Lakehouse and Studio directly. This is the lower-level alternative to `cz-cli-agent` (which delegates to the cz-agent runtime). Prefer `cz-cli-agent` for generic ClickZetta operations; use this skill only when the user explicitly wants direct command execution, has no LLM configured for cz-agent, or `cz-cli-agent` is not installed.
+Use `cz-cli` from `PATH` to operate ClickZetta Lakehouse and Studio directly. This is the lower-level alternative to `cz-cli-agent` (which delegates to the cz-agent runtime). Prefer `cz-cli-agent` for generic ClickZetta operations; use this skill only when the user explicitly wants direct command execution, has no LLM configured for cz-agent, or `cz-cli-agent` is not installed. If this is a generic ClickZetta operation and the user didn't explicitly ask for direct tool use, hand off to `cz-cli-agent`.
 
 ## Core Rules
 
