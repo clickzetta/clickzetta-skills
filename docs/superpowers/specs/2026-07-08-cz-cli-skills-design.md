@@ -63,29 +63,28 @@ Two public skills in the clickzetta-skills registry, both `cz-cli-*` named (inte
 ### 4.1 Frontmatter
 
 - `name`: `cz-cli-agent` (matches directory; `[a-z0-9-]`; 12 chars).
-- `description`: ≤ 1024 chars (verified: 779 chars / 783 bytes). Draft:
+- `description`: ≤ 1024 chars (verified: 862 chars). Draft:
 
-> Delegate ClickZetta Lakehouse operations to the cz-cli agent runtime, or run cz-cli commands directly for simple tasks. TRIGGER when the user mentions ClickZetta/Lakehouse/cz-cli or a known profile AND wants to execute an operation: run SQL, manage tables/schemas, create Studio tasks, set up sync/ingest pipelines, configure profiles. DEFAULT route when cz-cli-tool is also installed. Routes by complexity — direct cz-cli commands for simple ops, cz-agent run only for complex autonomous multi-step work. SKIP when (1) user explicitly wants direct cz-cli execution without the agent → use cz-cli-tool; (2) developing cz-cli itself; (3) host project has its own SQL toolchain. Keywords: clickzetta, lakehouse, cz-cli, sql, table, schema, studio task, sync, cdc, pipeline, profile
+> Delegate ClickZetta Lakehouse operations to the cz-cli agent runtime, or run cz-cli commands directly for simple tasks. TRIGGER when the user mentions ClickZetta/Lakehouse/cz-cli or a known profile AND wants to execute an operation: run SQL, manage tables/schemas, create Studio tasks, set up sync/ingest pipelines, configure profiles. DEFAULT route when cz-cli-tool is also installed. Routes by operation type — read-only lookups run direct via cz-cli; all other operations (writes, creates, configs, deploys, multi-step, diagnostics) delegate to cz-agent run when an LLM is configured. SKIP when (1) user explicitly wants direct cz-cli execution without the agent → use cz-cli-tool; (2) developing cz-cli itself; (3) host project has its own SQL toolchain. Keywords: clickzetta, lakehouse, cz-cli, sql, table, schema, studio task, sync, cdc, pipeline, profile
 
 ### 4.2 Body structure
 
-1. **One-liner.** "You have no direct Lakehouse access. Route by complexity: direct `cz-cli` commands for simple ops, `cz-agent run` for complex/autonomous work."
-2. **Direct path (default for simple ops) — minimal cheat-sheet.** The common, deterministic commands plus the few rules needed to run them safely:
-   - `cz-cli sql "<stmt>"` (sync; `--async` for large; `--write` for DDL/DML; write to file + `cz-cli sql -f <file>` if the SQL contains quotes/`$`/backticks/newlines)
-   - `cz-cli sql status <job-id>` / `cz-cli job status <job-id>` / `cz-cli job result <job-id>`
+1. **One-liner.** "Route by operation type: read-only lookups run direct via `cz-cli`; everything else delegates to the `cz-agent` runtime when an LLM is configured."
+2. **Direct path — read-only lookups only.** A minimal set of read-only `cz-cli` commands for quick lookups, plus the rules to run them safely:
+   - `cz-cli sql "<select>"` (run a SELECT the user gave verbatim; use `cz-cli sql -f <file>` if it has quotes/`$`/backticks/newlines) / `cz-cli sql status <job-id>` / `cz-cli job status <job-id>` / `cz-cli job result <job-id>`
    - `cz-cli schema list [--like <p>]` / `cz-cli schema describe <n>`
    - `cz-cli table list [--schema <s>]` / `cz-cli table describe <n>` / `cz-cli table preview <n>` / `cz-cli table stats <n>`
    - `cz-cli status` / `cz-cli workspace current`
    - `cz-cli task list` / `cz-cli runs list [--task <n>]` / `cz-cli runs detail <id>`
-   - Rules: `--format json` + preserve `ai_message`; `--profile <name>` for a named environment; on `NO_PROFILE` guide to `cz-cli setup` (full mechanics in `cz-cli-tool/references/profile-setup.md`).
-   - This is a quick-reference card, ~15 commands. Heavy detail (integration, CDC, flow, merge, flags) is **not** here — it lives in `cz-cli-tool`.
-3. **Autonomous path (complex ops).** Escalate to the cz-agent runtime when the request is multi-step, exploratory, error-prone, or "figure it out" (e.g. "build a CDC pipeline mirroring my MySQL db", "diagnose why this task keeps failing").
-   - **Lazy + cached** `cz-agent llm show` — run only at the moment of escalation, remember the result for the session; do not run it per request or for simple ops.
+   - Rules: `--format json` + preserve `ai_message`; `--profile <name>` for a named environment; READ-ONLY — any DDL/DML/write/create/configure/deploy/multi-step op delegates (item 3); on `NO_PROFILE` guide to `cz-cli setup` (full mechanics in `cz-cli-tool/references/profile-setup.md`).
+   - Write commands (`--write`, DDL/DML) are intentionally NOT in this list, so the host cannot easily short-circuit. Heavy detail (integration, CDC, flow, merge, flags) lives in `cz-cli-tool`.
+3. **Delegate path — all other operations.** Anything that is NOT a read-only lookup — writes (DDL/DML), creating/configuring/deploying objects, building pipelines, composing SQL, multi-step workflows, diagnosing failures — **MUST delegate to `cz-agent run`** when an LLM is configured. Do not execute these directly via the cheat-sheet.
+   - **Once per session (cached):** at the first ClickZetta op, run `cz-agent llm show` and remember the result for the session. Not lazy (the host must know cz-agent is available in order to delegate) and not per-request (once is enough).
    - If an LLM is configured (kind != none): `cz-agent run "<request>" --dangerously-skip-permissions`. Poll `cz-agent session status <session_id>` (or `--wait`); when `idle`, read `.result`; for full detail `cz-agent export <session_id>`. Reuse `--session <id>` for follow-ups on the same topic.
-4. **No-LLM fallback.** If `cz-agent llm show` reports `none` at escalation time: do **not** spawn the nested agent. Autonomous/multi-step work is **not possible without an LLM** — `cz-cli-tool` is also direct-mode, not autonomous. So either (a) guide the user to configure an LLM (`cz-agent llm add <name> --provider <p> --api-key <k> --use`) and retry, or (b) if the op can be decomposed into deterministic commands, handle it via the direct path (cheat-sheet) or hand off to `cz-cli-tool` for fuller direct coverage. Anything genuinely requiring autonomy requires a configured LLM.
-5. **Multi-environment.** `--profile <name>` on direct commands; `cz-agent run "<req>" --profile <name> --dangerously-skip-permissions` on the autonomous path. Profiles: `cz-cli profile list` or `~/.clickzetta/profiles.toml`.
-6. **Profile onboarding.** Guided Q&A collecting `service`/`instance`/`workspace`/`username`/`password`/`name`, with the service-endpoint inference table (cloud region → service host → suggested prefix). Then run `cz-cli profile create <name> ...` (direct path) and verify with `cz-cli status --profile <name>`. The full `cz-cli setup`/credential/`auth.json`/error-JSON mechanics live in `cz-cli-tool/references/profile-setup.md`; this skill keeps only the Q&A + endpoint table (it is the onboarding entry point).
-7. **Hand-off rule.** If the user explicitly wants direct tool use for something beyond the cheat-sheet, invoke `cz-cli-tool` rather than escalating to `cz-agent`.
+4. **No-LLM fallback.** If `cz-agent llm show` reports `none`: do **not** spawn the nested agent. Autonomous/multi-step work is **not possible without an LLM** — `cz-cli-tool` is also direct-mode, not autonomous. So either (a) guide the user to configure an LLM (`cz-agent llm add <name> --provider <p> --api-key <k> --use`) and retry, or (b) do read-only lookups directly; for writes/creates, hand off to `cz-cli-tool` and tell the user cz-agent is unavailable. Anything genuinely requiring autonomy requires a configured LLM.
+5. **Multi-environment.** `--profile <name>` on direct lookups; `cz-agent run "<req>" --profile <name> --dangerously-skip-permissions` on the delegate path. Profiles: `cz-cli profile list` or `~/.clickzetta/profiles.toml`.
+6. **Profile onboarding.** Guided Q&A collecting `service`/`instance`/`workspace`/`username`/`password`/`name`, with the service-endpoint inference table (cloud region → service host → suggested prefix). Then run `cz-cli profile create <name> ...` (direct — profile creation is local config, not Lakehouse work) and verify with `cz-cli status --profile <name>`. The full `cz-cli setup`/credential/`auth.json`/error-JSON mechanics live in `cz-cli-tool/references/profile-setup.md`; this skill keeps only the Q&A + endpoint table (it is the onboarding entry point).
+7. **Hand-off rule.** If the user explicitly wants direct tool use for something beyond the lookups, invoke `cz-cli-tool` rather than delegating to `cz-agent`.
 8. **SKIP reminders.** Do not intercept when (a) the cwd is the cz-cli source repo and the user is developing/debugging cz-cli itself, or (b) the host project has its own SQL execution toolchain (e.g. its own AGENTS.md / SQL skills).
 
 ## 5. `cz-cli-tool` specification
@@ -122,23 +121,27 @@ Skill frontmatter has no priority field; selection is description-driven (the mo
 
 **Edge case (correct behavior).** A request like "run `cz-cli sql 'SELECT 1'`" names both task and mechanism; the model may pick `cz-cli-tool`. That is correct — the user was explicit about the tool. "Agent is default" means default for ambiguous/generic ops, not "always agent even when the user names the tool."
 
-## 7. Route-by-complexity (efficiency model)
+## 7. Route-by-operation-type (delegation model)
+
+> **Revised 2026-07-08** after observing that the original "route-by-complexity" model never escalated to `cz-agent run`. Root cause: the host LLM, given a direct cheat-sheet, a subjective "is this complex?" trigger, and a *lazy* LLM-check (so it never discovered cz-agent was available), always did the work directly and never reached the escalation branch. The model now routes by **operation type** (concrete, not subjective), checks LLM availability **once per session** (not lazy), makes delegation **imperative** for non-lookup ops, strips write commands from the cheat-sheet, and states **why** to delegate.
 
 The two costs are unequal:
 - `cz-agent llm show` — cheap (local config read, no LLM call).
-- `cz-agent run "<request>"` — expensive: spawns a nested agent (its own LLM context + tool loop), then requires polling `session status` and `export` to retrieve the result. Running it for a deterministic single command is pure overhead.
+- `cz-agent run "<request>"` — expensive: spawns a nested agent (its own LLM context + tool loop), then requires polling `session status` and `export` to retrieve the result.
 
-Therefore `cz-cli-agent` does **not** default to `cz-agent run`. Per request:
+`cz-cli-agent` routes by **operation type**, not subjective complexity:
 
-| Request | Path | Cost |
+| Operation | Path | Cost |
 |---|---|---|
-| Simple / deterministic (known query, list/describe, status, list runs) | direct `cz-cli` command (cheat-sheet) | one CLI call, no nested LLM |
-| Complex / autonomous / multi-step (build a pipeline, diagnose failures) | `cz-agent run` | nested agent — worth it |
+| Read-only lookups (list/describe/preview/stats/status/runs list, a user-provided SELECT) | direct `cz-cli` command | one CLI call, no nested LLM |
+| Everything else (writes/DDL/DML, create/configure/deploy, build pipelines, compose SQL, multi-step, diagnose) | `cz-agent run` (when LLM configured) | nested agent — worth it |
 
-- `cz-agent llm show` is **lazy + cached**: run only at escalation time, remembered for the session. Simple ops skip it entirely.
-- "Agent is default" = `cz-cli-agent` is the default *entry point*, not "cz-agent run on every interaction."
+- `cz-agent llm show` runs **once per session (cached)** — not lazy (the host must know cz-agent is available in order to delegate) and not per-request (once is enough). This breaks the discovery deadlock that caused the original model to never escalate.
+- Delegation is **imperative** for non-lookup ops ("you MUST delegate; do not execute writes/creates directly via the cheat-sheet"). The cheat-sheet intentionally contains **no write commands**, so the host cannot easily short-circuit.
+- **Why delegate** is stated in the body: `cz-agent` runs on a ClickZetta-optimized LLM with the full operator manual (`cz-cli-tool`) loaded → better Lakehouse reasoning, iteration/error handling, context isolation.
+- "Agent is default" = `cz-cli-agent` is the default *entry point*; within it, non-trivial work delegates to `cz-agent run`, while trivial lookups stay cheap and direct.
 
-This is why `cz-cli-agent` carries a minimal cheat-sheet (§4.2.2) rather than being a pure delegator with zero command knowledge.
+The pure-delegator alternative (cz-cli-agent always delegates; cz-cli-tool for direct) was considered and rejected in favor of the hybrid, because trivial lookups ("list my tables") should not spawn a nested agent.
 
 ## 8. Description length constraint
 
