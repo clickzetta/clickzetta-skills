@@ -6,7 +6,7 @@ The repository turns ClickZetta operational knowledge into reusable routing rule
 
 ## Repository Contents
 
-The repository currently contains 28 top-level `clickzetta-*` skills, one official documentation knowledge base, and one independent skill (`singsight-install`):
+The repository currently contains 28 top-level `clickzetta-*` skills, 2 `cz-cli-*` operation skills, one official documentation knowledge base, and one independent skill (`singsight-install`):
 
 - `lakehouse-doc-en`: English ClickZetta Lakehouse official documentation index and reference corpus.
 - `clickzetta-*`: task-oriented skills for ingestion, Studio tasks, dbt, modeling, dynamic tables, connectors, external integrations, governance, and operations.
@@ -45,6 +45,21 @@ The repository currently contains 28 top-level `clickzetta-*` skills, one offici
 | Operations and governance | [clickzetta-table-lineage](./clickzetta-table-lineage/) | Table lineage and cost visualization based on `information_schema.job_history` and generated HTML artifacts. |
 | Productivity | [screen-recording](./screen-recording/) | Screen recording narration workflow: pre-recording hook setup (auto-log user messages with Beijing timestamps) and post-recording footage manifest and shot script generation. |
 | Observability | [singsight-install](./singsight-install/) | Connect AI coding agents (Claude Code, Hermes, OpenClaw, Opencode) to the Singsight observability platform via OpenTelemetry. |
+| cz-cli operations | [cz-cli-agent](./cz-cli-agent/) | Default router for ClickZetta Lakehouse operations: direct `cz-cli` commands for simple ops, `cz-agent run` for complex/autonomous multi-step work. |
+| cz-cli operations | [cz-cli-tool](./cz-cli-tool/) | Direct operator manual for `cz-cli` commands (SQL, tables, schemas, Studio tasks, sync/CDC pipelines, datasources, AI Gateway). Loaded by host agents and the cz-agent runtime. |
+
+## cz-cli skills
+
+Two peer skills operate ClickZetta Lakehouse via the `cz-cli` tool. Both are publicly installable; install either or both.
+
+| Skill | Role |
+|---|---|
+| `cz-cli-agent` | Default entry. Routes by complexity: direct `cz-cli` commands for simple ops, `cz-agent run` for complex/autonomous multi-step work. |
+| `cz-cli-tool` | Direct operator manual. Drives `cz-cli` commands directly with no agent runtime. Loaded by host agents and by the cz-agent runtime. |
+
+**Routing:** if both are installed, `cz-cli-agent` is routed first (the default). `cz-cli-tool` is used when the user explicitly wants direct command execution, has no LLM configured for cz-agent, or `cz-cli-agent` is not installed.
+
+> **Naming note:** `cz-cli-agent` and `cz-cli-tool` use the `cz-cli-` prefix (the `cz-cli` product brand) rather than the registry's usual `clickzetta-` prefix. They are the two sanctioned exceptions — see `CLAUDE.md`.
 
 ## Routing Guide
 
@@ -68,6 +83,7 @@ Use the table below when deciding which skill should handle a user request.
 | Manage users, roles, grants, masking policy, network policy, lifecycle, data sharing, SDK, BI, or Java/Python application docs. | `lakehouse-doc-en` |
 | Manage Volumes, object storage mounts, file upload/download, import, or export. | `clickzetta-volume-manager` |
 | Work with Spark, Flink, ZettaPark, External Functions, or External Catalogs. | `clickzetta-spark-flink-connector` / `clickzetta-zettapark` / `clickzetta-external-function` / `lakehouse-doc-en` |
+| Operate ClickZetta Lakehouse via the cz-cli tool: run SQL, manage tables/schemas/Studio tasks, build sync or CDC pipelines, or configure profiles. | `cz-cli-agent` (default) / `cz-cli-tool` (direct) |
 
 ## Repository Layout
 
