@@ -237,6 +237,23 @@
         "SKILL.md",
         "references/zettapark-api.md"
       ]
+    },
+    {
+      "name": "cz-cli-agent",
+      "description": "Delegate ClickZetta Lakehouse operations to the cz-cli agent runtime, or run cz-cli commands directly for simple tasks.",
+      "files": [
+        "SKILL.md"
+      ]
+    },
+    {
+      "name": "cz-cli-tool",
+      "description": "Drive cz-cli commands directly against ClickZetta Lakehouse — no agent runtime.",
+      "files": [
+        "SKILL.md",
+        "references/command-reference.md",
+        "references/sync-pipelines.md",
+        "references/profile-setup.md"
+      ]
     }
   ]
 }
