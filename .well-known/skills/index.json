@@ -16,6 +16,13 @@
       ]
     },
     {
+      "name": "clickzetta-billing-analyse",
+      "description": "Analyze account billing/metering cost from sys.information_schema.instance_usage via cz-cli and generate a bilingual (English/Chinese, defaults to English) HTML dashboard; drill down compute anomalies with sys.information_schema.job_history.",
+      "files": [
+        "SKILL.md"
+      ]
+    },
+    {
       "name": "clickzetta-cdc-sync-pipeline",
       "description": "Create and manage ClickZetta Lakehouse multi-table real-time sync (CDC) tasks, syncing MySQL/PostgreSQL databases to Lakehouse.",
       "files": [
