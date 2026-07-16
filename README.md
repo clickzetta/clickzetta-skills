@@ -6,7 +6,7 @@
 
 ## Skills 总览
 
-当前仓库包含 37 个顶层 `clickzetta-*` skills：
+当前仓库包含 38 个顶层 `clickzetta-*` skills：
 
 | 类别 | Skill | 适用场景 |
 |---|---|---|
@@ -47,6 +47,7 @@
 | 运维与治理 | [clickzetta-data-retention](./clickzetta-data-retention/) | TTL 生命周期、Time Travel、UNDROP、RESTORE、历史版本查询 |
 | 运维与治理 | [clickzetta-data-sharing](./clickzetta-data-sharing/) | Share 跨账户/跨实例零复制数据共享 |
 | 运维与治理 | [clickzetta-table-lineage](./clickzetta-table-lineage/) | 基于 job_history 的表血缘和成本可视化 |
+| 运维与治理 | [clickzetta-billing-analyse](./clickzetta-billing-analyse/) | 基于 instance_usage 的账号计量计费成本分析，生成中英双语 HTML 看板，计算类异常用 job_history 下钻归因 |
 
 ## 路由建议
 
@@ -64,6 +65,7 @@
 | 诊断管道质量、任务失败、链路缺陷 | `clickzetta-pipeline-review` |
 | 写 SQL、迁移 SQL、查函数或语法差异 | `clickzetta-sql-syntax-guide` |
 | 查询元数据、表结构、作业历史、成本归因 | `clickzetta-metadata` / `clickzetta-monitoring` |
+| 分析账号计量计费成本、按地域/workspace/SKU 拆解、下钻计算类费用异常 | `clickzetta-billing-analyse` |
 | 查询慢、作业慢、小文件、缓存、执行计划 | `clickzetta-query-optimizer` |
 | 用户、角色、授权、脱敏、网络策略 | `clickzetta-access-control` |
 | 集群、Volume、DBA 运维、恢复、生命周期 | `clickzetta-vcluster-manager` / `clickzetta-volume-manager` / `clickzetta-dba-guide` / `clickzetta-data-retention` |
@@ -302,6 +304,12 @@ DBA 日常运维手册，集中覆盖计算集群运维、作业监控与诊断�
 表血缘可视化工具。基于 `information_schema.job_history` 获取表依赖关系和成本数据，导出 CSV 后嵌入 HTML 模板生成交互式血缘图。
 
 支持表依赖图、上下游分析、数据流向分析、DML CRU/day 和累计成本查看，适合 pipeline 可视化和管道全貌分析。
+
+#### [clickzetta-billing-analyse](./clickzetta-billing-analyse/)
+
+账号计量计费成本分析工具。通过 cz-cli 从 `sys.information_schema.instance_usage` 采集折后计费数据，由 LLM 生成分析结论，注入 HTML 模板生成中英双语（默认英文）可切换的可视化看板。
+
+按 sku_category / sku_name / workspace 维度拆解费用，计算类费用异常时用 `sys.information_schema.job_history` 做集群级下钻归因（价×量分解、计费 CRU 与实际作业 CRU 背离的空转判定），适合账号成本巡检和降本分析。
 
 ## Skill 结构
 

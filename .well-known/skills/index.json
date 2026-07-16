@@ -37,6 +37,13 @@
       ]
     },
     {
+      "name": "clickzetta-billing-analyse",
+      "description": "通过 cz-cli 从 sys.information_schema.instance_usage 采集账号计量计费数据，生成中英双语（默认英文）可切换的可视化 HTML 看板；计算类费用异常时用 sys.information_schema.job_history 做集群级下钻归因。",
+      "files": [
+        "SKILL.md"
+      ]
+    },
+    {
       "name": "clickzetta-cdc-sync-pipeline",
       "description": "创建和管理 ClickZetta Lakehouse 多表实时同步任务（CDC），将 MySQL / PostgreSQL 数据库整库或多表实时同步到 Lakehouse。",
       "files": [
