@@ -57,7 +57,7 @@ SELECT / JOIN / GROUP BY / window functions / conditional aggregation — the co
 
 ## Project Background
 
-![](.topwrite/assets/32-hive-to-lakehouse-ecommerce.png)
+![](.topwrite/assets/32-hive-to-lakehouse-ecommerce.svg)
 
 The data architecture has four layers, each corresponding to a schema:
 

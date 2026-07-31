@@ -57,9 +57,7 @@ FROM read_kafka(
 LIMIT 10;
 ```
 
-If the parameters are configured correctly, executing the above SQL will return 10 rows of sample data.
-
-![](/.topwrite/assets/image_1760681545512.png)
+If the parameters are configured correctly, executing the above SQL will return 10 rows of sample data, each containing raw binary key and value columns along with Kafka metadata columns such as partition, offset, and timestamp.
 
 # Read Small Batches to Confirm Schema and Create the Target Table
 
@@ -84,9 +82,7 @@ FROM read_kafka(
 LIMIT 10;
 ```
 
-![](/.topwrite/assets/image_1760681595348.png)
-
-Click "Copy" to retrieve sample data and explore it. The value appears to be JSON, but some string fields within the JSON are themselves complete JSON objects — the structure is nested and somewhat complex:
+Click "Copy" to retrieve sample data and explore it. The query returns each row with the `key` and `value` cast to readable strings. The value appears to be JSON, but some string fields within the JSON are themselves complete JSON objects — the structure is nested and somewhat complex:
 
 ```JSON
 {"event":"{\"instance_id\":1,\"workspace_id\":1057330101457946860,\"session_id\":0,\"job_id\":\"\",\"log_id\":8316782525667550489,\"operator_id\":0,\"operator_type\":\"PT_USER\",\"start_time\":1740590015608,\"end_time\":1740590015608,\"state\":1,\"properties\":\"[]\",\"statements\":\"{\\\"statements\\\":[{\\\"identifier\\\":{\\\"type\\\":\\\"VIRTUAL_CLUSTER\\\",\\\"instanceId\\\":\\\"1\\\",\\\"namespace\\\":[\\\"system_automv_warehouse\\\"],\\\"namespaceId\\\":[\\\"1057330101457946860\\\"],\\\"namespaceType\\\":[],\\\"name\\\":\\\"CZ_MV_DEFAULT\\\",\\\"id\\\":\\\"8013167251718801474\\\",\\\"version\\\":\\\"default_v2\\\",\\\"instanceName\\\":\\\"clickzetta\\\",\\\"accountId\\\":\\\"1\\\",\\\"accountName\\\":\\\"rwyaytaa\\\"},\\\"operations\\\":[{\\\"lsn\\\":0,\\\"type\\\":\\\"ALTER\\\",\\\"alterEntity\\\":{\\\"ifExists\\\":false,\\\"identifier\\\":{\\\"type\\\":\\\"VIRTUAL_CLUSTER\\\",\\\"instanceId\\\":\\\"1\\\",\\\"namespace\\\":[\\\"system_automv_warehouse\\\"],\\\"namespaceId\\\":[\\\"1057330101457946860\\\"],\\\"namespaceType\\\":[],\\\"name\\\":\\\"CZ_MV_DEFAULT\\\",\\\"id\\\":\\\"8013167251718801474\\\",\\\"version\\\":\\\"default_v2\\\",\\\"instanceName\\\":\\\"clickzetta\\\",\\\"accountId\\\":\\\"1\\\",\\\"accountName\\\":\\\"rwyaytaa\\\"},\\\"changeComment\\\":false,\\\"entity\\\":{\\\"identifier\\\":{\\\"type\\\":\\\"VIRTUAL_CLUSTER\\\",\\\"instanceId\\\":\\\"1\\\",\\\"namespace\\\":[\\\"system_automv_warehouse\\\"],\\\"namespaceId\\\":[\\\"1057330101457946860\\\"],\\\"namespaceType\\\":[],\\\"name\\\":\\\"CZ_MV_DEFAULT\\\",\\\"id\\\":\\\"8013167251718801474\\\",\\\"version\\\":\\\"\\\",\\\"instanceName\\\":\\\"clickzetta\\\",\\\"accountId\\\":\\\"1\\\",\\\"accountName\\\":\\\"rwyaytaa\\\"},\\\"creator\\\":\\\"101\\\",\\\"creatorType\\\":\\\"PT_USER\\\",\\\"properties\\\":[],\\\"createTime\\\":\\\"1698056353612\\\",\\\"lastModifyTime\\\":\\\"1740590015607\\\",\\\"state\\\":\\\"ONLINE\\\",\\\"category\\\":\\\"MANAGED\\\",\\\"basicSpecId\\\":0,\\\"flags\\\":\\\"0\\\",\\\"virtualCluster\\\":{\\\"clusterType\\\":\\\"GENERAL\\\",\\\"tag\\\":{},\\\"clusterSize\\\":\\\"SMALL\\\",\\\"autoStopLatencySec\\\":1,\\\"autoStartEnabled\\\":true,\\\"queryProcessTimeLimitSec\\\":259200,\\\"state\\\":\\\"RESUMING\\\",\\\"preState\\\":\\\"SUSPENDED\\\",\\\"errorMsg\\\":\\\"\\\",\\\"workspaceId\\\":\\\"1057330101457946860\\\",\\\"vcId\\\":\\\"8013167251718801474\\\",\\\"stateInfo\\\":\\\"{\\\\\\\"resourceVersion\\\\\\\":\\\\\\\"1740590006831\\\\\\\",\\\\\\\"resumeTaskState\\\\\\\":\\\\\\\"true\\\\\\\"}\\\",\\\"version\\\":\\\"default_v2\\\",\\\"computePoolId\\\":\\\"0\\\",\\\"deployMode\\\":\\\"SERVERLESS\\\"},\\\"comment\\\":\\\"\\\"},\\\"alterProperty\\\":[]}}]}]}\",\"sub_type\":\"\"}","op_type":"CREATE","datasource_id":"17319","database_name":"lakehouse_hz_uat_bak","schema_name":"lakehouse_hz_uat_bak","table_name":"cz_commit_logs_vc","event_ts":1740590015000,"event_seq":"3521832368","server_ts":1740590015924,"server_seq":138789}
@@ -127,9 +123,7 @@ FROM (
 
 ```
 
-Running this reveals that `statements` inside `event` is still JSON.
-
-![](/.topwrite/assets/image_1760681703861.png)
+Running this reveals that `statements` inside `event` is still JSON — the query results will show the `event` column as a parsed JSON object while `statements` within it remains a raw JSON string that needs further parsing.
 
 Continue adjusting the SELECT statement until all JSON-formatted strings are fully parsed before writing to the table, avoiding redundant `parse_json` calculations in subsequent queries.
 
@@ -275,9 +269,7 @@ order by start_time desc;
 
 Optimizing a Kafka Pipe for stable production operation means using the minimum resource configuration (VCluster) within the required freshness cycle (`BATCH_INTERVAL_IN_SECONDS`) to complete the computation and persistence of incoming data. In production, maintain some computing capacity reserve to ensure the Pipe can catch up when data volume fluctuates, cluster upgrades cause job failovers, etc. We typically recommend maintaining double the redundancy. In plain terms with our example: you need to be able to process all the data that flowed in from Kafka over 1 minute within roughly 30 seconds.
 
-The default Pipe settings work well in most cases. However, if the ingested Kafka data volume is particularly large, adjust parameters based on actual conditions, as indicated by the red annotations in the figure below:
-
-![](/.topwrite/assets/image_1760681949544.png)
+The default Pipe settings work well in most cases. However, if the ingested Kafka data volume is particularly large, you may need to tune the following parameters based on actual conditions: `BATCH_SIZE_PER_KAFKA_PARTITION` (to increase how many records are read per partition per cycle), VCluster size (to match the Kafka topic partition count), and `COPY_JOB_HINT` (to split tasks further for complex computation). These are described in the subsections below.
 
 To check whether the current Pipe is experiencing backlog, run `desc pipe extended` multiple times and observe whether `timeLag` in the `pipe_latency` row (the gap between the Kafka offset and current time, in milliseconds) is continuously increasing. With 60-second data freshness and double computing redundancy, `timeLag` should fluctuate between 0–90 seconds (without any redundancy, it should fluctuate between 0–120 seconds). If `timeLag` exceeds the upper limit and continues rising over several cycles, the Pipe is building up a backlog.
 
@@ -285,13 +277,9 @@ To check whether the current Pipe is experiencing backlog, run `desc pipe extend
 
 To prevent the Pipe from reading excessive data at startup and creating oversized jobs, Pipe limits the number of records read from each partition per batch. This is controlled by `BATCH_SIZE_PER_KAFKA_PARTITION`, which defaults to 50,000. When the peak message volume per partition per cycle exceeds this value, manually specify this parameter when creating the Pipe. We typically recommend setting it to 2× the peak value. If the Pipe is already running, you can dynamically adjust it with `alter pipe <pipe_name> set BATCH_SIZE_PER_KAFKA_PARTITION=<event_number>;`.
 
-As shown in the figure, even though the Pipe's per-minute jobs complete in under 30 seconds, `desc pipe extended` may show `timeLag` continuously increasing.
+As an example of this symptom: even though the Pipe's per-minute jobs complete in under 30 seconds, `desc pipe extended` may show `timeLag` continuously increasing — indicating that not all data produced in each cycle is being consumed.
 
-![](/.topwrite/assets/image_1760681973997.png)
-
-Click on the job to enter the job details page. You can see this is a Kafka topic with 10 partitions. Even with `BATCH_SIZE_PER_KAFKA_PARTITION` set to 100,000, not all data from one cycle is read — you need to keep increasing it.
-
-![](/.topwrite/assets/image_1760681981294.png)
+Inspecting the job details shows this is a Kafka topic with 10 partitions. Even with `BATCH_SIZE_PER_KAFKA_PARTITION` set to 100,000, not all data from one cycle is read — you need to keep increasing it.
 
 Ultimately, by continuously increasing this value and observing `timeLag` (in production you should ideally know the per-partition peak value in advance and set it directly), you determine that at 500,000 the Pipe's consumption speed is fast enough to keep up with Kafka.
 
@@ -303,9 +291,7 @@ By default, the `copy into` jobs started by Pipe have a task count equal to the 
 
 Therefore, when you want jobs to finish quickly, ensure the VCluster's allowed task concurrency >= partition count, so all tasks complete in a single round.
 
-In the figure below, a Pipe job using a 128CRU VCluster (1024 cores) consumes a Kafka topic with 1,200 partitions. It runs in two rounds: the first round with 1,024 tasks, and the remaining 176 tasks in the second round, significantly extending execution time. In this case, setting the VCluster to 150CRU (1,200 cores) is appropriate.
-
-![](/.topwrite/assets/image_1760681994525.png)
+For example, a Pipe job using a 128CRU VCluster (1024 cores) consuming a Kafka topic with 1,200 partitions runs in two rounds: the first round with 1,024 tasks, and the remaining 176 tasks in the second round, significantly extending execution time. In this case, setting the VCluster to 150CRU (1,200 cores) is appropriate.
 
 ## Splitting Kafka Data to Utilize More Compute Resources (Setting `COPY_JOB_HINT`)
 
@@ -406,9 +392,7 @@ However, `RESET_KAFKA_GROUP_OFFSETS` forcibly overwrites the offset recorded in 
 
 ## Monitoring the Pipe Itself
 
-Studio's data quality module provides latency monitoring capabilities for Pipes.
-
-![](/.topwrite/assets/image_1760682100684.png)
+Studio's data quality module provides latency monitoring capabilities for Pipes. Navigate to "Data" → "Data Quality" → "Quality Rules" → "Create Rule" to set up a latency monitoring rule for the Pipe itself.
 
 ## Monitoring Output Tables
 
@@ -418,14 +402,6 @@ Earlier, we added the `__kafka_timestamp__` field to the Pipe's output table `od
 select DATEDIFF(second, max(`__kafka_timestamp__`), now())from ods_commit_logwhere pt_date='${today}';
 ```
 
-In Studio, click "Data" → "Data Quality" → "Quality Rules" → "Create Rule".
+In Studio, click "Data" → "Data Quality" → "Quality Rules" → "Create Rule". On the rule creation page, configure the parameter `today` with value `$[yyyyMMdd]`, select Custom SQL, and fill in the SQL query above. Set the metric threshold, alert condition, and notification contacts, then click Save.
 
-![](/.topwrite/assets/image_1760682111260.png)
-
-Configure the parameter `today` with value `$[yyyyMMdd]`, select Custom SQL, and fill in the SQL query above. Set other required parameters as shown in the figure and click Save.
-
-In Studio, click "Operations" → "Monitoring Alerts" → "Monitoring Rules" → "Create Rule".
-
-Fill in the required fields as shown in the figure and save.
-
-![](/.topwrite/assets/image_1760682120092.png)
+In Studio, click "Operations" → "Monitoring Alerts" → "Monitoring Rules" → "Create Rule". Fill in the rule name, associate it with the quality rule created above, set the alert threshold (e.g., alert when latency exceeds 300 seconds), configure the notification channel, and save.

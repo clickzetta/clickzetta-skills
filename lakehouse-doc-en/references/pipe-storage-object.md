@@ -43,7 +43,7 @@ Charged based on the computing resources used when loading files.
 
 ## PIPE Syntax
 
-```SQL
+```sql
 -- Syntax for creating a Pipe from object storage
 CREATE PIPE [ IF NOT EXISTS ] <pipe_name>
     VIRTUAL_CLUSTER = 'virtual_cluster_name'
@@ -77,7 +77,7 @@ Refer to [COPY INTO import](copy-into-table.md).
 
 Step 1: Create a connection and volume
 
-```SQL
+```sql
 -- Create a connection to connect to object storage
 CREATE STORAGE CONNECTION if not exists my_connection_exnet
     TYPE OSS
@@ -100,7 +100,7 @@ CREATE EXTERNAL VOLUME pipe_volume
 
 Step 2: Run the COPY command standalone to verify it imports successfully
 
-```SQL
+```sql
 copy into pipe_purge_mode from volume pipe_volume(id int,col string) 
 using csv OPTIONS(
   'header'='false'
@@ -109,7 +109,7 @@ using csv OPTIONS(
 
 Step 3: Use the above statement to build the Pipe object
 
-```SQL
+```sql
 create pipe volume_pipe_list_purge
   VIRTUAL_CLUSTER = 'DEFAULT'
   -- Use scan file mode to get the latest files
@@ -132,7 +132,7 @@ Filter by `query_tag` in the job history. All COPY jobs executed by the Pipe are
 
 * View the history of files imported by COPY jobs
 
-```SQL
+```sql
 select * from load_history('schema_name.table_name');
 ```
 
@@ -153,11 +153,10 @@ Step 3: Grant MNS access to Lakehouse
 In the Alibaba Cloud RAM console, grant the `AliyunMNSFullAccess` permission to the Role from Step 2 (in the example, this is CzUDFRole).
 ```
 
-![](.topwrite/assets/image_1722602785678.png)
 
 Step 4: Create a Storage Connection
 
-```SQL
+```sql
 CREATE STORAGE CONNECTION my_connection_exnet_role
     TYPE oss
     REGION = 'cn-hangzhou'  -- Select according to the region where OSS is located
@@ -167,7 +166,7 @@ CREATE STORAGE CONNECTION my_connection_exnet_role
 
 Step 5: Create a Volume
 
-```SQL
+```sql
 CREATE EXTERNAL VOLUME my_volume_exnet_role
     LOCATION 'oss://function-compute-my1/autoloader'  -- Replace with your OSS Bucket path
     USING connection my_connection_exnet_role
@@ -180,7 +179,7 @@ CREATE EXTERNAL VOLUME my_volume_exnet_role
 
 Step 6: Create a Pipe
 
-```SQL
+```sql
 CREATE PIPE my_pipe
 VIRTUAL_CLUSTER='TEST_VC'
 ALICLOUD_MNS_QUEUE = 'lakehouse-oss-event-queue'  -- Use the created MNS queue
@@ -238,7 +237,7 @@ ALTER PIPE pipe_name SET PIPE_EXECUTION_PAUSED = false
 
 You can modify Pipe properties one at a time. If multiple properties need to be changed, run the `ALTER` command multiple times. Below are the modifiable properties and their syntax:
 
-```SQL
+```sql
 ALTER PIPE pipe_name SET 
    [VIRTUAL_CLUSTER = 'virtual_cluster_name']
    [BATCH_INTERVAL_IN_SECONDS='']

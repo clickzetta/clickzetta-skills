@@ -315,9 +315,9 @@ Tested on AWS Singapore instance (`aws_singapore_prod`), 16/16 all passed:
 
 ### Permissions and Security
 
-- [GRANT](GRANT.md): Full GRANT syntax reference
+- [GRANT](grant-privileges.md): Full GRANT syntax reference
 - [CREATE ROLE](create-role.md): Role creation and management
-- [SET MASK](set-mask.md): Column masking syntax
+- [SET MASK](dynamic-mask.md): Column masking syntax
 - [SHOW GRANTS](show-grants.md): View authorization relationships
 
 ### Other Migration Guides

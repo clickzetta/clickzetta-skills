@@ -8,7 +8,7 @@ Singdata Lakehouse uses caching technology to accelerate query performance and e
 2. Metadata Cache
 3. Virtual Cluster Local Disk Cache
 
-![](.topwrite/assets/image_1713780513737.png)
+The three cache types operate at different layers: Metadata Cache and Query Result Cache belong to the service layer and are shared within the workspace, while Virtual Cluster Local Disk Cache is stored on the local nodes of a specific cluster and is only available when using that cluster.
 
 Among them:
 
@@ -92,5 +92,4 @@ The first execution took 12.1 seconds. By checking the Job Profile, we can see t
 
 The second time this query was executed, the job reused the result cache from the previous query and returned the result within 15ms.
 
-When viewing the Job Profile of the job, you can see in the execution plan diagram on the diagnostics page that the job used "JOB RESULT REUSE", indicating that the job directly queried the result data.
-![](.topwrite/assets/result_cache_jobprofile.png)
+When viewing the Job Profile of the job, you can see in the execution plan on the diagnostics page that the job used "JOB RESULT REUSE", indicating that it directly returned the cached result data without re-scanning storage.

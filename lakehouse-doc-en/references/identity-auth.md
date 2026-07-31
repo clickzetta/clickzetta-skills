@@ -4,5 +4,5 @@ Singdata Lakehouse supports multi-factor authentication (MFA) and single sign-on
 
 | Scenario | Solution | Reference |
 |------|------|---------|
-| Enable Multi-Factor Authentication (MFA) | Bind Google Authenticator | [Bind Google Authenticator](using-google-authenticator.md) |
+| Enable Multi-Factor Authentication (MFA) | Bind a virtual MFA device | [Bind a Virtual MFA Device](using-google-authenticator.md) |
 | Configure Single Sign-On (SSO) | Enterprise IdP integration | [SSO Configuration](sso-configuration.md) |

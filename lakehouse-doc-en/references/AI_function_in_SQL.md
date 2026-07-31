@@ -352,4 +352,4 @@ After receiving prior user authorization, the Lakehouse platform automatically d
 **Development guides**:
 
 - [External Function (Python3)](remotefunction-dev-guide-python3.md)
-- [External Function (Java)](external-function-dev-guide-java.md)
+- [External Function (Java)](bulkloadv1-java-sdk.md)

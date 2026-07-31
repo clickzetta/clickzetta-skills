@@ -13,9 +13,9 @@ If you want to create more workspaces to meet the needs of different usage scena
 
 Before reading this guide, it is recommended to complete reading and understanding the following documents:
 
-* [Lakehouse Product Introduction](what_is_clickzetta_lakehouse.md)
-* [Key Concepts](key_concepts.md)
-* [Lakehouse Studio Quick Tour](lakehousestudiotour.md)
+* [Lakehouse Product Introduction](datalake_overview.md)
+* [Key Concepts](key-concepts.md)
+* [Lakehouse Studio Quick Tour](lakehouse-studio-101.md)
 
 ## Operation Guide
 

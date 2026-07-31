@@ -1,4 +1,4 @@
-qqing# Lakehouse AI Features Overview
+# Lakehouse AI Features Overview
 
 Singdata Lakehouse integrates AI capabilities natively into the data platform — you can call large language models, run vector search, and build RAG pipelines directly in SQL, without moving data to an external AI platform.
 
@@ -13,7 +13,7 @@ Singdata Lakehouse integrates AI capabilities natively into the data platform �
 | Call an LLM in a SQL query (text classification, summarization, extraction, translation) | [AI Functions / AI\_COMPLETE](ai_complete.md) |
 | Manage and switch between multiple LLM models (OpenAI, Qwen, etc.) | [AI Gateway](aigateway.md) |
 | Semantic similarity search, RAG retrieval, image search | [Vector Search](vector_search_ai.md) |
-| Call external HTTP services (cloud functions, vision APIs, custom models) | [External Function](remotefunction-intro.md) |
+| Call external HTTP services (cloud functions, vision APIs, custom models) | [External Function](remotefunction-on-acr.md) |
 | Python data processing + AI inference with a PySpark-like interface | [Zettapark](zettapark-quick-start.md) |
 | Encapsulate business semantics for BI tools and AI Agents | [Semantic View](semantic-view-overview.md) |
 | Natural language conversational data analysis, zero-barrier data querying | [Data Analytics Agent (DataGPT)](datagpt_introduction.md) |
@@ -61,7 +61,7 @@ LIMIT 5;
 
 Register HTTP services such as Alibaba Cloud Function Compute or Tencent Cloud SCF as SQL functions, and call vision recognition, speech transcription, custom models, and other capabilities directly in queries.
 
-→ [External Function Introduction](remotefunction-intro.md) · [Development Guide (Python)](remotefunction-dev-guide-python3.md) · [Usage Guide](remotefunction-best-practice.md)
+→ [External Function Introduction](remotefunction-on-acr.md) · [Development Guide (Python)](remotefunction-dev-guide-python3.md) · [Usage Guide](remotefunction-best-practice.md)
 
 ***
 

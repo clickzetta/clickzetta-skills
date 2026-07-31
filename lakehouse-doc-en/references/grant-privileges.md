@@ -11,8 +11,11 @@ GRANT workspacePrivileges ON WORKSPACE workspace_name
     | workspaceObjectPrivileges ON { ROLE | SCHEMA | VCLUSTER | DATALAKE | FUNCTION } workspace_object_name
     | schemaPrivileges ON SCHEMA schema_name
     | schemaObjectPrivileges ON { TABLE | VIEW | MATERIALIZED VIEW } schema_object_name
+    | dynamicTablePrivileges ON DYNAMIC TABLE schema_object_name
 TO { ROLE role_name | USER user_name } [WITH GRANT OPTION];
 ```
+
+> ⚠️ **Note**: Dynamic Tables require `ON DYNAMIC TABLE` in the `GRANT` statement — `ON TABLE` does not work. Using `ON TABLE` against a Dynamic Table returns `Invalid privilege 'SELECT TABLE' for object type 'TABLE'`. Regular managed tables still use `ON TABLE`; the two are not interchangeable.
 
 ### Privilege Type Description
 
@@ -27,11 +30,15 @@ workspaceObjectPrivileges ::=
 
 -- Schema level: create objects
 schemaPrivileges ::=
-    CREATE { TABLE | VIEW | MATERIALIZED VIEW } | ALL
+    CREATE { TABLE | VIEW | MATERIALIZED VIEW | DYNAMIC TABLE } | ALL
 
--- Schema object privileges
+-- Schema object privileges (regular tables, views, materialized views)
 schemaObjectPrivileges ::=
     ALTER | DROP | SELECT | INSERT | READ METADATA | ALL
+
+-- Dynamic Table privileges
+dynamicTablePrivileges ::=
+    SELECT | ALTER DYNAMIC TABLE | DROP DYNAMIC TABLE | RESTORE DYNAMIC TABLE | READ METADATA | ALL [PRIVILEGES]
 ```
 
 ### Parameter Description
@@ -84,19 +91,31 @@ schemaObjectPrivileges ::=
 
 6. Grant role `my_role` query privilege on a specified materialized view:
 
-   ```SQL
+   ```sql
    GRANT SELECT ON MATERIALIZED VIEW public.my_materialized_view TO ROLE my_role;
    ```
 
-7. Grant user `tester` the role `test_readonly_role`:
+7. Grant role `my_role` query privilege on a specified dynamic table:
 
-   ```SQL
+   ```sql
+   GRANT SELECT ON DYNAMIC TABLE public.my_dynamic_table TO ROLE my_role;
+   ```
+
+   Grant role all privileges on a dynamic table:
+
+   ```sql
+   GRANT ALL PRIVILEGES ON DYNAMIC TABLE public.my_dynamic_table TO ROLE my_role;
+   ```
+
+8. Grant user `tester` the role `test_readonly_role`:
+
+   ```sql
    GRANT ROLE test_readonly_role TO USER tester;
    ```
 
-8. Grant user `tester` query privilege on a specified table, with the ability to re-grant:
+9. Grant user `tester` query privilege on a specified table, with the ability to re-grant:
 
-   ```SQL
+   ```sql
    GRANT SELECT ON TABLE public.my_table TO USER tester WITH GRANT OPTION;
    ```
 

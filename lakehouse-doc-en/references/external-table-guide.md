@@ -9,6 +9,9 @@
 * kafka external table
 * delta lake external table
 * hudi external table
+* lance external table
+* paimon external table
+* iceberg external table
 
 ## **Differences Between External Tables and External Schema**
 

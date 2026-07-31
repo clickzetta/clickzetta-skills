@@ -1,0 +1,61 @@
+# Singdata Lakehouse — Release Notes
+
+- [Release Notes](https://singdata.com/documents/release-notes): A landing page indexing the release notes history for the Singdata Lakehouse platform.
+- [Lakehouse Studio Release Notes](https://singdata.com/documents/lakehouse-studio-release-note): Stub page titled Lakehouse Studio Release Notes History, intended to aggregate Studio version updates but currently without content.
+- [May 14, 2026 - 2.2.0](https://singdata.com/documents/rn_2026-05-14): May 14, 2026 (v2.2) Lakehouse release notes covering DataAgent intelligent pipeline creation, data integration enhancements, encrypted task parameters, conditional branching, and job history and operations center improvements.
+- [April 1, 2026 - 2.1.0](https://singdata.com/documents/rn_2026-04-01): This release (Release 2026.04.01, v2.1) introduces a series of new features, enhancements, and fixes.
+- [January 30, 2026 - 2.0.0](https://singdata.com/documents/rn_2026-01-30-2.0.0): This release (Release 2026.01.30, v2.0) introduces a series of new features, enhancements, and fixes.
+- [December 17, 2025 - 1.9.3](https://singdata.com/documents/rn_2025-12-17): This release (Release 2025.12.17, v1.9.3) introduces a series of new features, enhancements, and fixes.
+- [October 23, 2025 - 1.9.2](https://singdata.com/documents/rn_2025-10-23): In this release (Release 2025.10.23, v1.9.2), we have introduced a series of new features, enhancements, and fixes.
+- [August 25, 2025 - 1.9.1](https://singdata.com/documents/rn_2025-08-25): In this release (Release 2025.08.25, v1.9.1), we have introduced a series of new features, enhancements, and fixes.
+- [July 3, 2025 - 1.8.3](https://singdata.com/documents/rn_2025-07-03): In this release (Release 2025.07.03), we have introduced a series of new features, enhancements, and fixes.
+- [May 20, 2025 - 1.8.2](https://singdata.com/documents/rn_2025-05-20): In this release (Release 2025.05.20), we have introduced a series of new features, enhancements, and fixes.
+- [April 1, 2025 - 1.8.1](https://singdata.com/documents/rn_2025-04-01): In this release (Release 2025.04.01, v1.8), we have introduced a series of new features, enhancements, and fixes.
+- [March 5, 2025 - 1.7](https://singdata.com/documents/rn_2025-03-05): In this release (Release 2025.03.05), we have introduced a series of new features, enhancements, and fixes in this release.
+- [December 25, 2024 - 1.6](https://singdata.com/documents/rn_2024-12-25): This release (Release 2024.12.25, v1.6) introduces a series of new features, enhancements, and bug fixes.
+- [December 12, 2024 - 1.5](https://singdata.com/documents/rn_2024-12-12): This release (Release 2024.12.12, v1.5) introduces a series of new features, enhancements, and bug fixes.
+- [November 11, 2024 - 1.4](https://singdata.com/documents/rn_2024-11-11): This release (Release 2024.11.11, v1.4) introduces a series of new features, enhancements, and bug fixes.
+- [October 15, 2024 - 1.3](https://singdata.com/documents/rn_2024-10-15): In this release (Release 2024.10.15), we have introduced a series of new features, enhancements, and fixes.
+- [September 18, 2024 - 1.2](https://singdata.com/documents/rn_2023-09-18): In this release (Release 2024.09.18), we have introduced a series of new features, enhancements, and fixes.
+- [August 7, 2024 - 1.1](https://singdata.com/documents/rn_2024-08-07): In this release (Release 2024.08.07), we have introduced a series of new features, enhancements, and fixes.
+- [July 24, 2024 - 1.0](https://singdata.com/documents/rn_2024-07-24): In this release (Release 2024.07.24), we have introduced a series of new features, enhancements, and fixes.
+- [June 27, 2024 - 0.9](https://singdata.com/documents/rn_2024-06-27): In this release (Release 2024.06.27), we have introduced a series of new features, enhancements, and fixes.
+- [June 6, 2024 - 0.8.1](https://singdata.com/documents/rn_2024-06-06): In this release (Release 2024.06.06), we have introduced a series of new features, enhancements, and fixes.
+- [May 15, 2024 - 0.8](https://singdata.com/documents/rn_2024-05-15): This release (Release 2024.05.15) introduces a series of new features, enhancements, and fixes.
+- [May 10, 2024 - 0.7](https://singdata.com/documents/rn_2024-05-10): In this release (Release 2024.05.10), we have introduced a series of new features, enhancements, and fixes.
+- [April 10, 2024 - 0.6.1](https://singdata.com/documents/rn_2024-04-10): In this release (Release 2024.04.10), we have introduced a series of new features, enhancements, and fixes. Additionally, we have made some updates to the product's behavior.
+- [March 22, 2024 - 0.6](https://singdata.com/documents/rn_2024-03-22): This release (Release 2024.03.22) introduces the following new features, updates (enhancements and fixes), and behavior changes.
+- [January 5, 2024 - 0.5](https://singdata.com/documents/rn_2024-01-05): This update (Release 2024.01.05) aims to provide users with a more comprehensive and convenient data management and analysis experience.
+- [November 9, 2023 - 0.4](https://singdata.com/documents/rn_2023-11-09): This update (version number: 2023.11.09) aims to provide you with a better user experience by adding a series of practical features, enhancing existing functions, and fixing some issues.
+- [September 20, 2023 - 0.3](https://singdata.com/documents/rn_2023-09-20): This update (Release 2023.09.20, v0.3) aims to provide you with a better user experience, adding a series of practical features, enhancing existing functionality, and fixing some issues.
+- [September 5, 2023 - 0.2](https://singdata.com/documents/rn_2023-09-05): This update (Release 2023.09.05, v0.2) aims to provide you with a better user experience, adding a series of practical features, enhancing existing functionality, and fixing some issues.
+- [August 7, 2023 - 0.1](https://singdata.com/documents/rn_2023-08-07): To enhance your user experience, we have comprehensively upgraded the visual branding of the product and optimized the information architecture, making navigation more intuitive and understandable.
+- [Lakehouse Platform Release Notes](https://singdata.com/documents/lakehouse-platform-release-note): A brief title page for the Lakehouse platform release notes history.
+- [March 30, 2026](https://singdata.com/documents/rn_lh_2026-03-30): This release (Release 2026.03.30) introduces a series of new features, enhancements, and fixes.
+- [March 13, 2026](https://singdata.com/documents/rn_lh_2026-03-13): This release (Release 2026.03.13) introduces a series of new features, enhancements, and bug fixes.
+- [December 30, 2025](https://singdata.com/documents/rn_lh_2025-12-30): This release (Release 2025.12.30) introduces a series of new features, enhancements, and bug fixes.
+- [October 30, 2025](https://singdata.com/documents/rn_2025-10-30): This release (Release 2025.10.30) introduces a series of new features, enhancements, and bug fixes.
+- [July 15, 2025](https://singdata.com/documents/rn_2025-07-15): This release (Release 2025.07.15) introduces a series of new features, enhancements, and bug fixes.
+- [April 22, 2025](https://singdata.com/documents/rn_2025-04-22): This release (Release 2025.04.22) introduces a series of new features, enhancements, and bug fixes.
+- [March 3, 2025](https://singdata.com/documents/rn_2025-03-03): This release introduces a series of new features, enhancements, and bug fixes.
+- [November 12, 2024](https://singdata.com/documents/rn_2024-11-12): This release (Release 2024.11.12) introduces a series of new features, enhancements, and bug fixes.
+- [September 26, 2024](https://singdata.com/documents/rn_2024-09-26): This release (Release 2024.09.26) introduces a series of new features, enhancements, and fixes.
+- [July 22, 2024](https://singdata.com/documents/rn_2024-07-22): This release (Release 2024.07.22) introduces a series of new features, enhancements, and fixes.
+- [May 24, 2024](https://singdata.com/documents/rn_2024-05-24): In this release (Release 2024.05.24), we have introduced a series of new features, enhancements, and fixes.
+- [April 16, 2024](https://singdata.com/documents/rn_2024-04-16): In this release (Release 2024.04.16), we have introduced a series of new features, enhancements, and fixes. Additionally, we have made some updates to the product's behavior.
+- [February 5, 2024](https://singdata.com/documents/rn_2024-02-05): This version update (Release 2024.02.5) brings you a series of new features, enhancements, and fixes.
+- [December 25, 2023](https://singdata.com/documents/rn_2023-12-25): This release of the Singdata Lakehouse version (Release 2023.12.25) introduces a series of new features, performance optimizations, and fixes, as well as some behavior changes.
+- [October 25, 2023](https://singdata.com/documents/rn_2023-10-25): This update (Release 2023.10.25) brings a series of new features, enhancements, and security improvements to Singdata Lakehouse users.
+- [Analytics Agent Release Notes](https://singdata.com/documents/datagpt-release): Documentation for Analytics Agent Release Notes in Singdata Lakehouse.
+- [April 14, 2026 - v1.1](https://singdata.com/documents/release-note-0414-1.1): Release notes (1.1) introducing Web Search, conversational scheduled tasks, natural-language table rendering, row-level permissions, plus session memory, Skills mechanism, and chart improvements.
+- [May 19, 2026 - v1.2](https://singdata.com/documents/release-note-2026-05-19): May 19, 2026 release notes renaming DataGPT to Analytics Agent and adding dynamic row-level permissions, dashboard version management, Open API, chart auto-correction, and GPT-5.5 support.
+- [AI Gateway Release Notes](https://singdata.com/documents/aigatewayupdate): Documentation for AI Gateway Release Notes in Singdata Lakehouse.
+- [February 5, 2026 - 1.0](https://singdata.com/documents/aigw-2026-2-5-1.0): Release Date**: February 5, 2026 Release Scope**: Simultaneous release across Alibaba Cloud Shanghai and AWS Singapore regions 1.
+- [March 8, 2026 - 1.0.1](https://singdata.com/documents/aigw-2026-3-8-1.0.1): Release Date**: March 8, 2026 Release Scope**: Simultaneous release across Alibaba Cloud Shanghai and AWS Singapore regions 1.
+- [March 29, 2026 - 1.0.2](https://singdata.com/documents/aigw-2026-3-29-1.0.2): Release Date**: March 29, 2026 Release Scope**: Simultaneous release across Alibaba Cloud Shanghai and AWS Singapore regions 1.
+- [April 28, 2026 - 1.1](https://singdata.com/documents/aigw-2026-4-28-1.1): Release Date**: April 28, 2026 Release Scope**: Simultaneous release across Alibaba Cloud Shanghai and AWS Singapore regions 1.
+- [May 12, 2026 - 1.1.1](https://singdata.com/documents/aigw-2026-5-12-1.1.1): Release Date**: May 12, 2026 Release Scope**: Simultaneous release on Alibaba Cloud Shanghai and AWS Singapore This release completes a **full underly...
+- [May 15, 2026 - 1.2](https://singdata.com/documents/aigw-2026-5-15-1.2): Release Date**: May 15, 2026 Release Scope**: Simultaneous release across Alibaba Cloud Shanghai and AWS Singapore regions 1.
+- [May 21, 2026 - 1.3](https://singdata.com/documents/aigw-2026-5-21-1.3): Release Date**: May 21, 2026 Release Scope**: Simultaneous release across Alibaba Cloud Shanghai and AWS Singapore regions 1. **Platform model library expansion**: Added the Seedream 5.
+- [May 28, 2026 - 1.4](https://singdata.com/documents/aigw-2026-5-28-1.4): Release Date**: May 28, 2026 Release Scope**: Simultaneous release across Alibaba Cloud Shanghai and AWS Singapore regions 1.
+- [June 3, 2026 - 1.5](https://singdata.com/documents/aigw-2026-6-3-1.5): Release Date**: June 3, 2026  **Release Scope**: Simultaneous release across Alibaba Cloud Shanghai and AWS Singapore regions 1.

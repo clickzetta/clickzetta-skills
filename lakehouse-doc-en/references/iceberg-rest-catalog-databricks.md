@@ -163,4 +163,4 @@ DROP CONNECTION databricks_iceberg_conn;
 
 - [Create Catalog Connection](create-catalog-connection.md) — Full DDL syntax
 - [Databricks Unity Catalog Federated Query Practice](databricks-external-catalog-practice.md) — TYPE DATABRICKS approach
-- [External Catalog Federated Query](SQL_External_Catalog_Guide.md)
+- [External Catalog Federated Query](sql_external_catalog_guide.md)

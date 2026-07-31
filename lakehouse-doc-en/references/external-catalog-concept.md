@@ -325,5 +325,5 @@ LIMIT 10;
 - [External Catalog Introduction](external-catalog-summary.md)
 - [Create External Catalog](create-external-catalog.md)
 - [Create Hive Catalog](create-hive-catalog.md)
-- [Databricks Federation Query](databricks_yunqi_integration_guide_v2.md)
+- [Databricks Federation Query](databricks-external-catalog-practice.md)
 - [SHOW CATALOGS](show-catalog.md)

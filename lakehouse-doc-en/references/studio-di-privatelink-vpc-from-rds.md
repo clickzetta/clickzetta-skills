@@ -19,9 +19,7 @@ Lakehouse Studio **Data Integration** syncs RDS data through VPC networks, solvi
 
 This solution combines Private Link with SSH Tunnel.
 
-Network architecture diagram (using Alibaba Cloud as an example):
-
-![](.topwrite/assets/whiteboard_exported_image.png)
+Network architecture diagram (using Alibaba Cloud as an example): The customer VPC (containing RDS and an ECS bastion host) connects to the Lakehouse VPC through a Private Link endpoint service. The ECS bastion forwards traffic via SSH tunnel to the RDS instance on port 3306, while the Private Link endpoint exposes this path securely to the Lakehouse data integration cluster without traversing the public internet.
 
 (The customer environment may also be in other availability zones within the same Region)
 
@@ -57,16 +55,15 @@ ssh -CfNg -L 12345:rm-bp15gq963ic327h8f.mysql.rds.aliyuncs.com:3306 root@127.0.0
 ps aux | grep ssh
 ```
 
-![](.topwrite/assets/c417a0f96d/e4dc75c9ba552ccaca172ab265aeeb5dbc67505e.png)
+After running the command, verify with `ps aux | grep ssh` that the SSH process is running and listening on port 12345.
 
-***
+---
 
 ### Step 3: Create Load Balancer CLB
 
 * Enter SLB console -> Left sidebar **Classic Load Balancer (CLB, formerly SLB)** -> **Create Classic Load Balancer**
 
-* Create listener as follows:
-  ![](.topwrite/assets/c417a0f96d/c4ec47d374f0564f96375d460e06a2b096c64688.png)
+* Create listener as follows: set the listener protocol to TCP, the frontend port to 22, and the backend port to 12345 (the port forwarded to RDS on the ECS).
 
 * In the **Default Server Group** tab, add the ECS from Step 2, with frontend port 22 (custom) and backend port as the port forwarded to RDS, which is 12345 in this case.
 
@@ -74,9 +71,7 @@ ps aux | grep ssh
 
 * Enter VPC console, select the same Region as the Singdata data integration cluster, left sidebar **Endpoint Service** -> **Create Endpoint Service**
 * **Service Resource Type -> Classic Load Balancer CLB** (consistent with Step 1), select Availability Zone **Hangzhou Zone H**, choose the CLB instance created in Step 1 from the dropdown, auto-accept endpoint connections: Yes, other settings default
-* Enter this endpoint service: In **Service Whitelist**, add the Singdata environment primary account: `1384322691904283`
-
-  ![](.topwrite/assets/c417a0f96d/fc469bdcdf20cda3bca8b56dfa9d4b66b010e090.png)
+* Enter this endpoint service: In **Service Whitelist**, add the Singdata environment primary account: `1384322691904283`. The whitelist entry should show the account ID listed and the auto-accept setting enabled.
 
 ### Step 5: Lakehouse Side Create Endpoint
 
@@ -90,16 +85,10 @@ ps aux | grep ssh
 
 In the data source configuration, use the following JDBC URL: `jdbc:mysql://ep-bp1iabb21a27719ca8a2-cn-hangzhou-h.epsrv-bp1n7rvc8qbpudxk69fr.cn-hangzhou.privatelink.aliyuncs.com:22/mysql`
 
-![](.topwrite/assets/c417a0f96d/edb20aeb52d76a06e65943c74983bd38b00dac5e.jpeg)
+The connection test returns a successful status, confirming the data integration layer can reach the RDS database through the Private Link endpoint.
 
-The CLB listener port bound to the endpoint service is 22, and the backend ECS resource port is 12345;
+The CLB listener port bound to the endpoint service is 22, and the backend ECS resource port is 12345.
 
-![](.topwrite/assets/c417a0f96d/d0297891972911f184c690e7585cff01aaa5943f.jpeg)
-
-MySQL console:
-
-![](.topwrite/assets/c417a0f96d/3b17582b28ae004533c8998acf76c2a7cee76bc5.jpeg)
+The MySQL console confirms the connection is active, showing the database and schema are accessible.
 
 Data Integration verification: Import successful
-
-![](.topwrite/assets/20240520-211021.jpeg)

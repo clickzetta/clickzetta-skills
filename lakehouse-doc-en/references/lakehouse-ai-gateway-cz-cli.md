@@ -4,12 +4,6 @@ AI Gateway model management is typically handled through the Studio UI, but cz-c
 
 ---
 
-## Core Flow
-
-![](.topwrite/assets/14-ai-gateway-czcli.svg)
-
----
-
 ## Commands Overview
 
 | Command | Purpose |
@@ -311,7 +305,7 @@ cz-cli agent llm test agent_prod
 ## Related Documentation
 
 - [AI Gateway Quick Start](quickstart.md) — Creating API Keys and routing policies in Studio
-- [AI Gateway Product Introduction](Introduction.md) — Endpoint management, quotas, monitoring
+- [AI Gateway Product Introduction](introduction.md) — Endpoint management, quotas, monitoring
 - [AI Gateway in Practice: Calling LLMs with SQL](lakehouse-ai-sql-analysis.md) — AI_COMPLETE text mode
 - [Analyzing Images in SQL](lakehouse-multimodal-ai-pipeline.md) — AI_COMPLETE image mode
 - [cz-cli Installation and Setup Guide](setup_cz_cli.md) — Setting up the cz-cli environment

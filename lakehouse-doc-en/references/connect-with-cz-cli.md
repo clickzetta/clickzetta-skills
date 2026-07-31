@@ -146,6 +146,6 @@ Verify the username and password are correct. If using PAT authentication, check
 
 - [cz-cli Installation and Setup Guide](setup_cz_cli.md) — Installation steps, PAT authentication, detailed Profile configuration
 - [cz-cli SQL Execution and Data Exploration](cz-cli-sql.md) — SQL execution parameters, output format control
-- [JDBC Driver Connection](JDBC-Driver.md) — Java application integration
+- [JDBC Driver Connection](jdbc-driver.md) — Java application integration
 - [Connecting with the CLI Client](connect-with-cli.md) — sqlline Java client
 - [Connecting with SQLAlchemy](sqlalchemy.md) — Python SQLAlchemy integration

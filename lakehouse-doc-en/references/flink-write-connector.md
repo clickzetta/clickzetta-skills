@@ -67,7 +67,7 @@ env.execute("Igs Mock Test");
 | Parameter                          | Required | Default Value                                                                  | Description                                                                                                                                                                                                                                                                                       |
 | ---------------------------------- | -------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | connector                          | Yes      | -                                                                              | igs-dynamic-table: Supports append mode and Flink CDC scenarios, generally Lakehouse is a primary key table. igs-dynamic-table-append-only: Only supports append, Lakehouse is a regular table.                                                                                                                                           |
-| curl                               | Yes      | -                                                                              | Lakehouse JDBC connection address, can be obtained from the workspace page. Note: if the username contains characters such as =, @, or &, they need to be URL-encoded. You can use an [encoding tool](https://www.urlencoder.org/) for reference. For example, if the username or password is abc=123, the encoded form is abc%3D123. ![](.topwrite/assets/image_1726133161757.png)                                                                                                                                                                                                                                                                                                                       |
+| curl                               | Yes      | -                                                                              | Lakehouse JDBC connection address, can be obtained from the workspace page in Lakehouse Studio under the management section. Note: if the username contains characters such as =, @, or &, they need to be URL-encoded. You can use an [encoding tool](https://www.urlencoder.org/) for reference. For example, if the username or password is abc=123, the encoded form is abc%3D123.                                                                                                                                                                                                                                                                                                                       |
 | schema-name                      | Yes    | -                                                                             | Schema to be written                                                                                                                                                                                                                                                                                     |
 | table-name                       | Yes    | -                                                                             | Table to be written                                                                                                                                                                                                                                                                                      |
 | sink.parallelism                 | Yes    | -                                                                             | Degree of parallelism for writing. If the target table has a primary key (PK) defined, the parallelism can only be 1. |
@@ -132,8 +132,7 @@ This article details how to use the igs-dynamic-table mode of the Lakehouse flin
 ### STEP 1: Environment Preparation
 
 * Use IntelliJ IDEA as the development tool, and have Flink programming capabilities.
-* Obtain Lakehouse connection information, which can be viewed in Lakehouse Studio management -> workspace, and replace the jdbc protocol with igs. Modify as follows
-![](../.topwrite/assets/image_1728887857029.png)
+* Obtain Lakehouse connection information, which can be viewed in Lakehouse Studio management -> workspace. In the workspace details page, locate the JDBC connection string, then replace the `jdbc` protocol prefix with `igs`. The resulting connection URL format is:
 ```SQL
 igs:clickzetta://6861c888.cn-shanghai-alicloud.api.singdata.com/quickstart_ws?username=xxx&password=xxx&schema=public
 ```
@@ -391,8 +390,7 @@ This document provides a detailed introduction on how to use the Lakehouse flink
 ### STEP 1: Environment Preparation
 
 * Use IntelliJ IDEA as the development tool, and have Flink programming capabilities.
-* Obtain Lakehouse connection information, which can be viewed in Lakehouse Studio management -> workspace, and replace the jdbc protocol with igs. Modify as follows
-![](../.topwrite/assets/image_1728887857029.png)
+* Obtain Lakehouse connection information, which can be viewed in Lakehouse Studio management -> workspace. In the workspace details page, locate the JDBC connection string, then replace the `jdbc` protocol prefix with `igs`. The resulting connection URL format is:
 ```SQL
 igs:clickzetta://6861c888.cn-shanghai-alicloud.api.singdata.com/quickstart_ws?username=xxx&password=xxx&schema=public
 ```

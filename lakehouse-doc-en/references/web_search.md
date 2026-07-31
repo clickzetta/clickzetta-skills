@@ -22,8 +22,6 @@ The Agent will automatically perform the following steps:
 
 3\. Conduct multi-dimensional attribution analysis and output conclusions along with visualization charts
 
-![](/.topwrite/assets/image_1780907641261.png)
-
 **Notes**
 
 1\. Web search results are influenced by the content returned by the search engine; it is recommended to manually verify key conclusions.
@@ -33,7 +31,6 @@ The Agent will automatically perform the following steps:
 ## Related Documentation
 
 * [Improve Answer Accuracy](answer-accuracy-improve.md) — Further improve answer quality with a knowledge base and semantic layer
-* [Scheduled Task](scheduled_task.md) — Automatically run data analysis on a schedule and push results
 * [Conversational Data Analytics (Analytics Agent)](datagpt_introduction.md) — Return to the feature overview
 
 ^

@@ -6,9 +6,7 @@ A streaming data pipeline is a set of tasks that continuously collects, processe
 
 Unlike periodic offline processing (batch data pipeline), a streaming data pipeline continuously produces real-time updated results by orchestrating real-time data ingestion tasks and SQL tasks that support incremental data processing. Incremental processing techniques are used throughout to improve efficiency and reduce costs.
 
-The overall processing flow for a Singdata Lakehouse streaming data pipeline is shown below:
-
-![](.topwrite/assets/image_1709520998068.png)
+The overall processing flow for a Singdata Lakehouse streaming data pipeline starts with real-time data ingestion (via Streaming API, Kafka, or CDC connectors), followed by incremental SQL processing (using Dynamic Tables or Table Streams), and ends with continuously refreshed result data served to downstream analytics and applications.
 
 The product features of streaming data processing include:
 

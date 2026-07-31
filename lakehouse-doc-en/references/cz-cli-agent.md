@@ -32,14 +32,6 @@ If the current environment already has the LLM parameters configured for the cz-
 cz-cli -p <profile> agent run "Check today's failed scheduled tasks and categorize them by failure reason"
 ```
 
-To generate a command reference for an external agent:
-
-```bash
-cz-cli ai-guide
-cz-cli ai-guide --wide
-cz-cli ai-guide -f json
-```
-
 ## Using in Enterprise Bot Scenarios
 
 If you use an enterprise bot such as Hermes to host an AI Agent, it is recommended to install cz-cli in the bot's execution environment and adopt the following strategy:
@@ -57,7 +49,7 @@ If you use an enterprise bot such as Hermes to host an AI Agent, it is recommend
 
 ### Method 1: Use the Singdata Built-in LLM (Recommended, provided by AI Gateway)
 
-The Singdata built-in LLM is provided uniformly through [AI Gateway](AIGateway.md) — no separate model API Key required. Complete configuration in one step using the CLI connection string:
+The Singdata built-in LLM is provided uniformly through [AI Gateway](aigateway.md) — no separate model API Key required. Complete configuration in one step using the CLI connection string:
 
 ```bash
 cz-cli setup --credential <CLI connection string>

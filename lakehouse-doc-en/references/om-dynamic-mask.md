@@ -36,5 +36,5 @@ ALTER TABLE users MODIFY COLUMN phone
 ## Related Documents
 
 - [Dynamic Masking Details](dynamic-mask.md)
-- [Row-Level Permission](om-row-level-permission.md)
+- [Row-Level Permission](row-filter.md)
 - [Network Policy](om-network-policy.md)

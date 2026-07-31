@@ -11,7 +11,7 @@ Singdata Lakehouse, as an integrated data platform, can seamlessly connect to cl
 The following is a detailed introduction to specific product features:
 
 1. [Data Lake Volume Object](datalake_volume.md): By integrating the data platform with unstructured data, it solves the problem of the data platform accessing unstructured data and the fragmentation of AI/BI data. For example, users can easily import unstructured data such as images and text into the data platform through Volume objects for further analysis and processing.
-2. [Remote Function](remotefunctionbestpractice.md): Provides users with a low-threshold method to call AI models and large language models (LLM) to analyze data. For example, users can easily call pre-trained deep learning models through Remote Function to perform tasks such as image classification and recognition.
+2. [Remote Function](remotefunction-on-acr.md): Provides users with a low-threshold method to call AI models and large language models (LLM) to analyze data. For example, users can easily call pre-trained deep learning models through Remote Function to perform tasks such as image classification and recognition.
 3. [Unified Lakehouse Metadata System](datalake_privilege.md): Integrates structured and unstructured data into a unified Catalog-Schema view, solving the problem of unified lakehouse metadata management and permission management, simplifying data organization and access. For example, administrators can assign corresponding data access permissions to employees of different departments through the metadata system to ensure data security and compliance.
 
 ^

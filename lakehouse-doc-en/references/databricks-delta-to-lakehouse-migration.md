@@ -152,12 +152,12 @@ Sync tasks were run against all table types in the `table_types_demo` schema in 
 ### Federated Query
 
 - [External Catalog Overview](external-catalog-concept.md): External Catalog federated query principles
-- [Federated Query Guide](SQL_External_Catalog_Guide.md): SQL syntax and usage examples
+- [Federated Query Guide](sql_external_catalog_guide.md): SQL syntax and usage examples
 
 ### Data Ingestion
 
 - [Data Ingestion Overview](streaming_data_pipeline_overview.md): Full ingestion solution landscape
-- [COPY INTO](copy-into.md): Bulk load from object storage
+- [COPY INTO](sql_copy_into_guide.md): Bulk load from object storage
 - [Pipe (Continuous Ingestion)](pipe-overview.md): Continuously monitor object storage for new files
 
 ### Other Migration Guides

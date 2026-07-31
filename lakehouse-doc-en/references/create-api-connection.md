@@ -25,8 +25,7 @@ CREATE API CONNECTION [ IF NOT EXISTS ] <connection_name>
 | `NAMESPACE` | Namespace for the cloud function. **Required for Tencent Cloud**. For other cloud services, fill in `'default'` or leave blank as appropriate. |
 | `CODE_BUCKET` | Name of the object storage bucket containing the cloud function code package. **Tencent Cloud format is `BucketName-APP_ID`**, e.g., `myfunction-131xxxxx`. |
 
-For NAMESPACE: required when using Tencent Cloud. For other cloud services it can be omitted or set to `'default'`. The value is obtained as shown in the image below:
-![](.topwrite/assets/image_1735616872087.png)
+For NAMESPACE: required when using Tencent Cloud. For other cloud services it can be omitted or set to `'default'`. On Tencent Cloud, the namespace is visible in the Cloud Functions console under your function's basic configuration — it is typically `default` unless you have created custom namespaces.
 
 ^
 
@@ -134,9 +133,7 @@ Therefore, you must activate function compute and object storage services and gr
   DESC CONNECTION my_funciton_connection;
   ```
 
-  ![](.topwrite/assets/image_1735638011131.png)
-
-  Go back to Alibaba Cloud [RAM Roles](https://ram.console.aliyun.com/roles) → `CzUDFRole` → **Trust Policy** → **Edit**, replace the `sts:ExternalId` value with the value from the DESC result:
+  The result includes an `EXTERNAL_ID` field. Go back to Alibaba Cloud [RAM Roles](https://ram.console.aliyun.com/roles) → `CzUDFRole` → **Trust Policy** → **Edit**, replace the `sts:ExternalId` value with the value from the DESC result:
 
   ```json
   {
@@ -171,7 +168,6 @@ EXTERNAL FUNCTION depends on Tencent Cloud's "[Object Storage](https://console.c
 * Cloud Functions: After activating **Cloud Functions**, it is recommended to manually create a function using the template creation feature, preferably Flask framework templates or other templates with a WebFunc tag. During this process, the Tencent Cloud console will guide users through initial configurations such as activating log services (CLS) and other dependencies, creating necessary Access Control (CAM) roles, and granting necessary CAM permissions.
 
 * Step 1: Activate Tencent Cloud's Cloud Functions (SCF) service. Keep the cloud function region consistent with the Singdata Lakehouse service region.
-  ![](.topwrite/assets/image_1735616566747.png)
 
 * Step 2: Activate COS and create a storage bucket.
   * Go to [COS Console](https://console.cloud.tencent.com/cos) → Create bucket (same region as SCF, e.g., `ap-shanghai`).
@@ -242,8 +238,6 @@ EXTERNAL FUNCTION depends on Tencent Cloud's "[Object Storage](https://console.c
   ```sql
   DESC CONNECTION my_funciton_connection;
   ```
-
-  ![](.topwrite/assets/image_1735630257317.png)
 
   * On the client side: Go to the Tencent Cloud **Access Management** console, **Role** → **LakehouseRole** → **Role Entity** → **Manage Entities**, select **Add Account** → select **Current Main Account**, enter the main account ID `100029595716` (Singdata's Tencent Cloud main account), check **Enable Verification**, enter the EXTERNAL_ID from the DESC result, click **Confirm** → **Update**.
 
@@ -356,8 +350,6 @@ EXTERNAL FUNCTION depends on Tencent Cloud's "[Object Storage](https://console.c
   ```sql
   DESC CONNECTION udf_noah;
   ```
-
-  ![](.topwrite/assets/image_1735802829076.png)
 
   Go back to **IAM Roles** → `Lambda-S3-Role` → **Trust relationships** → **Edit trust policy**, add a `Condition` to the Singdata account's `Statement`:
 

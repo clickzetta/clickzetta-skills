@@ -35,7 +35,7 @@ PROPERTIES (
 
 * FUNCTION\_NAME: Specifies the name of the function.
 * CLASS\_NAME: For JAVA functions, it is the main class name of the JAVA function; for Python functions, it is a combination of the main class name and module name. For example, if the main program file is video\_contents.py and the main class name is image\_to\_text, the parameter after AS would be `'video_contents.image_to_text'`.
-* CONNECTION: Specifies the authentication information for connecting to function computation. For details, please refer to [Create Connection](createconnection.md).
+* CONNECTION: Specifies the authentication information for connecting to function computation. For details, please refer to [Create Connection](create-connection.md).
 * RESOURCE\_URI: Resource connection, referring to the resource files required for UDF operation. The OSS file address must be specified, and the authentication information of the connection must have read permission for the file.
 
 ### Optional Parameters

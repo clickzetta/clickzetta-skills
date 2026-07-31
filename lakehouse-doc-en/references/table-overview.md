@@ -2,8 +2,6 @@
 
 Data tables are the core objects for storing and processing data in Singdata Lakehouse. Standard tables and Dynamic Tables use **Parquet columnar storage** — at query time only the required columns are read, making them well-suited for large-scale analytical queries. Unlike row-oriented databases such as MySQL, data is automatically organized by column and compressed on write, dramatically reducing I/O. Unlike Hive's static partitions, Lakehouse uses a **hidden partition** mechanism similar to Apache Iceberg, allowing partition strategies to be modified without affecting existing data.
 
-![](/.topwrite/assets/21-table-overview_1779465624194.png)
-
 ## Choosing a Table Type
 
 | Table type | How data is maintained | Typical use cases |

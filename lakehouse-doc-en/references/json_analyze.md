@@ -13,7 +13,7 @@ In LakeHouse, JSON type data can be stored and queried efficiently. JSON data in
 
 Additionally, during the writing process, LakeHouse will store frequently occurring fields in a columnar storage manner based on the actual JSON Schema to improve storage and query efficiency. For example:
 
-```SQL
+```sql
 CREATE TABLE json_table AS
 SELECT  parse_json(s) as j
 FROM VALUES
@@ -74,7 +74,7 @@ JSON '[0, 1]';
 
 ### Syntax
 
-```SQL
+```sql
 -- Access fields in a JSON object by key name
 json_column['key']['key']...
 -- Access elements in a JSON array by index
@@ -90,7 +90,7 @@ json_array[index]
 
 Retrieve the first-level structure of the JSON
 
-```SQL
+```sql
 SELECT parse_json(s)['firstName'] as j
       FROM VALUES ('{ "firstName": "John", "lastName": "doe", "age": 26, "address": { "streetAddress": "naist street", "city": "Nara", "postalCode": "630-0192" }, "phoneNumbers": [ { "type": "iPhone", "number": "0123-4567-8888" }, { "type": "home", "number": "0123-4567-8910", "extra": [] } ] }'),
                   ('{ "firstName": "Ada", "lastName": "doe", "age": 20, "address": { "streetAddress": "naist street", "city": "Nara", "postalCode": "630-0192" }, "address2": {"city": "NewYork"}, "phoneNumbers": [ { "type": "iPhone", "number": "0123-4567-8888" }, { "type": "home", "number": "0123-4567-8910", "extra": [1,2,3] } ] }')
@@ -99,7 +99,7 @@ SELECT parse_json(s)['firstName'] as j
 
 Extract json secondary structure
 
-```SQL
+```sql
 SELECT parse_json(s)['address']['streetAddress'] as j
       FROM VALUES ('{ "firstName": "John", "lastName": "doe", "age": 26, "address": { "streetAddress": "naist street", "city": "Nara", "postalCode": "630-0192" }, "phoneNumbers": [ { "type": "iPhone", "number": "0123-4567-8888" }, { "type": "home", "number": "0123-4567-8910", "extra": [] } ] }'),
                   ('{ "firstName": "Ada", "lastName": "doe", "age": 20, "address": { "streetAddress": "naist street", "city": "Nara", "postalCode": "630-0192" }, "address2": {"city": "NewYork"}, "phoneNumbers": [ { "type": "iPhone", "number": "0123-4567-8888" }, { "type": "home", "number": "0123-4567-8910", "extra": [1,2,3] } ] }')
@@ -108,7 +108,7 @@ SELECT parse_json(s)['address']['streetAddress'] as j
 
 Extract elements from the json array
 
-```SQL
+```sql
 SELECT parse_json(s)['phoneNumbers'][0]['number'] as j
       FROM VALUES ('{ "firstName": "John", "lastName": "doe", "age": 26, "address": { "streetAddress": "naist street", "city": "Nara", "postalCode": "630-0192" }, "phoneNumbers": [ { "type": "iPhone", "number": "0123-4567-8888" }, { "type": "home", "number": "0123-4567-8910", "extra": [] } ] }'),
                   ('{ "firstName": "Ada", "lastName": "doe", "age": 20, "address": { "streetAddress": "naist street", "city": "Nara", "postalCode": "630-0192" }, "address2": {"city": "NewYork"}, "phoneNumbers": [ { "type": "iPhone", "number": "0123-4567-8888" }, { "type": "home", "number": "0123-4567-8910", "extra": [1,2,3] } ] }')
@@ -121,7 +121,7 @@ SELECT parse_json(s)['phoneNumbers'][0]['number'] as j
 
 The `parse_json` function can parse a JSON string of type String into JSON type. For example:
 
-```SQL
+```sql
 SELECT parse_json(s) is null, parse_json(s)
 FROM VALUES ('null'),
             ('1'),
@@ -154,7 +154,7 @@ FROM VALUES ('null'),
 
 Similar to array/named\_struct, it can construct the corresponding JSON type based on existing data.
 
-```SQL
+```sql
 SELECT json_array(), json_array(NULL),json_array(NULL::int, 1, TRUE, FALSE, NULL::int, "a", 1.2, 1.3d);
 +----------------+--------------------+--------------------------------------------------------------------------------------+
 | `json_array`() | `json_array`(NULL) | `json_array`(CAST(NULL AS int), 1, true, false, CAST(NULL AS int), 'a', 1.2BD, 1.3d) |
@@ -190,7 +190,7 @@ In LakeHouse, you can use the `::json` or `CAST` function to convert other types
 * It should be noted that the semantics of cast(string as json) and parse\_json(string) are not the same. parse\_json will attempt to parse the JSON string into a JSON object. If the JSON format is incorrect, it will generate NULL. However, cast(string to json) **will treat the entire string as a string type in JSON. Therefore, if you are converting a JSON format string, you should use parse\_json**.
   Specific cases
 
-```SQL
+```sql
 -- xx::json is equivalent to cast(xxx as json)
 
 SELECT 0::json;
@@ -300,7 +300,7 @@ from values (json '123'),
 
 It is important to note that the semantics of `cast(string as json)` and `parse_json(string)` are not the same. `parse_json` will attempt to parse the JSON string into a JSON object, and if the JSON format is incorrect, it will generate NULL; whereas `cast(string to json)` will treat the entire string as a JSON string type.
 
-```SQL
+```sql
 SELECT parse_json(s), s::json, s::json::string
 FROM VALUES ('{"id":11, "name": "Lakehouse"}') as t(s);
 +------------------------------+----------------------------------------+---------------------------------+
@@ -340,7 +340,7 @@ The second parameter of json\_extract is the JSON path. You can refer to the [JS
 * ".key" or "\['key']" is used to find the key in the JSON object. Specifically, "\[\*]" means to get all values, and it must be single quotes
 * "\[index]" is used to access elements of a JSON array by index, starting from 0. Specifically, "\[\*]" means all elements
 
-```SQL
+```sql
 SELECT json_extract(j, "$[0]"),
        json_extract(j, "$[1]"),
        json_extract(j, "$[*]")
@@ -384,7 +384,7 @@ FROM (SELECT parse_json(s) as j
 
 json\_valid is used to verify whether a string type of data can be converted to JSON type
 
-```SQL
+```sql
 SELECT json_valid('hello'),
        json_valid('"hello"'),
        json_valid('null'),
@@ -405,20 +405,18 @@ The constructed data consists of over 10 million entries in the format `{"addres
 
 Using string queries, the execution time is 20.4 seconds.
 
-```SQL
+```sql
 create table bulkload_data_string(data string);
 select get_json_object(data,'$.email') from bulkload_data_string where get_json_object(data,'$.email')='danita.weber@gmail.com'
 ;
 ```
 
-![](.topwrite/assets/image_1712910635623.png)
-
 Using json to store data takes 531ms to execute. Since column pruning is performed during reading, the data size is also reduced. As shown in the figure below, only 153MB of data needs to be read, while string type requires reading the full 454MB of data.
 
-```SQL
+```sql
 create table bulkload_data(json string);
 select json_extract_string(data,'$.name') from bulkload_data where json_extract_string(data,'$.email')='danita.weber@gmail.com'
 ;
 ```
 
-![](.topwrite/assets/image_1712910703239.png)
+^

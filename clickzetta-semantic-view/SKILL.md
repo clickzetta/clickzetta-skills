@@ -1,9 +1,7 @@
 ---
 name: clickzetta-semantic-view
 description: |
-  Create and query ClickZetta Lakehouse Semantic Views. A Semantic View is a schema-level logical
-  data model object that encapsulates complex multi-table JOINs and aggregation logic into a
-  business-friendly semantic layer by declaring logical tables, dimensions, metrics, and filters.
+  Create and query ClickZetta Lakehouse Semantic Views — schema-level logical models that encapsulate multi-table JOINs and aggregations into a business-friendly layer of dimensions, metrics, and filters.
   Query using the semantic_view() function without writing JOINs manually.
   Currently in invite-only preview (since version 1.3).
   Triggered when user says "create semantic view", "semantic view", "semantic layer",

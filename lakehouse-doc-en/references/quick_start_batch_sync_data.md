@@ -8,9 +8,9 @@ If your data is stored on systems such as databases or object storage and needs 
 
 Before reading this guide, it is recommended to first read and understand the following documents:
 
-* [Lakehouse Product Introduction](what_is_clickzetta_lakehouse.md)
-* [Key Concepts](key_concepts.md)
-* [Lakehouse Studio Quick Tour](lakehousestudiotour.md)
+* [Lakehouse Product Introduction](datalake_overview.md)
+* [Key Concepts](key-concepts.md)
+* [Lakehouse Studio Quick Tour](lakehouse-studio-101.md)
 * [Data Sync Feature Overview](data-integration-intro.md)
 * [Data Source Management and Configuration Guide](config-datasource.md)
 
@@ -20,7 +20,7 @@ You can use the "Sync Task" feature provided by Lakehouse Studio to sync data fr
 
 ### Usage Notes
 
-* Sync tasks pull data from the source and depend on the network reachability of the source data source. It is recommended to use data sources with public network access for feature experience. In complex network scenarios, such as syncing data from databases within a VPC, network connectivity must be established. Refer to [Syncing RDS Data via PrivateLink through VPC (Alibaba Cloud)](studiodi_privatelinkvpc_fromrds.md) for detailed information.
+* Sync tasks pull data from the source and depend on the network reachability of the source data source. It is recommended to use data sources with public network access for feature experience. In complex network scenarios, such as syncing data from databases within a VPC, network connectivity must be established. Refer to [Syncing RDS Data via PrivateLink through VPC (Alibaba Cloud)](datasource-config-guide.md) for detailed information.
 * Users with `workspace_admin` or `workspace_dev` role permissions are required to use the "Sync Task" feature.
 
 ### Steps

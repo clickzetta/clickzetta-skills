@@ -319,7 +319,7 @@ The following is a list of commonly used SQL data cleaning functions:
 1. **Handling Missing Values**
 
    * [COALESCE()](sql_functions/scalar_functions/conditional_functions/coalesce.md): Used to replace NULL values with specified default values.
-   * [IFNULL()](ifnull.md): Similar to COALESCE(), used to replace NULL values with specified default values.
+   * [IFNULL()](sql_functions/scalar_functions/conditional_functions/ifnull.md): Similar to COALESCE(), used to replace NULL values with specified default values.
    * `CASE`: Used to handle missing values based on specific conditions.
 
 2. **Removing Special Characters**

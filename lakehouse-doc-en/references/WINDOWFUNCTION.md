@@ -598,6 +598,6 @@ A: You need to explicitly specify `ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDE
 
 ## Related Guides
 
-- [Ranking and Percentile Analysis](SQL_Ranking_Guide.md): Complete usage scenarios for ROW_NUMBER, RANK, DENSE_RANK, NTILE, and PERCENTILE
-- [Cumulative Calculation and Running Total](SQL_Running_Total_Guide.md): Usage patterns for SUM/AVG OVER, moving averages, YTD cumulative values, FIRST_VALUE/LAST_VALUE
-- [Time Series Analysis](SQL_TimeSeries_Guide.md): Implementing rolling windows and period-over-period comparisons using window functions
+- [Ranking and Percentile Analysis](sql_ranking_guide.md): Complete usage scenarios for ROW_NUMBER, RANK, DENSE_RANK, NTILE, and PERCENTILE
+- [Cumulative Calculation and Running Total](sql_running_total_guide.md): Usage patterns for SUM/AVG OVER, moving averages, YTD cumulative values, FIRST_VALUE/LAST_VALUE
+- [Time Series Analysis](sql_timeseries_guide.md): Implementing rolling windows and period-over-period comparisons using window functions

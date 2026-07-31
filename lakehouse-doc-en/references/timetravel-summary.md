@@ -41,5 +41,5 @@ Please refer to the [DESC HISTORY](desc-history.md) document to learn how to vie
 
 ## Use table stream and table\_changes to Get Table Changes
 
-* Please refer to the [Use TABLE CHANGES to Get Data Changes](table_changes.md) document to learn how to use table\_changes to get changes in tables or dynamic tables.
+* Please refer to the [Use TABLE CHANGES to Get Data Changes](sql_functions/table_functions/table_changes.md) document to learn how to use table\_changes to get changes in tables or dynamic tables.
 * Please refer to the [Use TABLE STREAM to Get Data Changes](tablestream_summary.md) document to learn how to use table stream to get changes in tables or dynamic tables.

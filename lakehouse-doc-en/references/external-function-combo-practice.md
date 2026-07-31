@@ -459,8 +459,8 @@ FROM (
 
 ## Related Documentation
 
-- [External Function Introduction](RemoteFunction-intro.md)
-- [Development Guide: External Function (Python3)](RemoteFunction-dev-guide-python3.md)
-- [Development Guide: External Function (Java)](external-function-dev-guide-java.md)
+- [External Function Introduction](remotefunction-on-acr.md)
+- [Development Guide: External Function (Python3)](remotefunction-on-acr.md)
+- [Development Guide: External Function (Java)](bulkloadv1-java-sdk.md)
 - [CREATE EXTERNAL FUNCTION](create_external_function.md)
 - [GitHub: clickzetta_external_function](https://github.com/clickzetta/clickzetta_external_function)

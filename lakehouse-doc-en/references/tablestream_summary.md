@@ -19,7 +19,7 @@ Table Stream Offset is a mechanism for storing the offset of the stream (i.e., t
 
 In Lakehouse, whenever an insert, update, or delete operation is performed on a table, a new table version (also known as a snapshot) is generated. These versions are immutable, meaning once created, they cannot be modified. Each version contains a record of all data changes since the previous version. Table Stream is implemented based on TABLE versions. When a Stream is created, it tracks all subsequent versions of the source table and allows users to query changes that have occurred since the Table Stream was created.
 
-![](.topwrite/assets/image_1704374346251.png)
+Consider a source table that has accumulated multiple committed versions on its timeline. The Table Stream offset sits between two of those versions — for example, between v3 and v4. When you query (or consume) the stream, the result includes all changes from the version immediately after the stream's offset (v4) up to the most recently committed version (v10), representing the minimal change set across that range.
 
 The example above shows a source table with 10 committed versions on the timeline. The offset of the Table Stream is currently between table versions v3 and v4. When querying (or consuming) the stream, the returned records include versions from table version v4, i.e., versions after the stream offset in the table timeline, to v10, i.e., the most recently committed table version in the timeline, including the minimal change set between these two versions.
 

@@ -36,8 +36,6 @@ The data used in this article comes from the shared sample data of Singdata Lake
 select * from clickzetta_sample_data.ecommerce_events_history.ecommerce_events_multicategorystore;
 ```
 
-![](.topwrite/assets/image_1718761578596.png)
-
 ### Creating Values Needed for RFM
 
 ```

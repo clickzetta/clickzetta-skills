@@ -193,6 +193,20 @@ Description:
 | restore dynamic table | Used to restore the dynamic table to a specified version                                                      |                 |
 | all privileges        | Includes all privileges of the dynamic table object                                                           |                 |
 
+> ⚠️ **Note**: When granting privileges on a Dynamic Table, the `GRANT` statement must use `ON DYNAMIC TABLE`. Using `ON TABLE` against a Dynamic Table returns the error `Invalid privilege 'SELECT TABLE' for object type 'TABLE'`.
+>
+> ```sql
+> -- Correct: use ON DYNAMIC TABLE for dynamic tables
+> GRANT SELECT ON DYNAMIC TABLE my_schema.my_dynamic_table TO ROLE my_role;
+>
+> -- Incorrect: ON TABLE does not work for dynamic tables
+> GRANT SELECT ON TABLE my_schema.my_dynamic_table TO ROLE my_role;
+> ```
+>
+> Regular managed tables still use `ON TABLE`. To confirm an object's type, run:
+> `SELECT table_type FROM information_schema.tables WHERE table_name = '...'`
+> — the result is either `DYNAMIC_TABLE` or `MANAGED_TABLE`.
+
 ### Materialized View Privileges
 
 | **Privilege**              | **Usage**                                                                                                                 | **Description** |

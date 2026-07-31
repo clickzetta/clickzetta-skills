@@ -44,8 +44,6 @@ Parquet, ORC, BSON formats:
 
 **REGEXP** \<pattern>: Supports using regular expressions to match files. Note that the target of the regular expression match is the **complete object storage path** of the file (e.g., 's3://cz-udf-user/volume-data/1234321.csv.gz'), not the relative path of the file in the Volume object.
 
-![](.topwrite/assets/20250124-160418.jpeg)
-
 **Matching rules**:
 
 * `.` - Matches any single character except newline
