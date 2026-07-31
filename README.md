@@ -35,7 +35,7 @@ The repository currently contains 28 top-level `clickzetta-*` skills, one offici
 | Modeling and analytics | [clickzetta-dbt-modeling](./clickzetta-dbt-modeling/) | dbt source discovery, model design, incremental materialization, tests, and model generation. |
 | Modeling and analytics | [clickzetta-dynamic-table](./clickzetta-dynamic-table/) | Dynamic Table creation, refresh configuration, incremental computation, ALTER workflows, refresh history, and best practices. |
 | Modeling and analytics | [clickzetta-data-science](./clickzetta-data-science/) | Data science workflows using SQL, ZettaPark, notebooks, EDA, feature engineering, inference, and vector retrieval. |
-| Modeling and analytics | [clickzetta-semantic-view](./clickzetta-semantic-view/) | Semantic View modeling with logical tables, dimensions, metrics, filters, and semantic layer queries. |
+| Modeling and analytics | [clickzetta-semantic-view](./clickzetta-semantic-view/) | Semantic View modeling with logical tables, dimensions, metrics, and facts; conditional/derived/window metrics, grain and relationship modeling, and semantic_view() queries. |
 | SDK and integrations | [clickzetta-cmt-api](./clickzetta-cmt-api/) | CMT v2 API operations: discover migration sources, plan and start runs, monitor progress, verify outcomes, inspect run logs, and clean up failed runs. |
 | SDK and integrations | [clickzetta-zettapark](./clickzetta-zettapark/) | ZettaPark DataFrame API, Session setup, reads, transformations, writes, file operations, and SQL execution. |
 | SDK and integrations | [clickzetta-spark-flink-connector](./clickzetta-spark-flink-connector/) | Spark Connector reads/writes and Flink Write Connector CDC or append-only writes. |

@@ -25,6 +25,7 @@ For native ClickZetta SQL syntax that does not differ from standard SQL, refer t
 |---|---|
 | [Snowflake migration guide](references/migration-snowflake.md) | Migrating from Snowflake — object mapping, type mapping, syntax + function differences |
 | [Databricks migration guide](references/migration-databricks.md) | Migrating from Databricks/Delta Lake — APPLY CHANGES, ZORDER, WHEN NOT MATCHED BY SOURCE alternatives |
+| [dbt migration guide](references/migration-dbt.md) | Migrating an existing dbt project (Databricks / Snowflake / Redshift → ClickZetta) — adapter switch, project config, materializations, incremental strategies, macros, snapshots |
 | [vs Snowflake summary](references/vs-snowflake.md) | Cross-platform comparison summary |
 | [vs Spark SQL summary](references/vs-spark.md) | Cross-platform comparison summary |
 | [DML differences](references/dml-differences.md) | INSERT/UPDATE/DELETE/MERGE/COPY syntax that differs from other systems (concise migration view) |

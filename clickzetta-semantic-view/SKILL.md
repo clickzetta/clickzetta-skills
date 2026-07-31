@@ -1,207 +1,253 @@
 ---
 name: clickzetta-semantic-view
 description: |
-  Create and query ClickZetta Lakehouse Semantic Views — schema-level logical models that encapsulate multi-table JOINs and aggregations into a business-friendly layer of dimensions, metrics, and filters.
-  Query using the semantic_view() function without writing JOINs manually.
-  Currently in invite-only preview (since version 1.3).
-  Triggered when user says "create semantic view", "semantic view", "semantic layer",
-  "define metrics", "define dimensions", "how to use semantic_view()",
-  "unified metric definitions", "business semantic model", "logical table",
-  "DIMENSIONS", "METRICS", "FILTERS", "DROP SEMANTIC VIEW",
-  "SHOW SEMANTIC VIEWS".
-  Keywords: semantic view, dimension, metric, logical model, unified metrics, semantic layer
+  Create, query, and manage ClickZetta Lakehouse Semantic Views — schema-level logical models that encapsulate multi-table JOINs and aggregations into a business-friendly layer of logical tables, dimensions, metrics, and facts. Query with the semantic_view() function without writing JOINs or GROUP BY manually.
+  Triggered when user says "create semantic view", "semantic view", "semantic layer", "define metrics", "define dimensions", "unified metric definitions", "business semantic model", "semantic_view()", "CREATE OR REPLACE SEMANTIC VIEW", "FACTS", "PRIVATE metric", "conditional metric", "window metric", "SHOW SEMANTIC VIEWS", "GRANT SELECT ON SEMANTIC VIEW".
+  Keywords: semantic view, dimension, metric, fact, logical model, unified metrics, semantic layer, grain, chasm trap, FILTER metric
 ---
 
 # ClickZetta Semantic View
 
-Read [references/semantic-view-reference.md](references/semantic-view-reference.md) for the complete syntax reference.
+A Semantic View is a **schema-level logical data model** in ClickZetta Lakehouse. It encapsulates multi-table relationships, dimensions, and metrics into a business semantic layer so that the whole organization queries consistent, reusable definitions instead of re-writing JOINs and metric logic every time.
+
+- **For analysis**: business users query cross-table data with business terms — no manual JOIN or GROUP BY.
+- **For governance**: metric definitions are managed centrally, avoiding "same metric name, different numbers".
+
+Reference docs (read on demand):
+- [references/semantic-view-reference.md](references/semantic-view-reference.md) — complete CREATE / query / management syntax.
+- [references/metrics-and-modeling.md](references/metrics-and-modeling.md) — advanced metrics (conditional, arithmetic, derived, window, FACTS, PRIVATE), relationship modeling and aggregation grain, NULL handling.
+- [references/capabilities-limits.md](references/capabilities-limits.md) — capability/limit table, troubleshooting by symptom, advanced queries (subquery/CTE/JOIN/CTAS), AI integration.
 
 ---
 
-## Overview
+## When to use a semantic view
 
-A Semantic View is a **schema-level logical data model object** in ClickZetta Lakehouse that solves two core problems:
+Modeling has a cost — it is not always the right tool.
 
-- **Data Analysis**: Unifies dimension and metric definitions so business users can query cross-table data without writing complex JOINs
-- **Data Governance**: Centrally manages table relationships, dimension and metric definitions, ensuring the entire organization uses consistent data definitions
+| Your situation | Better choice |
+|---|---|
+| One-off ad-hoc query, thrown away after use | Plain SQL |
+| Just wrap a complex SQL for reuse, no shared metric definitions | Normal view |
+| Just transparently accelerate an existing query | Materialized view / Dynamic Table |
+| **Many people/reports reuse the same metrics and definitions must stay consistent** | **Semantic view** |
+| **Let business users query cross-table data in business terms without JOINs** | **Semantic view** |
 
-> ⚠️ Currently in **invite-only preview** (version 1.3). Contact technical support to enable.
+Rule of thumb: build a semantic view when the payoff of *consistent definitions* and *repeated reuse* outweighs the modeling cost.
 
 ---
 
-## Four Core Components
+## Core components
 
 | Component | Keyword | Description |
 |---|---|---|
-| Logical Tables | `TABLES` | Maps physical tables, declares primary and foreign key relationships; the engine handles JOINs automatically |
-| Dimensions | `DIMENSIONS` | Categorical attributes (who/what/where/when), supports computed dimensions |
-| Metrics | `METRICS` | Aggregate measures (SUM/AVG/COUNT/MIN/MAX), business KPIs |
-| Filters | `FILTERS` | Predefined reusable filter conditions (semantic annotations, cannot be passed directly to queries) |
+| Logical tables | `TABLES` | Map physical tables, declare PRIMARY/FOREIGN keys; the engine handles JOINs automatically |
+| Facts | `FACTS` | Pass a child-table column through as a logical fact so a parent-table metric can aggregate it (cross-table modeling) |
+| Dimensions | `DIMENSIONS` | Categorical attributes (who/what/where/when); support computed expressions like `YEAR(hire_date)` |
+| Metrics | `METRICS` | Aggregate measures — general aggregates, conditional (`FILTER (WHERE ...)`), arithmetic, same-table derived, and window metrics |
+
+Any dimension / metric / fact can be prefixed with `PRIVATE` to hide it from direct query — it can only be composed into other `PUBLIC` objects (encapsulate intermediate calculations).
 
 ---
 
-## Creating a Semantic View
+## Creating a semantic view
 
 ```sql
-CREATE SEMANTIC VIEW <view_name>
+CREATE [ OR REPLACE ] SEMANTIC VIEW <view_name>
 TABLES (
     <table_alias> AS <schema>.<physical_table>
-        PRIMARY KEY (<column_name>)
-        [ FOREIGN KEY (<column_name>) REFERENCES <other_table_alias> ]
-        [ WITH SYNONYMS ('<synonym>') ]
+        PRIMARY KEY ( <column> [ , ... ] )
+        [ FOREIGN KEY ( <column> ) REFERENCES <other_alias> [ ( <ref_column> ) ] ]
+        [ WITH SYNONYMS ( '<synonym>' [ , ... ] ) ]
         [ COMMENT = '<description>' ]
     [ , ... ]
 )
-[ FILTERS (
-    <table_alias>.<filter_name> AS <boolean_expression>
+[ FACTS (
+    [ PRIVATE ] <alias>.<fact_name> AS { <column_expr> | <aggregate_expr> }
     [ , ... ]
 ) ]
-DIMENSIONS (
-    { <table_alias>.<dimension_name> | <dimension_name> } AS <expression>
-        [ WITH SYNONYMS = ('<synonym>' [ , ... ]) ]
-        [ is_unique = { true | false } ]
-        [ is_time = { true | false } ]
-        [ enum_values = [ <value1>, <value2>, ... ] ]
+[ DIMENSIONS (
+    [ PRIVATE ] { <alias>.<dim_name> | <dim_name> } AS <expression>
+        [ WITH SYNONYMS = ( '<synonym>' [ , ... ] ) ]
+        [ is_unique = { true | false } ] [ is_time = { true | false } ]
+        [ enum_values = [ <v1>, <v2>, ... ] ]
         [ COMMENT = '<description>' ]
     [ , ... ]
-)
-METRICS (
-    <table_alias>.<metric_name> AS <aggregate_expression>
+) ]
+[ METRICS (
+    [ PRIVATE ] <alias>.<metric_name> AS <aggregate_expression>
         [ COMMENT = '<description>' ]
     [ , ... ]
-)
+) ]
 [ COMMENT = '<view_description>' ];
 ```
 
-### Complete Example (TPC-H Revenue Analysis)
+> ⚠️ Clause order is fixed: `TABLES → FACTS → DIMENSIONS → METRICS`. Only `TABLES` is required; the rest are optional. Writing `FACTS` after `DIMENSIONS`/`METRICS` raises `Syntax error at or near 'FACTS'`. Dimension metadata order is also fixed: `WITH SYNONYMS` must come before `is_unique`/`is_time`/`enum_values`.
+
+### Complete example
 
 ```sql
-DROP SEMANTIC VIEW IF EXISTS tpch_rev_analysis;
-CREATE SEMANTIC VIEW tpch_rev_analysis
+DROP SEMANTIC VIEW IF EXISTS doc_test.emp_dept_analysis;
+CREATE SEMANTIC VIEW doc_test.emp_dept_analysis
 TABLES (
-    customers AS tpch.customer
-        PRIMARY KEY (c_custkey)
-        COMMENT = 'Customer master table',
-    orders AS tpch.orders
-        PRIMARY KEY (o_orderkey)
-        FOREIGN KEY (o_custkey) REFERENCES customers
-        WITH SYNONYMS ('sales orders')
-        COMMENT = 'Orders table',
-    line_items AS tpch.lineitem
-        PRIMARY KEY (l_orderkey, l_linenumber)
-        FOREIGN KEY (l_orderkey) REFERENCES orders
-        COMMENT = 'Order line items'
-)
-FILTERS (
-    customers.is_building AS customers.c_mktsegment = 'BUILDING'
+    depts AS doc_test.departments
+        PRIMARY KEY (dept_name),
+    emps AS doc_test.employees
+        PRIMARY KEY (id)
+        FOREIGN KEY (dept) REFERENCES depts (dept_name)
 )
 DIMENSIONS (
-    customers.customer_name AS c_name
-        WITH SYNONYMS = ('customer name')
+    emps.employee_name AS emps.name
+        WITH SYNONYMS = ('staff name')
         is_unique = true
-        COMMENT = 'Customer name',
-    orders.order_date AS o_orderdate
+        COMMENT = 'Employee name',
+    emps.department AS emps.dept
+        COMMENT = 'Department',
+    emps.hire_year AS YEAR(emps.hire_date)
         is_time = true
-        COMMENT = 'Order date',
-    orders.order_year AS YEAR(o_orderdate)
-        COMMENT = 'Order year',
-    orders.order_status AS o_orderstatus
-        enum_values = ['O', 'F', 'P']
-        COMMENT = 'Order status'
+        COMMENT = 'Hire year',
+    depts.manager_name AS depts.manager
+        COMMENT = 'Department manager'
 )
 METRICS (
-    customers.customer_count AS COUNT(c_custkey)
-        COMMENT = 'Total customer count',
-    orders.avg_order_value AS AVG(o_totalprice)
-        COMMENT = 'Average order value',
-    orders.total_revenue AS SUM(o_totalprice)
-        COMMENT = 'Total revenue'
+    emps.total_employees AS COUNT(emps.id)
+        COMMENT = 'Employee count',
+    emps.avg_salary AS AVG(emps.salary)
+        COMMENT = 'Average salary',
+    emps.max_salary AS MAX(emps.salary)
+        COMMENT = 'Max salary'
 )
-COMMENT = 'Revenue analysis semantic view';
+COMMENT = 'Employee & department analysis';
 ```
+
+Notes:
+- `FOREIGN KEY (dept) REFERENCES depts (dept_name)` — when the FK column name differs from the referenced primary key, name the referenced column explicitly. **FK and referenced column types must match**, or CREATE fails.
+- `hire_year` is a computed dimension derived from a date via `YEAR()`.
+- The table referenced by a foreign key must be defined **before** the referencing table in `TABLES`.
+
+### Metric capabilities (brief)
+
+Metrics are standard aggregate expressions — far beyond `COUNT/SUM/AVG/MIN/MAX`:
+
+```sql
+METRICS (
+    -- Conditional (segmented KPI): each FILTER is independent
+    orders.open_revenue  AS SUM(o_totalprice) FILTER (WHERE o_status = 'O'),
+    -- Arithmetic expression
+    emps.salary_range    AS MAX(salary) - MIN(salary),
+    -- Same-table derived (reference other named metrics)
+    emps.total_salary    AS SUM(salary),
+    emps.headcount       AS COUNT(id),
+    emps.avg_salary      AS emps.total_salary / emps.headcount,
+    -- Window (share/running total/rank); PARTITION BY must use a dimension's qualified alias
+    orders.pct_of_region AS SUM(o_totalprice) * 100.0
+        / SUM(SUM(o_totalprice)) OVER (PARTITION BY orders.region)
+)
+```
+
+Also supported: `COUNT(DISTINCT ...)`, `APPROX_COUNT_DISTINCT`, `STDDEV`, `VARIANCE`, `MEDIAN`, `PERCENTILE`, `GROUP_CONCAT`, etc. Cross-table metric division (referencing an unrelated table's columns) is **not** supported — do that in the outer SQL. Full rules and verified outputs: [references/metrics-and-modeling.md](references/metrics-and-modeling.md).
 
 ---
 
-## Querying a Semantic View
+## Querying a semantic view
 
-Use the `semantic_view()` table function — **no need to write JOINs or GROUP BY manually**:
-
-```sql
--- Basic query: average order value by order date
-SELECT * FROM semantic_view(
-    tpch_rev_analysis,
-    DIMENSIONS orders.order_date,
-    METRICS orders.avg_order_value
-);
-
--- Multi-dimension query: by date and customer name
-SELECT * FROM semantic_view(
-    tpch_rev_analysis,
-    DIMENSIONS orders.order_date,
-    DIMENSIONS customers.customer_name,
-    METRICS orders.avg_order_value
-);
-
--- Using short names (table alias prefix can be omitted when names are unique)
-SELECT * FROM semantic_view(
-    tpch_rev_analysis,
-    DIMENSIONS order_date,
-    DIMENSIONS customer_name,
-    METRICS avg_order_value
-);
-
--- Adding WHERE filter (filter columns must be defined as DIMENSIONS)
-SELECT * FROM semantic_view(
-    tpch_rev_analysis,
-    DIMENSIONS customers.customer_name,
-    DIMENSIONS orders.order_status,
-    METRICS orders.total_revenue
-) WHERE order_status = 'O';
-```
-
-### Comparison with Traditional SQL
+Use the `semantic_view()` table function — the engine auto-JOINs by foreign keys and groups by the requested dimensions:
 
 ```sql
--- Traditional SQL (requires manual JOIN + GROUP BY)
-SELECT o.o_orderdate, c.c_name, AVG(o.o_totalprice)
-FROM tpch.orders o
-JOIN tpch.customer c ON o.o_custkey = c.c_custkey
-GROUP BY o.o_orderdate, c.c_name;
-
--- Semantic View (JOINs and aggregation handled automatically)
 SELECT * FROM semantic_view(
-    tpch_rev_analysis,
-    DIMENSIONS order_date,
-    DIMENSIONS customer_name,
-    METRICS avg_order_value
+    <view_name>,
+    [ DIMENSIONS <name> [ , DIMENSIONS <name> ... ] ]
+    [ METRICS    <name> [ , METRICS    <name> ... ] ]
+    [ FACTS      <name> [ , FACTS      <name> ... ] ]
 );
 ```
+
+```sql
+-- Group metrics by dimension
+SELECT * FROM semantic_view(
+    doc_test.emp_dept_analysis,
+    DIMENSIONS emps.department,
+    METRICS emps.total_employees,
+    METRICS emps.avg_salary
+);
+
+-- Cross-table dimension (auto JOIN) — group by the manager from depts
+SELECT * FROM semantic_view(
+    doc_test.emp_dept_analysis,
+    DIMENSIONS depts.manager_name,
+    METRICS emps.avg_salary
+);
+
+-- Short names (alias prefix optional when unique)
+SELECT * FROM semantic_view(
+    doc_test.emp_dept_analysis,
+    DIMENSIONS department,
+    METRICS total_employees
+);
+
+-- Filtering: only DIMENSIONS/METRICS/FACTS go inside; put WHERE outside
+SELECT * FROM semantic_view(
+    doc_test.emp_dept_analysis,
+    DIMENSIONS emps.department,
+    METRICS emps.avg_salary
+) WHERE department = 'Engineering';
+```
+
+- Must specify at least one `DIMENSIONS`, `METRICS`, or `FACTS`, or you get `table or view not found - semantic_view`.
+- Only `METRICS` → single-row global aggregate. Only `DIMENSIONS` → deduplicated dimension list.
+- Outer `WHERE` / `ORDER BY` / `LIMIT` and `SELECT col1, col2` are all supported.
+- **WHERE uses dimension short names**, not physical column names: `WHERE department = 'x'` ✅, `WHERE dept = 'x'` ❌.
+
+### Traditional SQL vs semantic view
+
+```sql
+-- Traditional (manual JOIN + GROUP BY)
+SELECT e.dept, d.manager AS manager_name, COUNT(e.id), AVG(e.salary)
+FROM doc_test.employees e
+JOIN doc_test.departments d ON e.dept = d.dept_name
+GROUP BY e.dept, d.manager;
+
+-- Semantic view (JOIN + aggregation automatic, grain-correct)
+SELECT * FROM semantic_view(
+    doc_test.emp_dept_analysis,
+    DIMENSIONS emps.department,
+    DIMENSIONS depts.manager_name,
+    METRICS emps.total_employees,
+    METRICS emps.avg_salary
+);
+```
+
+> **Grain matters**: query grain is driven by the metric's table. Orphan child rows appear with a `NULL` dimension; dimension members with no fact rows do not appear. Combining metrics from two sibling one-to-many branches raises a chasm-trap error. See [references/metrics-and-modeling.md](references/metrics-and-modeling.md).
 
 ---
 
-## Management Commands
+## Managing a semantic view
 
-```sql
--- Drop (recommended: drop before create for idempotency)
-DROP SEMANTIC VIEW IF EXISTS tpch_rev_analysis;
+| Command | Purpose |
+|---|---|
+| `CREATE OR REPLACE SEMANTIC VIEW ...` | Atomically replace a definition (use this to change structure) |
+| `SHOW CREATE SEMANTIC VIEW <name>` | Read back the full, replayable CREATE DDL |
+| `DROP SEMANTIC VIEW IF EXISTS <name>` | Drop a view |
+| `ALTER SEMANTIC VIEW <name> RENAME TO <new_name>` | Rename (new name cannot carry a schema prefix) |
+| `ALTER SEMANTIC VIEW <name> SET PROPERTIES ('k'='v')` | Set custom properties (merge/upsert semantics) |
+| `ALTER SEMANTIC VIEW <name> UNSET PROPERTIES ('k')` | Remove a property |
+| `SHOW SEMANTIC VIEWS [ IN <schema> ]` | List views (returns `schema_name`, `table_name`) |
+| `DESC EXTENDED <name>` | View full structure — **must** include `EXTENDED` |
+| `SHOW SEMANTIC DIMENSIONS / METRICS / FACTS IN <name>` | Structured, one-row-per-object introspection (incl. `access` = PUBLIC/PRIVATE) |
+| `GRANT / REVOKE SELECT ON SEMANTIC VIEW <name> ...` | Read-only permissions (no INSERT/UPDATE/DELETE) |
 
--- List all semantic views in the current schema
-SHOW SEMANTIC VIEWS;
-SHOW SEMANTIC VIEWS IN my_schema;
-
--- View detailed definition (logical tables, dimensions, metrics, foreign keys)
-DESC EXTENDED tpch_rev_analysis;
-```
+- `ALTER` **cannot** add/drop dimensions or metrics — use `CREATE OR REPLACE` to replay the full definition (recommended: `SHOW CREATE` → edit → `CREATE OR REPLACE`).
+- Semantic views are **not** in `information_schema.tables`; use `SHOW SEMANTIC VIEWS` and `DESC EXTENDED`.
+- `SHOW SEMANTIC VIEWS` does **not** support `LIKE`, and has no global cross-schema listing.
 
 ---
 
-## Important Notes
+## Important notes
 
-1. **TABLES definition order**: Tables referenced by foreign keys must be defined first (e.g., `customers` must come before `orders`)
-2. **FILTERS are semantic annotations**: Named filters in `FILTERS` cannot be passed as parameters to `semantic_view()`; WHERE clauses can only reference column short names defined in `DIMENSIONS`, not physical column names
-3. **WHERE only accepts DIMENSION short names**: `WHERE customer_name = 'Alice'` ✅, `WHERE c_name = 'Alice'` ❌
-4. **Short names vs qualified names**: Use short names when unique within the view; use `table_alias.name` when there are conflicts
-5. **Idempotent creation**: Always `DROP SEMANTIC VIEW IF EXISTS` before creating to avoid errors on repeated execution
-6. **Computed dimensions**: DIMENSIONS supports expressions, e.g., `YEAR(CAST(order_date AS DATE))` to extract year
-7. **Metric aggregate functions**: Only `COUNT`, `AVG`, `SUM`, `MIN`, `MAX` are supported
-8. **DIMENSIONS and METRICS can be used independently**: You can query only METRICS (global aggregation) or only DIMENSIONS (deduplicated list)
+1. **No `FILTERS` clause**: named filters were removed. To filter, define a conditional metric with `FILTER (WHERE ...)`, or use an outer `WHERE` with a dimension short name.
+2. **TABLES order**: a referenced table must be defined before the table whose FK references it.
+3. **FK type match**: FK column and referenced column must have the same type, or CREATE raises `type ... does not match`.
+4. **Idempotent scripts**: `DROP ... IF EXISTS` before `CREATE`, or use `CREATE OR REPLACE`.
+5. **Metadata is declarative**: `is_unique` / `is_time` / `enum_values` are annotations for AI/metadata tools — they do **not** affect SQL results, optimization, or value validation. Note `DESC EXTENDED` reads `is_unique`/`is_time` back as `true` whenever the clause was written at all (value not faithful); `synonyms` and `enum_values` read back faithfully.
+6. **Window metrics**: `PARTITION BY` / `ORDER BY` must reference a dimension's **qualified alias** (e.g. `orders.region`), same-table only, and that dimension must appear in the query's `DIMENSIONS`.
+7. **PRIVATE objects** cannot be queried/filtered directly — only composed into a PUBLIC fact/metric.
+

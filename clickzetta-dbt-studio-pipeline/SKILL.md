@@ -16,7 +16,9 @@ description: |
 See [references/studio-task-sop.md](references/studio-task-sop.md) for complete cz-cli task command reference.
 See [references/parameter-guide.md](references/parameter-guide.md) for Studio parameter types and bizdate configuration.
 
-For the **complete end-to-end pipeline architecture** (ingestion → dbt modeling → Studio publishing), see [../clickzetta-dbt-project-setup/references/elt-standards.md](../clickzetta-dbt-project-setup/references/elt-standards.md).
+For the **complete end-to-end pipeline architecture** (ingestion → dbt modeling → Studio publishing), use the `clickzetta-dbt-project-setup` skill.
+
+**If the user is migrating an existing dbt project from Databricks / Snowflake / Redshift**, first invoke the `clickzetta-sql-migration` skill (covers adapter switch, `dbt_project.yml` cleanup, incremental strategy migration, and macro compatibility). Return here for Studio deployment after the project compiles on ClickZetta.
 
 ---
 

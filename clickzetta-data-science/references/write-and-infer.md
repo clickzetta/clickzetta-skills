@@ -26,7 +26,7 @@ conn = clickzetta.connect(
     service=os.environ["CLICKZETTA_SERVICE"], instance=os.environ["CLICKZETTA_INSTANCE"],
     workspace=os.environ["CLICKZETTA_WORKSPACE"], username=os.environ["CLICKZETTA_USERNAME"],
     password=os.environ["CLICKZETTA_PASSWORD"],
-    vcluster=os.environ.get("CLICKZETTA_VCLUSTER", "default_ap"),
+    vcluster=os.environ.get("CLICKZETTA_VCLUSTER", "default"),
     schema=os.environ.get("CLICKZETTA_SCHEMA", "public"),
 )
 cursor = conn.cursor()

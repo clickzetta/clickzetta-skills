@@ -51,7 +51,7 @@ cz-cli task save-config fct_orders \
   --retry-count 3 \
   --retry-interval 5 \
   --retry-unit m \
-  --vc default_ap \
+  --vc default \
   --timeout 60 \
   --timeout-unit m
 
