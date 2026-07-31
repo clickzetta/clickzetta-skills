@@ -1,76 +1,94 @@
 # Semantic View Complete Syntax Reference
 
-> Source: https://www.yunqi.tech/documents/semantic_view
-> Feature status: Invite-only preview (since version 1.3)
+> Source: ClickZetta Lakehouse documentation (semantic_view)
 
 ---
 
-## CREATE SEMANTIC VIEW Full Syntax
+## CREATE SEMANTIC VIEW
 
 ```sql
-CREATE SEMANTIC VIEW <view_name>
+CREATE [ OR REPLACE ] SEMANTIC VIEW <view_name>
 TABLES (
     <logical_table_definition> [ , ... ]
 )
-[ FILTERS (
-    <filter_definition> [ , ... ]
+[ FACTS (
+    <fact_definition> [ , ... ]
 ) ]
-DIMENSIONS (
+[ DIMENSIONS (
     <dimension_definition> [ , ... ]
-)
-METRICS (
+) ]
+[ METRICS (
     <metric_definition> [ , ... ]
-)
+) ]
 [ COMMENT = '<view_description>' ];
 ```
 
-**Constraint**: At least one of `DIMENSIONS` or `METRICS` must be included.
+- **Clause order is fixed**: `TABLES → FACTS → DIMENSIONS → METRICS`. Out-of-order `FACTS` raises `Syntax error at or near 'FACTS'`.
+- `TABLES` is required. `FACTS` / `DIMENSIONS` / `METRICS` are all optional (a view with only `TABLES` creates successfully).
+- `CREATE OR REPLACE` atomically replaces an existing definition without a prior `DROP`; scripts are naturally idempotent.
+- Without `OR REPLACE`, recreating an existing view raises `already exists`; use `IF NOT EXISTS` or `DROP SEMANTIC VIEW IF EXISTS` first.
 
 ---
 
-## Logical Table Definition Syntax
+## Logical table definition
 
 ```sql
-<table_alias> AS <schema>.<physical_table_name>
-    PRIMARY KEY ( <column_name> [ , ... ] )
-    [ FOREIGN KEY ( <column_name> ) REFERENCES <other_logical_table_alias> ]
+<table_alias> AS <schema>.<physical_table>
+    PRIMARY KEY ( <column> [ , ... ] )
+    [ FOREIGN KEY ( <column> ) REFERENCES <other_alias> [ ( <ref_column> ) ] ]
     [ WITH SYNONYMS ( '<synonym>' [ , ... ] ) ]
     [ COMMENT = '<description>' ]
 ```
 
 | Parameter | Description |
 |---|---|
-| `<table_alias> AS <schema>.<physical_table>` | Assigns a logical alias to a physical table; dimensions/metrics/foreign keys reference this alias |
-| `PRIMARY KEY` | Primary key columns, used to determine relationship types between tables (one-to-many/one-to-one) |
-| `FOREIGN KEY ... REFERENCES` | Foreign key relationship; the engine uses this to handle JOINs automatically; target must be a logical table alias |
-| `WITH SYNONYMS` | Logical table synonyms to enhance discoverability |
+| `<alias> AS <schema>.<table>` | Assign a logical alias to a physical table; dimensions/metrics/FKs reference this alias |
+| `PRIMARY KEY ( <column> )` | Primary key column(s), used to determine relationship type (one-to-many / one-to-one). Supports composite keys, e.g. `(l_orderkey, l_linenumber)` |
+| `FOREIGN KEY ( <col> ) REFERENCES <alias> [ ( <ref_col> ) ]` | FK relationship; the engine auto-JOINs on it. Name the referenced column when it differs from the target's primary key. **FK and referenced column types must match** or CREATE fails |
+| `WITH SYNONYMS ( '<synonym>' )` | Logical-table synonyms, to improve discoverability |
+| `COMMENT = '<description>'` | Logical-table description |
 
-**Note**: Tables referenced by foreign keys must be defined first in the TABLES clause.
+- A table referenced by a foreign key must be defined **before** the referencing table.
+- Multi-hop foreign keys are supported (e.g. `line_items → orders → customers`).
 
 ---
 
-## Filter Definition Syntax
+## Fact definition
 
 ```sql
-<logical_table_alias>.<filter_name> AS <boolean_expression>
+[ PRIVATE ] <alias>.<fact_name> AS { <column_expression> | <aggregate_expression> }
 ```
 
-Example:
+`FACTS` declares logical facts, chiefly so a **parent-table metric can reference a child-table column**. A parent metric cannot aggregate a child column directly; declare that child column as a fact (identity passthrough), then reference it from the metric.
+
+| Form | Description |
+|---|---|
+| `<alias>.<fact> AS <column_expr>` | Identity passthrough: expose a child column as a fact (alias may differ from the physical column name) so a parent metric can reference it |
+| `<alias>.<fact> AS <aggregate_expr>` | Define a combined aggregate directly inside `FACTS`; select it in queries with the `FACTS` keyword |
+| `PRIVATE` prefix | Fact can only be composed into other PUBLIC objects, not queried directly |
+
+Two working patterns:
+
 ```sql
-FILTERS (
-    customers.is_building AS customers.c_mktsegment = 'BUILDING',
-    orders.is_open AS orders.o_orderstatus = 'O'
+-- Pattern 1: combined aggregate defined in FACTS; query with the FACTS keyword
+FACTS (
+    orders.o_orderkey AS o_orderkey,
+    customer.order_count AS COUNT(orders.o_orderkey)
 )
-```
+-- query: SELECT * FROM semantic_view(sv, FACTS customer.order_count)
 
-**Important**: FILTERS are semantic annotations for AI/metadata layers and **cannot** be passed directly as parameters to the `semantic_view()` function. To filter in queries, define the corresponding column as a DIMENSION and use an outer WHERE clause.
+-- Pattern 2: FACTS only passes through (alias differs from physical column); aggregate in METRICS
+FACTS (orders.order_id AS o_orderkey)
+METRICS (customer.order_count AS COUNT(orders.order_id))
+-- query: SELECT * FROM semantic_view(sv, METRICS customer.order_count)
+```
 
 ---
 
-## Dimension Definition Syntax
+## Dimension definition
 
 ```sql
-{ <logical_table_alias>.<dimension_name> | <dimension_name> } AS <expression>
+[ PRIVATE ] { <alias>.<dim_name> | <dim_name> } AS <expression>
     [ WITH SYNONYMS = ( '<synonym>' [ , ... ] ) ]
     [ is_unique = { true | false } ]
     [ is_time = { true | false } ]
@@ -80,88 +98,153 @@ FILTERS (
 
 | Parameter | Description |
 |---|---|
-| `AS <expression>` | Can be a column name or a computed expression (e.g., `YEAR(o_orderdate)`) |
-| `WITH SYNONYMS` | Dimension synonyms allowing users to reference the same dimension with different business terms |
-| `is_unique = true` | Indicates the dimension values are unique (e.g., customer name), helps the engine optimize |
-| `is_time = true` | Identifies as a time-type dimension (e.g., order date) |
-| `enum_values` | Restricts allowed enumeration values, improves query accuracy |
+| `AS <expression>` | A column name or a computed expression (e.g. `YEAR(o_orderdate)`); computed dimensions return integer type for `YEAR`/`MONTH` |
+| `WITH SYNONYMS` | Dimension synonyms; lets users reference the same dimension by different business terms |
+| `is_unique = true` | Declarative annotation that dimension values are unique — **no SQL-layer effect** |
+| `is_time = true` | Declarative annotation of a time-type dimension — **no SQL-layer effect** |
+| `enum_values` | Declarative allowed-value list — **not validated**; out-of-range values still return |
+
+> Metadata order is fixed: `WITH SYNONYMS` must precede `is_unique`/`is_time`/`enum_values`, else `Syntax error at or near 'WITH'`. Read-back fidelity: `synonyms` and `enum_values` are faithful; `is_unique`/`is_time` only reflect "was the clause written" (always read back as `true`).
 
 ---
 
-## Metric Definition Syntax
+## Metric definition
 
 ```sql
-<logical_table_alias>.<metric_name> AS <aggregate_expression>
+[ PRIVATE ] <alias>.<metric_name> AS <aggregate_expression>
     [ COMMENT = '<description>' ]
 ```
 
-Supported aggregate functions: `COUNT`, `AVG`, `SUM`, `MIN`, `MAX`
+**Supported:**
+- General aggregates beyond `COUNT`/`SUM`/`AVG`/`MIN`/`MAX`: `COUNT(DISTINCT ...)`, `SUM(DISTINCT ...)`, `APPROX_COUNT_DISTINCT`, `STDDEV`, `VARIANCE`, `MEDIAN`, `PERCENTILE(col, p)`, `GROUP_CONCAT`, `ANY_VALUE`, etc.
+- Conditional aggregation: `COUNT(CASE WHEN ...)` and `<agg>(...) FILTER (WHERE <cond>)` — each filter is independent; segmented KPIs can be defined side by side and queried together.
+- Arithmetic-expression metrics: `MAX(col) - MIN(col)`, `SUM(col) / COUNT(col)`, `SUM(col) * 100.0 / SUM(col)`.
+- Same-table derived metrics: reference other named metrics in the same logical table, e.g. `emps.avg AS emps.total_salary / emps.headcount`.
+- Window-function metrics: `RANK()`/`ROW_NUMBER()` ranking, or `SUM(SUM(...)) OVER (...)` for share/running totals. `PARTITION BY`/`ORDER BY` must reference a dimension's **qualified alias**, same-table only, and that dimension must appear in the query's `DIMENSIONS`.
 
-Example:
+**Not supported:**
+- Cross-table metric division (referencing an unrelated table's columns) → `cannot resolve column`. Do cross-table composite calculations in the outer SQL of the `semantic_view()` query.
+
+---
+
+## Visibility: PUBLIC vs PRIVATE
+
+Dimensions, metrics, and facts can be `PUBLIC` (default) or `PRIVATE`. A `PRIVATE` object cannot be queried or filtered directly — it may only be composed into another `PUBLIC` fact/metric. Use it to encapsulate intermediate calculations.
+
 ```sql
 METRICS (
-    orders.total_revenue AS SUM(o_totalprice)
-        COMMENT = 'Total revenue',
-    orders.avg_order_value AS AVG(o_totalprice)
-        COMMENT = 'Average order value',
-    customers.customer_count AS COUNT(c_custkey)
-        COMMENT = 'Total customer count'
+    orders.pub_total AS SUM(o_totalprice),          -- default PUBLIC
+    PRIVATE orders.raw_cnt AS COUNT(o_orderkey)      -- PRIVATE before the object name
 )
+```
+
+Selecting a PRIVATE object directly:
+
+```
+CZLH-42000: METRICS 'orders.raw_cnt' is PRIVATE and cannot be selected or filtered directly; it may only be composed into a PUBLIC fact/metric
 ```
 
 ---
 
-## semantic_view() Query Function Syntax
+## semantic_view() query function
 
 ```sql
 SELECT *
 FROM semantic_view(
     <view_name>,
-    DIMENSIONS <dimension_name> [ , DIMENSIONS <dimension_name> ... ],
-    METRICS <metric_name> [ , METRICS <metric_name> ... ]
+    [ DIMENSIONS <name> [ , DIMENSIONS <name> ... ] ]
+    [ METRICS    <name> [ , METRICS    <name> ... ] ]
+    [ FACTS      <name> [ , FACTS      <name> ... ] ]
 )
-[ WHERE <filter_condition> ];
+[ WHERE ... ] [ ORDER BY ... ] [ LIMIT ... ];
 ```
 
-- Dimension names can use qualified names (`table_alias.dimension_name`) or short names (when unique)
-- Results are automatically grouped by specified dimensions — no GROUP BY needed
-- Column names in WHERE clauses use short names (without table alias prefix)
+- Names may be qualified (`alias.name`) or short (when unique in the view).
+- The parentheses accept only `DIMENSIONS` / `METRICS` / `FACTS` — **not** `WHERE`. Put filters in the outer query using dimension short names.
+- Results are grouped by the requested dimensions automatically — no `GROUP BY`.
+- At least one `DIMENSIONS` / `METRICS` / `FACTS` is required.
+- Only `METRICS` → single-row global aggregate; only `DIMENSIONS` → deduplicated dimension list.
+- `SELECT col1, col2 FROM semantic_view(...)` (partial columns) is supported.
 
 ---
 
-## Management Commands
+## Management commands
 
-| Command | Description |
-|---|---|
-| `CREATE SEMANTIC VIEW` | Create a semantic view |
-| `DROP SEMANTIC VIEW IF EXISTS <name>` | Drop a semantic view |
-| `SHOW SEMANTIC VIEWS` | List all semantic views in the current schema |
-| `SHOW SEMANTIC VIEWS IN <schema>` | List semantic views in a specified schema |
-| `DESC EXTENDED <name>` | View detailed definition (logical tables/dimensions/metrics/foreign keys/indexes) |
-
----
-
-## Best Practices
+### DROP
 
 ```sql
--- 1. Idempotent creation (always drop before create)
-DROP SEMANTIC VIEW IF EXISTS my_view;
-CREATE SEMANTIC VIEW my_view ...;
-
--- 2. Use meaningful business terminology for naming
--- Good: customer_name, total_revenue, order_date
--- Bad: c_name, sum_totalprice, o_orderdate
-
--- 3. Set dimension metadata appropriately
--- is_time=true for date/time dimensions
--- is_unique=true for primary-key-like dimensions (e.g., customer ID, order number)
--- enum_values for status-type dimensions (e.g., order status)
-
--- 4. Computed dimension examples
-DIMENSIONS (
-    orders.order_year AS YEAR(o_orderdate)   -- Extract year from date
-        COMMENT = 'Order year',
-    orders.order_month AS MONTH(o_orderdate) -- Extract month from date
-        COMMENT = 'Order month'
-)
+DROP SEMANTIC VIEW [ IF EXISTS ] <view_name>;
 ```
+
+### ALTER — RENAME / SET / UNSET PROPERTIES
+
+```sql
+ALTER SEMANTIC VIEW <view_name> RENAME TO <new_name>;           -- new name cannot carry a schema prefix
+ALTER SEMANTIC VIEW <view_name> SET PROPERTIES ( '<k>' = '<v>' [ , ... ] );   -- merge/upsert
+ALTER SEMANTIC VIEW <view_name> UNSET PROPERTIES ( '<k>' [ , ... ] );
+```
+
+`ALTER` does **not** support adding/dropping dimensions or metrics — use `CREATE OR REPLACE`. `CREATE` has no `PROPERTIES` clause; properties can only be set after creation via `ALTER ... SET PROPERTIES`.
+
+> ⚠️ `DESC EXTENDED`'s `properties` output is descriptive and **loses single quotes** in values (and turns newlines into literal `\n`). To store DDL/JSON with quotes or newlines in a property, **base64-encode** it first for byte-exact round-tripping.
+
+### SHOW CREATE
+
+```sql
+SHOW CREATE SEMANTIC VIEW <view_name>;
+```
+
+Returns a single `sql` column with a replayable `CREATE SEMANTIC VIEW` statement (includes `TABLES`/`DIMENSIONS`/`METRICS` and `WITH SYNONYMS`). It does **not** include `is_unique`/`is_time`/`enum_values` — use `DESC EXTENDED` for those.
+
+### SHOW SEMANTIC VIEWS
+
+```sql
+SHOW SEMANTIC VIEWS [ IN <schema> ];
+```
+
+Returns `schema_name`, `table_name`. Does **not** support `LIKE`; no global cross-schema list. Semantic views are not in `information_schema.tables`.
+
+### DESC EXTENDED
+
+```sql
+DESC EXTENDED <view_name>;
+```
+
+Must include `EXTENDED` (`DESC <name>`, `DESC SEMANTIC VIEW`, `DESCRIBE SEMANTIC VIEW` all return empty). Output is organized into `# detailed table information`, `#logical tables`, `#dimensions`, `#metrics` sections, each row having `column_name`, `data_type`, `comment`. Dimension metadata (`synonyms`/`is_unique`/`is_time`/`enum_values`) is listed as extra rows under each dimension.
+
+### Introspection (structured, one row per object)
+
+```sql
+SHOW SEMANTIC DIMENSIONS IN <view> [ FOR METRIC <metric> ];
+SHOW SEMANTIC METRICS    IN <view>;
+SHOW SEMANTIC FACTS      IN <view>;
+```
+
+All three return the same 9 columns: `workspace_name`, `schema_name`, `semantic_view_name`, `table_name`, `name`, `data_type`, `synonyms`, `comment`, `access` (`PUBLIC`/`PRIVATE`). The dimension form with `FOR METRIC <metric>` returns only dimensions that can legally group that metric (equal-or-coarser grain), letting an agent build grain-safe queries directly. Undefined object classes return zero rows (normal).
+
+### Permissions (read-only)
+
+```sql
+GRANT SELECT ON SEMANTIC VIEW <view_name> TO ROLE <role>;   -- or ALL, equivalent to SELECT
+REVOKE SELECT ON SEMANTIC VIEW <view_name> FROM ROLE <role>;
+SHOW GRANTS ON SEMANTIC VIEW <view_name>;
+```
+
+Only read privileges (`SELECT`, `ALL`) are supported; the creator automatically has `ALL`. `INSERT`/`UPDATE`/`DELETE` are rejected (`invalid action type INSERT`). `SHOW GRANTS` returns `granted_type`, `privilege`, `conditions`, `granted_on` (=`SEMANTIC_VIEW`), `object_name`, `granted_to`, `grantee_name`, `grantor_name`, `grant_option`, `granted_time`.
+
+---
+
+## Command quick reference
+
+| Command | Purpose |
+|---|---|
+| `CREATE OR REPLACE SEMANTIC VIEW` | Atomically replace a definition (change structure) |
+| `SHOW CREATE SEMANTIC VIEW` | Read back replayable DDL |
+| `DROP SEMANTIC VIEW IF EXISTS` | Drop |
+| `ALTER ... RENAME TO` | Rename (no schema prefix on new name) |
+| `ALTER ... SET / UNSET PROPERTIES` | Set / remove properties (merge semantics) |
+| `SHOW SEMANTIC VIEWS [ IN schema ]` | List views |
+| `DESC EXTENDED` | Full structure (must include EXTENDED) |
+| `SHOW SEMANTIC DIMENSIONS / METRICS / FACTS IN` | Structured per-object introspection |
+| `GRANT / REVOKE SELECT ON SEMANTIC VIEW` | Read-only permissions |
+| `SHOW GRANTS ON SEMANTIC VIEW` | View permissions |

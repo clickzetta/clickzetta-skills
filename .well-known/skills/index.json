@@ -9,6 +9,22 @@
       ]
     },
     {
+      "name": "clickzetta-analytics-agent",
+      "description": "Complete guide for managing ClickZetta Analytics Agent domains via cz-cli: domain CRUD, table registration, column semantics (types/descriptions/aliases), metrics (simple & compound), Answer Builders, Knowledge Bases, and QA testing.",
+      "files": [
+        "SKILL.md",
+        "references/answer-builders.md",
+        "references/best-practices.md",
+        "references/domain-manager.md",
+        "references/knowledge-base.md",
+        "references/metrics.md",
+        "references/qa-testing.md",
+        "references/quality-assessment.md",
+        "references/table-semantics.md",
+        "references/troubleshooting.md"
+      ]
+    },
+    {
       "name": "clickzetta-batch-sync-pipeline",
       "description": "Create and manage ClickZetta Lakehouse batch sync tasks, supporting both single-table and multi-table modes.",
       "files": [
@@ -153,10 +169,12 @@
     },
     {
       "name": "clickzetta-semantic-view",
-      "description": "Create and query ClickZetta Lakehouse Semantic Views — schema-level logical models that encapsulate multi-table JOINs and aggregations into a business-friendly layer of dimensions, metrics, and filters.",
+      "description": "Create, query, and manage ClickZetta Lakehouse Semantic Views — schema-level logical models that encapsulate multi-table JOINs and aggregations into a business-friendly layer of logical tables, dimensions, metrics, and facts, queried with the semantic_view() function.",
       "files": [
         "SKILL.md",
-        "references/semantic-view-reference.md"
+        "references/semantic-view-reference.md",
+        "references/metrics-and-modeling.md",
+        "references/capabilities-limits.md"
       ]
     },
     {
@@ -181,6 +199,7 @@
         "references/functions-reference.md",
         "references/implicit-type-conversion.md",
         "references/migration-databricks.md",
+        "references/migration-dbt.md",
         "references/migration-snowflake.md",
         "references/vs-snowflake.md",
         "references/vs-spark.md"
@@ -201,10 +220,12 @@
     },
     {
       "name": "clickzetta-studio-task-manager",
-      "description": "Manage ClickZetta Lakehouse Studio tasks: task types (batch sync/multi-table batch sync/real-time sync/multi-table real-time sync/data development), folder organization, cz-cli task commands, scheduling, dependency management, and troubleshooting.",
+      "description": "Manage ClickZetta Studio tasks: data development (SQL/Python/Shell), batch sync (INTEGRATION/MULTI_DI), real-time CDC (MULTI_REALTIME), Kafka streaming (REALTIME), and composite Flow DAGs.",
       "files": [
         "SKILL.md",
         "references/engineering-sop.md",
+        "references/flow-composite-task.md",
+        "references/sync-task-guide.md",
         "references/troubleshooting.md"
       ]
     },
@@ -235,6 +256,9 @@
       "description": "Use the ZettaPark Python library to work with ClickZetta Lakehouse data through a pandas-like DataFrame API that translates Python transformations into distributed SQL — no manual SQL needed.",
       "files": [
         "SKILL.md",
+        "references/migration-snowpark.md",
+        "references/migration-spark-dataframe.md",
+        "references/studio-task-pattern.md",
         "references/zettapark-api.md"
       ]
     }
