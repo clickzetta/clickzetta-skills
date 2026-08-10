@@ -44,6 +44,7 @@ Rule of thumb: build a semantic view when the payoff of *consistent definitions*
 | Facts | `FACTS` | Pass a child-table column through as a logical fact so a parent-table metric can aggregate it (cross-table modeling) |
 | Dimensions | `DIMENSIONS` | Categorical attributes (who/what/where/when); support computed expressions like `YEAR(hire_date)` |
 | Metrics | `METRICS` | Aggregate measures — general aggregates, conditional (`FILTER (WHERE ...)`), arithmetic, same-table derived, and window metrics |
+| Variables | `VARIABLES` | Named query parameters with default values — dimension/metric expressions reference them, bound at query time so one view serves multiple thresholds/definitions |
 
 Any dimension / metric / fact can be prefixed with `PRIVATE` to hide it from direct query — it can only be composed into other `PUBLIC` objects (encapsulate intermediate calculations).
 
@@ -61,6 +62,10 @@ TABLES (
         [ COMMENT = '<description>' ]
     [ , ... ]
 )
+[ VARIABLES (
+    <var_name> <data_type> [ { DEFAULT | = } <default_value> ] [ COMMENT = '<description>' ]
+    [ , ... ]
+) ]
 [ FACTS (
     [ PRIVATE ] <alias>.<fact_name> AS { <column_expr> | <aggregate_expr> }
     [ , ... ]
@@ -81,7 +86,7 @@ TABLES (
 [ COMMENT = '<view_description>' ];
 ```
 
-> ⚠️ Clause order is fixed: `TABLES → FACTS → DIMENSIONS → METRICS`. Only `TABLES` is required; the rest are optional. Writing `FACTS` after `DIMENSIONS`/`METRICS` raises `Syntax error at or near 'FACTS'`. Dimension metadata order is also fixed: `WITH SYNONYMS` must come before `is_unique`/`is_time`/`enum_values`.
+> ⚠️ Clause order is fixed: `TABLES → VARIABLES → FACTS → DIMENSIONS → METRICS`. Only `TABLES` is required; the rest are optional. Writing `VARIABLES` after `FACTS`/`DIMENSIONS`, or `FACTS` after `DIMENSIONS`/`METRICS`, raises `Syntax error at or near 'VARIABLES'` / `'FACTS'`. Dimension metadata order is also fixed: `WITH SYNONYMS` must come before `is_unique`/`is_time`/`enum_values`.
 
 ### Complete example
 
@@ -154,47 +159,51 @@ Use the `semantic_view()` table function — the engine auto-JOINs by foreign ke
 
 ```sql
 SELECT * FROM semantic_view(
-    <view_name>,
-    [ DIMENSIONS <name> [ , DIMENSIONS <name> ... ] ]
-    [ METRICS    <name> [ , METRICS    <name> ... ] ]
-    [ FACTS      <name> [ , FACTS      <name> ... ] ]
+    <view_name>
+    [ DIMENSIONS <name> [ , <name> ... ] ]
+    [ METRICS    <name> [ , <name> ... ] ]
+    [ FACTS      <name> [ , <name> ... ] ]
+    [ WHERE <predicate> ]
+    [ VARIABLES <var_name> => <value> [ , ... ] ]
 );
 ```
+
+> ⚠️ No comma after the view name — the first clause keyword follows directly. `DIMENSIONS`/`METRICS`/`FACTS` may each appear **at most once**; list multiple items under one keyword separated by commas (`DIMENSIONS a, b`, not `DIMENSIONS a DIMENSIONS b`). A comma after the view name or a repeated keyword raises a syntax error (`duplicate METRICS clause in semantic_view(); each of DIMENSIONS, METRICS and FACTS may appear at most once`).
 
 ```sql
 -- Group metrics by dimension
 SELECT * FROM semantic_view(
-    doc_test.emp_dept_analysis,
-    DIMENSIONS emps.department,
-    METRICS emps.total_employees,
-    METRICS emps.avg_salary
+    doc_test.emp_dept_analysis
+    DIMENSIONS emps.department
+    METRICS emps.total_employees, emps.avg_salary
 );
 
 -- Cross-table dimension (auto JOIN) — group by the manager from depts
 SELECT * FROM semantic_view(
-    doc_test.emp_dept_analysis,
-    DIMENSIONS depts.manager_name,
+    doc_test.emp_dept_analysis
+    DIMENSIONS depts.manager_name
     METRICS emps.avg_salary
 );
 
 -- Short names (alias prefix optional when unique)
 SELECT * FROM semantic_view(
-    doc_test.emp_dept_analysis,
-    DIMENSIONS department,
+    doc_test.emp_dept_analysis
+    DIMENSIONS department
     METRICS total_employees
 );
 
--- Filtering: only DIMENSIONS/METRICS/FACTS go inside; put WHERE outside
+-- Filtering: an inner trailing WHERE, or an outer WHERE — both work
 SELECT * FROM semantic_view(
-    doc_test.emp_dept_analysis,
-    DIMENSIONS emps.department,
+    doc_test.emp_dept_analysis
+    DIMENSIONS emps.department
     METRICS emps.avg_salary
 ) WHERE department = 'Engineering';
 ```
 
 - Must specify at least one `DIMENSIONS`, `METRICS`, or `FACTS`, or you get `table or view not found - semantic_view`.
+- `DIMENSIONS`/`METRICS`/`FACTS` are **order-independent** (`METRICS ... DIMENSIONS ...` equals `DIMENSIONS ... METRICS ...`); output columns follow item write order. `WHERE` and `VARIABLES` are **trailing clauses**, after the three keywords, with `WHERE` before `VARIABLES`.
 - Only `METRICS` → single-row global aggregate. Only `DIMENSIONS` → deduplicated dimension list.
-- Outer `WHERE` / `ORDER BY` / `LIMIT` and `SELECT col1, col2` are all supported.
+- Filter dimensions with an inner trailing `WHERE` or an outer `WHERE`; `ORDER BY` / `LIMIT` and `SELECT col1, col2` only go on the outer query.
 - **WHERE uses dimension short names**, not physical column names: `WHERE department = 'x'` ✅, `WHERE dept = 'x'` ❌.
 
 ### Traditional SQL vs semantic view
@@ -208,15 +217,13 @@ GROUP BY e.dept, d.manager;
 
 -- Semantic view (JOIN + aggregation automatic, grain-correct)
 SELECT * FROM semantic_view(
-    doc_test.emp_dept_analysis,
-    DIMENSIONS emps.department,
-    DIMENSIONS depts.manager_name,
-    METRICS emps.total_employees,
-    METRICS emps.avg_salary
+    doc_test.emp_dept_analysis
+    DIMENSIONS emps.department, depts.manager_name
+    METRICS emps.total_employees, emps.avg_salary
 );
 ```
 
-> **Grain matters**: query grain is driven by the metric's table. Orphan child rows appear with a `NULL` dimension; dimension members with no fact rows do not appear. Combining metrics from two sibling one-to-many branches raises a chasm-trap error. See [references/metrics-and-modeling.md](references/metrics-and-modeling.md).
+> **Grain matters**: query grain is driven by the metric's table. Orphan child rows appear with a `NULL` dimension; dimension members with no fact rows do not appear. Metrics from two sibling one-to-many branches (chasm-trap fan-out) can be combined in one query — the engine aggregates each branch at its own grain and aligns on the dimension, without inflating. See [references/metrics-and-modeling.md](references/metrics-and-modeling.md).
 
 ---
 
@@ -233,6 +240,8 @@ SELECT * FROM semantic_view(
 | `SHOW SEMANTIC VIEWS [ IN <schema> ]` | List views (returns `schema_name`, `table_name`) |
 | `DESC EXTENDED <name>` | View full structure — **must** include `EXTENDED` |
 | `SHOW SEMANTIC DIMENSIONS / METRICS / FACTS IN <name>` | Structured, one-row-per-object introspection (incl. `access` = PUBLIC/PRIVATE) |
+| `SHOW SEMANTIC RELATIONSHIPS IN <name>` | Foreign-key relationships, one row each (incl. `relationship_type`, e.g. `MANY_TO_ONE`) |
+| `SHOW SEMANTIC TABLES IN <name>` | Logical-to-physical table mapping (incl. `base_table`, `primary_key`) |
 | `GRANT / REVOKE SELECT ON SEMANTIC VIEW <name> ...` | Read-only permissions (no INSERT/UPDATE/DELETE) |
 
 - `ALTER` **cannot** add/drop dimensions or metrics — use `CREATE OR REPLACE` to replay the full definition (recommended: `SHOW CREATE` → edit → `CREATE OR REPLACE`).
@@ -250,4 +259,5 @@ SELECT * FROM semantic_view(
 5. **Metadata is declarative**: `is_unique` / `is_time` / `enum_values` are annotations for AI/metadata tools — they do **not** affect SQL results, optimization, or value validation. Note `DESC EXTENDED` reads `is_unique`/`is_time` back as `true` whenever the clause was written at all (value not faithful); `synonyms` and `enum_values` read back faithfully.
 6. **Window metrics**: `PARTITION BY` / `ORDER BY` must reference a dimension's **qualified alias** (e.g. `orders.region`), same-table only, and that dimension must appear in the query's `DIMENSIONS`.
 7. **PRIVATE objects** cannot be queried/filtered directly — only composed into a PUBLIC fact/metric.
+8. **VARIABLES**: declared right after `TABLES` (before `FACTS`/`DIMENSIONS`/`METRICS`, else `Syntax error at or near 'VARIABLES'`). Dimension/metric expressions reference a variable by its **bare name** (no `alias.` prefix). Bind at query time with `semantic_view(... VARIABLES <name> => <value>)` (`=>` or `=`, constant only); unbound variables use their default. `DEFAULT` and `=` are equivalent and both read back as `DEFAULT`.
 

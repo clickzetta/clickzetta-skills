@@ -11,6 +11,9 @@ CREATE [ OR REPLACE ] SEMANTIC VIEW <view_name>
 TABLES (
     <logical_table_definition> [ , ... ]
 )
+[ VARIABLES (
+    <variable_definition> [ , ... ]
+) ]
 [ FACTS (
     <fact_definition> [ , ... ]
 ) ]
@@ -23,8 +26,8 @@ TABLES (
 [ COMMENT = '<view_description>' ];
 ```
 
-- **Clause order is fixed**: `TABLES → FACTS → DIMENSIONS → METRICS`. Out-of-order `FACTS` raises `Syntax error at or near 'FACTS'`.
-- `TABLES` is required. `FACTS` / `DIMENSIONS` / `METRICS` are all optional (a view with only `TABLES` creates successfully).
+- **Clause order is fixed**: `TABLES → VARIABLES → FACTS → DIMENSIONS → METRICS`. Out-of-order `VARIABLES` raises `Syntax error at or near 'VARIABLES'`; out-of-order `FACTS` raises `Syntax error at or near 'FACTS'`.
+- `TABLES` is required. `VARIABLES` / `FACTS` / `DIMENSIONS` / `METRICS` are all optional (a view with only `TABLES` creates successfully).
 - `CREATE OR REPLACE` atomically replaces an existing definition without a prior `DROP`; scripts are naturally idempotent.
 - Without `OR REPLACE`, recreating an existing view raises `already exists`; use `IF NOT EXISTS` or `DROP SEMANTIC VIEW IF EXISTS` first.
 
@@ -53,6 +56,73 @@ TABLES (
 
 ---
 
+## Variable definition
+
+```sql
+<var_name> <data_type> [ { DEFAULT | = } <default_value> ] [ COMMENT = '<description>' ]
+```
+
+`VARIABLES` declares **query parameters**: a dimension/metric expression references the variable name, and a query can bind it via the `semantic_view()` `VARIABLES` clause, letting one view fetch under different thresholds/definitions.
+
+| Parameter | Description |
+|---|---|
+| `<var_name> <data_type>` | Declare a query parameter (e.g. `min_amount decimal(12,2)`). Dimension/metric expressions reference it by **bare name** (distinct from the `alias.column` form of a physical column). If it has no default, any expression that references it must bind it at query time, else an error |
+| `DEFAULT <value>` / `= <value>` | Default used when a query does not bind it. The two forms are equivalent and both persist as `DEFAULT`. The value must be a constant |
+| `COMMENT = '<description>'` | Variable description |
+
+- Reference a variable by its bare name inside a dimension/metric expression; the engine tells it apart from a physical column by the absence of an `alias.` prefix.
+- Bind at query time with `semantic_view(... VARIABLES <name> => <value>)` (`=>` or `=`, constant only); unbound variables fall back to the default.
+
+Worked example:
+
+```sql
+CREATE TABLE doc_test.doc_var_sales (sale_id INT, amount DECIMAL(12,2));
+INSERT INTO doc_test.doc_var_sales VALUES (1, 500.00), (2, 1500.00), (3, 2500.00);
+
+CREATE OR REPLACE SEMANTIC VIEW doc_test.sv_variables
+TABLES (
+    sales AS doc_test.doc_var_sales PRIMARY KEY (sale_id)
+)
+VARIABLES (
+    min_amount DECIMAL(12,2) DEFAULT 1000.00 COMMENT 'HIGH/LOW threshold'
+)
+DIMENSIONS (
+    sales.sale_category AS CASE WHEN sales.amount >= min_amount THEN 'HIGH' ELSE 'LOW' END
+)
+METRICS (
+    sales.total_sales AS SUM(sales.amount)
+);
+
+-- Default (min_amount = 1000): 1500+2500 → HIGH 4000, 500 → LOW 500
+SELECT * FROM semantic_view(
+    doc_test.sv_variables
+    DIMENSIONS sale_category
+    METRICS total_sales
+) ORDER BY sale_category;
+
+-- Rebind for this query only (=> or = both work): threshold 2000
+SELECT * FROM semantic_view(
+    doc_test.sv_variables
+    DIMENSIONS sale_category
+    METRICS total_sales
+    VARIABLES min_amount => 2000.00
+) ORDER BY sale_category;
+```
+
+```
+-- Default             -- Bound to 2000
++---------------+-------------+   +---------------+-------------+
+| sale_category | total_sales |   | sale_category | total_sales |
++---------------+-------------+   +---------------+-------------+
+| HIGH          |   4000.00   |   | HIGH          |   2500.00   |
+| LOW           |    500.00   |   | LOW           |   2000.00   |
++---------------+-------------+   +---------------+-------------+
+```
+
+> `VARIABLES` must sit right after `TABLES`, before `FACTS`/`DIMENSIONS`/`METRICS`; placing it later raises `Syntax error at or near 'VARIABLES'`.
+
+---
+
 ## Fact definition
 
 ```sql
@@ -75,12 +145,12 @@ FACTS (
     orders.o_orderkey AS o_orderkey,
     customer.order_count AS COUNT(orders.o_orderkey)
 )
--- query: SELECT * FROM semantic_view(sv, FACTS customer.order_count)
+-- query: SELECT * FROM semantic_view(sv FACTS customer.order_count)
 
 -- Pattern 2: FACTS only passes through (alias differs from physical column); aggregate in METRICS
 FACTS (orders.order_id AS o_orderkey)
 METRICS (customer.order_count AS COUNT(orders.order_id))
--- query: SELECT * FROM semantic_view(sv, METRICS customer.order_count)
+-- query: SELECT * FROM semantic_view(sv METRICS customer.order_count)
 ```
 
 ---
@@ -151,20 +221,25 @@ CZLH-42000: METRICS 'orders.raw_cnt' is PRIVATE and cannot be selected or filter
 ```sql
 SELECT *
 FROM semantic_view(
-    <view_name>,
-    [ DIMENSIONS <name> [ , DIMENSIONS <name> ... ] ]
-    [ METRICS    <name> [ , METRICS    <name> ... ] ]
-    [ FACTS      <name> [ , FACTS      <name> ... ] ]
+    <view_name>
+    [ DIMENSIONS <name> [ , <name> ... ] ]
+    [ METRICS    <name> [ , <name> ... ] ]
+    [ FACTS      <name> [ , <name> ... ] ]
+    [ WHERE <predicate> ]
+    [ VARIABLES <name> => <value> [ , ... ] ]
 )
 [ WHERE ... ] [ ORDER BY ... ] [ LIMIT ... ];
 ```
 
+- **No comma after the view name** — the first clause keyword follows directly. A comma there raises a syntax error.
+- `DIMENSIONS` / `METRICS` / `FACTS` may each appear **at most once**; list multiple items under one keyword separated by commas (`DIMENSIONS a, b`, not `DIMENSIONS a DIMENSIONS b`). A repeated keyword raises `duplicate METRICS clause in semantic_view(); each of DIMENSIONS, METRICS and FACTS may appear at most once`.
+- The three keywords are **order-independent** (`METRICS ... DIMENSIONS ...` equals `DIMENSIONS ... METRICS ...`); output columns follow item write order.
+- `WHERE` and `VARIABLES` are **trailing clauses**, placed after the three keywords, with `WHERE` before `VARIABLES`. The inner `WHERE` filters dimensions; an outer `WHERE` on the query works too.
 - Names may be qualified (`alias.name`) or short (when unique in the view).
-- The parentheses accept only `DIMENSIONS` / `METRICS` / `FACTS` — **not** `WHERE`. Put filters in the outer query using dimension short names.
 - Results are grouped by the requested dimensions automatically — no `GROUP BY`.
 - At least one `DIMENSIONS` / `METRICS` / `FACTS` is required.
 - Only `METRICS` → single-row global aggregate; only `DIMENSIONS` → deduplicated dimension list.
-- `SELECT col1, col2 FROM semantic_view(...)` (partial columns) is supported.
+- `SELECT col1, col2 FROM semantic_view(...)` (partial columns) is supported; `ORDER BY` / `LIMIT` go on the outer query.
 
 ---
 
@@ -215,12 +290,20 @@ Must include `EXTENDED` (`DESC <name>`, `DESC SEMANTIC VIEW`, `DESCRIBE SEMANTIC
 ### Introspection (structured, one row per object)
 
 ```sql
-SHOW SEMANTIC DIMENSIONS IN <view> [ FOR METRIC <metric> ];
-SHOW SEMANTIC METRICS    IN <view>;
-SHOW SEMANTIC FACTS      IN <view>;
+SHOW SEMANTIC DIMENSIONS    IN <view> [ FOR METRIC <metric> ];
+SHOW SEMANTIC METRICS       IN <view>;
+SHOW SEMANTIC FACTS         IN <view>;
+SHOW SEMANTIC RELATIONSHIPS IN <view>;
+SHOW SEMANTIC TABLES        IN <view>;
 ```
 
-All three return the same 9 columns: `workspace_name`, `schema_name`, `semantic_view_name`, `table_name`, `name`, `data_type`, `synonyms`, `comment`, `access` (`PUBLIC`/`PRIVATE`). The dimension form with `FOR METRIC <metric>` returns only dimensions that can legally group that metric (equal-or-coarser grain), letting an agent build grain-safe queries directly. Undefined object classes return zero rows (normal).
+`DIMENSIONS` / `METRICS` / `FACTS` return the same 9 columns: `workspace_name`, `schema_name`, `semantic_view_name`, `table_name`, `name`, `data_type`, `synonyms`, `comment`, `access` (`PUBLIC`/`PRIVATE`). The dimension form with `FOR METRIC <metric>` returns only dimensions that can legally group that metric (equal-or-coarser grain), letting an agent build grain-safe queries directly. Undefined object classes return zero rows (normal).
+
+`RELATIONSHIPS` returns foreign-key relationships, columns `workspace_name`, `schema_name`, `semantic_view_name`, `relationship_name`, `table_name`, `columns`, `ref_table_name`, `ref_columns`, `relationship_type`. `relationship_type` reflects the inferred cardinality — a one-to-many foreign key reads as `MANY_TO_ONE` (child looking toward parent).
+
+`TABLES` returns the logical-to-physical table mapping, columns `workspace_name`, `schema_name`, `semantic_view_name`, `table_name`, `base_table`, `primary_key`, `synonyms`, `comment`.
+
+> `table_name` and `name` come back **upper-cased** (e.g. `EMPS`, `EMPLOYEE_NAME`) — the normalized form of the logical alias/object name. When querying `semantic_view()` you may use lower-case or the original casing.
 
 ### Permissions (read-only)
 

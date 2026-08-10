@@ -71,11 +71,9 @@ METRICS (
 );
 
 SELECT * FROM semantic_view(
-    doc_test.sv_conditional,
-    DIMENSIONS orders.region,
-    METRICS orders.total_revenue,
-    METRICS orders.open_revenue,
-    METRICS orders.done_revenue
+    doc_test.sv_conditional
+    DIMENSIONS orders.region
+    METRICS orders.total_revenue, orders.open_revenue, orders.done_revenue
 ) ORDER BY region;
 ```
 
@@ -117,12 +115,9 @@ METRICS (
 );
 
 SELECT * FROM semantic_view(
-    doc_test.sv_arith,
-    DIMENSIONS emps.department,
-    METRICS emps.total_salary,
-    METRICS emps.headcount,
-    METRICS emps.salary_range,
-    METRICS emps.avg_salary
+    doc_test.sv_arith
+    DIMENSIONS emps.department
+    METRICS emps.total_salary, emps.headcount, emps.salary_range, emps.avg_salary
 ) ORDER BY department;
 ```
 
@@ -165,8 +160,8 @@ METRICS (
 );
 
 SELECT * FROM semantic_view(
-    doc_test.sv_private,
-    DIMENSIONS sales.region,
+    doc_test.sv_private
+    DIMENSIONS sales.region
     METRICS sales.margin_pct
 ) ORDER BY region;
 ```
@@ -217,11 +212,9 @@ METRICS (
 );
 
 SELECT * FROM semantic_view(
-    doc_test.sv_window,
-    DIMENSIONS orders.region,
-    DIMENSIONS orders.orderkey,
-    METRICS orders.revenue,
-    METRICS orders.pct_of_region
+    doc_test.sv_window
+    DIMENSIONS orders.region, orders.orderkey
+    METRICS orders.revenue, orders.pct_of_region
 ) ORDER BY region, orderkey;
 ```
 
@@ -266,12 +259,12 @@ FACTS (
     orders.o_orderkey AS o_orderkey,
     customer.order_count AS COUNT(orders.o_orderkey)
 )
--- query: SELECT * FROM semantic_view(sv, FACTS customer.order_count)
+-- query: SELECT * FROM semantic_view(sv FACTS customer.order_count)
 
 -- Pattern 2: FACTS only passes through (alias differs from column), aggregate in METRICS
 FACTS (orders.order_id AS o_orderkey)
 METRICS (customer.order_count AS COUNT(orders.order_id))
--- query: SELECT * FROM semantic_view(sv, METRICS customer.order_count)
+-- query: SELECT * FROM semantic_view(sv METRICS customer.order_count)
 ```
 
 Worked FACTS example (Pattern 2):
@@ -300,8 +293,8 @@ METRICS (
 );
 
 SELECT * FROM semantic_view(
-    doc_test.sv_facts,
-    DIMENSIONS customer.cust_name,
+    doc_test.sv_facts
+    DIMENSIONS customer.cust_name
     METRICS customer.order_count
 ) ORDER BY cust_name;
 ```
@@ -381,10 +374,9 @@ METRICS (
 
 ```sql
 SELECT * FROM semantic_view(
-    doc_rel_analysis,
-    DIMENSIONS customers.customer_name,
-    METRICS orders.order_count,
-    METRICS orders.order_total
+    doc_rel_analysis
+    DIMENSIONS customers.customer_name
+    METRICS orders.order_count, orders.order_total
 ) ORDER BY customer_name;
 ```
 
@@ -408,10 +400,9 @@ Mental model: **query grain = the metric's table; dimension-table attributes are
 
 ```sql
 SELECT * FROM semantic_view(
-    doc_rel_analysis,
-    DIMENSIONS customers.customer_name,
-    METRICS orders.order_count,
-    METRICS line_items.qty_total
+    doc_rel_analysis
+    DIMENSIONS customers.customer_name
+    METRICS orders.order_count, line_items.qty_total
 ) ORDER BY customer_name;
 ```
 
@@ -419,33 +410,62 @@ SELECT * FROM semantic_view(
 +---------------+-------------+-----------+
 | customer_name | order_count | qty_total |
 +---------------+-------------+-----------+
+| NULL          |      1      |   NULL    |
 | Alice         |      2      |     8     |
 | Bob           |      1      |     7     |
 | Carol         |      1      |     2     |
 +---------------+-------------+-----------+
 ```
 
-Alice has 2 orders; order 101 has 2 line items (qty 5, 3), order 102 has none. `order_count` is 2 (not inflated to 3 by line rows) and `qty_total` correctly sums to 8. This is the value of the semantic layer over a hand-written `orders JOIN line_items` (which would double-count orders).
+Alice has 2 orders; order 101 has 2 line items (qty 5, 3), order 102 has none. `order_count` is 2 (not inflated to 3 by line rows) and `qty_total` correctly sums to 8. This is the value of the semantic layer over a hand-written `orders JOIN line_items` (which would double-count orders). Orphan order 105 still appears as `customer_name = NULL`: it has 1 order but no line items, so `qty_total` is `NULL` — **a child metric returns `NULL`, not 0, for a parent row with no child rows**; use `COALESCE(qty_total, 0)` in the outer query when you need 0.
 
-### Chasm trap: sibling one-to-many branches
+### Multi-branch fan-out (chasm trap): handled automatically
 
-`orders` and `addresses` are two independent one-to-many branches under `customers`. Combining their metrics in one query errors:
+`orders` and `addresses` are two independent one-to-many branches under `customers`. The classic chasm-trap problem: naively joining both branches through `customers` would cross Alice's 2 orders with her 2 addresses into 4 rows, inflating both counts. The engine instead **aggregates each branch at its own grain, then aligns on the dimension**, so combining both branches' metrics in one query returns correct numbers — no inflation:
 
 ```sql
 SELECT * FROM semantic_view(
-    doc_rel_analysis,
-    DIMENSIONS customers.customer_name,
-    METRICS orders.order_count,
-    METRICS addresses.addr_count
-);
+    doc_rel_analysis
+    DIMENSIONS customers.customer_name
+    METRICS orders.order_count, addresses.addr_count
+) ORDER BY customer_name;
 ```
 
 ```
-CZLH-65000: Compiler internal error - generating logical plan failed,
-error message No relationship found for table addresses
++---------------+-------------+------------+
+| customer_name | order_count | addr_count |
++---------------+-------------+------------+
+| NULL          |      1      |    NULL    |
+| Alice         |      2      |     2      |
+| Bob           |      1      |     1      |
+| Carol         |      1      |     3      |
++---------------+-------------+------------+
 ```
 
-Naively joining both branches through `customers` would cross Alice's 2 orders with her 2 addresses into 4 rows, inflating both counts. The engine errors rather than returning wrong numbers. Fix: query each branch separately.
+Alice's `order_count` is 2 and `addr_count` is 2 — neither cross-inflated to 4; the engine computes each aggregate at its own grain (order and address) and aligns by `customer_name`. Orphan order 105 appears as `NULL` with no matching address, so `addr_count` is `NULL`.
+
+The same holds for deeper combinations. Three branches' metrics together, each still aggregated correctly:
+
+```sql
+SELECT * FROM semantic_view(
+    doc_rel_analysis
+    DIMENSIONS customers.customer_name
+    METRICS orders.order_count, line_items.qty_total, addresses.addr_count
+) ORDER BY customer_name;
+```
+
+```
++---------------+-------------+-----------+------------+
+| customer_name | order_count | qty_total | addr_count |
++---------------+-------------+-----------+------------+
+| NULL          |      1      |   NULL    |    NULL    |
+| Alice         |      2      |     8     |     2      |
+| Bob           |      1      |     7     |     1      |
+| Carol         |      1      |     2     |     3      |
++---------------+-------------+-----------+------------+
+```
+
+> Earlier versions raised `No relationship found for table` on cross-branch combinations and required splitting into separate queries. The current version handles the fan-out automatically — you can put multiple branches' metrics in one query. Still verify row counts and magnitudes match expectations.
 
 ### Other modeling facts
 
@@ -472,6 +492,6 @@ Standard SQL semantics; the confusing points:
 |---|---|---|
 | NULL rows in a dimension | Orphan child rows that don't join a parent | Check FK data integrity; or filter NULL in the outer `WHERE` |
 | Some dimension members missing | Member has no fact rows in the metric table (e.g. a customer with no orders) | Query the dimension table directly when you need the full set |
-| `No relationship found` | Combined two sibling-branch metrics (chasm trap) | Split into separate queries, one relationship path each |
+| Cross-branch numbers look off | Sibling-branch metrics combined (chasm-trap fan-out) | Supported — the engine aggregates each branch at its own grain, no inflation; verify counts/magnitudes match expectations |
 | Cross-table metric values inflated | Hand-written JOIN double-counts | Let the semantic view aggregate per metric grain; don't hand-write JOINs |
 

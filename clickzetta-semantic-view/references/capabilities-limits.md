@@ -19,12 +19,14 @@ Quick reference for what semantic views support, how to diagnose errors, and how
 | `is_unique` / `is_time` read-back | Not faithful | Reads back `true` whenever declared, regardless of set value |
 | `CREATE OR REPLACE` | Supported | Atomic replace, idempotent scripts |
 | `SHOW CREATE SEMANTIC VIEW` | Supported | Returns replayable DDL |
-| `SHOW SEMANTIC DIMENSIONS/METRICS/FACTS` | Supported | 9 columns incl. `access`; dimension form supports `FOR METRIC` |
+| `SHOW SEMANTIC DIMENSIONS/METRICS/FACTS` | Supported | 9 columns incl. `access`; dimension form supports `FOR METRIC`; `table_name`/`name` come back upper-cased |
+| `SHOW SEMANTIC RELATIONSHIPS / TABLES` | Supported | RELATIONSHIPS: FK rows incl. `relationship_type` (`MANY_TO_ONE`); TABLES: logical→physical mapping incl. `base_table`/`primary_key` |
+| Query parameters (`VARIABLES`) | Supported | Declared after `TABLES`; referenced by bare name; bound at query time with `VARIABLES <name> => <value>` (default otherwise) |
 | PUBLIC / PRIVATE visibility | Supported | PRIVATE can only be composed, not queried directly |
 | Window-function metrics (RANK / share / running total) | Supported | `PARTITION BY`/`ORDER BY`: qualified dim alias, same-table, dim must be in query |
 | Cross-table metric division (referencing other table's columns) | Not supported | `cannot resolve column` |
 | Grouping a coarse metric by a finer dimension (drill-down) | Blocked | `invalid dimension ... finer grain` (fan-out guard) |
-| Chasm trap (combining sibling-branch metrics) | Blocked | `No relationship found for table ...` |
+| Chasm trap (combining sibling-branch metrics) | Supported | Engine aggregates each branch at its own grain, no fan-out inflation |
 | `ALTER` add/drop dimension or metric | Not supported | Use `CREATE OR REPLACE`; `RENAME TO` cannot carry a schema prefix |
 | Create with only `TABLES` | Supported | `DIMENSIONS` / `METRICS` optional |
 | Permissions | Read-only | `SELECT` / `ALL`; no `INSERT` / `UPDATE` / `DELETE` |
@@ -40,7 +42,7 @@ Quick reference for what semantic views support, how to diagnose errors, and how
 | Create: `cannot resolve column` (metric aggregates parent column) | Metric aggregated a coarser parent's column | Only aggregate own or finer-child columns; pass a child column through `FACTS` first |
 | Create: `type ... does not match` | FK and referenced column types differ | Use type-matching columns, or name the referenced column explicitly |
 | Query: `invalid dimension ... finer grain` | Grouped a coarser metric by a finer-grain dimension (drill-down) | Group only by equal/coarser dimensions, or drop that dimension |
-| Query: `No relationship found for table` | Combined two sibling-branch metrics (chasm trap) | Split into separate queries, one relationship path each |
+| Query: `duplicate METRICS clause ... may appear at most once` | Repeated a keyword (old `METRICS a, METRICS b` style) | List items under one keyword: `METRICS a, b`; no comma after the view name either |
 | Query: `table or view not found - semantic_view` | Passed no DIMENSIONS/METRICS/FACTS | Specify at least one dimension, metric, or fact |
 | Create: `already exists` | View exists and no replace syntax used | Use `CREATE OR REPLACE`, or add `IF NOT EXISTS` |
 | Query: `is PRIVATE and cannot be selected` | Queried a PRIVATE object directly | Query the PUBLIC metric that composes it |
@@ -61,8 +63,8 @@ Quick reference for what semantic views support, how to diagnose errors, and how
 SELECT department, avg_salary
 FROM (
     SELECT * FROM semantic_view(
-        doc_test.emp_dept_analysis,
-        DIMENSIONS emps.department,
+        doc_test.emp_dept_analysis
+        DIMENSIONS emps.department
         METRICS emps.avg_salary
     )
 )
@@ -74,10 +76,9 @@ WHERE avg_salary > 90000;
 ```sql
 WITH dept_stats AS (
     SELECT * FROM semantic_view(
-        doc_test.emp_dept_analysis,
-        DIMENSIONS emps.department,
-        METRICS emps.avg_salary,
-        METRICS emps.total_employees
+        doc_test.emp_dept_analysis
+        DIMENSIONS emps.department
+        METRICS emps.avg_salary, emps.total_employees
     )
 )
 SELECT * FROM dept_stats
@@ -90,8 +91,8 @@ ORDER BY avg_salary DESC;
 ```sql
 SELECT sv.department, sv.avg_salary, d.manager AS manager_name
 FROM semantic_view(
-    doc_test.emp_dept_analysis,
-    DIMENSIONS emps.department,
+    doc_test.emp_dept_analysis
+    DIMENSIONS emps.department
     METRICS emps.avg_salary
 ) sv
 JOIN doc_test.departments d ON sv.department = d.dept_name;
@@ -103,19 +104,17 @@ JOIN doc_test.departments d ON sv.department = d.dept_name;
 -- Materialize as a table
 CREATE TABLE doc_test.dept_salary_snapshot AS
 SELECT * FROM semantic_view(
-    doc_test.emp_dept_analysis,
-    DIMENSIONS emps.department,
-    METRICS emps.total_employees,
-    METRICS emps.avg_salary
+    doc_test.emp_dept_analysis
+    DIMENSIONS emps.department
+    METRICS emps.total_employees, emps.avg_salary
 );
 
 -- Append into an existing table
 INSERT INTO doc_test.dept_salary_snapshot
 SELECT * FROM semantic_view(
-    doc_test.emp_dept_analysis,
-    DIMENSIONS emps.department,
-    METRICS emps.total_employees,
-    METRICS emps.avg_salary
+    doc_test.emp_dept_analysis
+    DIMENSIONS emps.department
+    METRICS emps.total_employees, emps.avg_salary
 );
 ```
 
@@ -141,8 +140,8 @@ SELECT
         || ', average salary: ' || CAST(avg_salary AS STRING)
     ) AS ai_comment
 FROM semantic_view(
-    doc_test.emp_dept_analysis,
-    DIMENSIONS emps.department,
+    doc_test.emp_dept_analysis
+    DIMENSIONS emps.department
     METRICS emps.avg_salary
 );
 ```
