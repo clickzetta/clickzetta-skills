@@ -7,10 +7,13 @@
 ## CREATE SEMANTIC VIEW
 
 ```sql
-CREATE [ OR REPLACE ] SEMANTIC VIEW <view_name>
+CREATE [ OR REPLACE ] SEMANTIC VIEW [ IF NOT EXISTS ] <view_name>
 TABLES (
     <logical_table_definition> [ , ... ]
 )
+[ RELATIONSHIPS (
+    <relationship_definition> [ , ... ]
+) ]
 [ VARIABLES (
     <variable_definition> [ , ... ]
 ) ]
@@ -26,9 +29,9 @@ TABLES (
 [ COMMENT = '<view_description>' ];
 ```
 
-- **Clause order is fixed**: `TABLES → VARIABLES → FACTS → DIMENSIONS → METRICS`. Out-of-order `VARIABLES` raises `Syntax error at or near 'VARIABLES'`; out-of-order `FACTS` raises `Syntax error at or near 'FACTS'`.
-- `TABLES` is required. `VARIABLES` / `FACTS` / `DIMENSIONS` / `METRICS` are all optional (a view with only `TABLES` creates successfully).
-- `CREATE OR REPLACE` atomically replaces an existing definition without a prior `DROP`; scripts are naturally idempotent.
+- **Clause order is fixed**: `TABLES → RELATIONSHIPS → VARIABLES → FACTS → DIMENSIONS → METRICS`. An out-of-order clause raises `Syntax error at or near '<clause>'`.
+- `TABLES` is required. `RELATIONSHIPS` / `VARIABLES` / `FACTS` / `DIMENSIONS` / `METRICS` are all optional (a view with only `TABLES` creates successfully).
+- `CREATE OR REPLACE` atomically replaces an existing definition without a prior `DROP`; scripts are naturally idempotent. `IF NOT EXISTS` silently skips when the view exists (mutually exclusive with `OR REPLACE`).
 - Without `OR REPLACE`, recreating an existing view raises `already exists`; use `IF NOT EXISTS` or `DROP SEMANTIC VIEW IF EXISTS` first.
 
 ---
@@ -53,6 +56,16 @@ TABLES (
 
 - A table referenced by a foreign key must be defined **before** the referencing table.
 - Multi-hop foreign keys are supported (e.g. `line_items → orders → customers`).
+
+---
+
+## Relationship definition
+
+```sql
+<ref_alias> ( <fk_column> [ , ... ] ) REFERENCES <referenced_alias> [ ( <ref_column> [ , ... ] ) ]
+```
+
+`RELATIONSHIPS` is a top-level clause that declares foreign keys, equivalent to the inline `FOREIGN KEY` inside a logical table — the same relationship may be written either inline or collected in `RELATIONSHIPS`. Both are accepted on create; `SHOW CREATE SEMANTIC VIEW` / `DESC EXTENDED` normalize the read-back to the `RELATIONSHIPS` form. FK and referenced column types must match; name the referenced column explicitly when the names differ. List multiple columns in order for a composite key.
 
 ---
 
@@ -234,7 +247,8 @@ FROM semantic_view(
 - **No comma after the view name** — the first clause keyword follows directly. A comma there raises a syntax error.
 - `DIMENSIONS` / `METRICS` / `FACTS` may each appear **at most once**; list multiple items under one keyword separated by commas (`DIMENSIONS a, b`, not `DIMENSIONS a DIMENSIONS b`). A repeated keyword raises `duplicate METRICS clause in semantic_view(); each of DIMENSIONS, METRICS and FACTS may appear at most once`.
 - The three keywords are **order-independent** (`METRICS ... DIMENSIONS ...` equals `DIMENSIONS ... METRICS ...`); output columns follow item write order.
-- `WHERE` and `VARIABLES` are **trailing clauses**, placed after the three keywords, with `WHERE` before `VARIABLES`. The inner `WHERE` filters dimensions; an outer `WHERE` on the query works too.
+- `WHERE` and `VARIABLES` are **trailing clauses**, placed after the three keywords, with `WHERE` before `VARIABLES`. The inner `WHERE` filters dimensions and accepts a qualified alias (`emps.department`) or short name; an outer `WHERE` works too but references output columns, so **short name only** (`emps.department` there raises `cannot resolve column`). Neither takes a physical column name.
+- The inner `WHERE` runs **before** metric aggregation and cannot reference a metric — `WHERE total_employees > 1` raises `a METRIC '...' is not allowed in the semantic_view() WHERE clause`. Filter on aggregates in an outer query instead.
 - Names may be qualified (`alias.name`) or short (when unique in the view).
 - Results are grouped by the requested dimensions automatically — no `GROUP BY`.
 - At least one `DIMENSIONS` / `METRICS` / `FACTS` is required.
