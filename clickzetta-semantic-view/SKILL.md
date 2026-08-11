@@ -53,7 +53,7 @@ Any dimension / metric / fact can be prefixed with `PRIVATE` to hide it from dir
 ## Creating a semantic view
 
 ```sql
-CREATE [ OR REPLACE ] SEMANTIC VIEW <view_name>
+CREATE [ OR REPLACE ] SEMANTIC VIEW [ IF NOT EXISTS ] <view_name>
 TABLES (
     <table_alias> AS <schema>.<physical_table>
         PRIMARY KEY ( <column> [ , ... ] )
@@ -62,6 +62,10 @@ TABLES (
         [ COMMENT = '<description>' ]
     [ , ... ]
 )
+[ RELATIONSHIPS (
+    <ref_alias> ( <fk_column> [ , ... ] ) REFERENCES <referenced_alias> [ ( <ref_column> [ , ... ] ) ]
+    [ , ... ]
+) ]
 [ VARIABLES (
     <var_name> <data_type> [ { DEFAULT | = } <default_value> ] [ COMMENT = '<description>' ]
     [ , ... ]
@@ -86,7 +90,9 @@ TABLES (
 [ COMMENT = '<view_description>' ];
 ```
 
-> ⚠️ Clause order is fixed: `TABLES → VARIABLES → FACTS → DIMENSIONS → METRICS`. Only `TABLES` is required; the rest are optional. Writing `VARIABLES` after `FACTS`/`DIMENSIONS`, or `FACTS` after `DIMENSIONS`/`METRICS`, raises `Syntax error at or near 'VARIABLES'` / `'FACTS'`. Dimension metadata order is also fixed: `WITH SYNONYMS` must come before `is_unique`/`is_time`/`enum_values`.
+> ⚠️ Clause order is fixed: `TABLES → RELATIONSHIPS → VARIABLES → FACTS → DIMENSIONS → METRICS`. Only `TABLES` is required; the rest are optional. An out-of-order clause raises `Syntax error at or near '<clause>'` (e.g. `VARIABLES` before `RELATIONSHIPS`, or `FACTS` after `DIMENSIONS`). Dimension metadata order is also fixed: `WITH SYNONYMS` must come before `is_unique`/`is_time`/`enum_values`.
+
+> Foreign keys have two equivalent forms: the inline `FOREIGN KEY` inside a logical table, or the top-level `RELATIONSHIPS` clause. Both are accepted on create; `SHOW CREATE SEMANTIC VIEW` / `DESC EXTENDED` always read them back normalized as a `RELATIONSHIPS` clause. `CREATE ... IF NOT EXISTS` silently skips when the view exists (mutually exclusive with `OR REPLACE`).
 
 ### Complete example
 
@@ -204,7 +210,8 @@ SELECT * FROM semantic_view(
 - `DIMENSIONS`/`METRICS`/`FACTS` are **order-independent** (`METRICS ... DIMENSIONS ...` equals `DIMENSIONS ... METRICS ...`); output columns follow item write order. `WHERE` and `VARIABLES` are **trailing clauses**, after the three keywords, with `WHERE` before `VARIABLES`.
 - Only `METRICS` → single-row global aggregate. Only `DIMENSIONS` → deduplicated dimension list.
 - Filter dimensions with an inner trailing `WHERE` or an outer `WHERE`; `ORDER BY` / `LIMIT` and `SELECT col1, col2` only go on the outer query.
-- **WHERE uses dimension short names**, not physical column names: `WHERE department = 'x'` ✅, `WHERE dept = 'x'` ❌.
+- **Neither WHERE takes a physical column name** — use the dimension. The inner `WHERE` accepts a qualified alias (`emps.department`) or short name (`department`); the outer `WHERE` references output columns, so **short name only** (`emps.department` there raises `cannot resolve column`).
+- Inner `WHERE` runs **before** metric aggregation, so it cannot reference a metric — `WHERE total_employees > 1` raises `a METRIC '...' is not allowed in the semantic_view() WHERE clause`. Filter on aggregates in an outer query: `SELECT * FROM (SELECT * FROM semantic_view(...)) t WHERE t.total_employees > 1`.
 
 ### Traditional SQL vs semantic view
 
