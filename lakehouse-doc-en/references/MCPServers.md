@@ -3,7 +3,7 @@
 Singdata Lakehouse Studio includes a built-in managed MCP Server. You do not need to deploy a service process yourself. Create a Personal Access Token in Studio, then configure the corresponding client to connect Claude Desktop, Cursor, Cherry Studio, or other AI agents — and the agent can directly operate Lakehouse and Studio data, tasks, and operations capabilities.
 
 This capability is designed for two types of users:
-
+ 
 * Users who want to connect Lakehouse and Studio to a general-purpose AI client
 * Users who want AI agents to participate directly in task development, task execution, and operations troubleshooting
 

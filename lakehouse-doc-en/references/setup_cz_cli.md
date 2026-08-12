@@ -44,53 +44,37 @@ If using a Personal Access Token (PAT), you can replace username and password wi
 
 ### macOS / Linux
 
-Recommended: install via npm:
+Use the one-line install script:
 
-```Plain
-npm install -g @clickzetta/cz-cli
-```
-
-
-Alternatively, use the one-line install script:
-
-```Plain
-curl -fsSL https://github.com/clickzetta/cz-cli/releases/latest/download/install.sh | sh
+```bash
+curl -fsSL https://cz-cli.ai/install.sh | bash
 ```
 
 After installation, reload your Shell configuration:
 
 #### zsh Users
 
-```Plain
+```bash
 source ~/.zshrc
 ```
 
 #### bash Users
 
-```Plain
+```bash
 source ~/.bashrc
 ```
 
 ### Windows
 
-Method 1: Install via npm.
+The install script must run in a Bash environment. Run it in WSL (Windows Subsystem for Linux) or Git Bash:
 
-If Node.js and npm are already installed on your machine, install the npm package directly:
-
-```Plain
-npm install -g @clickzetta/cz-cli
+```bash
+curl -fsSL https://cz-cli.ai/install.sh | bash
 ```
-
-Method 2: Download the installer package.
-
-1. Open GitHub Releases: <https://github.com/clickzetta/cz-cli/releases>
-2. Download the Windows archive, e.g., cz-cli-windows-x64.zip.
-3. Extract and add the directory containing cz-cli.exe to your system PATH.
-4. Re-open PowerShell or CMD.
 
 ### Verify Installation
 
-```Plain
+```bash
 cz-cli --version
 ```
 
@@ -98,7 +82,7 @@ Seeing a version number indicates a successful installation.
 
 You can also check the help:
 
-```Plain
+```bash
 cz-cli --help
 ```
 
@@ -110,7 +94,7 @@ A Profile is a local configuration that stores connection information for cz-cli
 
 For example:
 
-```sql
+```bash
 cz-cli setup
 ```
 
@@ -118,8 +102,8 @@ Then follow the guided prompts to register a new Singdata account, or enter your
 
 ### Create with CLI Credential
 
-```Scala
-cz-cli setup --credencial <your cli Connection String>
+```bash
+cz-cli setup --credential <your cli Connection String>
 ```
 
 #### How to Obtain a PAT
@@ -142,8 +126,8 @@ cz-cli setup --credencial <your cli Connection String>
 
 Once you have copied the CLI connection string, return to the cz-cli window, insert the connection string into the following command, and execute:
 
-```Plain
-cz-cli setup --credential <your cli Connection String >
+```bash
+cz-cli setup --credential <your cli Connection String>
 ```
 
 Once execution completes, the profile configuration is done.
@@ -152,33 +136,33 @@ Once execution completes, the profile configuration is done.
 
 If you already have a JDBC connection string, you can create a profile directly:
 
-```Plain
-cz-cli profile create prod   --jdbc "jdbc:clickzetta://<instance_name>.<service_endpoint>/<workspace_name>?username=<username>&password=<password>&schema=public&virtualCluster=DEFAULT"
+```bash
+cz-cli profile create prod --jdbc "jdbc:clickzetta://<instance_name>.<service_endpoint>/<workspace_name>?username=<username>&password=<password>&schema=public&virtualCluster=DEFAULT"
 ```
 
 ## Viewing and Switching Profiles
 
 **View profiles configured on this machine**
 
-```Plain
+```bash
 cz-cli profile list
 ```
 
 **Set the default profile**
 
-```Plain
+```bash
 cz-cli profile use prod
 ```
 
 **Temporarily use a specific profile for a command**
 
-```Plain
+```bash
 cz-cli -p uat status
 ```
 
 **Verify connection**
 
-```Plain
+```bash
 cz-cli -p prod status
 ```
 
@@ -188,27 +172,27 @@ If `connected` is `true` in the result, the connection is successful.
 
 **View the current workspace**
 
-```Plain
-cz-cli -p prod workspace current
+```bash
+cz-cli -p prod workspace list
 ```
 
 **View Schemas**
 
-```Plain
+```bash
 cz-cli -p prod schema list
 ```
 
 **Execute a read-only query**
 
-**cz-cli sql** defaults to asynchronous submission, suitable for long-running queries; add `--sync` if you want the command to wait and return results directly.
+**cz-cli sql** defaults to synchronous execution (`--sync`), waiting and returning results directly; for large or long-running queries, add `--async` to return only a job_id and fetch the results later.
 
-```Plain
+```bash
 cz-cli -p prod sql "SELECT current_timestamp()" --sync
 ```
 
 You can also pass SQL using **-e**:
 
-```Plain
+```bash
 cz-cli -p prod sql -e "SELECT * FROM public.your_table LIMIT 10" --sync
 ```
 
@@ -216,14 +200,15 @@ cz-cli -p prod sql -e "SELECT * FROM public.your_table LIMIT 10" --sync
 
 To prevent accidental operations, write operations such as *INSERT*, *UPDATE*, *DELETE*, *CREATE*, *DROP* require explicitly adding --*write*.
 
-```Plain
+```bash
 cz-cli -p prod sql --write --sync -e "CREATE TABLE IF NOT EXISTS public.demo_orders (id INT, amount DECIMAL(18,2))"
 ```
 
 **View table structure and sample data**
 
-```Plain
-cz-cli -p prod table describe public.demo_orderscz-cli -p prod table preview public.demo_orders
+```bash
+cz-cli -p prod table describe public.demo_orders
+cz-cli -p prod table preview public.demo_orders
 ```
 
 ## Studio Task Development and Operations
@@ -232,33 +217,41 @@ cz-cli can operate tasks in Singdata Studio, suitable for data development and d
 
 ### Create a SQL Task
 
-```Plain
-cz-cli -p prod task create daily_order_summary --type SQL --description "Daily order summary"
+A task must be created inside a folder using `--folder`. First list the existing folders (or create one with `cz-cli -p prod task create-folder <name>`):
+
+```bash
+cz-cli -p prod task folder-tree
+```
+
+Then create the task under a specific folder:
+
+```bash
+cz-cli -p prod task create daily_order_summary --type SQL --description "Daily order summary" --folder <folder_name_or_id>
 ```
 
 ### Save Task SQL
 
-```Plain
-cz-cli -p prod task save-content daily_order_summary  --content "INSERT INTO public.order_summary SELECT current_date(), COUNT(*) FROM public.orders"
+```bash
+cz-cli -p prod task save-content daily_order_summary --content "INSERT INTO public.order_summary SELECT current_date(), COUNT(*) FROM public.orders"
 ```
 
 ### Configure Scheduling
 
 The following example schedules execution daily at 02:00:
 
-```Plain
+```bash
 cz-cli -p prod task save-cron daily_order_summary --cron "0 0 2 * * ? *"
 ```
 
 ### Deploy Task
 
-```Plain
+```bash
 cz-cli -p prod task deploy daily_order_summary
 ```
 
 ### Manually Execute Task
 
-```Plain
+```bash
 cz-cli -p prod task execute daily_order_summary --max-wait-seconds 300
 ```
 
@@ -266,26 +259,26 @@ cz-cli -p prod task execute daily_order_summary --max-wait-seconds 300
 
 ### View Recent Runs
 
-```Plain
-cz-cli -p prod runs list --task daily\_order\_summary --limit 5
+```bash
+cz-cli -p prod runs list --task daily_order_summary --limit 5
 ```
 
 ### View Run Details
 
-```Plain
-cz-cli -p prod runs detail \<run\_id>
+```bash
+cz-cli -p prod runs detail <run_id>
 ```
 
 ### View Run Logs
 
-```Plain
-cz-cli -p prod runs logs \<run\_id>
+```bash
+cz-cli -p prod runs logs <run_id>
 ```
 
 ### Wait for a Run to Complete
 
-```Plain
-cz-cli -p prod runs wait \<run\_id>
+```bash
+cz-cli -p prod runs wait <run_id>
 ```
 
 ## Using with AI Agents
@@ -304,16 +297,22 @@ You can use cz-cli to operate Singdata Lakehouse. First run cz-cli status to ver
 
 In the examples below, \<profile>, \<task\_name>, and \<job\_id> should be replaced with the user's own connection profile, task name, and Job ID. It is recommended to have the Agent first execute cz-cli -p \<profile> status to confirm the connection is available.
 
-```Scala
-Using the <profile> environment, first confirm the cz-cli connection status, then list the schemas in the current workspace, and then list the first 20 tables under the public schema.Using the <profile> test environment, help me create an order details table in the demo schema, insert a few rows of test data, and verify that the data can be queried. Before executing write operations, present the plan and wait for my confirmation.Using the <profile> environment, check whether task <task_name> has failed runs today. If so, review the run details and logs, and provide the failure cause and suggested fixes.Using the <profile> environment, analyze the execution of SQL job <job_id>. Check the job status, results, and execution profile to determine if there are performance bottlenecks.
+```Plain
+Using the <profile> environment, first confirm the cz-cli connection status, then list the schemas in the current workspace, and then list the first 20 tables under the public schema.
+
+Using the <profile> test environment, help me create an order details table in the demo schema, insert a few rows of test data, and verify that the data can be queried. Before executing write operations, present the plan and wait for my confirmation.
+
+Using the <profile> environment, check whether task <task_name> has failed runs today. If so, review the run details and logs, and provide the failure cause and suggested fixes.
+
+Using the <profile> environment, analyze the execution of SQL job <job_id>. Check the job status, results, and execution profile to determine if there are performance bottlenecks.
 ```
 
 ### Executing via cz-cli's Built-in Agent Entry Point
 
 If the current environment already has the LLM parameters configured for the cz-cli Agent, you can also run directly:
 
-```Plain
-cz-cli -p \<profile> agent run "Help me check today's failed scheduled tasks and categorize them by failure reason"
+```bash
+cz-cli -p <profile> agent run "Help me check today's failed scheduled tasks and categorize them by failure reason"
 ```
 
 ### Using in Enterprise Bot Scenarios
@@ -331,19 +330,19 @@ cz-cli outputs JSON by default, making it easy for AI Agents and scripts to pars
 
 **Table format, suitable for human reading**
 
-```Plain
-cz-cli -p prod -o table status
+```bash
+cz-cli -p prod --format table status
 ```
 
 **CSV format, suitable for export**
 
-```Plain
-cz-cli -p prod -o csv sql "SELECT \* FROM public.orders LIMIT 100" --sync
+```bash
+cz-cli -p prod --format csv sql "SELECT * FROM public.orders LIMIT 100" --sync
 ```
 
 **Extract a single field**
 
-```Plain
+```bash
 cz-cli -p prod --field data.connected status
 ```
 
@@ -358,20 +357,20 @@ In CI/CD or automation scripts, we recommend:
 
 Check the current version:
 
-```Plain
+```bash
 cz-cli --version
 ```
 
 Upgrade to the latest version:
 
-```Plain
+```bash
 cz-cli update
 ```
 
-If installed via npm:
+You can also re-run the install script to upgrade to the latest version:
 
-```Plain
-npm install -g @clickzetta/cz-cli
+```bash
+curl -fsSL https://cz-cli.ai/install.sh | bash
 ```
 
 ## FAQ
@@ -380,23 +379,23 @@ npm install -g @clickzetta/cz-cli
 
 Usually the PATH has not taken effect. Reload your Shell configuration:
 
-```Plain
-source \~/.zshrc
+```bash
+source ~/.zshrc
 ```
 
 Or manually add to PATH:
 
-```Plain
-echo 'export PATH="$$HOME/.clickzetta/bin$$PATH"' >> \~/.zshrc
+```bash
+echo 'export PATH="$HOME/.clickzetta/bin:$PATH"' >> ~/.zshrc
 
-source \~/.zshrc
+source ~/.zshrc
 ```
 
 ### Q: The status command shows connected: false?
 
 Check the following in order:
 
-```Plain
+```bash
 cz-cli profile list
 cz-cli -p <profile_name> status
 ```
@@ -409,7 +408,7 @@ The profile configuration file is located at the `.clickzetta/profiles.toml` pat
 
 You can modify it using the profile update command:
 
-```Plain
+```bash
 cz-cli profile update prod workspace <new_workspace_name>
 
 cz-cli profile update prod password '<new_password>'
@@ -427,24 +426,24 @@ Commands like task, runs, and attempts depend on Studio capabilities. Verify tha
 
 Write operations require adding --write:
 
-```Plain
-cz-cli -p prod sql --write --sync -e "INSERT INTO public.demo\_orders VALUES (1, 99.9)"
+```bash
+cz-cli -p prod sql --write --sync -e "INSERT INTO public.demo_orders VALUES (1, 99.9)"
 ```
 
 ### Q: SQL returns a job\_id but no data directly?
 
 This is because execution defaults to asynchronous mode. To get query results returned directly, add --sync:
 
-```Plain
-cz-cli -p prod sql "SELECT \* FROM public.demo\_orders LIMIT 10" --sync
+```bash
+cz-cli -p prod sql "SELECT * FROM public.demo_orders LIMIT 10" --sync
 ```
 
-If you already have a job\_id, you can continue with:
+If you already have a job_id, you can continue with:
 
-```Plain
-cz-cli -p prod job status \<job\_id>
+```bash
+cz-cli -p prod job status <job_id>
 
-cz-cli -p prod job result \<job\_id>
+cz-cli -p prod job result <job_id>
 ```
 
 ### Q: How can I reduce the risk of misoperations?

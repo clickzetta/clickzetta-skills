@@ -63,7 +63,7 @@ CREATE SEMANTIC VIEW my_view ...
 
 **Structural changes require rebuild**
 
-Currently, `ALTER SEMANTIC VIEW` only supports `RENAME TO` and does not support adding/removing dimensions or modifying metrics. The standard flow for modifying view structure:
+Currently, `ALTER SEMANTIC VIEW` supports `RENAME TO`, `SET PROPERTIES`, and `UNSET PROPERTIES`, but does not support adding/removing dimensions or modifying metrics. The standard flow for modifying view structure:
 
 ```sql
 -- 1. Export the current definition (via DESC EXTENDED or MCP tool LH-desc-semantic-view)

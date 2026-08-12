@@ -4,9 +4,9 @@ This page describes the pricing model and list prices of Singdata AI Gateway in 
 
 ## Overview
 
-Singdata AI Gateway is a one-stop platform that aggregates and manages mainstream LLMs (Anthropic Claude, OpenAI GPT, Qwen, DeepSeek, GLM, Kimi, MiniMax, and more) behind a unified API, so you do not have to register, integrate, and fund a separate account on each vendor's platform.
+Singdata AI Gateway is a one-stop platform that aggregates and manages mainstream LLMs (Anthropic Claude, OpenAI GPT, Qwen, DeepSeek, GLM, Kimi, MiniMax, and more) behind a unified API, so you do not have to register, integrate, and fund a separate account on each vendor's platform.  
 
-> 💡 **Tip**: When Analytics Agent calls an LLM, the resulting token consumption is billed at the per-model unit prices listed in this document.
+> 💡 **Tip**: When Analytics Agent calls an LLM, the resulting token consumption is billed at the per-model unit prices listed in this document. 
 
 ## Billing Modes
 
@@ -66,9 +66,11 @@ Embedding models are priced separately by input data type. Text input uses a sin
 
 ## Overseas Model List Prices
 
-> ⚠️ **Note**: The prices below are public list prices, in USD per million tokens (USD / M tokens). **Model market prices fluctuate, and list prices may change as the market changes. Actual settled prices follow the bill.** Overseas list prices exclude tax. VAT will be charged separately according to local tax requirements (for example, in Singapore an additional 9% GST applies per local regulations).
+> ⚠️ **Note**: The prices below are public list prices. **Model market prices fluctuate, and list prices may change as the market changes. Actual settled prices follow the bill.** Overseas list prices exclude tax. VAT will be charged separately according to local tax requirements (for example, in Singapore an additional 9% GST applies per local regulations).
 
 ### Anthropic Claude Series
+
+All prices in this table are in USD per million tokens.
 
 | Model | Input | Output | Explicit·Write·5min | Explicit·Write·1h | Explicit·Hit |
 | --- | --- | --- | --- | --- | --- |
@@ -80,6 +82,8 @@ Embedding models are priced separately by input data type. Text input uses a sin
 | claude-haiku-4-5 | 1 | 5 | 1.25 | 2 | 0.1 |
 
 ### OpenAI GPT Series
+
+All prices in this table are in USD per million tokens.
 
 | Model | Context Window | Input | Output | Implicit·Hit |
 | --- | --- | --- | --- | --- |
@@ -102,6 +106,8 @@ Embedding models are priced separately by input data type. Text input uses a sin
 | o3 | — | 2 | 8 | 0.5 |
 
 ### Qwen Series
+
+All prices in this table are in USD per million tokens.
 
 | Sub-series | Model | Context Window | Input | Output | Explicit·Write | Explicit·Hit | Implicit·Hit |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -126,6 +132,8 @@ Embedding models are priced separately by input data type. Text input uses a sin
 
 ### DeepSeek Series
 
+All prices in this table are in USD per million tokens.
+
 | Model | Input | Output | Explicit·Write | Explicit·Hit | Implicit·Hit |
 | --- | --- | --- | --- | --- | --- |
 | deepseek-v3.2 | 0.57 | 1.71 | 0.7125 | 0.057 | 0.114 |
@@ -133,6 +141,8 @@ Embedding models are priced separately by input data type. Text input uses a sin
 | deepseek-v4-pro | 2.4 | 4.8 | — | — | — |
 
 ### GLM Series
+
+All prices in this table are in USD per million tokens.
 
 | Model | Context Window | Input | Output | Explicit·Write | Explicit·Hit | Implicit·Hit |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -145,12 +155,16 @@ Embedding models are priced separately by input data type. Text input uses a sin
 
 ### Kimi Series
 
+All prices in this table are in USD per million tokens.
+
 | Model | Input | Output | Explicit·Write | Explicit·Hit | Implicit·Hit |
 | --- | --- | --- | --- | --- | --- |
 | kimi-k2.5 | 0.574 | 3.011 | 0.7175 | 0.0574 | 0.1148 |
 | kimi-k2.6 | 0.8939 | 3.7131 | 1.117375 | 0.08939 | 0.17878 |
 
 ### MiniMax Series
+
+All prices in this table are in USD per million tokens.
 
 | Model | Input | Output | Implicit·Hit |
 | --- | --- | --- | --- |
@@ -160,22 +174,16 @@ Embedding models are priced separately by input data type. Text input uses a sin
 
 Text model: Calling claude-sonnet-4-6 with 10,000 input tokens and 2,000 output tokens, no cache hit:
 
-```
-10000 / 1,000,000 × 3 + 2000 / 1,000,000 × 15 = $0.06
-```
+- 10,000 / 1,000,000 × 3 + 2,000 / 1,000,000 × 15 = **$0.06**
 
 Text model with explicit cache: Calling claude-haiku-4-5. The first request writes 5,000 tokens to the 5-minute cache tier and outputs 1,000 tokens. The second request hits the cache for 5,000 tokens, with 500 new input tokens and 1,000 output tokens:
 
-```
-First call:  5000 / 1,000,000 × 1.25 (Write·5min) + 1000 / 1,000,000 × 5 = $0.00625 + $0.005 = $0.01125
-Second call: 5000 / 1,000,000 × 0.1 (Hit) + 500 / 1,000,000 × 1 + 1000 / 1,000,000 × 5 = $0.0005 + $0.0005 + $0.005 = $0.006
-```
+- First call: 5,000 / 1,000,000 × 1.25 (Write·5min) + 1,000 / 1,000,000 × 5 = $0.00625 + $0.005 = **$0.01125**
+- Second call: 5,000 / 1,000,000 × 0.1 (Hit) + 500 / 1,000,000 × 1 + 1,000 / 1,000,000 × 5 = $0.0005 + $0.0005 + $0.005 = **$0.006**
 
 Text model with implicit cache: Calling gpt-5-2025-08-07 with 10,000 input tokens (of which 6,000 hit the implicit cache) and 2,000 output tokens:
 
-```
-Cached portion:    6000 / 1,000,000 × 0.125 = $0.00075
-Uncached input:    4000 / 1,000,000 × 1.25  = $0.005
-Output:            2000 / 1,000,000 × 10    = $0.02
-Total:                                        $0.02575
-```
+- Cached portion: 6,000 / 1,000,000 × 0.125 = $0.00075
+- Uncached input: 4,000 / 1,000,000 × 1.25 = $0.005
+- Output: 2,000 / 1,000,000 × 10 = $0.02
+- Total: **$0.02575**

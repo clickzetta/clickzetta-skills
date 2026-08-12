@@ -150,10 +150,10 @@ ON TABLE doc_bronze_game_events (app_id);
 Game behavior events are collected by the client SDK and sent to a Kafka topic. The PIPE continuously consumes and writes them to the Bronze table.
 
 ```sql
--- 先建原始字符串接收表（Kafka PIPE 写入 JSON 字符串）
+-- Create the raw string staging table (Kafka PIPE writes JSON strings here)
 CREATE TABLE IF NOT EXISTS best_practice_gaming_dw.kafka_raw_game_events (value STRING);
 
--- 创建 Kafka PIPE
+-- Create the Kafka PIPE
 CREATE PIPE IF NOT EXISTS best_practice_gaming_dw.pipe_game_events
     VIRTUAL_CLUSTER = 'DEFAULT'
     BATCH_INTERVAL_IN_SECONDS = '60'
@@ -162,8 +162,8 @@ COPY INTO best_practice_gaming_dw.kafka_raw_game_events
 FROM (
     SELECT CAST(value AS STRING) AS value
     FROM READ_KAFKA(
-        '<kafka-broker>:9092',    -- 替换为实际 broker 地址
-        'game_tracking_events',   -- topic 名称
+        '<kafka-broker>:9092',    -- replace with actual broker address
+        'game_tracking_events',   -- topic name
         '',
         'cz_gaming_consumer',     -- consumer group ID
         '','','','',
@@ -183,8 +183,8 @@ Client logs cached in low-connectivity environments are batch-uploaded daily to 
 **Step 1: Create an OSS Storage Connection**
 
 ```sql
--- 替换 ACCESS_ID / ACCESS_KEY 为有 OSS 读写权限的 RAM 用户凭证
--- ENDPOINT 替换为 OSS bucket 所在地域的访问地址
+-- Replace ACCESS_ID / ACCESS_KEY with RAM user credentials that have OSS read/write permissions
+-- Replace ENDPOINT with the regional endpoint for the OSS bucket
 CREATE STORAGE CONNECTION IF NOT EXISTS best_practice_gaming_dw.gaming_oss_conn
     TYPE oss
     ENDPOINT = 'oss-cn-hangzhou.aliyuncs.com'
@@ -195,7 +195,7 @@ CREATE STORAGE CONNECTION IF NOT EXISTS best_practice_gaming_dw.gaming_oss_conn
 **Step 2: Create an External Volume Mounting the OSS Path**
 
 ```sql
--- LOCATION 替换为实际的 OSS bucket 路径
+-- Replace LOCATION with the actual OSS bucket path
 CREATE EXTERNAL VOLUME IF NOT EXISTS best_practice_gaming_dw.gaming_offline_logs
     LOCATION 'oss://<your-bucket>/game_offline_logs/'
     USING CONNECTION best_practice_gaming_dw.gaming_oss_conn
@@ -226,12 +226,12 @@ This guide simulates 7 players and 45 events covering five types: login, logout,
 Save the event data as a CSV file, then batch-import via User Volume:
 
 ```sql
--- 第一步：通过 SQL PUT 将本地 CSV 文件上传到 User Volume
+-- Step 1: Upload the local CSV file to User Volume via SQL PUT
 PUT '/path/to/game_events.csv' TO USER VOLUME FILE 'game_events.csv';
 ```
 
 ```sql
--- 第二步：从 User Volume COPY INTO 表
+-- Step 2: COPY INTO the table from User Volume
 COPY INTO best_practice_gaming_dw.doc_bronze_game_events
 FROM USER VOLUME
 USING csv
@@ -410,22 +410,22 @@ SELECT
     item_id,
     item_name,
     country_code,
-    -- 同会话中前一个事件
+    -- previous event in the same session
     LAG(event_type, 1) OVER (PARTITION BY user_id, session_id ORDER BY event_time)
                                                     AS prev_event_type,
     LAG(event_time,  1) OVER (PARTITION BY user_id, session_id ORDER BY event_time)
                                                     AS prev_event_time,
-    -- 同会话中后一个事件
+    -- next event in the same session
     LEAD(event_type, 1) OVER (PARTITION BY user_id, session_id ORDER BY event_time)
                                                     AS next_event_type,
     LEAD(event_time,  1) OVER (PARTITION BY user_id, session_id ORDER BY event_time)
                                                     AS next_event_time,
-    -- 距离前一个事件的秒数
+    -- seconds elapsed since the previous event
     TIMESTAMPDIFF(SECOND,
         LAG(event_time, 1) OVER (PARTITION BY user_id, session_id ORDER BY event_time),
         event_time
     )                                               AS seconds_since_prev,
-    -- 付费前累计完成的关卡数（跨会话，按用户全局计算）
+    -- cumulative levels completed before this event (global per user, cross-session)
     SUM(CASE WHEN event_type = 'level_complete' THEN 1 ELSE 0 END)
         OVER (PARTITION BY user_id ORDER BY event_time
               ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING)
@@ -510,14 +510,14 @@ SELECT
     COUNT(DISTINCT s.app_id)                  AS distinct_games_played,
     MAX(s.session_date)                       AS last_active_date,
     MIN(s.session_date)                       AS first_active_date,
-    -- LTV 分层：按累计充值金额
+    -- LTV tier: bucketed by cumulative spend
     CASE
         WHEN SUM(s.session_revenue_usd) >= 50 THEN 'Whale'
         WHEN SUM(s.session_revenue_usd) >= 10 THEN 'Dolphin'
         WHEN SUM(s.session_revenue_usd) >  0  THEN 'Minnow'
         ELSE 'Free'
     END                                       AS ltv_tier,
-    -- 参与度评分：活跃天数 40% + 游戏时长 40% + 付费 20%
+    -- engagement score: active days 40% + playtime 40% + spend 20%
     ROUND(
         0.4 * LEAST(COUNT(DISTINCT s.session_date) / 7.0, 1.0) * 100
       + 0.4 * LEAST(SUM(s.session_duration_min) / 300.0, 1.0) * 100

@@ -20,7 +20,9 @@ DROP SEMANTIC VIEW IF EXISTS doc_test.emp_dept_analysis;
 
 ## ALTER SEMANTIC VIEW
 
-Currently only supports renaming. **Does not support** dynamically adding/removing dimensions, metrics, or modifying comments via SQL -- to modify the view structure, you must `DROP` and rebuild.
+`ALTER SEMANTIC VIEW` supports three types of operations: `RENAME TO` for renaming, `SET PROPERTIES` for setting properties, and `UNSET PROPERTIES` for removing properties. It still **does not support** dynamically adding/removing dimensions, metrics, or modifying comments via SQL, and **does not support `CREATE OR REPLACE SEMANTIC VIEW`** (which returns `only view/stream/materialized view support replace`). To modify dimension / metric / logical table structure, you must `DROP` and rebuild.
+
+### RENAME TO
 
 **Syntax**:
 
@@ -35,6 +37,28 @@ The new name must not include a schema prefix; after renaming, the view remains 
 ```sql
 ALTER SEMANTIC VIEW emp_dept_analysis RENAME TO emp_dept_v2;
 ```
+
+### SET / UNSET PROPERTIES
+
+Set or remove custom key-value properties on a Semantic View. Properties can be read back via the `properties` row in `DESC EXTENDED` output and are commonly used to store metadata or authoritative definitions alongside the view object itself.
+
+**Syntax**:
+
+```sql
+ALTER SEMANTIC VIEW <view_name> SET PROPERTIES ( '<key>' = '<value>' [ , ... ] );
+ALTER SEMANTIC VIEW <view_name> UNSET PROPERTIES ( '<key>' [ , ... ] );
+```
+
+`SET PROPERTIES` uses merge (upsert) semantics — it updates only the specified keys and does not affect other existing keys. To remove a key, use `UNSET PROPERTIES`. `CREATE SEMANTIC VIEW` does not support a `PROPERTIES` clause; properties can only be set after creation via `ALTER ... SET PROPERTIES`.
+
+**Examples**:
+
+```sql
+ALTER SEMANTIC VIEW emp_dept_analysis SET PROPERTIES ('owner' = 'analytics_team', 'spec_version' = '2');
+ALTER SEMANTIC VIEW emp_dept_analysis UNSET PROPERTIES ('spec_version');
+```
+
+> ⚠️ **Note**: The `properties` output in `DESC EXTENDED` is descriptive and **drops single quotes from property values** (for example, storing `COMMENT = 'x'` reads back as `COMMENT = x`); newlines are also rendered as the literal `\n`. If a property value contains quotes or newlines — such as a full DDL or JSON snippet — **base64-encode it first** before storing. Base64 uses only `[A-Za-z0-9+/=]` and can round-trip byte-for-byte.
 
 ## SHOW SEMANTIC VIEWS
 
@@ -130,7 +154,9 @@ Returned columns: `granted_type`, `privilege`, `granted_on` (value is `SEMANTIC_
 | Command | Description |
 |------|------|
 | `DROP SEMANTIC VIEW IF EXISTS` | Delete a semantic view |
-| `ALTER SEMANTIC VIEW ... RENAME TO` | Rename (the only supported ALTER operation) |
+| `ALTER SEMANTIC VIEW ... RENAME TO` | Rename |
+| `ALTER SEMANTIC VIEW ... SET PROPERTIES` | Set properties (merge semantics) |
+| `ALTER SEMANTIC VIEW ... UNSET PROPERTIES` | Remove properties |
 | `SHOW SEMANTIC VIEWS [ IN schema ]` | List semantic views |
 | `DESC EXTENDED` | View full structure (must include EXTENDED) |
 | `GRANT SELECT ON SEMANTIC VIEW` | Grant query permission |

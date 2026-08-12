@@ -1,109 +1,108 @@
 # Export Data to VOLUME - COPY INTO VOLUME
 
-**Objective**: Export a table or a query result to a specified path in the Volume
+**Objective**: Export a table or query result as files to a specified path in a Volume.
 
 ## Syntax
 
-```SQL
-COPY INTO { VOLUME external_volume_name | TABLE VOLUME table_name  | USER VOLUME }  
+```Plain
+COPY INTO { VOLUME <external_volume_name> | TABLE VOLUME <table_name> | USER VOLUME }
 SUBDIRECTORY '<path>'
-FROM { [<namespace>.]<table_name> |(<query>)}
-FILE_FORMAT = ( TYPE = { CSV|TEXT|PARQUET }  [ formatTypeOptions ]  ) 
+FROM { [<namespace>.]<table_name> | (<query>) }
+FILE_FORMAT = ( TYPE = { CSV | TEXT | PARQUET } [ formatTypeOptions ] )
 [ copyOptions ]
 ```
 
-### **Parameter Description**
+### Parameter Description
 
 * **formatTypeOptions**
-
-  * COMPRESSION: Optional parameter. Specifies the compression format, default is no compression. Supports GZIP, ZSTD, DEFLATE compression, for example: `COMPRESSION = 'GZIP'`
+  * COMPRESSION: Optional. Specifies the compression format; the default is no compression. Supported formats: GZIP, ZSTD, DEFLATE. Example: `COMPRESSION = 'GZIP'`
 
 * **copyOptions**
+  * `filename_prefix = '<prefix_name>'`: Optional. Sets a prefix for output file names. Example: `filename_prefix = 'my_prefix_'`
+  * `filename_suffix = '<suffix>'`: Optional. Sets a suffix for output file names. Example: `filename_suffix = '.data'`
+  * `include_job_id = 'TRUE' | 'FALSE'`: Optional. Sets whether to include the job ID in file names. Defaults to not included when omitted. Example: `include_job_id = 'TRUE'`
 
-  * filename\_prefix = '\<prefix\_name>'. Optional parameter. Sets the file prefix, for example: `filename_prefix = 'my_prefix_'`
-  * filename\_suffix = '\<suffix>'. Optional parameter. Sets the file suffix, for example: `filename_suffix = '.data'`
-  * include\_job\_id = 'TRUE' | 'FALSE'. Optional parameter. Sets whether the job ID is included in the file name, default is not to include the job ID if not set. For example: `include_job_id = 'TRUE'`
+## Usage Examples
 
-## Usage Example
+* Export table data to a Volume
 
-* Export table data to Volume
+  ```sql
+  -- Unload to external volume
+  COPY INTO VOLUME my_external_vol SUBDIRECTORY 'dau_unload/'
+  FROM TABLE dau
+  FILE_FORMAT = (TYPE = CSV);
 
-```SQL
--- Unload to external volume
-COPY INTO VOLUME my_external_vol SUBDIRECTORY 'dau_unload/' 
-FROM TABLE dau
-FILE_FORMAT = (type = CSV);
+  -- Unload to table volume
+  COPY INTO TABLE VOLUME dau SUBDIRECTORY 'dau_unload/'
+  FROM TABLE dau
+  FILE_FORMAT = (TYPE = CSV);
 
--- Unload to table volume
-COPY INTO TABLE VOLUME dau SUBDIRECTORY 'dau_unload/' 
-FROM TABLE dau
-FILE_FORMAT = (type = CSV);
-
--- Unload to user volume
-COPY INTO USER VOLUME SUBDIRECTORY 'dau_unload/' 
-FROM TABLE dau
-FILE_FORMAT = (TYPE = CSV )
+  -- Unload to user volume
+  COPY INTO USER VOLUME SUBDIRECTORY 'dau_unload/'
+  FROM TABLE dau
+  FILE_FORMAT = (TYPE = CSV);
 
 
-SHOW VOLUME DIRECTORY my_external_vol;
+  SHOW VOLUME DIRECTORY my_external_vol;
 
-relative_path                                   url                                                                size last_modified_time  
------------------------------------------------ ------------------------------------------------------------------ ---- ------------------- 
-dau_unload/part00001.csv                           oss://your-bucket/dau_unload/part00001.csv                           75   2024-05-29 17:03:25 
-```
+  relative_path                                   url                                                                size last_modified_time
+  ----------------------------------------------- ------------------------------------------------------------------ ---- -------------------
+  dau_unload/part00001.csv                        oss://your-bucket/dau_unload/part00001.csv                        75   2024-05-29 17:03:25
+  ```
 
-* Export Query Results to Volume
+* Export query results to a Volume
 
-```SQL
--- copy from query
-COPY INTO VOLUME my_external_vol SUBDIRECTORY 'dau_unload/' 
-FROM (SELECT * FROM DAU limit 5)
-FILE_FORMAT = (type = CSV);
-```
+  ```sql
+  -- copy from query
+  COPY INTO VOLUME my_external_vol SUBDIRECTORY 'dau_unload/'
+  FROM (SELECT * FROM DAU LIMIT 5)
+  FILE_FORMAT = (TYPE = CSV);
+  ```
 
-* Set the export file format during export
+* Set the file format during export
 
-```SQL
--- copy from table to external volume
-COPY INTO VOLUME my_external_vol SUBDIRECTORY 'dau_unload/' 
-FROM TABLE dau
-FILE_FORMAT = (type = CSV);
+  ```sql
+  -- copy from table to external volume
+  COPY INTO VOLUME my_external_vol SUBDIRECTORY 'dau_unload/'
+  FROM TABLE dau
+  FILE_FORMAT = (TYPE = CSV);
 
--- COPY_OPTION: Unload and compress with gzip
-COPY INTO VOLUME my_external_vol SUBDIRECTORY 'dau_unload/' 
-FROM (SELECT * FROM DAU limit 5)
-FILE_FORMAT = (TYPE = CSV COMPRESSION = 'GZIP') ;
+  -- COPY_OPTION: unload and compress with gzip
+  COPY INTO VOLUME my_external_vol SUBDIRECTORY 'dau_unload/'
+  FROM (SELECT * FROM DAU LIMIT 5)
+  FILE_FORMAT = (TYPE = CSV COMPRESSION = 'GZIP');
 
-COPY INTO VOLUME my_external_vol SUBDIRECTORY 'dau/' 
-FROM TABLE dau
-FILE_FORMAT = (type = PARQUET COMPRESSION = 'GZIP');
-```
+  COPY INTO VOLUME my_external_vol SUBDIRECTORY 'dau/'
+  FROM TABLE dau
+  FILE_FORMAT = (TYPE = PARQUET COMPRESSION = 'GZIP');
+  ```
 
-* Set export task parameters during export
+* Set task parameters during export
 
-```SQL
--- COPY_OPTION: Unload and add prefix to file names
-COPY INTO VOLUME my_external_vol SUBDIRECTORY 'dau_unload/' 
-FROM TABLE dau
-FILE_FORMAT = (TYPE = CSV) 
-FILENAME_PREFIX = 'my_prefix_';
+  ```sql
+  -- COPY_OPTION: unload and add prefix to file names
+  COPY INTO VOLUME my_external_vol SUBDIRECTORY 'dau_unload/'
+  FROM TABLE dau
+  FILE_FORMAT = (TYPE = CSV)
+  FILENAME_PREFIX = 'my_prefix_';
 
--- COPY_OPTION: Unload and add suffix to file names
-COPY INTO VOLUME my_external_vol SUBDIRECTORY 'dau_unload/' 
-FROM TABLE dau
-FILE_FORMAT = (TYPE = CSV) 
-FILENAME_PREFIX = '.data';
+  -- COPY_OPTION: unload and add suffix to file names
+  COPY INTO VOLUME my_external_vol SUBDIRECTORY 'dau_unload/'
+  FROM TABLE dau
+  FILE_FORMAT = (TYPE = CSV)
+  FILENAME_SUFFIX = '.data';
 
--- COPY_OPTION: Unload and add job id to file names
-COPY INTO VOLUME my_external_vol SUBDIRECTORY 'dau_unload/' 
-FROM TABLE dau
-FILE_FORMAT =  (TYPE = CSV )
-INCLUDE_JOB_ID = 'TRUE';
-```
+  -- COPY_OPTION: unload and add job id to file names
+  COPY INTO VOLUME my_external_vol SUBDIRECTORY 'dau_unload/'
+  FROM TABLE dau
+  FILE_FORMAT = (TYPE = CSV)
+  INCLUDE_JOB_ID = 'TRUE';
+  ```
 
 ## Constraints and Limitations
 
 * Requires JDBC driver version 1.3.5 or above.
-* Direct export to object storage location is not currently supported (can be exported to the corresponding object storage location with the help of Volume object).
 
-^
+## Related Documentation
+
+- [Copy Files Between Volumes - COPY FILES INTO VOLUME](copy-files-into-volume.md): copy existing files verbatim from one Volume to another

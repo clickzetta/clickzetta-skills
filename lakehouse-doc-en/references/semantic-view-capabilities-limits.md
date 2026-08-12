@@ -62,7 +62,7 @@ For filtering, use a `WHERE` clause in the outer SQL of `semantic_view()`. These
 ## DDL and Management Limitations
 
 - **`CREATE OR REPLACE SEMANTIC VIEW` is not supported**; it returns `only view/stream/materialized view support replace`. To change the structure you must `DROP` and recreate it.
-- `ALTER SEMANTIC VIEW` supports only `RENAME TO`, and the new name must not include a schema prefix (adding a prefix causes a syntax error).
+- `ALTER SEMANTIC VIEW` supports `RENAME TO`, `SET PROPERTIES`, and `UNSET PROPERTIES`, but **does not support** adding/removing dimensions or modifying metrics or comments (structural changes still require `DROP` and rebuild). The new name in `RENAME TO` must not include a schema prefix (adding a prefix causes a syntax error). `DESC EXTENDED` drops single quotes from property values when reading them back; content with quotes or newlines (such as DDL) should be base64-encoded before storing.
 - There is no way to read back the full definition via `GET_DDL`, `SHOW CREATE SEMANTIC VIEW`, or YAML export. The `DESC SEMANTIC VIEW` / `DESCRIBE SEMANTIC VIEW` commands exist but return nothing; `DESC` without `EXTENDED` also returns nothing. The only way to read back the structure is `DESC EXTENDED`, which does not include the metadata clauses above.
 
 ## Creation Behavior
@@ -98,7 +98,7 @@ REVOKE SELECT ON SEMANTIC VIEW doc_test.emp_dept_analysis FROM ROLE workspace_an
 | FILTERS / SYNONYMS / is_unique / is_time / enum_values | No observable effect | Accepted at creation; not in DESC; cannot be read back |
 | Chasm trap (combining metrics from sibling branches) | Blocked with error | No relationship found for table … |
 | CREATE OR REPLACE | Not supported | Must DROP and recreate |
-| ALTER | RENAME TO only | Cannot include schema prefix |
+| ALTER | RENAME TO / SET PROPERTIES / UNSET PROPERTIES | Cannot add/remove dimensions or metrics; RENAME TO new name must not include schema prefix; DESC EXTENDED drops quotes from property values |
 | Read back full definition (YAML/DDL) | No way | DESC SEMANTIC VIEW returns nothing |
 | Create with TABLES only | Supported | DIMENSIONS / METRICS are optional |
 | Permissions | Read-only | SELECT / ALL; no INSERT / UPDATE / DELETE |

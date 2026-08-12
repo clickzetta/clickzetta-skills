@@ -48,6 +48,9 @@ Primary Agent (Claude Code)
 
 Anthropic's Research feature uses the same architecture—benchmarks show a 90.2% improvement over single-agent approaches with 90% less research time. Data warehouse operations (checking task status, reading logs, backfilling, diagnosing SQL) are a natural fit for this delegation pattern—tasks are independent, boundaries are clear, and results are verifiable.
 
+```youtube
+<iframe width="560" height="315" src="https://www.youtube.com/embed/ckDT3gz5ktE?si=Mkyuxq5M6rUQRO7M" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+```
 ## Command Overview
 
 | Command | Object | Description |

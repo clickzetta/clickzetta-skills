@@ -1,7 +1,5 @@
 # CREATE ....CLONE
 
->【Preview Release】This feature is currently in public preview.
-
 In Lakehouse, the clone table operation creates an independent copy of a table that is completely separate from the original table and does not affect each other. Clone tables do not take up additional storage space when created because they share the data version of the original table. However, if the original table data changes and affects the data in the clone table, the clone table will need to pay for the storage costs of these changes. Clone tables have similar functions to regular tables, including operations such as querying, copying, and deleting. Lakehouse supports cloning regular tables and dynamic tables, and allows creating clones of clones, i.e., cloning a table that is already a clone.
 
 ## Notes

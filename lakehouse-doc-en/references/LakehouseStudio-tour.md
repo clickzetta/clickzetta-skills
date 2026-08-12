@@ -1,10 +1,12 @@
 # Lakehouse Studio Quick Tour
 
 This document helps you quickly understand the core features offered by Lakehouse Studio. In Lakehouse Studio, you can perform data analysis and engineering tasks, monitor queries, data loading/synchronization, data transformation, and workflow activities, explore your Lakehouse objects, and manage your Lakehouse, including managing costs and adding users and roles.
-
+ 
 > You can use this document to quickly understand Studio's features. We also strongly recommend referring to the [Getting Started Guide](lakehouse-studio-101.md) series to get started quickly.
  
-
+```youtube
+<iframe width="560" height="315" src="https://www.youtube.com/embed/jG_iWjWGHrs?si=xLMKr4eFmBH46Bv3" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+```
 
 ^
 
@@ -29,7 +31,9 @@ This document helps you quickly understand the core features offered by Lakehous
 * [Data Quality Management](data-quality.md), clean, optimize, and enhance massive datasets to increase their value density, thereby more effectively meeting business objectives.
 
 For details on these and other executable tasks, please refer to [Lakehouse Studio: The Web Interface for Lakehouse](studio_manual.md).
-
+```[bilibili]
+https://www.bilibili.com/video/BV1UFTi6eEWw/
+```
 ## Explore and Manage Your Lakehouse Objects
 
 You can explore and manage your data lake/database objects in Lakehouse Studio as follows:

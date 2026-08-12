@@ -40,10 +40,10 @@ The core problems with traditional centralized data warehouses, and Singdata Lak
 This guide uses four Schemas. Each domain Schema is fully independent; the data product layer has its own dedicated Schema.
 
 ```sql
--- 数据产品层（统一接口层）
+-- Data product layer (unified interface layer)
 CREATE SCHEMA IF NOT EXISTS best_practice_data_mesh;
 
--- 各业务域 Schema
+-- Per-domain Schemas
 CREATE SCHEMA IF NOT EXISTS best_practice_data_mesh_sales;
 CREATE SCHEMA IF NOT EXISTS best_practice_data_mesh_hr;
 CREATE SCHEMA IF NOT EXISTS best_practice_data_mesh_finance;
@@ -88,12 +88,12 @@ The table-level `COMMENT` includes a version number (`data contract v1.0`) at th
 Import from a local CSV file (recommended):
 
 ```sql
--- 第一步：通过 SQL PUT 将本地 CSV 文件上传到 User Volume
+-- Step 1: Upload the local CSV file to User Volume via SQL PUT
 PUT '/path/to/your/doc_sales_orders.csv' TO USER VOLUME FILE 'doc_sales_orders.csv';
 ```
 
 ```sql
--- 第二步：从 User Volume COPY INTO 表
+-- Step 2: COPY INTO the table from User Volume
 COPY INTO best_practice_data_mesh_sales.doc_sales_orders
 FROM USER VOLUME
 USING csv
@@ -445,7 +445,7 @@ Data product owners use `GRANT SELECT ON VIEW` to control who can access which d
 ### Grant Data Products to Consumer Roles
 
 ```sql
--- 将三个数据产品视图授权给分析师角色
+-- Grant the three data product views to the analyst role
 GRANT SELECT ON VIEW best_practice_data_mesh.dp_sales_revenue TO ROLE workspace_analyst;
 GRANT SELECT ON VIEW best_practice_data_mesh.dp_hr_org        TO ROLE workspace_analyst;
 GRANT SELECT ON VIEW best_practice_data_mesh.dp_finance_ar    TO ROLE workspace_analyst;

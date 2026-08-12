@@ -29,7 +29,7 @@ Use `SHOW DYNAMIC TABLE REFRESH HISTORY` to check the refresh mode. In the outpu
 | duration           | Refresh duration, interval type                                           |
 | state              | Job status                                                                |
 | refresh\_trigger   | MANUAL (triggered manually by the user via a refresh call, including Studio scheduled refreshes) or SYSTEM\_SCHEDULED (scheduled by Lakehouse) |
-| suspended\_reson   | Reserved field, no special meaning                                        |
+| suspended\_reason   | Reserved field, no special meaning                                        |
 | refresh\_mode      | NO\_DATA, FULL, INCREMENTAL                                               |
 | error\_message     | Error message if the refresh failed                                       |
 | source\_tables     | Names of the base tables used by the dynamic table                        |

@@ -145,7 +145,7 @@ SHOW DYNAMIC TABLE REFRESH HISTORY WHERE name='my_dy';
 | duration | Refresh duration |
 | state | Job status: SETUP \| RESUMING\_CLUSTER \| QUEUED \| RUNNING \| SUCCEED \| FAILED |
 | refresh\_trigger | MANUAL (manually triggered by user, including Studio scheduled refresh) \| LH\_SCHEDULED (scheduled by Lakehouse) |
-| suspended\_reson | Reason for scheduling suspension |
+| suspended\_reason | Reason for scheduling suspension |
 | refresh\_mode | NO\_DATA \| FULL \| INCREMENTAL |
 | error\_message | Failure message, if the refresh failed |
 | source\_tables | Names of tables used by the Dynamic Table |

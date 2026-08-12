@@ -24,7 +24,7 @@ Used to return the job history of all ongoing and historical refreshes. Currentl
 | duration           | Refresh duration, interval type                                             |
 | state              | Job status                                                                  |
 | refresh\_trigger   | MANUAL (manually triggered by user, including studio scheduling) SYSTEM\_SCHEDULED (scheduled by lakehouse) |
-| suspended\_reson   | Reserved field with no special meaning                                      |
+| suspended\_reason   | Reserved field with no special meaning                                      |
 | refresh\_mode      | NO\_DATA FULL INCREMENTAL                                                   |
 | error\_message     | Information on refresh failure                                              |
 | source\_tables     | Records the base table names used by the dynamic table                      |

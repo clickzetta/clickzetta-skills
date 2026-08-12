@@ -1,7 +1,6 @@
 # Data Analytics Agent (Analytics Agent)
 
 Analytics Agent is a built-in enterprise-grade conversational data analytics Agent in Singdata Lakehouse. Business users ask questions in natural language, and the system automatically selects data, generates SQL, and returns tables and charts — no SQL required, no need to know table names.
-
 It is not just "querying a database in plain language". Analytics Agent organizes data assets, field semantics, metric definitions, knowledge documents, Answer Builders, permissions, and auditing in Lakehouse, enabling large language models to complete analyses within a controlled enterprise context rather than freely accessing all data.
 
 ![](.topwrite/assets/anim-13-analytics-agent.svg)
@@ -24,7 +23,9 @@ Go to the product homepage, find the analysis domain marked "Sample", click "Sta
 Add a data source → Create an analysis domain → Configure the semantic layer → Start conversational analysis. → [Detailed steps](datagpt_quickstart.md)
 
 Supported data sources: Lakehouse, Databricks, MySQL, StarRocks, and Excel/CSV uploads.
-
+```youtube
+<iframe width="560" height="315" src="https://www.youtube.com/embed/Pzw8WqoSY14?si=piAfEpBrXUUqcqy7" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+```
 ## When to Use
 
 | Scenario                                                                   | Suitable?                                                                          |
