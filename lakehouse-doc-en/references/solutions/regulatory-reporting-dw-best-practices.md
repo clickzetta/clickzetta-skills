@@ -89,12 +89,12 @@ Data source: Bondora P2P lending dataset (Kaggle, CC0 license). The following us
 **Import from a local CSV file (recommended)**
 
 ```sql
--- 第一步：通过 SQL PUT 将本地 CSV 文件上传到 User Volume
+-- Step 1: Upload the local CSV file to User Volume via SQL PUT
 PUT '/path/to/your/doc_ods_loan_book.csv' TO USER VOLUME FILE 'doc_ods_loan_book.csv';
 ```
 
 ```sql
--- 第二步：从 User Volume COPY INTO 表
+-- Step 2: COPY INTO the table from User Volume
 COPY INTO best_practice_reg_reporting.doc_ods_loan_book
 FROM USER VOLUME
 USING csv
@@ -112,7 +112,7 @@ INSERT INTO best_practice_reg_reporting.doc_ods_loan_book
    expected_loss, expected_return, rating, status, default_date, current_debt_days,
    ead1, ead2, principal_balance, recovery_stage, report_as_of_eod)
 VALUES
-  -- 来自 Bondora 原始数据（真实贷款 ID）
+  -- From Bondora source data (real loan IDs)
   ('66AE108B-532B-4BB3-BAB7-0019A46412C1',483449,CAST('2016-03-23' AS DATE),CAST('2020-06-26' AS DATE),
    2125.0000,2125.0000,20.97,60,62.0500,'EE',53,1,6,354.00,26.29,
    0.06851186,0.580000,0.03965108,0.14114493,'C','Late',CAST('2020-01-14' AS DATE),
@@ -121,7 +121,7 @@ VALUES
    3000.0000,3000.0000,17.12,60,84.7500,'EE',50,1,5,900.00,30.58,
    0.03079912,0.650000,0.02001943,0.14043561,'B','Late',CAST('2016-06-02' AS DATE),
    1918,2730.8400,2370.7700,2436.41,2,CAST('2021-07-20' AS DATE))
-  -- ... 完整 25 条，均来自 Bondora CSV 实际字段
+  -- ... full 25 rows, all from Bondora CSV actual fields
 ;
 ```
 
@@ -146,7 +146,7 @@ BCBS 239 Principle 11 requires financial institutions to "reproduce the state of
 ### Simulate Data Status Changes
 
 ```sql
--- 模拟贷款状态变化（由 Current 变为 Late）
+-- Simulate loan status change (Current → Late)
 UPDATE best_practice_reg_reporting.doc_ods_loan_book
 SET status = 'Late', current_debt_days = 45
 WHERE loan_id IN (
@@ -174,7 +174,7 @@ Every DML operation is recorded: the executing user, timestamp, and affected row
 ### Retrieve the Pre-Change Snapshot
 
 ```sql
--- 回溯到 UPDATE 之前，确认两笔贷款的原始状态
+-- Roll back to before the UPDATE and confirm the original status of both loans
 SELECT loan_id, status, current_debt_days
 FROM best_practice_reg_reporting.doc_ods_loan_book
 TIMESTAMP AS OF '2026-06-06 23:53:15'
@@ -244,7 +244,7 @@ SELECT
     rating,
     status,
     COALESCE(current_debt_days, 0)      AS current_debt_days,
-    -- IFRS 9 三阶段判定规则
+    -- IFRS 9 three-stage classification rules
     CASE
         WHEN status = 'Default'
              OR COALESCE(current_debt_days, 0) > 90         THEN 3  -- Credit-impaired
@@ -305,7 +305,7 @@ PD (probability of default) and LGD (loss given default) are sensitive model par
 CREATE OR REPLACE FUNCTION best_practice_reg_reporting.mask_sensitive_rate(rate DOUBLE)
 RETURNS DOUBLE
 AS CASE
-    WHEN current_user() IN ('privileged_user') THEN rate  -- 替换为实际授权用户名
+    WHEN current_user() IN ('privileged_user') THEN rate  -- Replace with actual authorized usernames
     ELSE ROUND(rate, 2)
 END;
 ```
@@ -529,21 +529,21 @@ None of the Dynamic Tables have `REFRESH INTERVAL` in their DDL; scheduling is m
 > 💡 **Tip**: The examples below use **cz-cli** (the Singdata Lakehouse command-line tool). If cz-cli is not installed, see the [cz-cli Installation and Usage Guide](../setup_cz_cli.md). You can also run SQL in **Development → SQL Editor** in Singdata Studio and configure or trigger scheduled tasks under **Studio → Tasks**.
 
 ```bash
-# DWS 国家维度聚合 — 每日 06:00 刷新
+# DWS country-dimension aggregation — daily refresh at 06:00
 cz-cli task create "refresh_reg_dws_ecl_by_country" --type SQL --folder "best_practices" -p skill_test
 cz-cli task save-content "refresh_reg_dws_ecl_by_country" \
   --content "REFRESH DYNAMIC TABLE best_practice_reg_reporting.doc_dws_ecl_by_country;" \
   -p skill_test
 cz-cli task save-cron "refresh_reg_dws_ecl_by_country" --cron "0 6 * * *" -p skill_test
 
-# DWS 评级维度聚合 — 每日 06:00 刷新
+# DWS rating-dimension aggregation — daily refresh at 06:00
 cz-cli task create "refresh_reg_dws_ecl_by_rating" --type SQL --folder "best_practices" -p skill_test
 cz-cli task save-content "refresh_reg_dws_ecl_by_rating" \
   --content "REFRESH DYNAMIC TABLE best_practice_reg_reporting.doc_dws_ecl_by_rating;" \
   -p skill_test
 cz-cli task save-cron "refresh_reg_dws_ecl_by_rating" --cron "0 6 * * *" -p skill_test
 
-# ADS IFRS9 拨备报表 — 每日 06:30 刷新（等 DWS 层完成后）
+# ADS IFRS 9 provisioning report — daily refresh at 06:30 (after DWS layer completes)
 cz-cli task create "refresh_reg_ads_ifrs9_provision" --type SQL --folder "best_practices" -p skill_test
 cz-cli task save-content "refresh_reg_ads_ifrs9_provision" \
   --content "REFRESH DYNAMIC TABLE best_practice_reg_reporting.doc_ads_ifrs9_provision_report;" \
@@ -554,9 +554,9 @@ cz-cli task save-cron "refresh_reg_ads_ifrs9_provision" --cron "30 6 * * *" -p s
 ### Task Dependency Topology
 
 ```
-ODS T+1 导入（ETL 任务，06:00 前完成）
+ODS T+1 import (ETL task, complete before 06:00)
     │
-    ▼  INSERT INTO doc_dwd_loan_std（手动 ETL 或 Zettapark Task）
+    ▼  INSERT INTO doc_dwd_loan_std (manual ETL or ZettaPark Task)
 doc_dwd_loan_std
     │
     ├──▶ refresh_reg_dws_ecl_by_country  (06:00)
@@ -568,7 +568,7 @@ doc_dws_ecl_by_country / doc_dws_ecl_by_rating
     ▼  refresh_reg_ads_ifrs9_provision (06:30)
 doc_ads_ifrs9_provision_report
     │
-    ▼  BI 报表 / 监管报告打包（07:00+）
+    ▼  BI reports / regulatory report packaging (07:00+)
 ```
 
 > 💡 **Tip**: Configure execution failure alerts for each task on the Studio Task monitoring page, and attach data quality rules to ensure ADS layer data passes quality checks before entering the regulatory reporting system.

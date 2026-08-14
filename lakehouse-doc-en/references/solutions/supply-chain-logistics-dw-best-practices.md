@@ -159,7 +159,7 @@ PARTITIONED BY (dt STRING);
 Logistics providers upload shipment EDI files to an OSS bucket in the early morning each day. A PIPE automatically imports them into the shipment table:
 
 ```sql
--- 前提：已创建 OSS Storage Connection 和 External Volume
+-- Prerequisite: OSS Storage Connection and External Volume already created
 CREATE PIPE IF NOT EXISTS best_practice_supply_chain.pipe_ods_shipments
 AS
 COPY INTO best_practice_supply_chain.doc_ods_shipments
@@ -549,16 +549,16 @@ SHOW DYNAMIC TABLES IN best_practice_supply_chain;
 Cascading dependency chain:
 
 ```
-ODS 原始表（静态）
+ODS raw tables (static)
   ↓
 doc_dwd_order_events       ← JOIN orders + order_items + shipments
-doc_dwd_inventory_events   ← 库存快照 + 可用量派生
-  ↓ (任务依赖)
-doc_dws_sku_daily_sales    ← 按日期 × SKU × 仓库聚合
-doc_dws_carrier_timeliness ← 按承运商 × 省份 × 周聚合
-  ↓ (任务依赖)
-doc_ads_inventory_alert    ← 过滤低库存 SKU
-doc_ads_supplier_sla_report← 月度供应商合规评级
+doc_dwd_inventory_events   ← inventory snapshot + available-quantity derivation
+  ↓ (task dependency)
+doc_dws_sku_daily_sales    ← aggregated by date × SKU × warehouse
+doc_dws_carrier_timeliness ← aggregated by carrier × province × week
+  ↓ (task dependency)
+doc_ads_inventory_alert    ← filters low-stock SKUs
+doc_ads_supplier_sla_report← monthly supplier compliance rating
 ```
 
 None of the 6 Dynamic Tables have `REFRESH INTERVAL` in their DDL. The refresh order is guaranteed by Studio Task scheduling dependencies (see the next section).
@@ -574,17 +574,17 @@ In production, manage Dynamic Table periodic refresh through Studio Task rather 
 **DWD layer:**
 
 ```bash
-# 创建 DWD 订单事件刷新任务
+# Create DWD order event refresh task
 cz-cli task create refresh_dwd_order_events_sc --type SQL -p skill_test
-# 返回示例: {"data":{"id":10353826,...}}
+# Example response: {"data":{"id":10353826,...}}
 
 cz-cli task save-content 10353826 \
     --content "REFRESH DYNAMIC TABLE best_practice_supply_chain.doc_dwd_order_events;" \
     -p skill_test
 
-# 创建 DWD 库存事件刷新任务
+# Create DWD inventory event refresh task
 cz-cli task create refresh_dwd_inventory_events_sc --type SQL -p skill_test
-# 返回示例: {"data":{"id":10354789,...}}
+# Example response: {"data":{"id":10354789,...}}
 
 cz-cli task save-content 10354789 \
     --content "REFRESH DYNAMIC TABLE best_practice_supply_chain.doc_dwd_inventory_events;" \
@@ -595,14 +595,14 @@ cz-cli task save-content 10354789 \
 
 ```bash
 cz-cli task create refresh_dws_sku_daily_sc --type SQL -p skill_test
-# 返回示例: {"data":{"id":10353827,...}}
+# Example response: {"data":{"id":10353827,...}}
 
 cz-cli task save-content 10353827 \
     --content "REFRESH DYNAMIC TABLE best_practice_supply_chain.doc_dws_sku_daily_sales;" \
     -p skill_test
 
 cz-cli task create refresh_dws_carrier_sc --type SQL -p skill_test
-# 返回示例: {"data":{"id":10354790,...}}
+# Example response: {"data":{"id":10354790,...}}
 
 cz-cli task save-content 10354790 \
     --content "REFRESH DYNAMIC TABLE best_practice_supply_chain.doc_dws_carrier_timeliness;" \
@@ -613,14 +613,14 @@ cz-cli task save-content 10354790 \
 
 ```bash
 cz-cli task create refresh_ads_inventory_alert_sc --type SQL -p skill_test
-# 返回示例: {"data":{"id":10353828,...}}
+# Example response: {"data":{"id":10353828,...}}
 
 cz-cli task save-content 10353828 \
     --content "REFRESH DYNAMIC TABLE best_practice_supply_chain.doc_ads_inventory_alert;" \
     -p skill_test
 
 cz-cli task create refresh_ads_supplier_sla_sc --type SQL -p skill_test
-# 返回示例: {"data":{"id":10354791,...}}
+# Example response: {"data":{"id":10354791,...}}
 
 cz-cli task save-content 10354791 \
     --content "REFRESH DYNAMIC TABLE best_practice_supply_chain.doc_ads_supplier_sla_report;" \
@@ -630,15 +630,15 @@ cz-cli task save-content 10354791 \
 ### Configure Schedules
 
 ```bash
-# DWD 层：每天凌晨 1:00 刷新
+# DWD layer: refresh daily at 01:00
 cz-cli task save-cron 10353826 --cron "0 0 1 * * ?" -p skill_test
 cz-cli task save-cron 10354789 --cron "0 0 1 * * ?" -p skill_test
 
-# DWS 层：每天凌晨 1:30 刷新（等待 DWD 完成）
+# DWS layer: refresh daily at 01:30 (after DWD completes)
 cz-cli task save-cron 10353827 --cron "0 30 1 * * ?" -p skill_test
 cz-cli task save-cron 10354790 --cron "0 30 1 * * ?" -p skill_test
 
-# ADS 层：每天凌晨 2:00 刷新（等待 DWS 完成）
+# ADS layer: refresh daily at 02:00 (after DWS completes)
 cz-cli task save-cron 10353828 --cron "0 0 2 * * ?" -p skill_test
 cz-cli task save-cron 10354791 --cron "0 0 2 * * ?" -p skill_test
 ```
@@ -648,25 +648,25 @@ cz-cli task save-cron 10354791 --cron "0 0 2 * * ?" -p skill_test
 Schedule times alone cannot guarantee that downstream tasks start only after upstream completes (if upstream runs overtime, DWS computation could begin before the data is fully refreshed). Use `save-config --deps` to configure task dependencies for completion-state-based cascading triggers:
 
 ```bash
-# DWS SKU 聚合依赖 DWD 订单事件
+# DWS SKU aggregation depends on DWD order events
 cz-cli task save-config refresh_dws_sku_daily_sc \
     --deps replace \
     --dep-tasks '[{"taskId":10353826,"taskName":"refresh_dwd_order_events_sc"}]' \
     -p skill_test
 
-# DWS 承运商时效依赖 DWD 订单事件
+# DWS carrier timeliness depends on DWD order events
 cz-cli task save-config refresh_dws_carrier_sc \
     --deps replace \
     --dep-tasks '[{"taskId":10353826,"taskName":"refresh_dwd_order_events_sc"}]' \
     -p skill_test
 
-# ADS 库存告警依赖 DWD 库存事件
+# ADS inventory alert depends on DWD inventory events
 cz-cli task save-config refresh_ads_inventory_alert_sc \
     --deps replace \
     --dep-tasks '[{"taskId":10354789,"taskName":"refresh_dwd_inventory_events_sc"}]' \
     -p skill_test
 
-# ADS 供应商 SLA 报告依赖 DWS SKU 聚合和 DWS 承运商时效
+# ADS supplier SLA report depends on DWS SKU aggregation and DWS carrier timeliness
 cz-cli task save-config refresh_ads_supplier_sla_sc \
     --deps replace \
     --dep-tasks '[{"taskId":10353827,"taskName":"refresh_dws_sku_daily_sc"},{"taskId":10354790,"taskName":"refresh_dws_carrier_sc"}]' \
@@ -676,14 +676,14 @@ cz-cli task save-config refresh_ads_supplier_sla_sc \
 Full scheduling chain:
 
 ```
-01:00  refresh_dwd_order_events_sc     （DWD 订单事件宽表）
-01:00  refresh_dwd_inventory_events_sc （DWD 库存事件宽表）
-  ↓ 依赖完成后触发
-01:30  refresh_dws_sku_daily_sc        （DWS SKU 日销售聚合）
-01:30  refresh_dws_carrier_sc          （DWS 承运商路线时效聚合）
-  ↓ 依赖完成后触发
-02:00  refresh_ads_inventory_alert_sc  （ADS 库存告警）
-02:00  refresh_ads_supplier_sla_sc     （ADS 供应商 SLA 月度报告）
+01:00  refresh_dwd_order_events_sc     (DWD order event wide table)
+01:00  refresh_dwd_inventory_events_sc (DWD inventory event wide table)
+  ↓ triggered after dependency completes
+01:30  refresh_dws_sku_daily_sc        (DWS SKU daily sales aggregation)
+01:30  refresh_dws_carrier_sc          (DWS carrier route timeliness aggregation)
+  ↓ triggered after dependency completes
+02:00  refresh_ads_inventory_alert_sc  (ADS inventory alert)
+02:00  refresh_ads_supplier_sla_sc     (ADS supplier SLA monthly report)
 ```
 
 > 💡 **Tip**: Studio Task supports attaching alert rules to tasks. For example, if `doc_dwd_order_events` has 0 rows after `refresh_dwd_order_events_sc` refreshes on a given day, configure an alert on the task to send a notification to on-call staff. You can also configure schedules and dependencies through the Singdata Studio UI under **Development → Tasks** instead of the CLI.

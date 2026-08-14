@@ -1,7 +1,7 @@
 # Overview
 
-Singdata Lakehouse is a cloud lakehouse platform developed by Singdata. Built on an incremental computing engine, it delivers up to 10x better performance than traditional open-source architectures such as Spark, enabling end-to-end, low-cost, real-time processing for large-scale data. The platform supports the integration, storage, and computation of all data types, providing the data infrastructure enterprises need to move from Spark-based systems to AI-ready data platforms. 
-
+Singdata Lakehouse is a cloud lakehouse platform developed by Singdata. Built on an incremental computing engine, it delivers up to 10x better performance than traditional open-source architectures such as Spark, enabling end-to-end, low-cost, real-time processing for large-scale data. The platform supports the integration, storage, and computation of all data types, providing the data infrastructure enterprises need to move from Spark-based systems to AI-ready data platforms.  
+ 
 For enterprises with existing data lakes (S3 / OSS / COS), Singdata Lakehouse can mount existing object storage and query Hive, Iceberg, Delta Lake, and other data formats through External Catalog. This provides high-performance SQL analytics without data migration and offers a low-cost path from a data lake to a unified lakehouse.
 
 Singdata Lakehouse supports seven cloud providers worldwide, is available in multiple Asia-Pacific regions, and also supports private deployment. Deployment costs can be reduced to 1/5-1/3 of traditional solutions, with operations costs close to zero.

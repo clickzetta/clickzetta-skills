@@ -8,7 +8,8 @@ PUT is a client-side command; the Lakehouse client tool reads the local file and
 
 - [SQLLine command-line client](connect-with-cli.md)
 - [DBeaver and other JDBC clients](eco_integration/dbeaver-lakehouse.md)
-- Studio SQL editor (supported)
+
+> ⚠️ **Note**: The Studio SQL editor does not support PUT. Studio runs server-side and cannot access files on your local machine; since PUT reads a local file to upload it, it can only be run from the client tools above.
 
 ## Syntax
 

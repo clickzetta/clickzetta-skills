@@ -11,6 +11,9 @@ Many teams building a data platform find that the real complexity comes not from
 - Data catalog, quality, and permissions in yet another
 
 Lakehouse Studio consolidates these fragmented, high-frequency tasks into one product. Teams can complete development, scheduling, operations, and governance in the same place instead of switching between multiple systems.
+```youtube
+<iframe width="560" height="315" src="https://www.youtube.com/embed/jG_iWjWGHrs?si=nM8TttyYRiuUCECK" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+```
 
 ## Where Studio Fits in Singdata Lakehouse
 

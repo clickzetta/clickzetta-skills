@@ -4,7 +4,7 @@
 
 Singdata Lakehouse provides trial accounts so new users can evaluate platform features and performance at no cost.
 
-New accounts start in trial status. You can see the **Trial** status label on the left side of the Management Center. After you create a service instance, the account receives a **$50 USD voucher** that is valid for 30 days.
+New accounts start in trial status. You can see the **Trial** status label on the left side of the Management Center. After you create a service instance, the account receives a **$50 USD voucher** that is valid for 30 days; You will also receive a 30-day waiver of the Analytics Agent software subscription fee, with no subscription required to start the trial. Note that other fees incurred within Analytics Agent are still charged based on usage.  
 
 
 ![](.topwrite/assets/image_1740710821088.png =189)

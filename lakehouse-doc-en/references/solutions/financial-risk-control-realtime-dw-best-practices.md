@@ -60,7 +60,7 @@ The transaction main table records each card swipe event; the customer master ta
 ```sql
 CREATE TABLE IF NOT EXISTS best_practice_financial_risk.ods_transactions (
     txn_id                  STRING,
-    cc_num                  STRING,        -- 银行卡号，绑定 Column Masking
+    cc_num                  STRING,        -- Card number, bound to Column Masking
     merchant                STRING,
     category                STRING,
     amt                     DOUBLE,
@@ -71,16 +71,16 @@ CREATE TABLE IF NOT EXISTS best_practice_financial_risk.ods_transactions (
     city                    STRING,
     state                   STRING,
     zip                     STRING,
-    lat                     DOUBLE,        -- 持卡人位置（纬度）
-    long_                   DOUBLE,        -- 持卡人位置（经度）
+    lat                     DOUBLE,        -- Cardholder location (latitude)
+    long_                   DOUBLE,        -- Cardholder location (longitude)
     city_pop                BIGINT,
     job                     STRING,
-    dob                     STRING,        -- 出生日期（字符串格式）
+    dob                     STRING,        -- Date of birth (string format)
     trans_num               STRING,
     unix_time               BIGINT,
-    merch_lat               DOUBLE,        -- 商户位置（纬度）
-    merch_long              DOUBLE,        -- 商户位置（经度）
-    is_fraud                INT,           -- 欺诈标签：0 正常 / 1 欺诈
+    merch_lat               DOUBLE,        -- Merchant location (latitude)
+    merch_long              DOUBLE,        -- Merchant location (longitude)
+    is_fraud                INT,           -- Fraud label: 0 normal / 1 fraud
     trans_date_trans_time   TIMESTAMP
 );
 
@@ -106,10 +106,10 @@ CREATE TABLE IF NOT EXISTS best_practice_financial_risk.ods_customers (
 In production, transaction data is ingested in real time to the ODS layer via Kafka. The following is a PIPE configuration template; replace the actual broker address and topic name before creating.
 
 ```sql
--- 先建 raw 消息接收表（JSON 字符串）
+-- Create the raw message staging table (JSON strings)
 CREATE TABLE IF NOT EXISTS best_practice_financial_risk.kafka_txn_raw (value STRING);
 
--- 创建 Kafka PIPE
+-- Create the Kafka PIPE
 CREATE PIPE IF NOT EXISTS best_practice_financial_risk.pipe_txn_stream
     VIRTUAL_CLUSTER = 'DEFAULT'
     BATCH_INTERVAL_IN_SECONDS = '60'
@@ -118,8 +118,8 @@ COPY INTO best_practice_financial_risk.kafka_txn_raw
 FROM (
     SELECT CAST(value AS STRING) AS value
     FROM READ_KAFKA(
-        '<kafka-broker>:9092',      -- 替换为实际 broker 地址
-        'bank_transactions',         -- Kafka topic 名称
+        '<kafka-broker>:9092',      -- replace with actual broker address
+        'bank_transactions',         -- Kafka topic name
         '',
         'cz_fraud_consumer',         -- consumer group ID
         '','','','',
@@ -139,12 +139,12 @@ This guide uses a subset of the Kaggle fraud-detection dataset, with INSERT stat
 Import from a local CSV file (recommended):
 
 ```sql
--- 第一步：通过 SQL PUT 将本地 CSV 文件上传到 User Volume
+-- Step 1: Upload the local CSV file to User Volume via SQL PUT
 PUT '/path/to/your/data.csv' TO USER VOLUME FILE 'data.csv';
 ```
 
 ```sql
--- 第二步：从 User Volume COPY INTO 表
+-- Step 2: COPY INTO the table from User Volume
 COPY INTO best_practice_financial_risk.ods_customers
 FROM USER VOLUME
 USING csv
@@ -174,7 +174,7 @@ INSERT INTO best_practice_financial_risk.ods_transactions VALUES
 ('TXN002','4716058826889367','fraud_Sporer-Keebler','entertainment',2529.0,'Mary','Johnson','F','456 Elm Ave','Dallas','TX','75201',32.7767,-96.7970,1343000,'Accountant','1990-03-22','tx002',1325376075,33.4897,-96.9132,1,CAST('2020-01-01 00:01:15' AS TIMESTAMP)),
 ('TXN007','4532117697654321','fraud_Olson, Becker and Koch','shopping_net',1987.40,'Michael','Wilson','M','147 Spruce Ave','Los Angeles','CA','90001',34.0522,-118.2437,3980000,'Engineer','1975-12-03','tx007',1325379440,34.1808,-118.4634,1,CAST('2020-01-01 00:57:20' AS TIMESTAMP)),
 ('TXN018','4716058828888999','fraud_Sauer-Kessler','entertainment',4500.00,'Jennifer','Moore','F','258 Walnut Rd','New York','NY','10001',40.7128,-74.0060,8336000,'Lawyer','1992-08-17','tx018',1325386200,40.9345,-74.1234,1,CAST('2020-01-01 02:50:00' AS TIMESTAMP))
--- ... 完整 20 条，此处省略
+-- ... full 20 rows omitted here
 ;
 ```
 
@@ -198,15 +198,15 @@ total_txns | fraud_count | fraud_rate_pct
 Credit card numbers are highly sensitive PII data that must be masked for unauthorized users (showing only the last 4 digits).
 
 ```sql
--- 创建脱敏函数
+-- Create the masking function
 CREATE OR REPLACE FUNCTION best_practice_financial_risk.mask_cc_num(cc_num STRING)
 RETURNS STRING
 AS CASE
-    WHEN current_user() IN ('privileged_user') THEN cc_num  -- 替换为实际获授权的用户名
+    WHEN current_user() IN ('privileged_user') THEN cc_num  -- replace with the actual authorized username
     ELSE CONCAT('****-****-****-', SUBSTRING(cc_num, LENGTH(cc_num) - 3, 4))
 END;
 
--- 绑定到 ods_transactions.cc_num 列
+-- Bind to the ods_transactions.cc_num column
 ALTER TABLE best_practice_financial_risk.ods_transactions
 CHANGE COLUMN cc_num
 SET MASK best_practice_financial_risk.mask_cc_num;
@@ -256,7 +256,7 @@ SELECT
     t.is_fraud,
     t.merch_lat,
     t.merch_long,
-    -- 地理距离：持卡人位置 vs 商户位置（km，Haversine 简化）
+    -- Geographic distance: cardholder vs merchant location (km, Haversine approximation)
     ROUND(
         111.2 * SQRT(
             POWER(t.lat - t.merch_lat, 2) +
@@ -335,22 +335,22 @@ SELECT
     state,
     job,
     age,
-    -- 交易统计（全量历史）
+    -- Transaction statistics (full history)
     COUNT(*)                                        AS txn_total,
     ROUND(SUM(amt), 2)                              AS amt_total,
     ROUND(AVG(amt), 2)                              AS amt_avg,
     ROUND(MAX(amt), 2)                              AS amt_max,
     ROUND(STDDEV_POP(amt), 2)                       AS amt_stddev,
-    -- 历史欺诈记录
+    -- Historical fraud records
     SUM(is_fraud)                                   AS fraud_history_count,
-    -- 按品类交易次数
+    -- Transaction count by category
     COUNT(CASE WHEN category = 'shopping_net'  THEN 1 END) AS cat_shopping_net,
     COUNT(CASE WHEN category = 'entertainment' THEN 1 END) AS cat_entertainment,
     COUNT(CASE WHEN category = 'grocery_pos'   THEN 1 END) AS cat_grocery,
     COUNT(CASE WHEN category = 'food_dining'   THEN 1 END) AS cat_food_dining,
-    -- 最近一次交易时间
+    -- Timestamp of most recent transaction
     MAX(txn_time)                                   AS last_txn_time,
-    -- 高金额交易次数（单笔 > 1000）
+    -- High-value transaction count (single transaction > 1000)
     COUNT(CASE WHEN amt > 1000 THEN 1 END)          AS high_amt_txn_count
 FROM best_practice_financial_risk.dwd_txn_events
 GROUP BY cc_num, first_name, last_name, state, job, age;
@@ -400,26 +400,26 @@ The score is the sum of four factors (capped at 100, floored at 0):
 
 ```sql
 CREATE FUNCTION best_practice_financial_risk.calc_txn_risk_score(
-    p_amt           DOUBLE,    -- 当前交易金额
-    p_hist_avg      DOUBLE,    -- 用户历史均值
-    p_hist_stddev   DOUBLE,    -- 用户历史标准差
-    p_dist_km       DOUBLE,    -- 持卡人与商户距离（km）
-    p_fraud_history DOUBLE,    -- 历史欺诈次数
-    p_high_count    DOUBLE     -- 高金额交易次数
+    p_amt           DOUBLE,    -- current transaction amount
+    p_hist_avg      DOUBLE,    -- user historical average
+    p_hist_stddev   DOUBLE,    -- user historical standard deviation
+    p_dist_km       DOUBLE,    -- cardholder-to-merchant distance (km)
+    p_fraud_history DOUBLE,    -- historical fraud count
+    p_high_count    DOUBLE     -- high-value transaction count
 )
 RETURNS DOUBLE
 AS LEAST(100.0, GREATEST(0.0,
-    -- 金额偏差因子
+    -- Amount deviation factor
     CASE
         WHEN p_hist_stddev > 0.0
             THEN LEAST(40.0, ((p_amt - p_hist_avg) / p_hist_stddev) * 10.0)
         ELSE 0.0
     END
-    -- 地理距离因子
+    -- Geographic distance factor
     + CASE WHEN p_dist_km > 100.0 THEN 20.0 WHEN p_dist_km > 50.0 THEN 10.0 ELSE 0.0 END
-    -- 历史欺诈因子
+    -- Historical fraud factor
     + p_fraud_history * 15.0
-    -- 高金额频次因子
+    -- High-value frequency factor
     + p_high_count * 5.0
 ));
 ```
@@ -473,7 +473,7 @@ SELECT
     u.amt_stddev,
     u.fraud_history_count,
     u.high_amt_txn_count,
-    -- 实时风险评分
+    -- Real-time risk score
     ROUND(best_practice_financial_risk.calc_txn_risk_score(
         t.amt,
         u.amt_avg,
@@ -482,7 +482,7 @@ SELECT
         CAST(u.fraud_history_count AS DOUBLE),
         CAST(u.high_amt_txn_count AS DOUBLE)
     ), 2)                                           AS risk_score,
-    -- 风险等级
+    -- Risk tier
     CASE
         WHEN best_practice_financial_risk.calc_txn_risk_score(
             t.amt, u.amt_avg, u.amt_stddev, t.dist_km,
@@ -593,22 +593,22 @@ The risk control scenario involves three types of users that need differentiated
 | `audit_admin` | All layers including PII original values | Compliance audit; sees full `cc_num` and names |
 
 ```sql
--- 创建角色
+-- Create roles
 CREATE ROLE IF NOT EXISTS risk_analyst;
 CREATE ROLE IF NOT EXISTS risk_interception;
 CREATE ROLE IF NOT EXISTS audit_admin;
 
--- risk_analyst：可查 DWD 和 DWS（动态表用 DYNAMIC TABLE 关键字）
+-- risk_analyst: can query DWD and DWS (Dynamic Tables use the DYNAMIC TABLE keyword)
 GRANT SELECT ON DYNAMIC TABLE best_practice_financial_risk.dwd_txn_events
     TO ROLE risk_analyst;
 GRANT SELECT ON DYNAMIC TABLE best_practice_financial_risk.dws_user_risk_features
     TO ROLE risk_analyst;
 
--- risk_interception：仅查 ADS 输出（动态表）
+-- risk_interception: query ADS output only (Dynamic Tables)
 GRANT SELECT ON DYNAMIC TABLE best_practice_financial_risk.ads_txn_risk_score
     TO ROLE risk_interception;
 
--- audit_admin：全层访问
+-- audit_admin: full access across all layers
 GRANT SELECT ON TABLE best_practice_financial_risk.ods_transactions
     TO ROLE audit_admin;
 GRANT SELECT ON TABLE best_practice_financial_risk.ods_customers

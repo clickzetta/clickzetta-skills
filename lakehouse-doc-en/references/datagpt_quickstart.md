@@ -1,7 +1,6 @@
 # Analytics Agent Quick Start
 
 This guide helps you configure Analytics Agent from scratch and run your first data Q\&A. After completing it, you will be able to ask questions about your own data in natural language and receive charts and analysis summaries.
-
 The diagram below shows the complete user journey. This guide covers the core steps of Phase 1 and Phase 2:
 
 :-: ![](/.topwrite/assets/image_1780894528587.png =635)

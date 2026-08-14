@@ -52,7 +52,7 @@ CREATE SCHEMA IF NOT EXISTS best_practice_fraud_graph;
 ### Create Tables
 
 ```sql
--- 账户节点：记录每个账户的注册信息和风险标签
+-- Account node: stores registration info and risk labels for each account
 CREATE TABLE IF NOT EXISTS best_practice_fraud_graph.doc_account_node (
     account_id       STRING,
     register_time    TIMESTAMP,
@@ -61,10 +61,10 @@ CREATE TABLE IF NOT EXISTS best_practice_fraud_graph.doc_account_node (
     id_cert_hash     STRING,
     account_age_days INT,
     is_verified      INT,
-    risk_label       INT        -- 0: 正常  1: 已知欺诈
+    risk_label       INT        -- 0: normal  1: known fraud
 );
 
--- 设备节点：记录设备基础属性
+-- Device node: stores basic device attributes
 CREATE TABLE IF NOT EXISTS best_practice_fraud_graph.doc_device_node (
     device_id      STRING,
     device_type    STRING,
@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS best_practice_fraud_graph.doc_device_node (
     account_count  INT
 );
 
--- IP 节点：记录 IP 基础属性和风险评分
+-- IP node: stores basic IP attributes and risk score
 CREATE TABLE IF NOT EXISTS best_practice_fraud_graph.doc_ip_node (
     ip_addr       STRING,
     isp           STRING,
@@ -82,7 +82,7 @@ CREATE TABLE IF NOT EXISTS best_practice_fraud_graph.doc_ip_node (
     account_count INT
 );
 
--- 交易边：账户间的资金转移关系
+-- Transaction edge: fund transfer relationship between accounts
 CREATE TABLE IF NOT EXISTS best_practice_fraud_graph.doc_transaction_edge (
     txn_id         STRING,
     src_account_id STRING,
@@ -94,7 +94,7 @@ CREATE TABLE IF NOT EXISTS best_practice_fraud_graph.doc_transaction_edge (
     is_suspicious  INT
 );
 
--- 账户-设备关联边：账户登录设备的绑定关系
+-- Account-device edge: binding relationship between account and login device
 CREATE TABLE IF NOT EXISTS best_practice_fraud_graph.doc_account_device_edge (
     account_id  STRING,
     device_id   STRING,
@@ -109,15 +109,15 @@ CREATE TABLE IF NOT EXISTS best_practice_fraud_graph.doc_account_device_edge (
 `doc_transaction_edge.src_account_id` and `doc_account_device_edge.device_id` are both high-cardinality columns with frequent point lookups. Bloomfilter Indexes are well suited here.
 
 ```sql
--- 交易边：按发起账户精确过滤
+-- Transaction edge: exact filter by originating account
 CREATE BLOOMFILTER INDEX IF NOT EXISTS best_practice_fraud_graph.idx_bf_txn_src
 ON TABLE best_practice_fraud_graph.doc_transaction_edge (src_account_id);
 
--- 账户-设备边：按设备 ID 精确过滤
+-- Account-device edge: exact filter by device ID
 CREATE BLOOMFILTER INDEX IF NOT EXISTS best_practice_fraud_graph.idx_bf_device_id
 ON TABLE best_practice_fraud_graph.doc_account_device_edge (device_id);
 
--- IP 节点：按城市关键字精确匹配
+-- IP node: exact match by city keyword
 CREATE INVERTED INDEX IF NOT EXISTS best_practice_fraud_graph.idx_inv_city
 ON TABLE best_practice_fraud_graph.doc_ip_node (city)
 PROPERTIES ('analyzer'='keyword');
@@ -132,12 +132,12 @@ This guide uses direct INSERT statements to construct entity relationship data s
 Import from a local CSV file (recommended):
 
 ```sql
--- 第一步：通过 SQL PUT 将本地 CSV 文件上传到 User Volume
+-- Step 1: Upload the local CSV file to User Volume via SQL PUT
 PUT '/path/to/your/doc_account_node.csv' TO USER VOLUME FILE 'doc_account_node.csv';
 ```
 
 ```sql
--- 第二步：从 User Volume COPY INTO 表
+-- Step 2: COPY INTO the table from User Volume
 COPY INTO best_practice_fraud_graph.doc_account_node
 FROM USER VOLUME
 USING csv
@@ -148,12 +148,12 @@ FILES ('doc_account_node.csv');
 You can also insert a small batch of test data inline (no CSV file required):
 
 ```sql
--- 写入 20 个账户节点（A001–A020）
+-- Insert 20 account nodes (A001–A020)
 INSERT INTO best_practice_fraud_graph.doc_account_node VALUES
 ('A001', CAST('2025-01-10 09:00:00' AS TIMESTAMP), '192.168.10.1', '8801', 'hash_id_001', 147, 1, 0),
 ('A002', CAST('2025-01-10 09:05:00' AS TIMESTAMP), '192.168.10.1', '8802', 'hash_id_002', 147, 1, 1),
 ('A003', CAST('2025-01-10 09:10:00' AS TIMESTAMP), '192.168.10.1', '8803', 'hash_id_003', 147, 0, 1),
--- ... A004–A020（完整 20 条）
+-- ... A004–A020 (full 20 rows)
 ;
 ```
 
@@ -556,16 +556,16 @@ from clickzetta_zettapark.session import Session
 
 session = Session.builder.config("profile", "skill_test").create()
 
-# 从 DWD 层读取共设备账户对
+# Read shared-device account pairs from the DWD layer
 pairs = session.sql("""
     SELECT account_id_1, account_id_2
     FROM best_practice_fraud_graph.dwd_shared_device_pairs
 """).to_pandas()
 
-# 构建无向图，每个节点是账户，每条边是共设备关系
+# Build an undirected graph where each node is an account and each edge is a shared-device relationship
 G = nx.from_pandas_edgelist(pairs, 'account_id_1', 'account_id_2')
 
-# 找出连通分量（即团伙分组）
+# Find connected components (gang groupings)
 components = list(nx.connected_components(G))
 gang_assignments = []
 for gang_id, members in enumerate(components):
@@ -576,7 +576,7 @@ for gang_id, members in enumerate(components):
             'gang_size': len(members)
         })
 
-# 将结果写回 Lakehouse
+# Write results back to Lakehouse
 import pandas as pd
 df = pd.DataFrame(gang_assignments)
 session.write_pandas(df, 'ads_gang_component_map',
@@ -613,7 +613,7 @@ Data flow summary:
 
 ```
 doc_account_device_edge (ODS)
-    ↓  SELF JOIN（共设备账户对）
+    ↓  SELF JOIN (shared-device account pairs)
 dwd_shared_device_pairs (DWD, Dynamic Table)
     ↓  GROUP BY device_id
 dws_device_cluster_stats (DWS, Dynamic Table)
@@ -624,7 +624,7 @@ dws_device_cluster_stats (DWS, Dynamic Table)
 dws_account_txn_risk (DWS, Dynamic Table)
     ↑  GROUP BY src_account_id
 dwd_txn_graph_edge (DWD, Dynamic Table)
-    ↑  JOIN 账户节点风险标签
+    ↑  JOIN account node risk labels
 doc_transaction_edge + doc_account_node (ODS)
 ```
 

@@ -8,7 +8,8 @@ GET is a client-side command; the Lakehouse client tool receives the data and wr
 
 - [SQLLine command-line client](connect-with-cli.md)
 - [DBeaver and other JDBC clients](eco_integration/dbeaver-lakehouse.md)
-- Studio SQL editor (supported)
+
+> ⚠️ **Note**: The Studio SQL editor does not support GET. Studio runs server-side and cannot write files to your local machine; since GET downloads a file to the local filesystem, it can only be run from the client tools above.
 
 ## Syntax
 

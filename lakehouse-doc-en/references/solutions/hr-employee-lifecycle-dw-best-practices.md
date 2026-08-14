@@ -55,7 +55,7 @@ The dataset comes from the [Kaggle HR Analytics Case Study](https://www.kaggle.c
 CREATE TABLE IF NOT EXISTS best_practice_hr_analytics.doc_ods_employees (
     emp_id                   INT,
     age                      INT,
-    attrition                STRING,    -- 'Yes'/'No'，是否已离职
+    attrition                STRING,    -- 'Yes'/'No', whether the employee has left
     business_travel          STRING,
     daily_rate               INT,
     department               STRING,
@@ -71,11 +71,11 @@ CREATE TABLE IF NOT EXISTS best_practice_hr_analytics.doc_ods_employees (
     job_role                 STRING,
     job_satisfaction         INT,       -- 1=Low 4=Very High
     marital_status           STRING,
-    monthly_income           INT,       -- 敏感字段，将绑定 Column Masking
+    monthly_income           INT,       -- Sensitive field, will be bound to Column Masking
     monthly_rate             INT,
     num_companies_worked     INT,
     overtime                 STRING,    -- 'Yes'/'No'
-    pct_salary_hike          INT,       -- 上次调薪幅度（%）
+    pct_salary_hike          INT,       -- Last salary increase percentage (%)
     performance_rating       INT,       -- 3=Excellent 4=Outstanding
     relationship_satisfaction INT,      -- 1-4
     stock_option_level       INT,
@@ -101,12 +101,12 @@ kaggle datasets download -d bhanupratapbiswas/hr-analytics-case-study \
 Import from a local CSV file (recommended):
 
 ```sql
--- 第一步：通过 SQL PUT 将本地 CSV 文件上传到 User Volume
+-- Step 1: Upload the local CSV file to User Volume via SQL PUT
 PUT '/path/to/your/data.csv' TO USER VOLUME FILE 'data.csv';
 ```
 
 ```sql
--- 第二步：从 User Volume COPY INTO 表
+-- Step 2: COPY INTO the table from User Volume
 COPY INTO best_practice_hr_analytics.doc_ods_employees
 FROM USER VOLUME
 USING csv
@@ -117,7 +117,7 @@ FILES ('data.csv');
 You can also insert a small batch of test data inline (no CSV file required):
 
 ```sql
--- 通过 INSERT INTO 载入前 40 行演示数据（实际执行，共 40 行）
+-- Load the first 40 rows of demo data via INSERT INTO (40 rows total)
 INSERT INTO best_practice_hr_analytics.doc_ods_employees VALUES
   (1,41,'Yes','Travel_Rarely',1102,'Sales',1,2,'Life Sciences',1,2,
    'Female',94,3,2,'Sales Executive',4,'Single',5993,19479,8,'Yes',11,3,1,0,8,0,1,6,4,0,5),
@@ -220,15 +220,15 @@ ods_row_count
 `monthly_income` is a highly sensitive field. The approach: HR administrators see original values; other users get -1 in query results.
 
 ```sql
--- 创建脱敏函数
+-- Create the masking function
 CREATE OR REPLACE FUNCTION best_practice_hr_analytics.mask_salary(salary INT)
 RETURNS INT
 AS CASE
-    WHEN current_user() IN ('privileged_user') THEN salary  -- 替换为实际获授权的用户名
+    WHEN current_user() IN ('privileged_user') THEN salary  -- replace with the actual authorized username
     ELSE -1
 END;
 
--- 绑定到 monthly_income 列
+-- Bind to the monthly_income column
 ALTER TABLE best_practice_hr_analytics.doc_ods_employees
 CHANGE COLUMN monthly_income
 SET MASK best_practice_hr_analytics.mask_salary;
@@ -291,7 +291,7 @@ SELECT
     overtime,
     business_travel,
     attrition,
-    -- 任期分层，便于分组分析
+    -- Tenure tier for group analysis
     CASE
         WHEN years_at_company <= 1  THEN 'New'
         WHEN years_at_company <= 3  THEN 'Junior'
@@ -299,12 +299,12 @@ SELECT
         WHEN years_at_company <= 15 THEN 'Senior'
         ELSE 'Veteran'
     END AS tenure_band,
-    -- 晋升停滞标志：2 年以上未晋升且绩效评分 >= 3
+    -- Promotion stall flag: no promotion in 2+ years and performance score >= 3
     CASE
         WHEN years_since_last_promo >= 2 AND performance_rating >= 3 THEN 1
         ELSE 0
     END AS promotion_stalled_flag,
-    -- 留任风险评分（0.0 ~ 1.0，越高越危险）
+    -- Retention risk score (0.0–1.0, higher = more at risk)
     ROUND(
         CASE WHEN overtime = 'Yes' THEN 0.25 ELSE 0.0 END
         + CASE WHEN job_satisfaction <= 2 THEN 0.25 ELSE 0.0 END
@@ -322,9 +322,9 @@ FROM best_practice_hr_analytics.doc_ods_employees;
 > 💡 **Tip**: The examples below use **cz-cli** (the Singdata Lakehouse command-line tool). If cz-cli is not installed, see the [cz-cli Installation and Usage Guide](../setup_cz_cli.md). You can also run SQL in **Development → SQL Editor** in Singdata Studio and configure or trigger scheduled tasks under **Studio → Tasks**.
 
 ```bash
-# 在 Studio best_practices/hr_analytics/ 路径下创建任务
+# Create task under Studio path best_practices/hr_analytics/
 cz-cli task create-folder hr_analytics --parent 186117 -p skill_test
-# 返回 folder_id: 186127
+# Returns folder_id: 186127
 
 cz-cli task create refresh_hr_dwd_timeline --type SQL --folder 186127 -p skill_test
 cz-cli task save-content refresh_hr_dwd_timeline \
@@ -462,13 +462,13 @@ SELECT
     promotion_stalled_flag,
     retention_risk_score,
     attrition,
-    -- 风险等级
+    -- Risk tier
     CASE
         WHEN retention_risk_score >= 0.6 THEN 'HIGH'
         WHEN retention_risk_score >= 0.3 THEN 'MEDIUM'
         ELSE 'LOW'
     END AS risk_level,
-    -- 主要离职信号
+    -- Primary attrition signals
     CASE
         WHEN overtime = 'Yes' AND job_satisfaction <= 2 THEN 'Overwork+LowSatisfaction'
         WHEN overtime = 'Yes'                           THEN 'Overwork'

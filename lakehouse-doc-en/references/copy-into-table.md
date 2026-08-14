@@ -113,6 +113,7 @@ CREATE TABLE birds (
     colors STRING
 );
 
+-- PUT must run in a client tool (e.g., sqlline); Studio runs server-side and cannot read local files, so PUT is not supported there.
 PUT '/Users/Downloads/data.csv' TO USER VOLUME FILE 'data.csv';
 
 COPY INTO birds FROM USER VOLUME
@@ -132,6 +133,7 @@ CREATE TABLE birds (
     colors STRING
 );
 
+-- PUT must run in a client tool (e.g., sqlline); Studio runs server-side and cannot read local files, so PUT is not supported there.
 PUT '/Users/Downloads/data.csv' TO TABLE VOLUME birds FILE 'data.csv';
 
 COPY INTO birds FROM TABLE VOLUME birds
