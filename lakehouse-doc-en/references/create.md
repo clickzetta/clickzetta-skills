@@ -40,7 +40,7 @@ CREATE <object_type> [ IF NOT EXISTS ] <object_name>
 | Synonym | `CREATE SYNONYM <name> FOR <object>` | Object alias |
 | SQL Function | `CREATE SQL FUNCTION <name> AS ...` | User-defined SQL function |
 | External Function | `CREATE EXTERNAL FUNCTION <name> ...` | Function that invokes external services |
-| User | `CREATE USER <name> ...` | System user |
+| Workspace User | `CREATE USER <name> ...` | Add an existing instance user to the current workspace |
 | Role | `CREATE ROLE <name>` | Permission role |
 
 ## Required Permissions

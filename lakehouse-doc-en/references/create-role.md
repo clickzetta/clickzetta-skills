@@ -59,14 +59,16 @@ Example output (including the newly created role):
 | test_readonly_role | Read-only role for testing |
 | test_temp_role | |
 | workspace_admin | System preset role with management permissions for tasks, environments, and all data objects in the workspace, as well as permissions for managing members and roles in the workspace. |
+| workspace_analyst | System preset role with development feature usage permissions and all compute cluster usage permissions. |
 | workspace_dev | System preset role with management permissions for task directories in the workspace, editing permissions for task scripts, and read and write permissions for all data objects in the workspace. |
+| workspace_sre | System preset role with management permissions for all tasks and jobs in the workspace. |
 
 ## Notes
 
 - Executing this command requires the `workspace_admin` role.
 - After creation, the role has no permissions. Permissions must be granted to the role via the `GRANT` statement.
 - Use `GRANT ROLE role_name TO USER user_name` to assign the role to a user.
-- System preset roles (such as `workspace_admin`, `workspace_dev`, etc.) cannot be deleted or replaced via `OR REPLACE`.
+- System preset roles (such as `workspace_admin`, `workspace_analyst`, `workspace_dev`, `workspace_sre`) cannot be deleted or replaced via `OR REPLACE`.
 
 # Instance Role Management
 

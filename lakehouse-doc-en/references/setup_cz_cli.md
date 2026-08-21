@@ -90,49 +90,44 @@ cz-cli --help
 
 A Profile is a local configuration that stores connection information for cz-cli. We recommend creating a separate profile for each environment, e.g., prod, uat, dev.
 
-### Create a Profile Using cz-cli setup
+> ⚠️ **Note**: `cz-cli setup` is deprecated. New users should use `cz-cli login`; if you already have a JDBC connection string, use `cz-cli profile create` as described below.
 
-For example:
+### Sign In with `cz-cli login` (Recommended)
 
-```bash
-cz-cli setup
-```
+`cz-cli login` uses browser-based OAuth by default. After you sign in, cz-cli stores the authentication session and token, discovers the instances and Workspaces your account can access, and automatically creates one Profile for each instance and Workspace combination. It also configures the Singdata built-in LLM for later use with `cz-cli agent`.
 
-Then follow the guided prompts to register a new Singdata account, or enter your login address, credential string (generated after login), or JDBC connection string from an existing account.
-
-### Create with CLI Credential
+Give the login session a name, such as `prod`:
 
 ```bash
-cz-cli setup --credential <your cli Connection String>
+cz-cli login prod
 ```
 
-#### How to Obtain a PAT
+Follow the terminal prompt to complete sign-in and authorization in your browser, then return to the terminal and wait for configuration to finish. `prod` is the login session name, not necessarily the final Profile name. Automatically created Profiles are typically named `prod_0`, `prod_1`, and so on.
 
-1\) Log in to your [Singdata account](https://accounts.singdata.com/login?ref=cz-cli), and select **LakehouseMCP** from the left menu.
-
-^
-
-2\) If you have not created a PAT, click **Create PAT** to generate one.
-
-^
-
-3\) After creation, switch to the **CLI** tab and copy your CLI connection string.
-
-^
-
-4\) If you already have a PAT, paste it into the popup window and click **Generate Connection String**.
-
-^
-
-Once you have copied the CLI connection string, return to the cz-cli window, insert the connection string into the following command, and execute:
+To skip region selection, specify the region explicitly:
 
 ```bash
-cz-cli setup --credential <your cli Connection String>
+cz-cli login prod --partition intl
 ```
 
-Once execution completes, the profile configuration is done.
+Use `intl` for the Singdata international site and `cn` for the China site. For headless automation, run `cz-cli login --help` to view non-OAuth options such as `--pat`, `--username`, and `--password`.
 
-### Create from JDBC Connection String
+After signing in, view the session and automatically created Profiles:
+
+```bash
+cz-cli auth status
+cz-cli auth list
+cz-cli profile list
+```
+
+Select the Profile you want to use and verify the connection:
+
+```bash
+cz-cli profile use prod_0
+cz-cli -p prod_0 status
+```
+
+### Create a Profile from a JDBC Connection String
 
 If you already have a JDBC connection string, you can create a profile directly:
 
@@ -140,7 +135,11 @@ If you already have a JDBC connection string, you can create a profile directly:
 cz-cli profile create prod --jdbc "jdbc:clickzetta://<instance_name>.<service_endpoint>/<workspace_name>?username=<username>&password=<password>&schema=public&virtualCluster=DEFAULT"
 ```
 
+In this example, `prod` is the custom Profile name.
+
 ## Viewing and Switching Profiles
+
+Replace `prod` in the following commands with the actual Profile name. OAuth login usually creates names such as `prod_0` and `prod_1`; the JDBC method uses the name supplied to `cz-cli profile create`.
 
 **View profiles configured on this machine**
 

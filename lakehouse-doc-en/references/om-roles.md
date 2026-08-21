@@ -18,8 +18,9 @@ A user can have multiple roles, and the effective permissions are the union of a
 |------|------|---------|
 | `account_admin` | Account-level | Manage all resources under the account |
 | `workspace_admin` | Workspace-level | Manage all resources within the workspace |
+| `workspace_analyst` | Workspace-level | Use development features and compute clusters; read metadata of data objects by default |
 | `workspace_dev` | Workspace-level | Develop tasks, use data and compute clusters |
-| `workspace_user` | Workspace-level | Read-only access to tasks and instances |
+| `workspace_sre` | Workspace-level | Manage all tasks and jobs within the workspace |
 
 ## Custom Roles
 

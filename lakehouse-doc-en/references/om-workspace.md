@@ -29,8 +29,9 @@ Users must join a workspace and be granted a role before they can use its resour
 | Role | Code | Default Permissions |
 |------|------|---------|
 | Workspace Admin | `workspace_admin` | Full permissions to manage members, roles, tasks, data, and compute clusters |
+| Workspace Analyst | `workspace_analyst` | Use development features and compute clusters; metadata read access to data objects is granted by default, and `SELECT` permission is required to query data |
 | Workspace Developer | `workspace_dev` | Manage tasks and instances; use permissions for data and compute clusters |
-| Workspace Member | `workspace_user` | View tasks and instances; cannot access data and compute clusters |
+| Workspace SRE | `workspace_sre` | Manage all tasks and jobs in the workspace; no compute resource usage or data object query permissions |
 
 ## Related Operations
 

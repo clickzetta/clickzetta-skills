@@ -38,7 +38,9 @@ Singdata Lakehouse Instance
     │   ├── Workspace Users (users authorized from the instance user pool)
     │   └── Workspace Roles (workspace-level roles)
     │       ├── workspace_admin
+    │       ├── workspace_analyst
     │       ├── workspace_dev
+    │       ├── workspace_sre
     │       └── Custom roles
     ├── Workspace B
     │   ├── Workspace Users
@@ -59,7 +61,7 @@ Singdata Lakehouse Instance
 | Role Type | Scope | Assignment Location | Examples | Description |
 |-----------|-------|---------------------|----------|-------------|
 | **Instance-Level Roles** | Across all Workspaces | Assigned at the instance level | `instance_admin`<br>`system_admin`<br>`instance_sre`<br>`instance_datasource_admin` | Have cross-workspace management permissions<br>Managed uniformly at the instance level |
-| **Workspace-Level System Roles** | Single Workspace | Assigned within the workspace | `workspace_admin`<br>`workspace_dev`<br>`workspace_analyst`<br>`workspace_sre`<br>`workspace_user` | System presets; permissions limited to a specific workspace<br>Managed independently per workspace |
+| **Workspace-Level System Roles** | Single Workspace | Assigned within the workspace | `workspace_admin`<br>`workspace_analyst`<br>`workspace_dev`<br>`workspace_sre` | System presets; permissions limited to a specific workspace<br>Managed independently per workspace |
 | **Workspace-Level Custom Roles** | Single Workspace | Created and assigned within the workspace | User-defined role names | Created based on business needs<br>Only effective within the workspace where created |
 
 > **Important Notes**:
@@ -139,6 +141,7 @@ SELECT
         WHEN role_names LIKE '%system_admin%' THEN 'Contains instance-level role'
         WHEN role_names LIKE '%workspace_admin%' THEN 'Workspace Administrator'
         WHEN role_names LIKE '%workspace_dev%' THEN 'Developer'
+        WHEN role_names LIKE '%workspace_analyst%' THEN 'Analyst'
         ELSE 'Regular User'
     END as user_category
 FROM information_schema.users
@@ -192,7 +195,7 @@ WITH permission_check AS (
                  AND role_names LIKE '%workspace_%'
             THEN 'Possible cross-level redundancy (needs verification)'
             WHEN role_names LIKE '%workspace_admin%' 
-                 AND role_names LIKE '%workspace_user%'
+                 AND role_names LIKE '%workspace_analyst%'
             THEN 'Possible same-level redundancy (needs verification)'
             ELSE 'No apparent redundancy'
         END as redundancy_check,
@@ -257,7 +260,9 @@ User needs cross-workspace management?
         ├─ Yes → Assign workspace_admin
         └─ No → Need development permissions?
                 ├─ Yes → Assign workspace_dev
-                └─ No → Assign workspace_user or other roles
+                └─ No → Need task operations permissions?
+                        ├─ Yes → Assign workspace_sre
+                        └─ No → Assign workspace_analyst
 ```
 
 ### 6.3 Avoiding Common Pitfalls

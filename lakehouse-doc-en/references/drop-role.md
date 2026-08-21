@@ -44,7 +44,7 @@ DROP ROLE [IF EXISTS] role_name;
 - Dropping a role also revokes all object permissions held by that role (permissions granted via `GRANT ... TO ROLE`).
 - The drop operation is irreversible. Confirm that the role is no longer in use before dropping.
 - Using the `IF EXISTS` option avoids error messages when the role does not exist.
-- System preset roles (such as `workspace_admin`, `workspace_dev`, `workspace_analyst`, `workspace_sre`, `workspace_user`) cannot be dropped.
+- System preset roles (such as `workspace_admin`, `workspace_analyst`, `workspace_dev`, `workspace_sre`) cannot be dropped.
 - Before dropping, it is recommended to first check the permissions held by the role using `SHOW GRANTS TO ROLE role_name`, and confirm which users hold the role using `SHOW GRANTS TO USER user_name`.
 
 # Dropping an Instance Role

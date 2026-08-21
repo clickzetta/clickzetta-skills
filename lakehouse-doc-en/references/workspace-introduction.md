@@ -32,11 +32,9 @@ To facilitate quick authorization, the system predefines the following space-lev
 | Role Name         | Role Code          | Default Permissions                                                                                                                                             |
 | ----------------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Workspace admin   | workspace\_admin   | Manage space members, roles, development tasks, operations center, task instances, all permissions for data and computing clusters within the space.            |
-| Workspace member  | workspace\_user    | View space members, roles, development tasks, operations center, task instances, etc., but cannot access data and computing clusters within the space.          |
+| Workspace analyst | workspace\_analyst | Can use development features and all compute clusters in the workspace; metadata read access to data objects is granted by default, and `SELECT` permission is required to query data. |
 | Workspace dev     | workspace\_dev     | Manage development tasks, operations center, task instances, etc., with all permissions for data within the space and usage permissions for computing clusters. |
-| Workspace analyst | Workspace\_analyst | System preset role，with all vcluster usage privileges and can access to development function.                                                                   |
-| Workspace sre     | Workspace\_sre     | System preset role, possessing management authority over all tasks and jobs within the workspace.                                                               |
-|                   |                    |                                                                                                                                                                 |
+| Workspace sre     | workspace\_sre     | Manage all tasks and jobs in the workspace, without compute resource usage or data object query permissions. |
 
 The creator of the WorkSpace is granted the "workspace\_admin" role by default. Other users do not receive any roles by default when joining a WorkSpace. A user can be granted multiple roles simultaneously, and their actual permissions are the union of these roles' permissions. A role can be granted to multiple users simultaneously.
 

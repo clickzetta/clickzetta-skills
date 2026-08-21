@@ -27,5 +27,5 @@ SELECT CURRENT_ROLES();
    Example result:
 
    ```
-   workspace_admin,system_admin,workspace_user
+   workspace_admin,system_admin,workspace_analyst
    ```

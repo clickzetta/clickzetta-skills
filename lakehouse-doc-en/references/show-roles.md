@@ -42,7 +42,6 @@ SHOW ROLES [LIKE 'pattern'];
    | workspace_analyst | System preset role with development feature usage permissions and all compute cluster usage permissions. |
    | workspace_dev | System preset role with management permissions for task directories in the workspace, editing permissions for task scripts, and read and write permissions for all data objects in the workspace. |
    | workspace_sre | System preset role with management permissions for all tasks and jobs in the workspace. |
-   | workspace_user | System preset role with read-only permissions for the workspace environment, metadata read permissions for all data objects, and read-only permissions for roles and members in the workspace. |
 
 2. Query roles whose names contain `admin`:
 
@@ -65,8 +64,8 @@ SHOW ROLES [LIKE 'pattern'];
 
 ### Notes
 
-- Executing this command requires permission to query role information (`workspace_user` and above roles have this by default).
-- System preset roles (`workspace_admin`, `workspace_dev`, `workspace_analyst`, `workspace_sre`, `workspace_user`) cannot be dropped but can be granted to users.
+- Executing this command requires permission to query role information.
+- System preset roles (`workspace_admin`, `workspace_analyst`, `workspace_dev`, `workspace_sre`) cannot be dropped but can be granted to users.
 - `LIKE` filtering is case-insensitive.
 
 ## Instance Roles

@@ -38,6 +38,15 @@ The sorted key defines the physical sort order of data within each bucket. For q
 - Each sort column can be specified as `ASC` (ascending, default) or `DESC` (descending).
 - Sorted keys have some impact on write performance. Sorting during large-scale data writes consumes additional resources.
 
+## Bucket Count and Compute Cluster Concurrency
+
+The number of buckets is linked to the compute cluster's CRU size and instance count:
+
+- **Bucket count determines the granularity of parallel query processing**: different query requests can run in parallel across different buckets. Too few buckets become a bottleneck for parallel processing, so even with sufficient compute cluster size (CRU) and instance count, the cluster cannot be fully utilized. Increasing the bucket count appropriately improves query concurrency.
+- **Bucket count affects load balancing across instances**: the clustering strategy determines how data is distributed across compute instances. With a well-chosen clustering key and sufficient buckets, data is distributed evenly across instances; with too few buckets or a poorly chosen clustering key (causing data skew), some instances become overloaded while others sit idle.
+
+> 💡 **Tip**: There is no exact formula relating bucket count to CRU size and instance count — adjust based on actual data volume and query patterns through testing. A useful rule of thumb is to set the bucket count to a multiple of 8 (e.g., 8, 16, 32, 64...), which aligns well with the cluster's parallel processing granularity. In addition, Analytics (AP) compute clusters support multi-instance auto-scaling and automatically adjust the instance count based on actual query load, so you don't need to find an exact match between bucket count and instance count.
+
 ## Examples
 
 1. Create an orders table clustered by `customer_id` and sorted by `order_date`:

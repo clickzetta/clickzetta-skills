@@ -72,6 +72,8 @@ SHOW VCLUSTER preload_ap_vc_test PRELOAD CACHED STATUS WHERE table LIKE '%x_test
 SHOW EXTENDED PRELOAD CACHED STATUS;
 ```
 
+> 💡 **Tip**: The active and passive caches described in this article are both **data caches** (they cache the table's data files), which are a different cache type from the **Query Result Cache**. Data caches require active configuration via `PRELOAD_TABLES` and are only supported on Analytics (AP) clusters. The query result cache, on the other hand, is managed automatically without any configuration and does not support clearing it entirely in one step — see [Understanding and Using Result Cache](result_cache.md) for details.
+
 ## Notes
 
 * Active caching (PRELOAD_TABLES) is only supported on **Analytics (AP)** clusters. General Purpose (GP) clusters do not support this feature.

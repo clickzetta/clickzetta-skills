@@ -20,7 +20,6 @@ A Singdata Lakehouse account provides various system preset roles after creation
 | workspace_analyst | Y | Y | Y | Y | Y | Y | Y | | Y | Y | | Y | Y | | |
 | workspace_dev | Y | Y | Y | Y | Y | Y | Y | | Y | Y | | Y | Y | | |
 | workspace_sre | Y | Y | Y | Y | Y | Y | Y | | Y | Y | | Y | Y | | |
-| workspace_user (to be deprecated) | Y | | | | | | | | | | | | | | |
 
 ### Development & Operations
 
@@ -77,37 +76,37 @@ A Singdata Lakehouse account provides various system preset roles after creation
 
 ### Clusters
 
-| Function Operation | workspace_admin | workspace_analyst | workspace_dev | workspace_sre | workspace_user (deprecated) |
-| --- | --- | --- | --- | --- | --- |
-| View VC | Y | Y | Y | Y | |
-| Use VC | Y | Y | Y | | |
-| Create | Y | | | | |
-| Modify | Y | | | | |
-| Start/Stop | Y | | | | |
-| Delete | Y | | | | |
-| Set as default | Y | | | | |
+| Function Operation | workspace_admin | workspace_analyst | workspace_dev | workspace_sre |
+| --- | --- | --- | --- | --- |
+| View VC | Y | Y | Y | Y |
+| Use VC | Y | Y | Y | |
+| Create | Y | | | |
+| Modify | Y | | | |
+| Start/Stop | Y | | | |
+| Delete | Y | | | |
+| Set as default | Y | | | |
 
 ### Data Sources
 
-| Function Operation | instance_datasource_admin | instance_admin | instance_user | instance_datamap_admin | instance_datamap_user | instance_sre | instance_sensitivedata_viewer | workspace_admin | workspace_dev | workspace_sre | workspace_user |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| View | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y |
-| Create | Y | Y | | | | | | | | | |
-| Modify | Y | | | | | | | Y | Y | | |
-| Test connectivity | Y | | | | | | | Y | Y | | |
-| Delete | Y | | | | | | | Y | Y | | |
+| Function Operation | instance_datasource_admin | instance_admin | instance_user | instance_datamap_admin | instance_datamap_user | instance_sre | instance_sensitivedata_viewer | workspace_admin | workspace_dev | workspace_sre |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| View | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y |
+| Create | Y | Y | | | | | | | | |
+| Modify | Y | | | | | | | Y | Y | |
+| Test connectivity | Y | | | | | | | Y | Y | |
+| Delete | Y | | | | | | | Y | Y | |
 
 ### Data Quality
 
-| Function Operation | instance_admin | instance_sre | workspace_admin | workspace_dev | workspace_sre | workspace_user (to be deprecated) |
-| --- | --- | --- | --- | --- | --- | --- |
-| Overview | Y | Y | Y | Y | Y | |
-| Create rule | | | Y | Y | | |
-| Dry run | Y | Y | Y | Y | Y | Y |
-| Delete | Y | | Y | Y | | |
-| Edit | | | Y | Y | | |
-| Mark check result as failed | Y | Y | Y | Y | Y | |
-| Re-check validation result | Y | Y | Y | Y | Y | |
+| Function Operation | instance_admin | instance_sre | workspace_admin | workspace_dev | workspace_sre |
+| --- | --- | --- | --- | --- | --- |
+| Overview | Y | Y | Y | Y | Y |
+| Create rule | | | Y | Y | |
+| Dry run | Y | Y | Y | Y | Y |
+| Delete | Y | | Y | Y | |
+| Edit | | | Y | Y | |
+| Mark check result as failed | Y | Y | Y | Y | |
+| Re-check validation result | Y | Y | Y | Y | |
 
 ##
 
@@ -120,7 +119,6 @@ A Singdata Lakehouse account provides various system preset roles after creation
 | **workspace_admin** | read metadata | all [with grant option] | all [with grant option] | all [with grant option] | all [with grant option] | all [with grant option] | all [with grant option] | all [with grant option] |
 | **workspace_dev** | read metadata | read metadata&#xA;use | all | all | all | create&#xA;read metadata | read metadata | all |
 | **workspace_sre** | read metadata | / | / | / | / | / | read metadata | / |
-| **workspace_user (to be deprecated)** | read metadata | / | / | / | / | / | / | / |
 
 For the business meaning of data permission points, refer to: [Metadata and Permission Points](meta-objects-and-privileges.md)
 
