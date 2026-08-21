@@ -11,9 +11,11 @@ Revoke permissions that have been granted to a specified user or role. Supports 
 ```Plain
 REVOKE [GRANT OPTION FOR]
     workspacePrivileges ON WORKSPACE workspace_name
-    | workspaceObjectPrivileges ON { ROLE | SCHEMA | VCLUSTER | FUNCTION } workspace_object_name
+    | workspaceObjectPrivileges ON { ROLE | SCHEMA | VCLUSTER } workspace_object_name
     | schemaPrivileges ON SCHEMA schema_name
     | schemaObjectPrivileges ON { TABLE | VIEW | MATERIALIZED VIEW } schema_object_name
+    | functionPrivileges ON FUNCTION schema_object_name
+    | volumePrivileges ON VOLUME schema_object_name
 FROM USER user_name;
 ```
 
@@ -32,7 +34,7 @@ workspacePrivileges ::=
 
 -- Workspace object privileges
 workspaceObjectPrivileges ::=
-    -- SCHEMA, FUNCTION
+    -- ROLE, SCHEMA
     ALTER | DROP | READ METADATA | ALL [PRIVILEGES]
     -- VCLUSTER
     ALTER | DROP | USE | READ METADATA | ALL [PRIVILEGES]
@@ -41,7 +43,7 @@ workspaceObjectPrivileges ::=
 
 -- Schema level: create objects
 schemaPrivileges ::=
-    CREATE { TABLE | VIEW | MATERIALIZED VIEW } | ALL
+    CREATE { TABLE | VIEW | MATERIALIZED VIEW | FUNCTION | VOLUME } | ALL
 
 -- Schema object privileges
 schemaObjectPrivileges ::=
@@ -49,7 +51,17 @@ schemaObjectPrivileges ::=
     ALTER | DROP | SELECT | INSERT | READ METADATA | ALL
     -- VIEW / MATERIALIZED VIEW
     ALTER | DROP | SELECT | ALL
+
+-- Function object privileges
+functionPrivileges ::=
+    ALTER FUNCTION | DROP FUNCTION | USE FUNCTION | READ METADATA | ALL [PRIVILEGES]
+
+-- Volume object privileges
+volumePrivileges ::=
+    ALTER VOLUME | DROP VOLUME | READ VOLUME | WRITE VOLUME | READ METADATA | ALL [PRIVILEGES]
 ```
+
+Functions and Volumes are schema child objects. Revoke creation privileges from the parent schema and revoke the remaining privileges from the specific object.
 
 ## Parameter Description
 
@@ -60,6 +72,8 @@ schemaObjectPrivileges ::=
 | `workspace_object_name` | Yes (when revoking workspace object privileges) | Name of the object under the workspace |
 | `schema_name` | Yes (when revoking schema privileges) | Schema name |
 | `schema_object_name` | Yes (when revoking schema object privileges) | Full object name in the format `schema_name.object_name` |
+| `functionPrivileges` | Yes (when revoking Function privileges) | Function privileges such as `USE FUNCTION` and `DROP FUNCTION` |
+| `volumePrivileges` | Yes (when revoking Volume privileges) | Volume privileges such as `READ VOLUME` and `DROP VOLUME` |
 | `user_name` | Yes | The name of the user whose permissions are being revoked |
 | `role_name` | Yes (when revoking a role) | The name of the role to revoke |
 
@@ -93,6 +107,13 @@ schemaObjectPrivileges ::=
 
    ```SQL
    REVOKE CREATE VIEW ON SCHEMA semantic_model_test FROM ROLE test_developer_role;
+   ```
+
+6. Revoke user `tester`'s privileges on a Function and a Volume:
+
+   ```sql
+   REVOKE USE FUNCTION ON FUNCTION semantic_model_test.image_to_text FROM USER tester;
+   REVOKE READ VOLUME ON VOLUME semantic_model_test.shared_files FROM USER tester;
    ```
 
 A successful command returns an empty result set. No error message means the revocation succeeded.

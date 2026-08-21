@@ -110,7 +110,8 @@ grant create connection on workspace demo_workspace to user demo_user1;
 | create dynamic table     | Create dynamic table                                                  |                 |
 | create index             | Create index                                                          |                 |
 | create function          | Create function                                                       |                 |
-| create table steam       | Create table stream                                                   |                 |
+| create volume            | Create a Named Volume or External Volume                              |                 |
+| create table stream      | Create table stream                                                   |                 |
 | all privileges           | Includes all permissions for schema objects                           |                 |
 
 Authorization Example:
@@ -230,6 +231,8 @@ Description:
 | drop function  | Used to delete the specified function                                                          |                 |
 | all privileges | Includes all privileges of the function object                                                 |                 |
 
+A Function is a child object of a schema. Grant `create function` on the parent schema and grant the remaining privileges on the specific Function. The `FUNCTION` suffix can be omitted in a grant statement, so both `USE` and `USE FUNCTION` are accepted; use the full privilege names shown above for clarity.
+
 ### Volume Privileges&#x20;
 
 | **Privilege**  | **Usage**                                                                                                                                                                                        | **Description** |
@@ -238,7 +241,10 @@ Description:
 | read volume    | Permission to read files and directories under the Volume object. Required when viewing the file list under the Volume, reading Volume files via SQL, and downloading files via the GET command. |                 |
 | write volume   | Permission to write data to the Volume. Required when uploading files via the PUT command and deleting files via the REMOVE command.                                                             |                 |
 | alter volume   | Permission required for the ALTER VOLUME command. For example: ALTER VOLUME  REFRESH to refresh the metadata information of the files under the Volume.                                          |                 |
+| drop volume    | Drop the specified Volume object.                                                                                                                                                                 |                 |
 | all privileges | Includes all privileges of the volume object                                                                                                                                                     |                 |
+
+A Volume is a child object of a schema. Grant `create volume` on the parent schema and grant the remaining privileges on the specific Volume. The `VOLUME` suffix can be omitted in a grant statement, so both `READ` and `READ VOLUME` are accepted; `SHOW GRANTS` displays the full privilege names.
 
 ### Table Stream Privileges&#x20;
 

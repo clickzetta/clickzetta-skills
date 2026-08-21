@@ -11,9 +11,11 @@ Grant specified permissions to a user or role to achieve fine-grained access con
 ```Plain
 GRANT
     workspacePrivileges ON WORKSPACE workspace_name
-    | workspaceObjectPrivileges ON { ROLE | SCHEMA | VCLUSTER | FUNCTION } workspace_object_name
+    | workspaceObjectPrivileges ON { ROLE | SCHEMA | VCLUSTER } workspace_object_name
     | schemaPrivileges ON SCHEMA schema_name
     | schemaObjectPrivileges ON { TABLE | VIEW | MATERIALIZED VIEW } schema_object_name
+    | functionPrivileges ON FUNCTION schema_object_name
+    | volumePrivileges ON VOLUME schema_object_name
 TO USER user_name [WITH GRANT OPTION];
 ```
 
@@ -32,7 +34,7 @@ workspacePrivileges ::=
 
 -- Workspace object privileges
 workspaceObjectPrivileges ::=
-    -- SCHEMA, FUNCTION
+    -- ROLE, SCHEMA
     ALTER | DROP | READ METADATA | ALL [PRIVILEGES]
     -- VCLUSTER
     ALTER | DROP | USE | READ METADATA | ALL [PRIVILEGES]
@@ -41,7 +43,7 @@ workspaceObjectPrivileges ::=
 
 -- Schema level: create objects
 schemaPrivileges ::=
-    CREATE { TABLE | VIEW | MATERIALIZED VIEW } | ALL
+    CREATE { TABLE | VIEW | MATERIALIZED VIEW | FUNCTION | VOLUME } | ALL
 
 -- Schema object privileges
 schemaObjectPrivileges ::=
@@ -49,16 +51,28 @@ schemaObjectPrivileges ::=
     ALTER | DROP | SELECT | INSERT | READ METADATA | ALL
     -- VIEW / MATERIALIZED VIEW
     ALTER | DROP | SELECT | ALL
+
+-- Function object privileges
+functionPrivileges ::=
+    ALTER FUNCTION | DROP FUNCTION | USE FUNCTION | READ METADATA | ALL [PRIVILEGES]
+
+-- Volume object privileges
+volumePrivileges ::=
+    ALTER VOLUME | DROP VOLUME | READ VOLUME | WRITE VOLUME | READ METADATA | ALL [PRIVILEGES]
 ```
+
+Functions and Volumes are schema child objects. Grant creation privileges on the parent schema and grant use, alteration, or drop privileges on the specific object. The object suffix in Function and Volume privilege names is optional, but the full names above are recommended.
 
 ## Parameter Description
 
 | Parameter | Required | Description |
 |-----------|----------|-------------|
 | `workspace_name` | Yes (when granting workspace privileges) | Workspace name |
-| `workspace_object_name` | Yes (when granting workspace object privileges) | Name of the object under the workspace (Schema, VCluster, Function, etc.) |
+| `workspace_object_name` | Yes (when granting workspace object privileges) | Name of the object under the workspace (Role, Schema, or VCluster) |
 | `schema_name` | Yes (when granting schema privileges) | Schema name |
 | `schema_object_name` | Yes (when granting schema object privileges) | Full object name in the format `schema_name.object_name` |
+| `functionPrivileges` | Yes (when granting Function privileges) | Function privileges such as `USE FUNCTION`, `ALTER FUNCTION`, and `DROP FUNCTION` |
+| `volumePrivileges` | Yes (when granting Volume privileges) | Volume privileges such as `READ VOLUME`, `WRITE VOLUME`, and `DROP VOLUME` |
 | `user_name` | Yes | The name of the user being granted permissions |
 | `role_name` | Yes (when granting a role) | Role name; supports custom roles and system preset roles |
 | `WITH GRANT OPTION` | No | Allows the grantee to re-grant these permissions to other users |
@@ -99,6 +113,19 @@ schemaObjectPrivileges ::=
 
    ```SQL
    GRANT ALTER VCLUSTER ON VCLUSTER default TO USER tester WITH GRANT OPTION;
+   ```
+
+7. Grant user `tester` permission to invoke Function `semantic_model_test.image_to_text`:
+
+   ```sql
+   GRANT USE FUNCTION ON FUNCTION semantic_model_test.image_to_text TO USER tester;
+   ```
+
+8. Grant user `tester` read and write access to Volume `semantic_model_test.shared_files`:
+
+   ```sql
+   GRANT READ VOLUME ON VOLUME semantic_model_test.shared_files TO USER tester;
+   GRANT WRITE VOLUME ON VOLUME semantic_model_test.shared_files TO USER tester;
    ```
 
 A successful command returns an empty result set. No error message means the grant succeeded.

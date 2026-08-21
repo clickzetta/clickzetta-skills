@@ -4,13 +4,14 @@ Queries the permissions held by the current user, a specified role, or a specifi
 
 ## View Permissions on an Object
 
-View which permissions have been granted on a specific object (table, schema, workspace, VCluster, etc.).
+View which permissions have been granted on a specific object, such as a table, schema, workspace, VCluster, Function, or Volume.
 
 ```Plain
 SHOW GRANTS ON TABLE [schema.]table_name;
 SHOW GRANTS ON SCHEMA schema_name;
 SHOW GRANTS ON WORKSPACE workspace_name;
 SHOW GRANTS ON VCLUSTER vcluster_name;
+SHOW GRANTS ON FUNCTION [schema.]function_name;
 SHOW GRANTS ON VOLUME [schema.]volume_name;
 SHOW GRANTS ON ROLE role_name;
 ```
@@ -29,6 +30,12 @@ SHOW GRANTS ON VCLUSTER DEFAULT;
 
 -- View all grants on a workspace
 SHOW GRANTS ON WORKSPACE my_workspace;
+
+-- View all grants on a Function
+SHOW GRANTS ON FUNCTION public.image_to_text;
+
+-- View all grants on a Volume
+SHOW GRANTS ON VOLUME public.shared_files;
 ```
 
 The returned columns are the same as those for `SHOW GRANTS TO ROLE`; see the return column description below.

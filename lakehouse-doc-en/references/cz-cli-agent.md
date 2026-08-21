@@ -45,17 +45,17 @@ If you use an enterprise bot such as Hermes to host an AI Agent, it is recommend
 
 ## Configuring the AI Agent LLM (agent llm)
 
-`cz-cli agent run` requires an LLM to be configured before use. LLM configuration is independent of the Lakehouse connection profile and is stored in the `[llm.*]` section of `~/.clickzetta/profiles.toml`.
+`cz-cli agent run` requires an LLM to be configured before use. LLM configuration is independent of Lakehouse connection Profiles and is stored in `~/.clickzetta/llm.json`; Lakehouse connection Profiles are stored in `~/.clickzetta/profiles.toml`.
 
-### Method 1: Use the Singdata Built-in LLM (Recommended, provided by AI Gateway)
+### Method 1: Configure the Singdata Built-in LLM with `cz-cli login` (Recommended, provided by AI Gateway)
 
-The Singdata built-in LLM is provided uniformly through [AI Gateway](aigateway.md) — no separate model API Key required. Complete configuration in one step using the CLI connection string:
+The Singdata built-in LLM is provided uniformly through [AI Gateway](aigateway.md), with no separate model API Key required. When you sign in with `cz-cli login`, cz-cli configures the OAuth session, Lakehouse connection Profiles, and the Singdata built-in LLM together:
 
 ```bash
-cz-cli setup --credential <CLI connection string>
+cz-cli login prod
 ```
 
-The CLI connection string is available on the LakehouseMCP page in the account console (see the [Installation and Configuration Guide](setup_cz_cli.md)). The connection string already contains the AI Gateway endpoint and authentication information — ready to use once configured.
+Sign-in completes in your browser. `prod` is the login session name; after sign-in, cz-cli automatically creates one or more Profiles based on the instances and Workspaces your account can access. See the [Installation and Configuration Guide](setup_cz_cli.md) for details.
 
 ### Method 2: Connect an External LLM
 
@@ -67,8 +67,7 @@ Supports any OpenAI-compatible interface. If your enterprise already has an AI G
 cz-cli agent llm add my-gateway \
   --provider openai-compatible \
   --base-url https://<your-instance>.singdata.com/gateway/v1 \
-  --api-key <AI-Gateway-API-Key> \
-  --use
+  --api-key <AI-Gateway-API-Key>
 ```
 
 **OpenAI / GPT**
@@ -76,8 +75,7 @@ cz-cli agent llm add my-gateway \
 ```bash
 cz-cli agent llm add my-openai \
   --provider openai \
-  --api-key $OPENAI_API_KEY \
-  --use
+  --api-key $OPENAI_API_KEY
 ```
 
 **OpenAI-compatible relay gateway (enterprise proxy, etc.)**
@@ -86,8 +84,7 @@ cz-cli agent llm add my-openai \
 cz-cli agent llm add my-relay \
   --provider openai-compatible \
   --base-url https://your-gateway.example.com/v1 \
-  --api-key <API_KEY> \
-  --use
+  --api-key <API_KEY>
 ```
 
 ### Verify and Manage
@@ -110,10 +107,16 @@ Test connectivity:
 cz-cli agent llm test my-openai
 ```
 
-Switch the active LLM:
+List the models available for a configuration:
 
 ```bash
-cz-cli agent llm use my-openai
+cz-cli agent llm models my-openai
+```
+
+Set the default model using the full `<configuration-name>/<model-id>` reference:
+
+```bash
+cz-cli agent llm use my-openai/gpt-4o
 ```
 
 Remove an LLM configuration:
@@ -122,7 +125,7 @@ Remove an LLM configuration:
 cz-cli agent llm remove my-openai
 ```
 
-> ⚠️ LLM configuration and Lakehouse connection profiles are two separate configurations. `cz-cli setup` configures the Lakehouse connection; `cz-cli agent llm add` configures the LLM. Both must be configured for `cz-cli agent run` to work.
+> ⚠️ **Note**: `cz-cli login` configures the Singdata built-in LLM and Lakehouse connection Profiles together, but they remain separate configurations. If you use an external LLM, run `cz-cli agent llm add` separately and confirm that both the current Profile and LLM are configured before running `cz-cli agent run`.
 
 ## Related Documentation
 

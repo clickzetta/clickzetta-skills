@@ -151,9 +151,7 @@ When you perform SQL queries, to reduce the consumption of computing resources f
 
 **Network data transfer fees will be officially charged starting September 1, 2026.**
 
-When you use Lakehouse as a data source for outbound network data transfer, such as downloading or exporting data through the public network, network data transfer fees will be incurred. Network data transfer is metered based on the actual amount of data transferred, with a billing cycle **measured in hours**.
-
-When you use other data sources to transfer data into Lakehouse through the Internet, the network transfer traffic used will not incur fees.
+Network data transfer fees apply only to downstream data flowing out of Lakehouse; upstream data transferred into Lakehouse is not charged. Downstream data includes query results returned to the user side (such as Studio), data downloads or exports, and data transferred to other data sources. Fees are calculated based on the actual downstream data transfer volume, with a billing cycle **measured in hours**.
 
 When you use dedicated lines, Private Link, or other network products to achieve cross-cloud vendor, cross-region, or cross-VPC network connectivity, the network connectivity itself will incur network data transfer fees. These fees may be charged by multiple parties due to different network connectivity methods. Network data transfer fees generated on the Singdata Lakehouse side are charged by Singdata, while network data transfer fees generated in your cloud platform account are charged directly by the cloud platform.
 

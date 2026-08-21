@@ -32,14 +32,13 @@ ALTER USER analyst SET NETWORK_POLICY = corp_policy;
 
 ### Roles (RBAC)
 
-Bundle permissions into roles, then grant roles to users. Four system-defined roles are provided:
+Bundle permissions into roles, then grant roles to users. The system provides account-level and workspace-level roles:
 
 | Role | Scope | Permissions |
 |------|-------|-------------|
 | `account_admin` | Account level | Manage all resources under the account |
 | `workspace_admin` | Workspace level | Manage all resources within the Workspace |
 | `workspace_dev` | Workspace level | Development tasks, use data and compute clusters |
-| `workspace_user` | Workspace level | Read-only view of jobs and instances |
 
 ```sql
 -- Create a custom role and grant permissions

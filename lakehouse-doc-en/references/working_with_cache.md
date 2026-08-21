@@ -23,11 +23,14 @@ When executing queries in Singdata Lakehouse, query results that meet certain co
 
 Result Cache needs to meet the following conditions to be reused:
 
-* The underlying data of the tables used in the query does not change. If the data in any table used in the query changes, the result cache cannot be used;
+* The underlying data of the tables used in the query does not change. If the data in any table used in the query changes (e.g., data is re-inserted), the result cache cannot be used;
+* The tables used in the query have not undergone an `ALTER TABLE` structural change (e.g., adding a column, changing a column type). A structural change updates the table version, which invalidates any result cache generated against the old table version;
 * The query does not include queries on views. If the query object contains views, the query result cache is not supported;
 * The newly initiated SQL query statement can exactly match the previously executed query in syntax;
 * The query does not include non-deterministic functions (e.g., CURRENT\_TIMESTAMP()), user-defined functions (UDF);
 * The previous Result Cache has not expired and been deleted.
+
+> ⚠️ **Note**: For a table that has been newly created, had its structure altered (`ALTER TABLE` adding a column, changing a type, etc.), or had data re-inserted, any result cache based on the old table is invalidated and will not be reused. A structural change updates the table version (any `ALTER TABLE` operation updates the table version, regardless of whether the column definitions actually changed), which invalidates result caches generated against the old table version. A data change (e.g., re-inserting data) directly violates the "underlying data has not changed" reuse condition instead. These are two independent mechanisms that both lead to cache invalidation.
 
 ## Result Cache Expiration Period
 
@@ -56,6 +59,14 @@ Maximum number of jobs supported for caching in a single workspace: 100,000
 Result cache size limit: Unlimited. Results less than or equal to 10MB will be cached in the control layer memory cache, while results exceeding 10MB will be persisted in the storage layer (object storage files).
 
 Non-deterministic functions and UDF query results are not supported for result caching.
+
+## Clearing the Result Cache Entirely
+
+The query result cache is managed automatically by the system and **does not support manually clearing it entirely with a single command**. The cache automatically extends its validity period whenever the reuse conditions are met, and expires automatically when the conditions are not met (e.g., a mismatched query statement, or a change to the underlying data or table structure) or after 24 hours without being reused.
+
+If you need to invalidate the result cache related to a specific table immediately, you can run any `ALTER TABLE` operation on that table (see the explanation above of how structural changes invalidate the result cache), or temporarily disable the result cache at the SESSION level with `set cz.sql.enable.shortcut.result.cache=false;` to prevent subsequent queries from reusing the old cache. Both approaches bypass the cache rather than actually clearing it.
+
+> 💡 **Tip**: The query result cache is a different cache type from the [Compute Cluster Cache](vc_cache.md) (Virtual Cluster Local Disk Cache). The passive cache portion of the Compute Cluster Cache is also managed automatically and does not support clearing it entirely — it follows an LRU (Least Recently Used) eviction policy. The active cache (PRELOAD_TABLES) is only available on Analytics (AP) clusters, and you can adjust the set of cached tables by resetting `PRELOAD_TABLES`.
 
 ## Result Cache Demonstration
 

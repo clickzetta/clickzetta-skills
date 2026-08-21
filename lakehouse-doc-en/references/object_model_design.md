@@ -138,7 +138,7 @@ Users follow a **two-tier model**: created at the instance level, authorized at 
 * [User](authority-management.md) — Created in the account console. Belongs to the **Instance level**. Newly created users have no data permissions by default; they must be added to a Workspace and granted a role before they can access its resources.
 * [Role](roles.md) — A collection of permissions. Roles simplify permission management by letting you grant permissions in batches.
   * **Instance Role** — An instance-level role that applies across the entire service instance (e.g., `instance_admin`, `instance_user`). Belongs to the **Instance level**.
-  * **Workspace Role** — A workspace-level role that applies only within a specific Workspace (e.g., `workspace_admin`, `workspace_dev`). Belongs to the **Workspace level**.
+  * **Workspace Role** — A workspace-level role that applies only within a specific Workspace (e.g., `workspace_admin`, `workspace_analyst`, `workspace_dev`, `workspace_sre`). Belongs to the **Workspace level**.
 
 ### Advanced Table Features
 

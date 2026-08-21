@@ -6,7 +6,7 @@ Users are the identity principals that perform operations in Singdata Lakehouse.
 
 ### Instance-Level Users
 
-Instance-level users are created in the global account and represent independent identities in the system. Creating, deleting, enabling, and disabling instance-level users is done in the **Account Console → User Management** page.
+Instance-level users are created in the global account and represent independent identities in the system. Create, delete, enable, and disable these users in **Admin Center > Account Management > User Management**. For step-by-step instructions, see [How to Add and Manage Users](quick_start_user_management.md).
 
 - Multiple users can be created under one account; usernames must be unique.
 - Instance-level users are granted the `instance_user` role by default and have no data or feature permissions.
@@ -46,7 +46,7 @@ Service users include **system service users** (created by default when Lakehous
 
 ### 1. Create an Instance User
 
-Create a new user in the "User Management" page of the account console, setting the username, password, phone number, email, and other information.
+Create a new user in **Admin Center > Account Management > User Management**, setting the username, password, phone number, email, and other information. For step-by-step instructions, see [How to Add and Manage Users](quick_start_user_management.md).
 
 ### 2. Add the User to a Workspace
 
@@ -135,7 +135,7 @@ DROP USER IF EXISTS alice;
 
 ## Notes
 
-- `CREATE USER` does not create a new account — it only adds an existing instance user to the workspace. Instance users are created in the console.
+- `CREATE USER` does not create a new account — it only adds an existing instance user to the workspace. Create new accounts in the Admin Center as described in [How to Add and Manage Users](quick_start_user_management.md).
 - `DROP USER` only removes workspace access; it does not delete the instance user's account and password.
 - Before removing a user, run `SHOW GRANTS TO USER user_name` to confirm their permissions have been handled.
 
@@ -146,6 +146,7 @@ DROP USER IF EXISTS alice;
 | Document | Description |
 |----------|-------------|
 | [SQL Commands Overview](sql-commands.md) | Categorized navigation for all SQL commands |
+| [How to Add and Manage Users](quick_start_user_management.md) | Create and manage login accounts in the Admin Center |
 | [Roles and Privileges](role-privilege-manage.md) | Grant roles and permissions to users |
 | [CREATE USER](create-user.md) | Full syntax for adding an instance user to a workspace |
 | [ALTER USER](alter-user.md) | Full syntax for modifying user properties |

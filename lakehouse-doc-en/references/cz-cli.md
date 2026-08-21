@@ -1,4 +1,4 @@
-# ClickZetta CLI (cz-cli)
+# Singdata CLI (cz-cli)
 
 cz-cli is the command-line operations tool for Singdata Lakehouse. For human users, it lets data developers query tables, run SQL, manage tasks, and view run logs from the terminal—no browser required. For AI Agents, it provides a high-level operation interface tailored to data warehouse scenarios, letting agents complete full operations with minimal context overhead.
 
@@ -79,9 +79,9 @@ npm install -g @clickzetta/cz-cli
 Configure connection:
 
 ```bash
-cz-cli setup
+cz-cli login prod
 ```
-Follow the prompts to create a new Singdata Lakehouse account connection or enter the credentials for an existing account.
+The command opens a browser for OAuth sign-in and automatically creates Profiles for the instances and Workspaces your account can access. See the [Installation and Configuration Guide](setup_cz_cli.md) for details.
 
 Verify connection:
 
@@ -110,17 +110,16 @@ For detailed installation and configuration steps, see the [Installation and Con
 
 ## LLM Source
 
-The LLM model used by `cz-cli agent` is provided uniformly by **[AI Gateway](aigateway.md)**. New users are recommended to complete configuration in one step via the CLI connection string (Singdata built-in LLM, no separate API Key required). External LLMs can also be integrated via `cz-cli agent llm add`—in this case, enter the AI Gateway Endpoint as an OpenAI-compatible gateway:
+The LLM model used by `cz-cli agent` is provided uniformly by **[AI Gateway](aigateway.md)**. New users should use `cz-cli login` to configure OAuth, Lakehouse Profiles, and the Singdata built-in LLM in one step, with no separate model API Key required. External LLMs can also be integrated via `cz-cli agent llm add`—in this case, enter the AI Gateway Endpoint as an OpenAI-compatible gateway:
 
 ```bash
 cz-cli agent llm add my-gateway \
   --provider openai-compatible \
   --base-url https://<your-instance>.singdata.com/gateway/v1 \
-  --api-key <AI-Gateway-API-Key> \
-  --use
+  --api-key <AI-Gateway-API-Key>
 ```
 
-See [AI Agent Integration → Configure LLM](cz-cli-agent.md) for details.
+After adding the configuration, list the available models and set the default model using the full `<configuration-name>/<model-id>` reference. See [AI Agent Integration → Configure LLM](cz-cli-agent.md) for details.
 
 ## Related Documents
 

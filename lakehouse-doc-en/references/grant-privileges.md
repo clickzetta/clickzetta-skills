@@ -8,10 +8,12 @@ Grants specified privileges to a role or user, enabling fine-grained access cont
 
 ```Plain
 GRANT workspacePrivileges ON WORKSPACE workspace_name
-    | workspaceObjectPrivileges ON { ROLE | SCHEMA | VCLUSTER | DATALAKE | FUNCTION } workspace_object_name
+    | workspaceObjectPrivileges ON { ROLE | SCHEMA | VCLUSTER } workspace_object_name
     | schemaPrivileges ON SCHEMA schema_name
     | schemaObjectPrivileges ON { TABLE | VIEW | MATERIALIZED VIEW } schema_object_name
     | dynamicTablePrivileges ON DYNAMIC TABLE schema_object_name
+    | functionPrivileges ON FUNCTION schema_object_name
+    | volumePrivileges ON VOLUME schema_object_name
 TO { ROLE role_name | USER user_name } [WITH GRANT OPTION];
 ```
 
@@ -30,7 +32,7 @@ workspaceObjectPrivileges ::=
 
 -- Schema level: create objects
 schemaPrivileges ::=
-    CREATE { TABLE | VIEW | MATERIALIZED VIEW | DYNAMIC TABLE } | ALL
+    CREATE { TABLE | VIEW | MATERIALIZED VIEW | DYNAMIC TABLE | FUNCTION | VOLUME } | ALL
 
 -- Schema object privileges (regular tables, views, materialized views)
 schemaObjectPrivileges ::=
@@ -39,7 +41,17 @@ schemaObjectPrivileges ::=
 -- Dynamic Table privileges
 dynamicTablePrivileges ::=
     SELECT | ALTER DYNAMIC TABLE | DROP DYNAMIC TABLE | RESTORE DYNAMIC TABLE | READ METADATA | ALL [PRIVILEGES]
+
+-- Function object privileges
+functionPrivileges ::=
+    ALTER FUNCTION | DROP FUNCTION | USE FUNCTION | READ METADATA | ALL [PRIVILEGES]
+
+-- Volume object privileges
+volumePrivileges ::=
+    ALTER VOLUME | DROP VOLUME | READ VOLUME | WRITE VOLUME | READ METADATA | ALL [PRIVILEGES]
 ```
+
+Functions and Volumes are schema child objects. Grant `CREATE FUNCTION` and `CREATE VOLUME` on the parent schema, and grant the remaining privileges on the specific object. The object suffix in Function and Volume privilege names is optional, but the full names are recommended; `SHOW GRANTS` displays the full names.
 
 ### Parameter Description
 
@@ -47,10 +59,12 @@ dynamicTablePrivileges ::=
 |-----------|----------|-------------|
 | `workspacePrivileges` | Yes (when granting workspace privileges) | Workspace-level privileges, such as `CREATE SCHEMA`, `CREATE VCLUSTER` |
 | `workspaceObjectPrivileges` | Yes (when granting workspace object privileges) | Privileges on workspace objects, such as `ALTER`, `DROP`, `READ METADATA`, `ALL [PRIVILEGES]` |
-| `schemaPrivileges` | Yes (when granting Schema privileges) | Schema-level privileges, such as `CREATE TABLE`, `CREATE VIEW`, `CREATE MATERIALIZED VIEW`, `ALL` |
+| `schemaPrivileges` | Yes (when granting Schema privileges) | Schema-level privileges, such as `CREATE TABLE`, `CREATE FUNCTION`, `CREATE VOLUME`, and `ALL` |
 | `schemaObjectPrivileges` | Yes (when granting Schema object privileges) | Privileges on Schema objects, such as `ALTER`, `DROP`, `SELECT`, `INSERT`, `READ METADATA`, `ALL` |
+| `functionPrivileges` | Yes (when granting Function privileges) | Function privileges such as `USE FUNCTION`, `ALTER FUNCTION`, and `DROP FUNCTION` |
+| `volumePrivileges` | Yes (when granting Volume privileges) | Volume privileges such as `READ VOLUME`, `WRITE VOLUME`, and `DROP VOLUME` |
 | `workspace_name` | Yes (when granting workspace privileges) | Workspace name |
-| `workspace_object_name` | Yes (when granting workspace object privileges) | Name of the workspace object (Schema, VCluster, Function, etc.) |
+| `workspace_object_name` | Yes (when granting workspace object privileges) | Name of the workspace object (Role, Schema, or VCluster) |
 | `schema_name` | Yes (when granting Schema privileges) | Schema name |
 | `schema_object_name` | Yes (when granting Schema object privileges) | Full object name in the format `schema_name.object_name` |
 | `role_name` | Yes (when granting to a role) | Name of the role being granted privileges |
@@ -118,6 +132,21 @@ dynamicTablePrivileges ::=
    ```sql
    GRANT SELECT ON TABLE public.my_table TO USER tester WITH GRANT OPTION;
    ```
+
+10. Grant a role the privileges required to create and use a Function:
+
+    ```sql
+    GRANT CREATE FUNCTION ON SCHEMA public TO ROLE function_developer;
+    GRANT USE FUNCTION ON FUNCTION public.image_to_text TO ROLE function_developer;
+    ```
+
+11. Grant a role the privileges required to create and access a Volume:
+
+    ```sql
+    GRANT CREATE VOLUME ON SCHEMA public TO ROLE volume_developer;
+    GRANT READ VOLUME ON VOLUME public.shared_files TO ROLE volume_developer;
+    GRANT WRITE VOLUME ON VOLUME public.shared_files TO ROLE volume_developer;
+    ```
 
 Successful execution returns an empty result set; no error message means the grant was successful. You can verify the grant result using `SHOW GRANTS TO ROLE role_name` or `SHOW GRANTS TO USER user_name`.
 

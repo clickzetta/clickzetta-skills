@@ -8,9 +8,11 @@ Revokes previously granted privileges from a role or user. The `REVOKE` statemen
 
 ```Plain
 REVOKE workspacePrivileges ON WORKSPACE workspace_name
-    | workspaceObjectPrivileges ON { ROLE | SCHEMA | VCLUSTER | DATALAKE | FUNCTION } workspace_object_name
+    | workspaceObjectPrivileges ON { ROLE | SCHEMA | VCLUSTER } workspace_object_name
     | schemaPrivileges ON SCHEMA schema_name
     | schemaObjectPrivileges ON { TABLE | VIEW | MATERIALIZED VIEW } schema_object_name
+    | functionPrivileges ON FUNCTION schema_object_name
+    | volumePrivileges ON VOLUME schema_object_name
 FROM { ROLE role_name | USER user_name };
 ```
 
@@ -20,8 +22,12 @@ FROM { ROLE role_name | USER user_name };
 |----------------|-------------|---------|
 | `workspacePrivileges` | Privileges to create objects in a workspace | `CREATE SCHEMA`, `CREATE VCLUSTER` |
 | `workspaceObjectPrivileges` | Privileges to modify workspace objects and view metadata | `ALTER`, `DROP`, `READ METADATA`, `ALL [PRIVILEGES]` |
-| `schemaPrivileges` | Privileges to create objects in a Schema | `CREATE TABLE`, `CREATE VIEW`, `CREATE MATERIALIZED VIEW` |
+| `schemaPrivileges` | Privileges to create objects in a Schema | `CREATE TABLE`, `CREATE FUNCTION`, `CREATE VOLUME` |
 | `schemaObjectPrivileges` | Privileges to modify, drop, and query Schema objects | `ALTER`, `DROP`, `SELECT`, `INSERT`, `READ METADATA`, `ALL` |
+| `functionPrivileges` | Privileges to use, alter, and drop a Function | `USE FUNCTION`, `ALTER FUNCTION`, `DROP FUNCTION`, `READ METADATA`, `ALL PRIVILEGES` |
+| `volumePrivileges` | Privileges to read, write, alter, and drop a Volume | `READ VOLUME`, `WRITE VOLUME`, `ALTER VOLUME`, `DROP VOLUME`, `READ METADATA`, `ALL PRIVILEGES` |
+
+Functions and Volumes are schema child objects. Revoke `CREATE FUNCTION` and `CREATE VOLUME` from the parent schema, and revoke the remaining privileges from the specific object.
 
 ## Usage Examples
 
@@ -43,16 +49,17 @@ FROM { ROLE role_name | USER user_name };
    REVOKE CREATE VIEW, CREATE TABLE ON SCHEMA public FROM ROLE uat_demo;
    ```
 
-4. Revoke from role `reporting_role` the `READ METADATA` privilege on the DATALAKE named `sales_data`:
+4. Revoke from role `reporting_role` read access to Volume `public.sales_data`:
 
-   ```SQL
-   REVOKE READ METADATA ON DATALAKE sales_data FROM ROLE reporting_role;
+   ```sql
+   REVOKE READ VOLUME ON VOLUME public.sales_data FROM ROLE reporting_role;
    ```
 
-5. Revoke from role `admin_role` the `ALTER` and `DROP` privileges on the FUNCTION named `order_summary`:
+5. Revoke from role `admin_role` alter and drop privileges on Function `public.order_summary`:
 
-   ```SQL
-   REVOKE ALTER, DROP ON FUNCTION order_summary FROM ROLE admin_role;
+   ```sql
+   REVOKE ALTER FUNCTION ON FUNCTION public.order_summary FROM ROLE admin_role;
+   REVOKE DROP FUNCTION ON FUNCTION public.order_summary FROM ROLE admin_role;
    ```
 
 6. Revoke from role `analyst_role` the `SELECT` and `INSERT` privileges on the table `customer_orders` in the `public` Schema:

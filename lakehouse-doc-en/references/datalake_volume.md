@@ -82,13 +82,18 @@ Supported commands for different Volume types:
 
 ## Permissions
 
+Creating a Named Volume or External Volume in a schema requires `CREATE VOLUME` on that schema. Dropping an existing Volume requires `DROP VOLUME` on that object.
+
 | Permission | Description |
 |---|---|
 | READ METADATA | Permission to view Volume object metadata |
 | READ VOLUME | Permission to read files and directories under the Volume object. Required when viewing the file list under a Volume, reading Volume files via SQL, and downloading files via the GET command |
 | WRITE VOLUME | Permission to write data to a Volume. Required when uploading files via the PUT command and deleting files via the REMOVE command |
 | ALTER VOLUME | Permission required for the ALTER VOLUME command. For example: `ALTER VOLUME <volume_name> REFRESH` to refresh the file metadata information under the Volume (External Volume only) |
-| ALL | All permissions for the Volume object |
+| DROP VOLUME | Drop the specified Named Volume or External Volume |
+| ALL PRIVILEGES | All privileges on the Volume object |
+
+The `VOLUME` suffix in a privilege name is optional, so both `READ` and `READ VOLUME` are accepted. Use the full privilege names for clarity; `SHOW GRANTS` displays the full names.
 
 ## Cost
 

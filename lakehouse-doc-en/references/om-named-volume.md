@@ -61,12 +61,14 @@ REMOVE VOLUME shared_files FILE 'data.csv';
 Named Volumes support granting access to other users or roles for team sharing:
 
 ```sql
--- Grant read permission
-GRANT READ ON VOLUME shared_files TO ROLE workspace_user;
+-- Grant read permission to a custom read-only role
+GRANT READ VOLUME ON VOLUME shared_files TO ROLE volume_reader;
 
 -- Grant read and write permission
-GRANT READ, WRITE ON VOLUME shared_files TO ROLE workspace_dev;
+GRANT READ VOLUME, WRITE VOLUME ON VOLUME shared_files TO ROLE workspace_dev;
 ```
+
+The `VOLUME` suffix in a privilege name is optional, but the full names are recommended. Dropping a Named Volume requires `DROP VOLUME` on that object. Creating a Named Volume requires `CREATE VOLUME` on its parent schema.
 
 ## Related Documentation
 
