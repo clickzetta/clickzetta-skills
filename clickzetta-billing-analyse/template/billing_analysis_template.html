@@ -1,0 +1,2989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billing Cost Analysis</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif; background: #f5f6fa; color: #2c3e50; line-height: 1.6; }
+        .container { max-width: 1300px; margin: 0 auto; padding: 24px; }
+        .header { margin-bottom: 20px; }
+        .header h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; background: linear-gradient(135deg, #1a365d 0%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; display: inline-flex; align-items: center; gap: 10px; }
+        .header h1::before { content: '📊'; -webkit-text-fill-color: initial; }
+        .header-meta { font-size: 12px; color: #95a5a6; }
+
+        /* Tabs */
+        .tabs { display: flex; gap: 0; border-bottom: 2px solid #e8ecf0; margin-bottom: 24px; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; }
+        .tabs::-webkit-scrollbar { display: none; }
+        .tab { padding: 10px 20px; cursor: pointer; font-size: 13px; font-weight: 500; color: #7f8c8d; border-bottom: 2px solid transparent; margin-bottom: -2px; white-space: nowrap; transition: all 0.2s; }
+        .tab:hover { color: #2c3e50; }
+        .tab.active { color: #3498db; border-bottom-color: #3498db; font-weight: 600; }
+        .tab .tab-amount { font-size: 11px; display: block; color: #95a5a6; margin-top: 2px; }
+        .tab.active .tab-amount { color: #3498db; }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* Overview cards */
+        .overview-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+        .overview-card { background: #fff; border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .overview-card .cat-label { font-size: 12px; color: #95a5a6; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+        .overview-card .cat-label .dot { width: 8px; height: 8px; border-radius: 50%; }
+        .overview-card .cat-value { font-size: 22px; font-weight: 700; }
+        .overview-card .cat-trend { font-size: 12px; margin-top: 4px; }
+        .trend-up { color: #e74c3c; }
+        .trend-down { color: #27ae60; }
+        .trend-flat { color: #95a5a6; }
+
+        /* Section */
+        .section { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .section-title { font-size: 14px; font-weight: 600; margin-bottom: 14px; }
+
+        /* Insight box */
+        .insight-box { background: #f8f9fb; border-radius: 6px; padding: 14px 16px; font-size: 13px; color: #34495e; line-height: 1.8; margin-bottom: 16px; border-left: 3px solid #3498db; }
+        .insight-box .warn { color: #e67e22; font-weight: 500; }
+        .insight-box .alert { color: #e74c3c; font-weight: 600; }
+
+        /* Charts */
+        .chart { width: 100%; height: 300px; }
+        .chart-sm { width: 100%; height: 240px; }
+
+        /* Category sections */
+        .cat-section { margin-bottom: 24px; }
+        .cat-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #ecf0f1; }
+        .cat-icon { font-size: 18px; }
+        .cat-name { font-size: 15px; font-weight: 600; }
+        .cat-total { font-size: 13px; color: #7f8c8d; margin-left: auto; }
+
+        /* Table */
+        table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 12px; }
+        th { background: #f8f9fb; padding: 8px 10px; text-align: left; font-weight: 500; color: #7f8c8d; border-bottom: 2px solid #e8ecf0; }
+        td { padding: 8px 10px; border-bottom: 1px solid #f0f2f5; }
+        tr:hover td { background: #fafbfc; }
+        .num { text-align: right; font-variant-numeric: tabular-nums; }
+        .highlight-up { color: #e74c3c; font-weight: 600; }
+        .highlight-down { color: #27ae60; }
+
+        /* 表格美化：交替行底色 */
+        tbody tr:nth-child(4n+1) td { background: #fff; }
+        tbody tr:nth-child(4n+3) td { background: #fafcff; }
+
+        /* 整行高亮：增长/下降超过 200% */
+        .row-surge-highlight td { background: rgba(231,76,60,0.06) !important; }
+        .row-drop-highlight td { background: rgba(39,174,96,0.06) !important; }
+
+        /* 异常行左侧高亮边条 */
+        .row-anomaly-surge td:first-child { box-shadow: inset 4px 0 0 #e74c3c; }
+        .row-anomaly-new td:first-child { box-shadow: inset 4px 0 0 #3b82f6; }
+        .row-anomaly-stopped td:first-child { box-shadow: inset 4px 0 0 #9ca3af; }
+
+        /* P1: 资源行点击展开 */
+        .expandable-row { cursor: pointer; transition: all 0.2s ease; }
+        .expandable-row:hover td { background: #edf4ff !important; }
+        .expandable-row:active td { background: #dbeafe !important; }
+        .expand-detail { max-height: 0; overflow: hidden; transition: max-height 0.35s ease, padding 0.35s ease; padding: 0 10px; }
+        .expand-detail.open { max-height: 500px; padding: 10px; }
+        .expand-detail .sparkline { width: 100%; height: 80px; }
+        .expand-indicator { display: inline-block; transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); font-size: 10px; color: #94a3b8; margin-right: 4px; }
+        .expand-indicator.open { transform: rotate(90deg); color: #3498db; }
+
+        /* P1: 时间范围快捷切换 */
+        .range-btn { padding: 4px 10px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 11px; color: #64748b; background: #fff; cursor: pointer; transition: all 0.15s; }
+        .range-btn:hover:not(:disabled) { border-color: #3498db; color: #3498db; }
+        .range-btn.active { background: #3498db; color: #fff; border-color: #3498db; }
+        .range-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* P1: 异常检测标签 */
+        .anomaly-tag { display: inline-block; font-size: 10px; padding: 1px 5px; border-radius: 3px; margin-left: 4px; vertical-align: middle; cursor: help; white-space: nowrap; }
+        .anomaly-tag.surge { background: #fee2e2; color: #dc2626; }
+        .anomaly-tag.new-item { background: #dbeafe; color: #2563eb; }
+        .anomaly-tag.stopped { background: #f3f4f6; color: #6b7280; }
+        .anomaly-tag.price-anomaly { background: #fef3c7; color: #d97706; }
+        .anomaly-tag.sustained { background: #fce7f3; color: #be185d; }
+
+        /* P2: 百分比/绝对值切换 */
+        .display-toggle { display: inline-flex; border: 1px solid #e2e8f0; border-radius: 4px; overflow: hidden; margin-left: 12px; }
+        .display-toggle-btn { padding: 3px 10px; font-size: 11px; color: #64748b; background: #fff; border: none; cursor: pointer; transition: all 0.15s; }
+        .display-toggle-btn:not(:last-child) { border-right: 1px solid #e2e8f0; }
+        .display-toggle-btn.active { background: #3498db; color: #fff; }
+        .display-toggle-btn:hover:not(.active) { background: #f1f5f9; }
+
+        /* P2: 表头排序 */
+        th.sortable { cursor: pointer; user-select: none; position: relative; }
+        th.sortable:hover { background: #edf2f7; }
+        th.sortable::after { content: '⇅'; font-size: 9px; color: #cbd5e1; margin-left: 3px; }
+        th.sortable.sort-asc::after { content: '↑'; color: #3498db; }
+        th.sortable.sort-desc::after { content: '↓'; color: #3498db; }
+
+        @media (max-width: 900px) { .overview-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 500px) { .overview-grid { grid-template-columns: 1fr; } .tabs { flex-wrap: wrap; } }
+
+        /* P3: Loading 骨架屏 */
+        @keyframes skeleton-pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        .skeleton-container { padding: 24px; max-width: 1300px; margin: 0 auto; }
+        .skeleton-header { height: 24px; width: 200px; background: #e2e8f0; border-radius: 4px; margin-bottom: 8px; animation: skeleton-pulse 1.5s ease-in-out infinite; }
+        .skeleton-meta { height: 14px; width: 140px; background: #e2e8f0; border-radius: 4px; margin-bottom: 24px; animation: skeleton-pulse 1.5s ease-in-out infinite 0.1s; }
+        .skeleton-tabs { display: flex; gap: 12px; margin-bottom: 24px; border-bottom: 2px solid #e8ecf0; padding-bottom: 10px; }
+        .skeleton-tab { height: 32px; width: 80px; background: #e2e8f0; border-radius: 4px; animation: skeleton-pulse 1.5s ease-in-out infinite 0.2s; }
+        .skeleton-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+        .skeleton-card { background: #fff; border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .skeleton-card-label { height: 12px; width: 60%; background: #e2e8f0; border-radius: 3px; margin-bottom: 10px; animation: skeleton-pulse 1.5s ease-in-out infinite 0.3s; }
+        .skeleton-card-value { height: 26px; width: 80%; background: #e2e8f0; border-radius: 4px; margin-bottom: 8px; animation: skeleton-pulse 1.5s ease-in-out infinite 0.4s; }
+        .skeleton-card-trend { height: 12px; width: 50%; background: #e2e8f0; border-radius: 3px; animation: skeleton-pulse 1.5s ease-in-out infinite 0.5s; }
+        .skeleton-section { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .skeleton-section-title { height: 14px; width: 120px; background: #e2e8f0; border-radius: 3px; margin-bottom: 16px; animation: skeleton-pulse 1.5s ease-in-out infinite 0.2s; }
+        .skeleton-chart { height: 200px; background: linear-gradient(90deg, #e2e8f0 25%, #edf2f7 50%, #e2e8f0 75%); background-size: 200% 100%; border-radius: 6px; animation: skeleton-pulse 1.5s ease-in-out infinite 0.6s; }
+        .skeleton-table-row { display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid #f5f5f5; }
+        .skeleton-table-cell { height: 14px; background: #e2e8f0; border-radius: 3px; animation: skeleton-pulse 1.5s ease-in-out infinite; }
+        .skeleton-table-cell:nth-child(1) { width: 25%; animation-delay: 0.3s; }
+        .skeleton-table-cell:nth-child(2) { width: 20%; animation-delay: 0.4s; }
+        .skeleton-table-cell:nth-child(3) { width: 15%; animation-delay: 0.5s; }
+        .skeleton-table-cell:nth-child(4) { width: 12%; animation-delay: 0.6s; }
+        .skeleton-status { text-align: center; margin-top: 16px; font-size: 12px; color: #94a3b8; animation: skeleton-pulse 1.5s ease-in-out infinite; }
+        @media (max-width: 900px) { .skeleton-cards { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 500px) { .skeleton-cards { grid-template-columns: 1fr; } }
+
+        /* Compute deep analysis extras */
+        .compute-kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+        .anomaly-card { padding: 10px 12px; border-radius: 6px; font-size: 12px; line-height: 1.6; }
+        .section .section-title { font-size: 13px; font-weight: 600; margin-bottom: 10px; color: #2c3e50; }
+
+        /* 语言切换控件 */
+        .header { position: relative; }
+        .lang-switch { position: absolute; top: 0; right: 0; display: inline-flex; border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden; background: #fff; }
+        .lang-switch button { padding: 5px 12px; font-size: 12px; color: #64748b; background: #fff; border: none; cursor: pointer; transition: all 0.15s; }
+        .lang-switch button:not(:last-child) { border-right: 1px solid #e2e8f0; }
+        .lang-switch button.active { background: #3498db; color: #fff; }
+        .lang-switch button:hover:not(.active) { background: #f1f5f9; }
+    </style>
+<!-- __INLINE_DATA_START__ -->
+<script>window.__BILLING_INFRA_DATA__ = {"months":[],"region_mapping":[],"regions_data":{},"insights":{}};</script>
+<!-- __INLINE_DATA_END__ -->
+<!-- 资源用途备注已弃用（instance_usage 无集群名维度）；保留空对象兜底，getResourceNote 无匹配时降级为 '—' -->
+<script>
+window.__RESOURCE_NOTES__ = {};
+</script>
+<!-- ===== i18n 双语基础设施（离线内联，无外部依赖，默认英文）===== -->
+<script>
+const I18N = {
+  en: {
+    'title': 'Billing Cost Analysis',
+    'h1': 'Billing Infrastructure Cost Analysis',
+    'meta.range': 'Data range: {0} ~ {1} | Snapshot: {2} | {3} region(s)',
+    'label.endMonth': 'Analysis end month:',
+    'range.3m': 'Last 3M', 'range.6m': 'Last 6M', 'range.custom': 'Custom',
+    'range.hint': '{0} ~ {1} ({2} months)',
+    'btn.copy': '📋 Copy summary', 'btn.copy.done': '✅ Copied',
+    'btn.csv': '📥 Export CSV', 'btn.csv.done': '✅ Downloaded',
+    'tab.insights': 'Insights', 'tab.insights.sub': 'Analysis & tips',
+    'tab.summary': 'Overview', 'tab.summary.sub': 'All regions | {0}',
+    'noData': 'No data. Run the collection script first.',
+    'none': 'None',
+    'cat.compute': 'Compute', 'cat.storage': 'Storage', 'cat.ai': 'AI', 'cat.network': 'Network',
+    'series.total': 'Total', 'series.cost': 'Cost',
+    'axis.cny': 'CNY', 'axis.usd': 'USD', 'axis.cru': 'CRU', 'axis.avg': 'avg {0}',
+    'insights.range': '📅 Analysis range: {0} ~ {1} ({2} months)',
+    'insights.smart': '🧠 Smart analysis',
+    'insights.stable': 'All regions stable, no anomalies.',
+    'insights.actions': '💡 Cost-saving tips',
+    'insights.alerts': '🚨 Items needing attention ({0}, across all regions)',
+    'insights.alerts.hint': '👆 Click any item to see resource path and troubleshooting tips',
+    'insights.path': '📍 Resource path', 'insights.troubleshoot': '🔍 Troubleshooting',
+    'field.region': 'Region', 'field.workspace': 'Workspace', 'field.skuType': 'SKU type', 'field.source': 'Source table',
+    'level.紧急': 'Urgent', 'level.重要': 'Important', 'level.关注': 'Watch',
+    'guide.urgent.1': '1. Go to the region → resource-level analysis, click the resource for attribution',
+    'guide.urgent.2': '2. Check the cluster/job Job History in console to locate high-cost SQL',
+    'guide.urgent.3': '3. Confirm whether a new scheduled job or frequency change was introduced',
+    'guide.important.1': '1. Enter the region and check the resource cost trend, confirm if growth persists',
+    'guide.important.2': '2. Check whether data-volume growth made queries heavier',
+    'guide.important.3': '3. If expected, ignore; otherwise optimize queries or resize the cluster',
+    'guide.watch.1': '1. Confirm whether the resource is a planned addition',
+    'guide.watch.2': '2. Watch the cost trend over the next few days for stability',
+    'reason.new': 'New resource', 'reason.stopped': 'Stopped', 'reason.surge': 'Abnormal surge',
+    'reason.growth': 'Driven by workload growth', 'reason.up': 'Normal growth',
+    'reason.down': 'Load decreased', 'reason.flat': 'Stable',
+    'verdict.fast': 'Fast growth', 'verdict.mild': 'Mild growth', 'verdict.drop': 'Cost decreased', 'verdict.stable': 'Stable',
+    'usage.gp': 'General-purpose compute (GP)', 'usage.ap': 'Analytical compute (AP)',
+    'usage.bulk': 'Batch data sync', 'usage.stream': 'Real-time data sync',
+    'usage.task': 'Task scheduling', 'usage.storage': 'Managed storage', 'usage.net': 'Public network traffic',
+    'summary.title': '📋 Cost summary',
+    'summary.concl': '📋 Analysis: growth drivers & expectation per region',
+    'summary.driver': 'Growth driver:', 'summary.newItems': 'New billing items:', 'summary.viewDetail': 'View details →',
+    'summary.mainReasonDriver': '{0} change {1}, mainly driven by {2} {3}',
+    'summary.mainReasonPlain': '{0} cost change {1}',
+    'drv.new': 'addition', 'drv.up': 'growth', 'drv.down': 'decline',
+    'catv.surge': '{0} cost rose sharply (+{1}%, +{2}); resource-level change details below.',
+    'catv.mild': '{0} cost rose mildly (+{1}%, +{2}).',
+    'catv.down': '{0} cost decreased ({1}%, {2}).',
+    'catv.stable': '{0} cost stable ({1}%), no anomaly.',
+    'th.wsSku': 'Workspace / SKU', 'th.usage': 'Usage', 'th.change': 'Change', 'th.reason': 'Growth reason',
+    'th.query': 'Query method', 'th.skuItem': 'SKU (billing item)', 'th.momChange': 'MoM change',
+    'th.total': 'Total', 'th.cruLast': 'CRU (last mo.)',
+    'chart.regionTrend': 'Monthly cost trend by region', 'chart.catTrend': 'Monthly trend by category',
+    'chart.catPie': 'Cost composition ({0})',
+    'card.lastCost': '💰 {0} cost', 'card.lastCostTotal': '💰 {0} total cost', 'card.totalChangeText': 'Total cost change', 'card.regionCount': '🌐 Regions',
+    'card.vendors': 'Across {0} cloud vendor(s)', 'card.fastest': '🔥 Fastest-growing region',
+    'card.momChange': 'MoM change', 'card.maxChange': '🏷️ Biggest change', 'card.fastestCat': '⚡ Fastest change',
+    'card.vsFirst': 'vs {0} {1}', 'card.vsPrev': 'vs {0}',
+    'view.byResource': '📊 By resource', 'view.byWorkspace': '🏢 By workspace',
+    'ws.overview': '🏢 Workspace distribution: ', 'ws.new': '🆕 New workspaces: {0}', 'ws.inactive': '💤 Inactive: {0}',
+    'ws.top': '🏢 Top workspaces ({0} ~ {1})', 'ws.clickHint': 'Click a row to expand',
+    'ws.kpi.total': 'Range total', 'ws.kpi.ofRegion': '{0}% of region', 'ws.kpi.cru': 'Total CRU',
+    'ws.kpi.activeMonths': 'Active {0} months', 'ws.kpi.mom': 'MoM change', 'ws.kpi.mainSku': 'Main SKU',
+    'ws.trend': '📈 Monthly cost trend', 'ws.pieBySku': '🍩 Cost by SKU', 'ws.smart': '💡 Smart analysis',
+    'ws.i.surgeUp': 'Rapid cost growth: MoM +{0}%, check for new jobs or spec changes',
+    'ws.i.mildUp': 'Slight cost rise: MoM +{0}%, watch for transient load',
+    'ws.i.down': 'Cost decreased: MoM -{0}%, optimization may have taken effect',
+    'ws.i.flat': 'Cost stable, no anomaly',
+    'ws.i.topSku': '{0} accounts for {1}% of cost, the main cost driver',
+    'tag.new': '🆕 New', 'tag.stopped': '👻 Stopped', 'tag.surge': '🔴 Surge', 'tag.price': '⚠️ Price anomaly', 'tag.sustained': '📈 Sustained',
+    'tag.new.tip': 'No data last month, new cost {0} this month',
+    'tag.stopped.tip': 'No cost this month, was {0} last month',
+    'tag.surge.tipCru': 'CRU MoM +{0}%', 'tag.surge.tipAmt': 'Cost MoM +{0}%',
+    'tag.price.tip': 'CRU changed {0}% but cost changed {1}%, likely unit-price change',
+    'tag.sustained.tip': 'MoM >30% for 2 months ({0}% → {1}%)',
+    'attr.title': '📊 Monthly cost attribution', 'attr.detail.badge.main': 'main',
+    'attr.prevToLast': 'Prev ({0}) {1} → This ({2}) {3}', 'attr.thisOnly': 'This ({0}) {1}',
+    'attr.new': ' (new)', 'attr.stopped': ' (stopped)',
+    'attr.cru': 'CRU: {0} → {1} ({2})', 'attr.price': 'Unit price: {0}/CRU → {1}/CRU ({2})',
+    'attr.costChg': 'Cost change {0}',
+    'attr.fullTrend': '📈 Full trend ({0} months)', 'attr.costMom': 'Cost MoM: {0}', 'attr.cruMom': 'CRU MoM: {0}',
+    'attr.trend': 'Trend: {0}', 'attr.cruNew': 'new',
+    'trend.up': '📈 Up', 'trend.down': '📉 Down', 'trend.flat': '➡️ Stable',
+    'skuType.gp': 'GP resident compute', 'skuType.ap': 'AP query', 'skuType.bulk': 'Batch integration',
+    'skuType.stream': 'Streaming integration', 'skuType.task': 'Task scheduling', 'skuType.other': 'Other',
+    'detail.attr.header': '📊 Attribution detail', 'detail.byAmount': 'Amount', 'detail.byPct': '% share', 'detail.sortHint': 'Click header to sort',
+    'skipped.title': '⚠️ {0} region(s) not collected (no permission / failed)',
+    'skipped.unknown': 'Unknown reason',
+    'storage.tableDetail': 'Table-level storage detail (snapshot)', 'storage.charts': '📊 Storage charts',
+    'storage.wsPie': 'Workspace storage share ({0})', 'storage.wsTrend': 'Monthly trend by workspace',
+    'storage.th.table': 'Table', 'storage.th.size': 'Size', 'storage.th.rows': 'Rows', 'storage.th.note': 'Note',
+    'compute.charts': '📊 Deep-dive charts (click to expand)',
+    'compute.skuType': 'SKU type composition', 'compute.cruVsAmt': 'CRU vs cost', 'compute.wsShare': 'Workspace share', 'compute.treemap': 'Treemap',
+    'copy.monthly': '【Billing Infra Cost Monthly】{0}',
+    'copy.thisCost': '- This month cost: {0} (MoM {1}{2}%)',
+    'copy.driver': '- Growth driver: {0} +{1}',
+    'copy.regions': '- Regions: {0}', 'copy.snapshot': '- Snapshot: {0}',
+    'copy.regionMonthly': '【{0} Cost Monthly】{1}', 'copy.topRes': '- Top resources:',
+    'insight.globalMom': 'Global {0} total cost {1}, MoM {2} <b>{3}%</b> ({4}{5})',
+    'insight.globalFlat': 'Global {0} total cost {1}, roughly flat MoM',
+    'insight.regionUp': '<b>{0}</b> MoM +{1}% ({2} → {3}), {4}% of {5} total, investigate',
+    'insight.regionDown': '<b>{0}</b> MoM -{1}% ({2} → {3}), confirm if intentional optimization',
+    'insight.resChange': '<b>{0}</b> resource <b>{1}</b> MoM {2} {3}% ({4} → {5})',
+    'insight.resNew': '<b>{0}</b> new resource <b>{1}</b>, {2} cost {3}',
+    'action.totalUp': '{0} total cost MoM +{1}% ({2} → {3}), check regions for new jobs or schedule changes',
+    'action.concentration': '<b>{0}</b> is {1}% of {2} total, high concentration, consider cross-region DR',
+    'action.clusterUp': '<b>{0}</b> ({1}) MoM +{2}% (+{3}), check Job History for high-cost jobs',
+    'action.regionDown': '<b>{0}</b> MoM -{1}%, if intentional confirm no business impact; else check for abnormally stopped jobs',
+    'action.resNew': '<b>{0}</b> ({1}) is a new resource, {2} cost {3}, confirm if a planned launch',
+    'alert.new.title': '{0} is a new resource', 'alert.new.detail': '{0} cost {1}, no record in {2}. Confirm if planned launch.',
+    'alert.surge.title': '{0} MoM +{1}%', 'alert.detail.change': '{0} {1} → {2} {3} (+{4})',
+    'grow': 'increased', 'drop': 'decreased', 'up': 'up', 'down': 'down',
+    'loading': '⏳ Loading data...', 'retry': 'Retry',
+    'loading.firstRun': '🔄 First launch, collecting data per region (~30-60s)...', 'loading.autoRefresh': 'The page will refresh automatically',
+    'err.load': '❌ Load failed: {0}', 'err.net': '❌ Network error: {0}', 'err.net.hint': 'Please make sure the service is running (./start.sh)',
+    'summary.overview': '{0} cost {1}', 'summary.vsGrow': ', {0} {1}% vs {2}', 'summary.vsFlat': ', roughly flat vs {0}',
+    'summary.significant': ', significant change',
+    'summary.topWs': 'Top workspace is {0} ({1}, {2}%)',
+    'summary.catSurge': '🚨 {0} cost surge: {1} {2} → {3} {4} (+{5}%)',
+    'summary.catNew': '🚨 {0} cost added: {1} {2} (none last month)',
+    'summary.concentration': '💡 {0} is {1}% of total cost, too concentrated, split into workspaces for finer control',
+    'prevMonth': 'last month',
+    'nc.na': 'N/A',
+    'csv.header': 'Month,Region,Workspace,Resource,SKU,Cost,CRU',
+  },
+  zh: {
+    'title': '账号费用消耗分析',
+    'h1': 'Billing 基础设施成本分析',
+    'meta.range': '数据范围: {0} ~ {1} | 快照时间: {2} | {3} 个地域',
+    'label.endMonth': '分析截止月份：',
+    'range.3m': '近3月', 'range.6m': '近6月', 'range.custom': '自定义',
+    'range.hint': '{0} ~ {1}（{2}个月）',
+    'btn.copy': '📋 复制摘要', 'btn.copy.done': '✅ 已复制',
+    'btn.csv': '📥 导出 CSV', 'btn.csv.done': '✅ 已下载',
+    'tab.insights': '智能洞察', 'tab.insights.sub': '分析 & 建议',
+    'tab.summary': '分析总览', 'tab.summary.sub': '全部地域 | {0}',
+    'noData': '暂无数据，请先运行采集脚本',
+    'none': '无',
+    'cat.compute': '计算', 'cat.storage': '存储', 'cat.ai': 'AI', 'cat.network': '网络',
+    'series.total': '总计', 'series.cost': '费用',
+    'axis.cny': '元', 'axis.usd': 'USD', 'axis.cru': 'CRU', 'axis.avg': '均值 {0}',
+    'insights.range': '📅 分析范围：{0} ~ {1}（{2}个月）',
+    'insights.smart': '🧠 智能分析',
+    'insights.stable': '各地域费用平稳，无明显异常。',
+    'insights.actions': '💡 降本建议',
+    'insights.alerts': '🚨 需关注确认的事项（{0} 项，跨所有 Region）',
+    'insights.alerts.hint': '👆 点击任意事项可展开查看资源定位路径和排查建议',
+    'insights.path': '📍 资源定位路径', 'insights.troubleshoot': '🔍 排查建议',
+    'field.region': 'Region', 'field.workspace': 'Workspace', 'field.skuType': 'SKU 类型', 'field.source': '数据来源表',
+    'level.紧急': '紧急', 'level.重要': '重要', 'level.关注': '关注',
+    'guide.urgent.1': '1. 进入该 Region → 资源级消耗分析，点击该资源查看归因详情',
+    'guide.urgent.2': '2. 在控制台查看该集群/任务的 Job History，定位高消耗 SQL',
+    'guide.urgent.3': '3. 确认是否有新上线的定时任务或调度频率变更',
+    'guide.important.1': '1. 进入该 Region 查看资源消耗趋势，确认增长是否持续',
+    'guide.important.2': '2. 检查是否有数据量增长导致的查询变重',
+    'guide.important.3': '3. 如为预期增长可忽略，否则建议优化查询或调整集群规格',
+    'guide.watch.1': '1. 确认该资源是否为计划内新增',
+    'guide.watch.2': '2. 关注后续几天的费用趋势是否稳定',
+    'reason.new': '新增资源', 'reason.stopped': '已停用', 'reason.surge': '增幅异常',
+    'reason.growth': '业务量增长驱动', 'reason.up': '正常增长',
+    'reason.down': '负载下降', 'reason.flat': '平稳',
+    'verdict.fast': '增长较快', 'verdict.mild': '温和增长', 'verdict.drop': '费用下降', 'verdict.stable': '基本平稳',
+    'usage.gp': '通用计算集群 (GP)', 'usage.ap': '分析型计算集群 (AP)',
+    'usage.bulk': '离线数据同步', 'usage.stream': '实时数据同步',
+    'usage.task': '任务调度', 'usage.storage': '托管存储', 'usage.net': '公网流量',
+    'summary.title': '📋 费用摘要',
+    'summary.concl': '📋 分析结论：各地域增长原因与预期判断',
+    'summary.driver': '增长主因：', 'summary.newItems': '新增计费项：', 'summary.viewDetail': '查看详情 →',
+    'summary.mainReasonDriver': '{0}变化{1}，主要由 {2} {3}驱动',
+    'summary.mainReasonPlain': '{0}期间费用变化{1}',
+    'drv.new': '新增', 'drv.up': '增长', 'drv.down': '下降',
+    'catv.surge': '{0}费用增长显著（+{1}%，+{2}），以下为各资源的消耗变化明细。',
+    'catv.mild': '{0}费用温和上涨（+{1}%，+{2}）。',
+    'catv.down': '{0}费用有所下降（{1}%，{2}）。',
+    'catv.stable': '{0}费用基本平稳（{1}%），无异常波动。',
+    'th.wsSku': '工作空间 / SKU', 'th.usage': '用途', 'th.change': '变化', 'th.reason': '增长原因',
+    'th.query': '查询方式', 'th.skuItem': 'SKU（计费项）', 'th.momChange': '环比变化',
+    'th.total': '合计', 'th.cruLast': 'CRU(末月)',
+    'chart.regionTrend': '各地域月度费用趋势', 'chart.catTrend': '各费用类别月度趋势',
+    'chart.catPie': '费用构成占比（{0}）',
+    'card.lastCost': '💰 {0}费用', 'card.lastCostTotal': '💰 {0}总费用', 'card.totalChangeText': '费用总变化', 'card.regionCount': '🌐 地域数量',
+    'card.vendors': '跨 {0} 家云厂商', 'card.fastest': '🔥 增长最快地域',
+    'card.momChange': '环比变化', 'card.maxChange': '🏷️ 变化最大', 'card.fastestCat': '⚡ 变化最快',
+    'card.vsFirst': '较{0} {1}', 'card.vsPrev': '对比{0}',
+    'view.byResource': '📊 按资源明细', 'view.byWorkspace': '🏢 按 Workspace',
+    'ws.overview': '🏢 Workspace 分布总览：', 'ws.new': '🆕 新增 Workspace：{0}', 'ws.inactive': '💤 已停用：{0}',
+    'ws.top': '🏢 Top 消耗 Workspace（{0}~{1}）', 'ws.clickHint': '点击行可展开详细分析',
+    'ws.kpi.total': '区间总费用', 'ws.kpi.ofRegion': '占 Region {0}%', 'ws.kpi.cru': 'CRU 总量',
+    'ws.kpi.activeMonths': '活跃 {0} 个月', 'ws.kpi.mom': '环比变化', 'ws.kpi.mainSku': '主要 SKU',
+    'ws.trend': '📈 月度费用趋势', 'ws.pieBySku': '🍩 费用构成（按 SKU）', 'ws.smart': '💡 智能分析',
+    'ws.i.surgeUp': '费用快速增长：环比增长 {0}%，建议检查是否有新增任务或规格变更',
+    'ws.i.mildUp': '费用小幅上升：环比增长 {0}%，建议关注是否为临时性负载',
+    'ws.i.down': '费用下降：环比下降 {0}%，优化措施可能已生效',
+    'ws.i.flat': '费用平稳，暂无异常',
+    'ws.i.topSku': '{0} 占费用 {1}%，是主要成本来源',
+    'tag.new': '🆕 新增', 'tag.stopped': '👻 已停', 'tag.surge': '🔴 突增', 'tag.price': '⚠️ 单价异常', 'tag.sustained': '📈 持续增长',
+    'tag.new.tip': '上月无数据，本月新增费用 {0}',
+    'tag.stopped.tip': '本月无费用产生，上月为 {0}',
+    'tag.surge.tipCru': 'CRU 环比 +{0}%', 'tag.surge.tipAmt': '费用环比 +{0}%',
+    'tag.price.tip': 'CRU 变化 {0}% 但费用变化 {1}%，疑似单价变动',
+    'tag.sustained.tip': '连续2月环比 >30%（{0}% → {1}%）',
+    'attr.title': '📊 月度费用变化归因', 'attr.detail.badge.main': '主因',
+    'attr.prevToLast': '上月（{0}）{1} → 本月（{2}）{3}', 'attr.thisOnly': '本月（{0}）{1}',
+    'attr.new': ' （新增）', 'attr.stopped': ' （已停）',
+    'attr.cru': 'CRU 消耗：{0} → {1}（{2}）', 'attr.price': '单价：{0}/CRU → {1}/CRU（{2}）',
+    'attr.costChg': '费用变化 {0}',
+    'attr.fullTrend': '📈 全量趋势（{0}个月）', 'attr.costMom': '费用环比：{0}', 'attr.cruMom': 'CRU环比：{0}',
+    'attr.trend': '趋势：{0}', 'attr.cruNew': '新增',
+    'trend.up': '📈 上升', 'trend.down': '📉 下降', 'trend.flat': '➡️ 平稳',
+    'skuType.gp': 'GP 常驻计算', 'skuType.ap': 'AP 查询', 'skuType.bulk': '离线集成',
+    'skuType.stream': '流式集成', 'skuType.task': '任务调度', 'skuType.other': '其他',
+    'detail.attr.header': '📊 归因明细', 'detail.byAmount': '金额', 'detail.byPct': '占比%', 'detail.sortHint': '点击表头可排序',
+    'skipped.title': '⚠️ {0} 个地域未采集（无权限或采集失败）',
+    'skipped.unknown': '未知原因',
+    'storage.tableDetail': '表级存储明细（当前快照）', 'storage.charts': '📊 存储分析图表',
+    'storage.wsPie': 'Workspace 存储占比（{0}）', 'storage.wsTrend': '各 Workspace 月度趋势',
+    'storage.th.table': '表名', 'storage.th.size': '大小', 'storage.th.rows': '行数', 'storage.th.note': '说明',
+    'compute.charts': '📊 深度分析图表（点击展开）',
+    'compute.skuType': 'SKU 类型构成', 'compute.cruVsAmt': 'CRU vs 费用', 'compute.wsShare': 'Workspace 占比', 'compute.treemap': 'Treemap',
+    'copy.monthly': '【Billing 基础设施成本月报】{0}',
+    'copy.thisCost': '- 本月费用：{0}（环比 {1}{2}%）',
+    'copy.driver': '- 增长主因：{0} +{1}',
+    'copy.regions': '- 覆盖地域：{0}', 'copy.snapshot': '- 数据快照：{0}',
+    'copy.regionMonthly': '【{0} 成本月报】{1}', 'copy.topRes': '- Top 资源：',
+    'insight.globalMom': '全局{0}总费用 {1}，环比{2} <b>{3}%</b>（{4}{5}）',
+    'insight.globalFlat': '全局{0}总费用 {1}，环比基本持平',
+    'insight.regionUp': '<b>{0}</b> 环比增长 {1}%（{2} → {3}），占{5}总费用 {4}%，建议重点排查',
+    'insight.regionDown': '<b>{0}</b> 环比下降 {1}%（{2} → {3}），需确认是否为主动优化',
+    'insight.resChange': '<b>{0}</b> 资源 <b>{1}</b> 环比{2} {3}%（{4} → {5}）',
+    'insight.resNew': '<b>{0}</b> 新增资源 <b>{1}</b>，{2}费用 {3}',
+    'action.totalUp': '{0}总费用环比增长 {1}%（{2} → {3}），建议排查各 Region 是否有新增任务或调度频率变更',
+    'action.concentration': '<b>{0}</b> 占{2}总费用 {1}%，集中度较高，建议评估跨 Region 容灾',
+    'action.clusterUp': '<b>{0}</b>（{1}）环比增长 {2}%（+{3}），建议检查该集群 Job History 定位高消耗任务',
+    'action.regionDown': '<b>{0}</b> 环比下降 {1}%，如为主动优化请确认业务未受影响；如非预期请检查是否有任务异常停止',
+    'action.resNew': '<b>{0}</b>（{1}）为新增资源，{2}费用 {3}，建议确认是否为计划内上线',
+    'alert.new.title': '{0} 为新增资源', 'alert.new.detail': '{0}费用 {1}，{2}无记录。需确认是否为计划内上线。',
+    'alert.surge.title': '{0} 环比增长 {1}%', 'alert.detail.change': '{0} {1} → {2} {3}（+{4}）',
+    'grow': '增长', 'drop': '下降', 'up': '增长', 'down': '下降',
+    'loading': '⏳ 正在加载数据...', 'retry': '重试',
+    'loading.firstRun': '🔄 首次启动，正在采集各 Region 数据（约30-60秒）...', 'loading.autoRefresh': '页面会自动刷新',
+    'err.load': '❌ 加载失败: {0}', 'err.net': '❌ 网络错误: {0}', 'err.net.hint': '请确认服务已启动 (./start.sh)',
+    'summary.overview': '{0}费用 {1}', 'summary.vsGrow': '，较{2}{0} {1}%', 'summary.vsFlat': '，与{0}基本持平',
+    'summary.significant': '，变化显著',
+    'summary.topWs': '费用最高的 Workspace 是 {0}（{1}，占 {2}%）',
+    'summary.catSurge': '🚨 {0}费用大幅增长：{1} {2} → {3} {4}（+{5}%）',
+    'summary.catNew': '🚨 {0}费用新增：{1} {2}（上月无消耗）',
+    'summary.concentration': '💡 {0} 占总费用 {1}%，集中度过高，建议按业务拆分为多个 Workspace 以便精细化管控',
+    'prevMonth': '上月',
+    'nc.na': 'N/A',
+    'csv.header': '月份,地域,Workspace,资源名,SKU,费用(元),CRU',
+  },
+};
+(function initLang(){
+  let saved = null;
+  try { saved = localStorage.getItem('billing_lang'); } catch(e) {}
+  window.__LANG__ = (saved === 'zh' || saved === 'en') ? saved : 'en';
+})();
+
+function T(key){
+  const dict = I18N[window.__LANG__] || I18N.en;
+  let s = dict[key];
+  if (s === undefined) s = (I18N.en[key] !== undefined ? I18N.en[key] : key);
+  if (arguments.length > 1) {
+    for (let i = 1; i < arguments.length; i++) {
+      s = s.split('{' + (i - 1) + '}').join(String(arguments[i]));
+    }
+  }
+  return s;
+}
+
+const MONTH_NAMES_EN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function formatMonth(m, lang){
+  const parts = String(m).split('-');
+  const y = parts[0], mo = parseInt(parts[1], 10);
+  if ((lang || window.__LANG__) === 'en') return (MONTH_NAMES_EN[mo - 1] || parts[1]) + ' ' + y;
+  return y + '年' + mo + '月';
+}
+
+// 按当前语言取 insights 双语字段：en 优先 obj[base+'_en']，缺则回退 obj[base]
+function pickLang(obj, base){
+  if (!obj) return '';
+  if (window.__LANG__ === 'en') return obj[base + '_en'] || obj[base] || '';
+  return obj[base] || '';
+}
+
+// 品类显示名（双语），未知品类回退首字母大写
+function catName(cat){
+  const key = 'cat.' + cat;
+  const dict = I18N[window.__LANG__] || I18N.en;
+  if (dict[key] !== undefined) return dict[key];
+  if (I18N.en[key] !== undefined) return I18N.en[key];
+  return cat.charAt(0).toUpperCase() + cat.slice(1);
+}
+
+// 语义 key → 显示文案（reason/verdict/level/tag/trend/skuType 直接走 T）
+function reasonText(key){ return T(key); }
+function verdictText(key){ return T(key); }
+function levelText(level){ return T('level.' + level); }
+function skuTypeName(displayKey){ return T('skuType.' + displayKey); }
+
+// 货币轴名称（金额轴按语言，$ 恒为 USD）
+function axisMoney(currency){ return currency === '$' ? T('axis.usd') : T('axis.cny'); }
+
+function rebuildMonthLabels(){
+  MONTH_LABELS = {};
+  ALL_MONTHS.forEach(m => { MONTH_LABELS[m] = formatMonth(m, window.__LANG__); });
+}
+
+// 刷新静态 DOM 文案（<h1>、按钮、下拉标签、meta、快捷按钮、lang-switch active）
+function refreshStaticText(){
+  const h1 = document.querySelector('.header h1');
+  if (h1) h1.textContent = T('h1');
+  const lblEnd = document.getElementById('label-end-month');
+  if (lblEnd) lblEnd.textContent = T('label.endMonth');
+  const btnCopy = document.getElementById('btn-copy');
+  if (btnCopy) btnCopy.innerHTML = T('btn.copy');
+  const btnCsv = document.getElementById('btn-csv');
+  if (btnCsv) btnCsv.innerHTML = T('btn.csv');
+  // 快捷范围按钮文案
+  const r3 = document.querySelector('.range-btn[data-range="3"]'); if (r3) r3.textContent = T('range.3m');
+  const r6 = document.querySelector('.range-btn[data-range="6"]'); if (r6) r6.textContent = T('range.6m');
+  const rall = document.querySelector('.range-btn[data-range="all"]'); if (rall) rall.textContent = T('range.custom');
+  // meta-info
+  const meta = document.getElementById('meta-info');
+  if (meta && DATA) meta.textContent = T('meta.range', MONTH_LABELS[ALL_MONTHS[0]], MONTH_LABELS[ALL_MONTHS[ALL_MONTHS.length-1]], DATA.generated_at.replace('T',' '), DATA.region_mapping.length);
+  // month-range-hint
+  const hint = document.getElementById('month-range-hint');
+  if (hint && typeof MONTHS !== 'undefined' && MONTHS.length) hint.textContent = T('range.hint', MONTH_LABELS[MONTHS[0]], MONTH_LABELS[MONTHS[MONTHS.length-1]], MONTHS.length);
+  // 月份下拉 option 文案
+  const endSel = document.getElementById('month-end');
+  if (endSel) Array.from(endSel.options).forEach(op => { if (MONTH_LABELS[op.value]) op.textContent = MONTH_LABELS[op.value]; });
+  // lang-switch active 态
+  document.querySelectorAll('.lang-switch button').forEach(b => b.classList.toggle('active', b.dataset.lang === window.__LANG__));
+}
+
+function setLang(lang){
+  if (lang !== 'en' && lang !== 'zh') return;
+  window.__LANG__ = lang;
+  try { localStorage.setItem('billing_lang', lang); } catch(e) {}
+  document.documentElement.lang = lang;
+  document.title = T('title');
+  if (typeof ALL_MONTHS !== 'undefined') rebuildMonthLabels();
+  // 销毁旧图表避免残影
+  if (typeof charts !== 'undefined') { Object.values(charts).forEach(c => { try { c.dispose(); } catch(e) {} }); charts = {}; }
+  refreshStaticText();
+  // 重建 tabs + 重渲染当前面板
+  const activeTab = document.querySelector('.tab.active');
+  const regionId = activeTab ? activeTab.dataset.region : '__summary__';
+  if (typeof renderTabs === 'function') renderTabs();
+  if (typeof switchTab === 'function') switchTab(regionId);
+}
+</script>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Billing Infrastructure Cost Analysis</h1>
+        <div class="header-meta" id="meta-info"></div>
+        <div class="lang-switch" id="lang-switch">
+            <button data-lang="en" class="active" onclick="setLang('en')">EN</button>
+            <button data-lang="zh" onclick="setLang('zh')">中文</button>
+        </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+        <label id="label-end-month" style="font-size:12px;color:#64748b;font-weight:500;">Analysis end month:</label>
+        <select id="month-end" style="padding:5px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;color:#334155;cursor:pointer;"></select>
+        <div id="range-btns" style="display:flex;gap:4px;margin-left:8px;"></div>
+        <span id="month-range-hint" style="font-size:11px;color:#94a3b8;"></span>
+        <div style="margin-left:auto;display:flex;gap:8px;">
+            <button onclick="copySummary()" id="btn-copy" style="padding:5px 12px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;color:#334155;background:#fff;cursor:pointer;display:flex;align-items:center;gap:4px;">📥 Copy summary</button>
+            <button onclick="exportCSV()" id="btn-csv" style="padding:5px 12px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;color:#334155;background:#fff;cursor:pointer;display:flex;align-items:center;gap:4px;">📥 Export CSV</button>
+        </div>
+    </div>
+    <div class="tabs" id="region-tabs"></div>
+    <div id="panels-container"></div>
+</div>
+
+<script>
+const DATA = window.__BILLING_INFRA_DATA__;
+const ALL_MONTHS = DATA ? DATA.months : [];
+// P1: 默认显示近6个月（由 initMonthSelector 中的 setRange('6') 设置）
+let MONTHS = ALL_MONTHS.slice();
+let MONTH_LABELS = {};
+rebuildMonthLabels();
+// 已知品类的预设样式（保底），显示名由 catName() 按语言提供，此处 name 仅作兜底占位
+const CAT_META_PRESET = {
+    compute: { icon: '', name: 'Compute', color: '#3498db' },
+    storage: { icon: '', name: 'Storage', color: '#2ecc71' },
+    ai: { icon: '', name: 'AI', color: '#9b59b6' },
+    network: { icon: '', name: 'Network', color: '#e67e22' },
+};
+// 动态品类颜色池（用于未预设品类）
+const DYNAMIC_CAT_COLORS = ['#1abc9c', '#e74c3c', '#34495e', '#f1c40f', '#16a085', '#8e44ad', '#d35400'];
+
+// 从数据中动态发现所有品类
+function discoverCategories() {
+    const allCats = new Set();
+    if (!DATA || !DATA.regions_data) return allCats;
+    Object.values(DATA.regions_data).flat().forEach(row => {
+        if (row.sku_category) allCats.add(row.sku_category.toLowerCase());
+    });
+    return allCats;
+}
+
+// 动态构建 CAT_META（合并预设 + 数据中发现的新品类）
+function buildCatMeta() {
+    const allCats = discoverCategories();
+    const meta = {};
+    // 先复制预设
+    Object.entries(CAT_META_PRESET).forEach(([k, v]) => { meta[k] = { ...v }; });
+    let colorIdx = 0;
+    // 为未预设的品类分配颜色和显示名
+    allCats.forEach(cat => {
+        if (!meta[cat]) {
+            meta[cat] = {
+                icon: '',
+                name: cat.charAt(0).toUpperCase() + cat.slice(1),
+                color: DYNAMIC_CAT_COLORS[colorIdx % DYNAMIC_CAT_COLORS.length]
+            };
+            colorIdx++;
+        }
+    });
+    return meta;
+}
+
+// 动态构建品类顺序（已知品类优先，其余按字母序）
+function buildCatOrder() {
+    const allCats = discoverCategories();
+    const knownOrder = ['compute', 'storage', 'ai', 'network'];
+    const known = knownOrder.filter(c => allCats.has(c));
+    const unknown = [...allCats].filter(c => !knownOrder.includes(c)).sort();
+    return [...known, ...unknown];
+}
+
+const CAT_META = buildCatMeta();
+const CAT_ORDER = buildCatOrder();
+
+// 币种判断
+function getCurrency(regionId) {
+    return regionId === 'ap-southeast-1-aws' ? '$' : '¥';
+}
+function formatAmount(amount, regionId) {
+    const c = getCurrency(regionId);
+    return `${c}${Math.round(amount).toLocaleString()}`;
+}
+
+// 资源备注查找函数
+function getResourceNote(resource, workspace) {
+    const NOTES = window.__RESOURCE_NOTES__ || {};
+    // 优先查找 resource|workspace 精确匹配
+    const key1 = `${resource}|${workspace}`;
+    if (NOTES[key1]) return NOTES[key1];
+    // 再查找 resource 通用匹配
+    if (NOTES[resource]) return NOTES[resource];
+    return null;
+}
+
+let charts = {};
+
+// ===== P0: 一键复制摘要 =====
+function copySummary() {
+    const activeTab = document.querySelector('.tab.active');
+    const regionId = activeTab ? activeTab.dataset.region : '__summary__';
+    const lastMonth = MONTHS[MONTHS.length - 1];
+    const prevMonth = MONTHS.length > 1 ? MONTHS[MONTHS.length - 2] : null;
+
+    let lines = [];
+    if (regionId === '__insights__' || regionId === '__summary__') {
+        // 全局摘要
+        const allRows = Object.values(DATA.regions_data).flat().filter(r => MONTHS.includes(r.month));
+        const lastTotal = allRows.filter(r => r.month === lastMonth).reduce((s, r) => s + r.total_amount, 0);
+        const prevTotal = prevMonth ? allRows.filter(r => r.month === prevMonth).reduce((s, r) => s + r.total_amount, 0) : 0;
+        const momPct = prevTotal > 0 ? ((lastTotal - prevTotal) / prevTotal * 100) : 0;
+
+        // 找增长最多的品类
+        const catTotals = {};
+        allRows.filter(r => r.month === lastMonth).forEach(r => {
+            const cat = (r.sku_category || 'other').toLowerCase();
+            catTotals[cat] = (catTotals[cat] || 0) + r.total_amount;
+        });
+        const catPrevTotals = {};
+        if (prevMonth) allRows.filter(r => r.month === prevMonth).forEach(r => {
+            const cat = (r.sku_category || 'other').toLowerCase();
+            catPrevTotals[cat] = (catPrevTotals[cat] || 0) + r.total_amount;
+        });
+        let maxDiffCat = '', maxDiff = 0;
+        Object.keys(catTotals).forEach(cat => {
+            const diff = (catTotals[cat] || 0) - (catPrevTotals[cat] || 0);
+            if (diff > maxDiff) { maxDiff = diff; maxDiffCat = catName(cat); }
+        });
+
+        lines = [
+            T('copy.monthly', formatMonth(lastMonth)),
+            T('copy.thisCost', `¥${Math.round(lastTotal).toLocaleString()}`, momPct >= 0 ? '+' : '', momPct.toFixed(0)),
+            T('copy.driver', maxDiffCat, `¥${Math.round(maxDiff).toLocaleString()}`),
+            T('copy.regions', DATA.region_mapping.length),
+            T('copy.snapshot', DATA.generated_at.replace('T', ' '))
+        ];
+    } else {
+        // 单地域摘要
+        const region = DATA.region_mapping.find(r => r.region_id === regionId);
+        const rows = (DATA.regions_data[regionId] || []).filter(r => MONTHS.includes(r.month));
+        const lastTotal = rows.filter(r => r.month === lastMonth).reduce((s, r) => s + r.total_amount, 0);
+        const prevTotal = prevMonth ? rows.filter(r => r.month === prevMonth).reduce((s, r) => s + r.total_amount, 0) : 0;
+        const momPct = prevTotal > 0 ? ((lastTotal - prevTotal) / prevTotal * 100) : 0;
+        const cur = getCurrency(regionId);
+
+        // 找 top3 资源
+        const resMap = {};
+        rows.filter(r => r.month === lastMonth).forEach(r => {
+            const key = `${r.workspace_name || '-'}/${r.resource_name || '-'}`;
+            resMap[key] = (resMap[key] || 0) + r.total_amount;
+        });
+        const top3 = Object.entries(resMap).sort((a, b) => b[1] - a[1]).slice(0, 3);
+
+        lines = [
+            T('copy.regionMonthly', region.label, formatMonth(lastMonth)),
+            T('copy.thisCost', `${cur}${Math.round(lastTotal).toLocaleString()}`, momPct >= 0 ? '+' : '', momPct.toFixed(0)),
+            T('copy.topRes'),
+            ...top3.map((t, i) => `  ${i+1}. ${t[0]}：${cur}${Math.round(t[1]).toLocaleString()}`),
+            T('copy.snapshot', DATA.generated_at.replace('T', ' '))
+        ];
+    }
+
+    const text = lines.join('\n');
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('btn-copy');
+        const orig = btn.innerHTML;
+        btn.innerHTML = T('btn.copy.done');
+        btn.style.borderColor = '#10b981';
+        setTimeout(() => { btn.innerHTML = orig; btn.style.borderColor = '#e2e8f0'; }, 2000);
+    }).catch(() => {
+        // fallback for older browsers
+        const ta = document.createElement('textarea');
+        ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+        document.body.removeChild(ta);
+        const btn = document.getElementById('btn-copy');
+        const orig = btn.innerHTML;
+        btn.innerHTML = T('btn.copy.done');
+        btn.style.borderColor = '#10b981';
+        setTimeout(() => { btn.innerHTML = orig; btn.style.borderColor = '#e2e8f0'; }, 2000);
+    });
+}
+
+// ===== P0: 导出 CSV =====
+function exportCSV() {
+    const activeTab = document.querySelector('.tab.active');
+    const regionId = activeTab ? activeTab.dataset.region : '__summary__';
+
+    let csvRows = [];
+    const header = T('csv.header').split(',');
+    csvRows.push(header.join(','));
+
+    const escapeCSV = (val) => {
+        const str = String(val == null ? '' : val);
+        return str.includes(',') || str.includes('"') || str.includes('\n') ? `"${str.replace(/"/g, '""')}"` : str;
+    };
+
+    let exportData;
+    let filename;
+    if (regionId === '__summary__') {
+        // 全量导出
+        exportData = Object.entries(DATA.regions_data).flatMap(([rid, rows]) => {
+            const label = (DATA.region_mapping.find(r => r.region_id === rid) || {}).label || rid;
+            return rows.filter(r => MONTHS.includes(r.month)).map(r => ({ ...r, regionLabel: label }));
+        });
+        filename = `billing_all_regions_${MONTHS[0]}_${MONTHS[MONTHS.length-1]}.csv`;
+    } else {
+        const region = DATA.region_mapping.find(r => r.region_id === regionId);
+        exportData = (DATA.regions_data[regionId] || []).filter(r => MONTHS.includes(r.month)).map(r => ({ ...r, regionLabel: region.label }));
+        filename = `billing_${regionId}_${MONTHS[0]}_${MONTHS[MONTHS.length-1]}.csv`;
+    }
+
+    exportData.sort((a, b) => a.month.localeCompare(b.month) || (b.total_amount - a.total_amount));
+    exportData.forEach(r => {
+        csvRows.push([
+            r.month,
+            escapeCSV(r.regionLabel),
+            escapeCSV(r.workspace_name || '-'),
+            escapeCSV(r.resource_name || '-'),
+            escapeCSV(r.sku_name),
+            r.total_amount.toFixed(2),
+            r.total_cru.toFixed(2)
+        ].join(','));
+    });
+
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; a.style.display = 'none';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    // 按钮反馈
+    const btn = document.getElementById('btn-csv');
+    const orig = btn.innerHTML;
+    btn.innerHTML = T('btn.csv.done');
+    btn.style.borderColor = '#10b981';
+    setTimeout(() => { btn.innerHTML = orig; btn.style.borderColor = '#e2e8f0'; }, 2000);
+}
+
+function init() {
+    if (!DATA) { document.querySelector('.container').innerHTML = `<p style="text-align:center;padding:60px;color:#999;">${T('noData')}</p>`; return; }
+    document.documentElement.lang = window.__LANG__;
+    document.title = T('title');
+    document.getElementById('meta-info').textContent = T('meta.range', MONTH_LABELS[ALL_MONTHS[0]], MONTH_LABELS[ALL_MONTHS[ALL_MONTHS.length-1]], DATA.generated_at.replace('T',' '), DATA.region_mapping.length);
+    initMonthSelector();
+    refreshStaticText();
+    renderTabs();
+    switchTab('__summary__');
+}
+
+function initMonthSelector() {
+    const endSel = document.getElementById('month-end');
+    if (!endSel) return;
+
+    // 只有前 3 个月及以后的月份才能被选为截止月（确保能往前推 2 个月）
+    ALL_MONTHS.forEach((m, idx) => {
+        if (idx >= 2) { // 至少第 3 个月才能选（index=2 即第 3 个月）
+            endSel.innerHTML += `<option value="${m}">${MONTH_LABELS[m]}</option>`;
+        }
+    });
+    // 默认选最后一个月
+    endSel.value = ALL_MONTHS[ALL_MONTHS.length - 1];
+
+    // P1: 渲染快捷切换按钮
+    renderRangeBtns();
+
+    // 默认显示近6个月
+    setRange('6');
+
+    endSel.addEventListener('change', () => {
+        // 手动选截止月份时，退出快捷模式
+        clearActiveRangeBtn();
+        applyMonthSelection();
+    });
+}
+
+// P1: 快捷切换按钮
+let activeRange = '6';
+function renderRangeBtns() {
+    const container = document.getElementById('range-btns');
+    if (!container) return;
+    const totalMonths = ALL_MONTHS.length;
+    container.innerHTML = `
+        <button class="range-btn" data-range="3" onclick="setRange('3')">${T('range.3m')}</button>
+        <button class="range-btn" data-range="6" onclick="setRange('6')">${T('range.6m')}</button>
+        <button class="range-btn" data-range="all" onclick="setRange('all')">${T('range.custom')}</button>
+    `;
+}
+
+function setRange(range) {
+    activeRange = range;
+    const endSel = document.getElementById('month-end');
+    endSel.value = ALL_MONTHS[ALL_MONTHS.length - 1]; // 快捷模式始终以最新月为截止
+
+    let startIdx;
+    if (range === '3') {
+        startIdx = Math.max(0, ALL_MONTHS.length - 3);
+    } else if (range === '6') {
+        startIdx = Math.max(0, ALL_MONTHS.length - 6);
+    } else {
+        startIdx = 0;
+    }
+    MONTHS = ALL_MONTHS.slice(startIdx);
+
+    // 更新按钮状态
+    document.querySelectorAll('.range-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.range === range);
+    });
+
+    const hint = T('range.hint', MONTH_LABELS[MONTHS[0]], MONTH_LABELS[MONTHS[MONTHS.length-1]], MONTHS.length);
+    document.getElementById('month-range-hint').textContent = hint;
+    // 重新渲染当前 tab
+    const activeTab = document.querySelector('.tab.active');
+    if (activeTab) switchTab(activeTab.dataset.region);
+}
+
+function clearActiveRangeBtn() {
+    activeRange = null;
+    document.querySelectorAll('.range-btn').forEach(btn => btn.classList.remove('active'));
+}
+
+function applyMonthSelection() {
+    const endSel = document.getElementById('month-end');
+    const endIdx = ALL_MONTHS.indexOf(endSel.value);
+    const startIdx = Math.max(0, endIdx - 2); // 往前推 2 个月，固定 3 个月窗口
+    MONTHS = ALL_MONTHS.slice(startIdx, endIdx + 1);
+    const hint = T('range.hint', MONTH_LABELS[MONTHS[0]], MONTH_LABELS[MONTHS[MONTHS.length-1]], MONTHS.length);
+    document.getElementById('month-range-hint').textContent = hint;
+    // 重新渲染当前 tab
+    const activeTab = document.querySelector('.tab.active');
+    if (activeTab) switchTab(activeTab.dataset.region);
+}
+
+function renderTabs() {
+    const tabs = document.getElementById('region-tabs');
+    // 总金额（仅选中月份范围内）
+    const grandTotal = Object.values(DATA.regions_data).flat().filter(row => MONTHS.includes(row.month)).reduce((s, row) => s + row.total_amount, 0);
+    let html = `<div class="tab" data-region="__insights__" onclick="switchTab('__insights__')">
+         ${T('tab.insights')}<br><span class="tab-amount">${T('tab.insights.sub')}</span>
+    </div>`;
+    html += `<div class="tab" data-region="__summary__" onclick="switchTab('__summary__')">
+         ${T('tab.summary')}<br><span class="tab-amount">${T('tab.summary.sub', '¥' + Math.round(grandTotal).toLocaleString())}</span>
+    </div>`;
+    html += DATA.region_mapping.map(r => {
+        const rows = (DATA.regions_data[r.region_id] || []).filter(row => MONTHS.includes(row.month));
+        const total = rows.reduce((s, row) => s + row.total_amount, 0);
+        const cur = getCurrency(r.region_id);
+        return `<div class="tab" data-region="${r.region_id}" onclick="switchTab('${r.region_id}')">
+            ${r.label}<br><span class="tab-amount">${cur}${Math.round(total).toLocaleString()}</span>
+        </div>`;
+    }).join('');
+    tabs.innerHTML = html;
+}
+
+function switchTab(regionId) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.region === regionId));
+    if (regionId === '__insights__') {
+        renderInsightsPanel();
+    } else if (regionId === '__summary__') {
+        renderSummaryPanel();
+    } else {
+        renderPanel(regionId);
+    }
+}
+
+function renderInsightsPanel() {
+    const container = document.getElementById('panels-container');
+    const allRows = Object.values(DATA.regions_data).flat().filter(r => MONTHS.includes(r.month));
+    const grandTotal = allRows.reduce((s, r) => s + r.total_amount, 0);
+    const monthTotals = {};
+    MONTHS.forEach(m => { monthTotals[m] = allRows.filter(r => r.month === m).reduce((s, r) => s + r.total_amount, 0); });
+    const lastMonth = MONTHS[MONTHS.length - 1];
+    const prevMonth = MONTHS.length >= 2 ? MONTHS[MONTHS.length - 2] : null;
+    const lastMonthTotal = monthTotals[lastMonth] || 0;
+    const prevMonthTotal = prevMonth ? (monthTotals[prevMonth] || 0) : 0;
+    const momPct = prevMonthTotal > 0 ? ((lastMonthTotal - prevMonthTotal) / prevMonthTotal * 100) : 0;
+
+    // 各地域统计
+    const regionStats = DATA.region_mapping.map(r => {
+        const rows = (DATA.regions_data[r.region_id] || []).filter(row => MONTHS.includes(row.month));
+        const lastCost = rows.filter(row => row.month === lastMonth).reduce((s, row) => s + row.total_amount, 0);
+        const prevCost = prevMonth ? rows.filter(row => row.month === prevMonth).reduce((s, row) => s + row.total_amount, 0) : 0;
+        const rMomPct = prevCost > 0 ? ((lastCost - prevCost) / prevCost * 100) : 0;
+        return { ...r, lastCost, prevCost, momPct: rMomPct, rows };
+    });
+
+    // 各地域 Top 资源变化
+    const regionTopChanges = {};
+    DATA.region_mapping.forEach(r => {
+        const rows = (DATA.regions_data[r.region_id] || []).filter(row => MONTHS.includes(row.month));
+        const resourceMap = {};
+        rows.forEach(row => {
+            const key = (row.workspace_name || '-') + '/' + row.resource_name;
+            if (!resourceMap[key]) resourceMap[key] = { name: row.resource_name, workspace: row.workspace_name, sku: row.sku_name, cat: row.sku_category, lastAmt: 0, prevAmt: 0 };
+            if (row.month === lastMonth) resourceMap[key].lastAmt += row.total_amount;
+            if (row.month === prevMonth) resourceMap[key].prevAmt += row.total_amount;
+        });
+        const changes = Object.values(resourceMap).map(res => {
+            const diff = res.lastAmt - res.prevAmt;
+            const pct = res.prevAmt > 0 ? (diff / res.prevAmt * 100) : (res.lastAmt > 0 ? 100 : 0);
+            return { ...res, diff, pct };
+        }).filter(res => res.lastAmt > 0 || res.prevAmt > 0);
+        changes.sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff));
+        regionTopChanges[r.region_id] = changes.slice(0, 5);
+    });
+
+    // === 生成智能分析 ===
+    const insightItems = [];
+    if (MONTHS.length >= 2) {
+        if (Math.abs(momPct) > 5) {
+            insightItems.push(T('insight.globalMom', MONTH_LABELS[lastMonth], `¥${Math.round(lastMonthTotal).toLocaleString()}`, momPct > 0 ? T('grow') : T('drop'), Math.abs(momPct).toFixed(0), momPct > 0 ? '+' : '', `¥${Math.round(lastMonthTotal - prevMonthTotal).toLocaleString()}`));
+        } else {
+            insightItems.push(T('insight.globalFlat', MONTH_LABELS[lastMonth], `¥${Math.round(lastMonthTotal).toLocaleString()}`));
+        }
+    }
+    const sortedByGrowth = [...regionStats].sort((a, b) => b.momPct - a.momPct);
+    if (sortedByGrowth[0] && sortedByGrowth[0].momPct > 20 && sortedByGrowth[0].lastCost > 50) {
+        const fg = sortedByGrowth[0];
+        insightItems.push(T('insight.regionUp', fg.label, fg.momPct.toFixed(0), `¥${Math.round(fg.prevCost).toLocaleString()}`, `¥${Math.round(fg.lastCost).toLocaleString()}`, lastMonthTotal > 0 ? (fg.lastCost / lastMonthTotal * 100).toFixed(0) : 0, MONTH_LABELS[lastMonth]));
+    }
+    const fd = sortedByGrowth[sortedByGrowth.length - 1];
+    if (fd && fd.momPct < -20 && fd.prevCost > 50) {
+        insightItems.push(T('insight.regionDown', fd.label, Math.abs(fd.momPct).toFixed(0), `¥${Math.round(fd.prevCost).toLocaleString()}`, `¥${Math.round(fd.lastCost).toLocaleString()}`));
+    }
+    DATA.region_mapping.forEach(r => {
+        const topChanges = regionTopChanges[r.region_id] || [];
+        const bigChange = topChanges.find(res => Math.abs(res.pct) > 80 && Math.abs(res.diff) > 100);
+        if (bigChange) {
+            insightItems.push(T('insight.resChange', r.label, bigChange.name, bigChange.diff > 0 ? T('grow') : T('drop'), Math.abs(bigChange.pct).toFixed(0), `¥${Math.round(bigChange.prevAmt).toLocaleString()}`, `¥${Math.round(bigChange.lastAmt).toLocaleString()}`));
+        }
+    });
+    DATA.region_mapping.forEach(r => {
+        (regionTopChanges[r.region_id] || []).filter(res => res.prevAmt === 0 && res.lastAmt > 100).forEach(res => {
+            insightItems.push(T('insight.resNew', r.label, res.name, MONTH_LABELS[lastMonth], `¥${Math.round(res.lastAmt).toLocaleString()}`));
+        });
+    });
+
+    // === 生成降本建议 ===
+    const actionItems = [];
+    if (prevMonthTotal > 0 && momPct > 30) {
+        actionItems.push(T('action.totalUp', MONTH_LABELS[lastMonth], momPct.toFixed(0), `¥${Math.round(prevMonthTotal).toLocaleString()}`, `¥${Math.round(lastMonthTotal).toLocaleString()}`));
+    }
+    const sortedByCost = [...regionStats].sort((a, b) => b.lastCost - a.lastCost);
+    if (sortedByCost.length > 1 && lastMonthTotal > 0 && sortedByCost[0].lastCost / lastMonthTotal > 0.6) {
+        actionItems.push(T('action.concentration', sortedByCost[0].label, (sortedByCost[0].lastCost / lastMonthTotal * 100).toFixed(0), MONTH_LABELS[lastMonth]));
+    }
+    DATA.region_mapping.forEach(r => {
+        (regionTopChanges[r.region_id] || []).filter(res => res.pct > 100 && res.diff > 200).forEach(res => {
+            actionItems.push(T('action.clusterUp', res.name, r.label, res.pct.toFixed(0), `¥${Math.round(res.diff).toLocaleString()}`));
+        });
+    });
+    regionStats.forEach(r => {
+        if (r.momPct < -40 && r.lastCost > 100) {
+            actionItems.push(T('action.regionDown', r.label, Math.abs(r.momPct).toFixed(0)));
+        }
+    });
+    DATA.region_mapping.forEach(r => {
+        (regionTopChanges[r.region_id] || []).filter(res => res.prevAmt === 0 && res.lastAmt > 500).forEach(res => {
+            actionItems.push(T('action.resNew', res.name, r.label, MONTH_LABELS[lastMonth], `¥${Math.round(res.lastAmt).toLocaleString()}`));
+        });
+    });
+
+    // === 收集需关注事项 ===
+    let allAlerts = [];
+    DATA.region_mapping.forEach(r => {
+        (regionTopChanges[r.region_id] || []).forEach(res => {
+            let level = null, title = '', detail = '';
+            const meta = { table: 'sys.information_schema.instance_usage', workspace: res.workspace, resource_name: res.name, sku_name: res.sku, sku_category: res.cat };
+            const prevLbl = prevMonth ? MONTH_LABELS[prevMonth] : T('prevMonth');
+            if (res.prevAmt === 0 && res.lastAmt > 200) {
+                level = '关注'; title = T('alert.new.title', res.name);
+                detail = T('alert.new.detail', MONTH_LABELS[lastMonth], `¥${Math.round(res.lastAmt).toLocaleString()}`, prevLbl);
+            } else if (res.pct > 200 && res.diff > 300) {
+                level = '紧急'; title = T('alert.surge.title', res.name, res.pct.toFixed(0));
+                detail = T('alert.detail.change', prevLbl, `¥${Math.round(res.prevAmt).toLocaleString()}`, MONTH_LABELS[lastMonth], `¥${Math.round(res.lastAmt).toLocaleString()}`, `¥${Math.round(res.diff).toLocaleString()}`);
+            } else if (res.pct > 80 && res.diff > 200) {
+                level = '重要'; title = T('alert.surge.title', res.name, res.pct.toFixed(0));
+                detail = T('alert.detail.change', prevLbl, `¥${Math.round(res.prevAmt).toLocaleString()}`, MONTH_LABELS[lastMonth], `¥${Math.round(res.lastAmt).toLocaleString()}`, `¥${Math.round(res.diff).toLocaleString()}`);
+            }
+            if (level) allAlerts.push({ level, title, detail, region: r.label, regionId: r.region_id, meta });
+        });
+    });
+    const levelOrder = { '紧急': 0, '重要': 1, '关注': 2 };
+    const alertMap = new Map();
+    allAlerts.forEach(a => {
+        const key = a.region + '|' + (a.meta.resource_name || a.title);
+        const existing = alertMap.get(key);
+        if (!existing || (levelOrder[a.level] || 9) < (levelOrder[existing.level] || 9)) alertMap.set(key, a);
+    });
+    allAlerts = [...alertMap.values()].sort((a, b) => (levelOrder[a.level] || 9) - (levelOrder[b.level] || 9)).slice(0, 8);
+
+    // === 渲染 HTML ===
+    let html = '';
+    html += `<div style="font-size:12px;color:#64748b;margin-bottom:16px;padding:8px 14px;background:#f8fafc;border-radius:6px;border:1px solid #e2e8f0;">${T('insights.range', MONTH_LABELS[MONTHS[0]], MONTH_LABELS[MONTHS[MONTHS.length-1]], MONTHS.length)}</div>`;
+
+    // 区块1: 智能分析
+    html += `<div style="background:#fff;border-radius:12px;padding:20px 24px;margin-bottom:24px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+        <div style="font-size:15px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px;">
+            ${T('insights.smart')}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+            ${insightItems.length > 0 ? insightItems.map(s => `<div style="padding:10px 14px;background:#edf4ff;border-radius:8px;">
+                <div style="font-size:13px;color:#333;line-height:1.6;">${s}</div>
+            </div>`).join('') : `<div style="padding:10px 14px;background:#f8f9fb;border-radius:8px;font-size:13px;color:#888;">${T('insights.stable')}</div>`}
+        </div>
+    </div>`;
+
+    // 区块2: 降本建议
+    if (actionItems.length > 0) {
+        html += `<div style="background:#fff;border-radius:12px;padding:20px 24px;margin-bottom:24px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+            <div style="font-size:15px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+                ${T('insights.actions')}
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+                ${actionItems.map(s => `<div style="padding:10px 14px;background:#fef9e7;border-radius:8px;">
+                    <div style="font-size:13px;color:#333;line-height:1.6;">${s}</div>
+                </div>`).join('')}
+            </div>
+        </div>`;
+    }
+
+    // 区块3: 需关注确认的事项
+    if (allAlerts.length > 0) {
+        const levelStyles = { '紧急': { bg: '#fff5f5', border: '#e74c3c', badge: 'background:#e74c3c;color:#fff;' }, '重要': { bg: '#fff8f0', border: '#f5a623', badge: 'background:#f5a623;color:#fff;' }, '关注': { bg: '#f0f7ff', border: '#4a90d9', badge: 'background:#4a90d9;color:#fff;' } };
+        html += `<div style="background:#fff;border-radius:12px;padding:20px 24px;margin-bottom:24px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+            <div style="font-size:15px;font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:8px;">${T('insights.alerts', allAlerts.length)}</div>
+            <div style="font-size:12px;color:#888;margin-bottom:12px;">${T('insights.alerts.hint')}</div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+                ${allAlerts.map((a, idx) => {
+                    const s = levelStyles[a.level] || levelStyles['关注'];
+                    const detailId = 'insight-alert-detail-' + idx;
+                    let guidance = '<div style="margin-top:10px;padding:10px 14px;background:#f8f9fb;border-radius:6px;font-size:12px;line-height:1.8;color:#444;">';
+                    guidance += '<div style="font-weight:600;margin-bottom:6px;">' + T('insights.path') + '</div>';
+                    if (a.region) guidance += '<div>• <b>' + T('field.region') + '</b>：' + a.region + '</div>';
+                    if (a.meta && a.meta.workspace) guidance += '<div>• <b>' + T('field.workspace') + '</b>：' + a.meta.workspace + '</div>';
+                    if (a.meta && a.meta.sku_name) guidance += '<div>• <b>' + T('field.skuType') + '</b>：' + a.meta.sku_name + (a.meta.sku_category ? '（' + a.meta.sku_category + '）' : '') + '</div>';
+                    if (a.meta && a.meta.table) guidance += '<div>• <b>' + T('field.source') + '</b>：' + a.meta.table + '</div>';
+                    guidance += '<div style="margin-top:8px;font-weight:600;">' + T('insights.troubleshoot') + '</div>';
+                    if (a.level === '紧急') {
+                        guidance += '<div>' + T('guide.urgent.1') + '</div>';
+                        guidance += '<div>' + T('guide.urgent.2') + '</div>';
+                        guidance += '<div>' + T('guide.urgent.3') + '</div>';
+                    } else if (a.level === '重要') {
+                        guidance += '<div>' + T('guide.important.1') + '</div>';
+                        guidance += '<div>' + T('guide.important.2') + '</div>';
+                        guidance += '<div>' + T('guide.important.3') + '</div>';
+                    } else {
+                        guidance += '<div>' + T('guide.watch.1') + '</div>';
+                        guidance += '<div>' + T('guide.watch.2') + '</div>';
+                    }
+                    guidance += '</div>';
+                    return `<div style="padding:12px 16px;background:${s.bg};border-radius:8px;border-left:4px solid ${s.border};cursor:pointer;" onclick="var el=document.getElementById('${detailId}');el.style.display=el.style.display==='none'?'block':'none';">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                            <span style="font-size:11px;padding:2px 8px;border-radius:10px;${s.badge}">${levelText(a.level)}</span>
+                            <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:#f0f0f0;color:#555;">${a.region}</span>
+                            <span style="font-size:13px;font-weight:600;">${a.title}</span>
+                        </div>
+                        <div style="font-size:12px;color:#555;line-height:1.6;">${a.detail}</div>
+                        <div id="${detailId}" style="display:none;">${guidance}</div>
+                    </div>`;
+                }).join('')}
+            </div>
+        </div>`;
+    }
+
+    container.innerHTML = html;
+}
+
+function renderSummaryPanel() {
+    const container = document.getElementById('panels-container');
+    const insights = DATA.insights;
+    const NOTES = window.__RESOURCE_NOTES__ || {};
+
+    // 计算全局汇总数据
+    const allRows = Object.values(DATA.regions_data).flat().filter(r => MONTHS.includes(r.month));
+    const grandTotal = allRows.reduce((s, r) => s + r.total_amount, 0);
+    const monthTotals = {};
+    MONTHS.forEach(m => { monthTotals[m] = allRows.filter(r => r.month === m).reduce((s, r) => s + r.total_amount, 0); });
+    const totalChange = monthTotals[MONTHS[0]] > 0 ? ((monthTotals[MONTHS[MONTHS.length - 1]] - monthTotals[MONTHS[0]]) / monthTotals[MONTHS[0]] * 100) : 0;
+
+    // 各地域月度汇总
+    const regionMonthly = {};
+    DATA.region_mapping.forEach(r => {
+        regionMonthly[r.region_id] = {};
+        MONTHS.forEach(m => {
+            regionMonthly[r.region_id][m] = (DATA.regions_data[r.region_id] || []).filter(row => row.month === m).reduce((s, row) => s + row.total_amount, 0);
+        });
+    });
+
+    let html = '';
+
+    // ===== 未采集地域提示（权限不足/采集失败被跳过）=====
+    const skipped = DATA.skipped_regions || [];
+    if (skipped.length > 0) {
+        html += `<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:14px 18px;margin-bottom:20px;">`;
+        html += `<div style="font-size:13px;font-weight:600;color:#b45309;margin-bottom:6px;">${T('skipped.title', skipped.length)}</div>`;
+        html += `<ul style="list-style:none;padding:0;margin:0;font-size:12px;color:#92400e;line-height:1.9;">`;
+        skipped.forEach(s => { html += `<li>• <b>${s.label || s.region_id}</b>：${s.reason || T('skipped.unknown')}</li>`; });
+        html += `</ul></div>`;
+    }
+
+    // ===== 费用概览卡片 + 趋势图（最顶部）=====
+    const lastMonthTotal = monthTotals[MONTHS[MONTHS.length - 1]];
+    const prevMonthTotal = MONTHS.length > 1 ? monthTotals[MONTHS[MONTHS.length - 2]] : 0;
+    const momChangePct = prevMonthTotal > 0 ? ((lastMonthTotal - prevMonthTotal) / prevMonthTotal * 100) : 0;
+
+    html += `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;">
+        <div style="background:linear-gradient(135deg,#ebf5ff 0%,#fff 100%);border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(52,152,219,0.08);border:1px solid #d6eaff;position:relative;overflow:hidden;">
+            <div style="position:absolute;top:-15px;right:-15px;width:60px;height:60px;background:rgba(52,152,219,0.06);border-radius:50%;"></div>
+            <div style="font-size:11px;color:#5b9bd5;font-weight:600;letter-spacing:0.5px;margin-bottom:8px;">${T('card.lastCostTotal', MONTH_LABELS[MONTHS[MONTHS.length-1]])}</div>
+            <div style="font-size:26px;font-weight:800;color:#1a365d;letter-spacing:-0.5px;">¥${Math.round(lastMonthTotal).toLocaleString()}</div>
+            <div style="font-size:11px;color:#7f9cbd;margin-top:6px;">${MONTH_LABELS[MONTHS[MONTHS.length-1]]}</div>
+        </div>
+        <div style="background:linear-gradient(135deg,${momChangePct > 0 ? '#fff5f5' : momChangePct < 0 ? '#f0fff4' : '#f8f9fb'} 0%,#fff 100%);border-radius:12px;padding:20px;box-shadow:0 2px 8px ${momChangePct > 0 ? 'rgba(231,76,60,0.08)' : 'rgba(39,174,96,0.08)'};border:1px solid ${momChangePct > 0 ? '#fecaca' : momChangePct < 0 ? '#bbf7d0' : '#e2e8f0'};position:relative;overflow:hidden;">
+            <div style="position:absolute;top:-15px;right:-15px;width:60px;height:60px;background:${momChangePct > 0 ? 'rgba(231,76,60,0.05)' : 'rgba(39,174,96,0.05)'};border-radius:50%;"></div>
+            <div style="font-size:11px;color:${momChangePct > 0 ? '#c0392b' : momChangePct < 0 ? '#27ae60' : '#718096'};font-weight:600;letter-spacing:0.5px;margin-bottom:8px;">${momChangePct > 0 ? '📈' : momChangePct < 0 ? '📉' : '➡️'} ${T('card.totalChangeText')}</div>
+            <div style="font-size:26px;font-weight:800;color:${momChangePct > 0 ? '#e74c3c' : momChangePct < 0 ? '#27ae60' : '#2c3e50'};letter-spacing:-0.5px;">${momChangePct >= 0 ? '+' : ''}${momChangePct.toFixed(0)}%</div>
+            <div style="font-size:11px;color:#7f8c8d;margin-top:6px;">${T('card.vsPrev', MONTHS.length > 1 ? MONTH_LABELS[MONTHS[MONTHS.length-2]] : '-')}</div>
+        </div>
+        <div style="background:linear-gradient(135deg,#f0fff4 0%,#fff 100%);border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(39,174,96,0.08);border:1px solid #bbf7d0;position:relative;overflow:hidden;">
+            <div style="position:absolute;top:-15px;right:-15px;width:60px;height:60px;background:rgba(39,174,96,0.05);border-radius:50%;"></div>
+            <div style="font-size:11px;color:#059669;font-weight:600;letter-spacing:0.5px;margin-bottom:8px;">${T('card.regionCount')}</div>
+            <div style="font-size:26px;font-weight:800;color:#065f46;letter-spacing:-0.5px;">${DATA.region_mapping.length}</div>
+            <div style="font-size:11px;color:#6b9080;margin-top:6px;">${T('card.vendors', new Set(DATA.region_mapping.map(r => r.region_id.includes('aws') ? 'AWS' : r.region_id.includes('tencent') ? 'Tencent' : 'Alibaba')).size)}</div>
+        </div>
+        <div style="background:linear-gradient(135deg,#fffbeb 0%,#fff 100%);border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(243,156,18,0.08);border:1px solid #fde68a;position:relative;overflow:hidden;">
+            <div style="position:absolute;top:-15px;right:-15px;width:60px;height:60px;background:rgba(243,156,18,0.05);border-radius:50%;"></div>
+            <div style="font-size:11px;color:#b45309;font-weight:600;letter-spacing:0.5px;margin-bottom:8px;">${T('card.fastest')}</div>
+            <div style="font-size:20px;font-weight:800;color:#92400e;">${(() => {
+                let maxPct = -Infinity, maxLabel = '-';
+                DATA.region_mapping.forEach(r => {
+                    const prev = MONTHS.length > 1 ? regionMonthly[r.region_id][MONTHS[MONTHS.length-2]] : 0;
+                    const last = regionMonthly[r.region_id][MONTHS[MONTHS.length-1]];
+                    const pct = prev > 0 ? (last - prev) / prev * 100 : 0;
+                    if (pct > maxPct) { maxPct = pct; maxLabel = r.label; }
+                });
+                return maxLabel;
+            })()}</div>
+            <div style="font-size:12px;color:#e74c3c;font-weight:600;margin-top:6px;">↑ ${(() => {
+                let maxPct = -Infinity;
+                DATA.region_mapping.forEach(r => {
+                    const prev = MONTHS.length > 1 ? regionMonthly[r.region_id][MONTHS[MONTHS.length-2]] : 0;
+                    const last = regionMonthly[r.region_id][MONTHS[MONTHS.length-1]];
+                    const pct = prev > 0 ? (last - prev) / prev * 100 : 0;
+                    if (pct > maxPct) { maxPct = pct; }
+                });
+                return maxPct.toFixed(0);
+            })()}%</div>
+        </div>
+    </div>`;
+
+    // ===== 各地域月度费用趋势图 =====
+    html += `<div class="section"><div class="section-title">${T('chart.regionTrend')}</div><div class="chart" id="chart-summary-trend"></div></div>`;
+
+    // ===== 🔥 运营核心结论（置顶） =====
+    html += `<div class="section" style="border:2px solid #3b82f6;background:linear-gradient(135deg,#f0f7ff 0%,#fff 100%);">`;
+    html += `<div class="section-title" style="font-size:16px;color:#1e40af;margin-bottom:16px;">${T('summary.concl')}</div>`;
+
+    // 逐地域生成结论卡片（从 insights.region_analysis 动态读取）
+    const VERDICT_COLORS = {
+        none: { color: '#059669', bg: '#d1fae5' },
+        low: { color: '#059669', bg: '#d1fae5' },
+        medium: { color: '#d97706', bg: '#fef3c7' },
+        high: { color: '#dc2626', bg: '#fee2e2' }
+    };
+
+    const regionAnalysis = DATA.region_mapping.map(r => {
+        const regionInsight = (insights[r.region_id] || {}).region_analysis;
+        const regionRows = (DATA.regions_data[r.region_id] || []).filter(row => MONTHS.includes(row.month));
+        const firstTotal = regionRows.filter(row => row.month === MONTHS[0]).reduce((s, row) => s + row.total_amount, 0);
+        const lastTotal = regionRows.filter(row => row.month === MONTHS[MONTHS.length-1]).reduce((s, row) => s + row.total_amount, 0);
+        const pct = firstTotal > 0 ? ((lastTotal - firstTotal) / firstTotal * 100) : 0;
+        const level = Math.abs(pct) > 100 ? 'high' : Math.abs(pct) > 50 ? 'medium' : Math.abs(pct) > 20 ? 'low' : 'none';
+
+        // 从原始数据动态生成 details（按选中范围计算）
+        const insightDetails = (regionInsight && regionInsight.details) ? regionInsight.details : [];
+        const resMap = {};
+        regionRows.forEach(row => {
+            const key = (row.workspace_name || '') + '/' + row.resource_name;
+            if (!resMap[key]) resMap[key] = { item: key, resource: row.resource_name, firstAmt: 0, lastAmt: 0 };
+            if (row.month === MONTHS[0]) resMap[key].firstAmt += row.total_amount;
+            if (row.month === MONTHS[MONTHS.length-1]) resMap[key].lastAmt += row.total_amount;
+        });
+        // 按 sku_name 归类的通用用途兜底（键为 sku_name 匹配键，绝不翻译；值为 i18n key，显示时按语言映射）
+        const USAGE_FALLBACK = {
+            'GP类型计算集群': 'usage.gp',
+            'AP类型计算集群': 'usage.ap',
+            '离线同步': 'usage.bulk',
+            '实时同步': 'usage.stream',
+            '任务调度': 'usage.task',
+            '托管存储容量': 'usage.storage',
+            'Internet网络流量': 'usage.net',
+        };
+        let details = Object.values(resMap).map(res => {
+            const diff = res.lastAmt - res.firstAmt;
+            const resPct = res.firstAmt > 0 ? (diff / res.firstAmt * 100) : (res.lastAmt > 0 ? 100 : 0);
+            const match = insightDetails.find(d => d.item === res.item);
+            // usage：优先用 insight 的双语 usage，回退 SKU 类型推断的 i18n 文案
+            const usage = (match && (match.usage || match.usage_en)) ? pickLang(match, 'usage') : (USAGE_FALLBACK[res.resource] ? T(USAGE_FALLBACK[res.resource]) : '');
+            return { ...res, diff, pct: resPct, usage };
+        }).filter(res => Math.abs(res.diff) > 10)
+          .sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff))
+          .slice(0, 3)
+          .map(res => ({
+            item: res.item, usage: res.usage,
+            change: `¥${Math.round(res.firstAmt).toLocaleString()} → ¥${Math.round(res.lastAmt).toLocaleString()}（${res.pct >= 0 ? '+' : ''}${res.pct.toFixed(0)}%）`,
+            reasonKey: res.firstAmt === 0 && res.lastAmt > 0 ? 'reason.new' : res.lastAmt === 0 && res.firstAmt > 0 ? 'reason.stopped' : res.pct > 100 ? 'reason.surge' : res.pct > 30 ? 'reason.growth' : res.pct < -30 ? 'reason.down' : 'reason.flat'
+          }));
+
+        const verdictKey = pct > 50 ? 'verdict.fast' : pct > 20 ? 'verdict.mild' : pct < -20 ? 'verdict.drop' : 'verdict.stable';
+        const topDriver = details.length > 0 ? details[0] : null;
+        const rangeLabel = `${MONTH_LABELS[MONTHS[0]]}~${MONTH_LABELS[MONTHS[MONTHS.length-1]]}`;
+        const pctStr = `${pct >= 0 ? '+' : ''}${pct.toFixed(0)}%`;
+        const mainReason = topDriver
+            ? T('summary.mainReasonDriver', rangeLabel, pctStr, topDriver.item.split('/').pop(), topDriver.reasonKey === 'reason.new' ? T('drv.new') : pct > 0 ? T('drv.up') : T('drv.down'))
+            : T('summary.mainReasonPlain', rangeLabel, pctStr);
+        const sep = window.__LANG__ === 'en' ? ', ' : '、';
+        const newItems = details.filter(d => d.reasonKey === 'reason.new').map(d => d.item.split('/').pop()).join(sep) || T('none');
+
+        const vc = VERDICT_COLORS[level];
+        return {
+            id: r.region_id, label: r.label,
+            verdictKey: verdictKey, verdictColor: vc.color, verdictBg: vc.bg,
+            mainReason: mainReason, details: details, newItems: newItems,
+            riskLevel: level
+        };
+    });
+
+    regionAnalysis.forEach(ra => {
+        const regionData = DATA.regions_data[ra.id] || [];
+        const feb = regionData.filter(r => r.month === MONTHS[0]).reduce((s, r) => s + r.total_amount, 0);
+        const apr = regionData.filter(r => r.month === MONTHS[MONTHS.length - 1]).reduce((s, r) => s + r.total_amount, 0);
+        const pct = feb > 0 ? ((apr - feb) / feb * 100) : 0;
+
+        html += `<div style="background:#fff;border-radius:10px;padding:18px 22px;margin-bottom:16px;border:1px solid ${ra.riskLevel === 'high' ? '#fca5a5' : ra.riskLevel === 'medium' ? '#fcd34d' : '#e2e8f0'};${ra.riskLevel === 'high' ? 'box-shadow:0 0 0 1px #fca5a5;' : ''}cursor:pointer;transition:box-shadow 0.2s,transform 0.2s;" onclick="switchTab('${ra.id}')" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';this.style.transform='translateY(-1px)'" onmouseout="this.style.boxShadow='${ra.riskLevel === 'high' ? '0 0 0 1px #fca5a5' : 'none'}';this.style.transform='none'">`;
+
+        // 标题行
+        html += `<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <span style="font-size:15px;font-weight:700;">${ra.label}</span>
+            <span style="font-size:12px;color:#64748b;">${MONTH_LABELS[MONTHS[0]]} ${formatAmount(feb, ra.id)} → ${MONTH_LABELS[MONTHS[MONTHS.length-1]]} ${formatAmount(apr, ra.id)}（${pct >= 0 ? '+' : ''}${pct.toFixed(0)}%）</span>
+            <span style="font-size:11px;padding:3px 10px;border-radius:4px;background:${ra.verdictBg};color:${ra.verdictColor};font-weight:600;margin-left:auto;">${verdictText(ra.verdictKey)}</span>
+        </div>`;
+
+        // 增长主因
+        html += `<div style="font-size:13px;color:#334155;margin-bottom:10px;padding:8px 12px;background:#f8fafc;border-radius:6px;"><b>${T('summary.driver')}</b>${ra.mainReason}</div>`;
+
+        // 明细表
+        html += `<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -4px;padding:0 4px;">`;
+        html += `<table style="margin:0;font-size:12px;min-width:700px;table-layout:fixed;width:100%;"><thead><tr><th style="width:180px;position:sticky;left:0;background:#f8f9fb;z-index:1;">${T('th.wsSku')}</th><th style="width:140px;position:sticky;left:180px;background:#f8f9fb;z-index:1;">${T('th.usage')}</th><th style="width:160px;position:sticky;left:320px;background:#f8f9fb;z-index:1;">${T('th.change')}</th><th style="min-width:220px;">${T('th.reason')}</th></tr></thead><tbody>`;
+        ra.details.forEach(d => {
+            const usage = d.usage || '-';
+            html += `<tr><td style="font-weight:500;position:sticky;left:0;background:#fff;z-index:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${d.item}">${d.item}</td><td style="position:sticky;left:180px;background:#fff;z-index:1;color:#64748b;">${usage}</td><td style="position:sticky;left:320px;background:#fff;z-index:1;"><code style="font-size:11px;background:#f1f5f9;padding:2px 6px;border-radius:3px;white-space:nowrap;">${d.change}</code></td><td style="color:#475569;">${reasonText(d.reasonKey)}</td></tr>`;
+        });
+        html += `</tbody></table></div>`;
+
+        // 新增计费项 + 跳转提示
+        html += `<div style="display:flex;align-items:center;font-size:11px;color:#64748b;margin-top:8px;padding-top:8px;border-top:1px dashed #e2e8f0;">
+            <span><b>${T('summary.newItems')}</b>${ra.newItems}</span>
+            <span style="margin-left:auto;color:#3498db;font-weight:500;">${T('summary.viewDetail')}</span>
+        </div>`;
+
+        html += `</div>`;
+    });
+
+    html += `</div>`;
+
+    // ===== 运营跟进事项已移除（仅保留数据结论）=====
+
+    // (已移除 "各地域费用判断汇总" — 各地域 tab 中已有相同信息)
+
+    container.innerHTML = html;
+
+    // 直接渲染趋势图
+    setTimeout(() => {
+        const el = document.getElementById('chart-summary-trend');
+        if (!el) return;
+        const chart = echarts.init(el);
+        charts['summary-trend'] = chart;
+        window.addEventListener('resize', () => chart.resize());
+
+        const series = DATA.region_mapping.map((r, idx) => {
+            const colors = ['#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c'];
+            return {
+                name: r.label,
+                type: 'bar',
+                stack: 'total',
+                data: MONTHS.map(m => Math.round(regionMonthly[r.region_id][m] || 0)),
+                itemStyle: { color: colors[idx % colors.length] },
+                emphasis: { focus: 'series' }
+            };
+        });
+
+        series.push({
+            name: T('series.total'),
+            type: 'line',
+            data: MONTHS.map(m => Math.round(monthTotals[m])),
+            itemStyle: { color: '#2c3e50' },
+            lineStyle: { width: 2, type: 'dashed' },
+            symbol: 'diamond',
+            symbolSize: 8,
+            z: 10
+        });
+
+        chart.setOption({
+            tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+            legend: { top: 0 },
+            grid: { left: 60, right: 30, bottom: 30, top: 50 },
+            xAxis: { type: 'category', data: MONTHS.map(m => MONTH_LABELS[m]) },
+            yAxis: { type: 'value', name: axisMoney('¥') },
+            series: series,
+        });
+    }, 50);
+}
+
+function renderPanel(regionId) {
+    const container = document.getElementById('panels-container');
+    const region = DATA.region_mapping.find(r => r.region_id === regionId);
+    const rows = (DATA.regions_data[regionId] || []).filter(r => MONTHS.includes(r.month));
+    const insights = DATA.insights[regionId] || {};
+    const NOTES = window.__RESOURCE_NOTES__ || {};
+    const currency = getCurrency(regionId);
+
+    // 按 category + month 汇总（动态发现品类）
+    const catMonthly = {};
+    CAT_ORDER.forEach(c => { catMonthly[c] = {}; MONTHS.forEach(m => { catMonthly[c][m] = 0; }); });
+    rows.forEach(row => {
+        const cat = (row.sku_category || 'other').toLowerCase();
+        if (!catMonthly[cat]) { catMonthly[cat] = {}; MONTHS.forEach(m => { catMonthly[cat][m] = 0; }); }
+        catMonthly[cat][row.month] = (catMonthly[cat][row.month] || 0) + row.total_amount;
+    });
+
+    // 获取当前地域实际有数据的品类顺序
+    const regionCatOrder = CAT_ORDER.filter(c => catMonthly[c] && MONTHS.some(m => catMonthly[c][m] > 0));
+    // 补充数据中有但 CAT_ORDER 里没有的品类
+    Object.keys(catMonthly).forEach(c => {
+        if (!regionCatOrder.includes(c) && MONTHS.some(m => catMonthly[c][m] > 0)) {
+            regionCatOrder.push(c);
+        }
+    });
+
+    // 总费用
+    const totals = MONTHS.map(m => rows.filter(r => r.month === m).reduce((s, r) => s + r.total_amount, 0));
+    const totalFirst = totals[0], totalLast = totals[totals.length - 1];
+    const totalChangePct = totalFirst > 0 ? ((totalLast - totalFirst) / totalFirst * 100) : 0;
+    const totalDiff = totalLast - totalFirst;
+
+    // 找出增长贡献最大的 category
+    let maxGrowthCat = null, maxGrowthAmt = 0;
+    regionCatOrder.forEach(cat => {
+        const diff = (catMonthly[cat][MONTHS[MONTHS.length - 1]] || 0) - (catMonthly[cat][MONTHS[0]] || 0);
+        if (diff > maxGrowthAmt) { maxGrowthAmt = diff; maxGrowthCat = cat; }
+    });
+
+    let html = '';
+
+    // ===== 详细费用摘要（智能化生成） =====
+    const firstLabel = MONTH_LABELS[MONTHS[0]];
+    const lastLabel = MONTH_LABELS[MONTHS[MONTHS.length - 1]];
+    const lastMonth = MONTHS[MONTHS.length - 1];
+    const prevMonth = MONTHS.length > 1 ? MONTHS[MONTHS.length - 2] : null;
+    const prevLabel = prevMonth ? MONTH_LABELS[prevMonth] : '';
+    const momChange = prevMonth && totals[totals.length - 2] > 0 ? ((totalLast - totals[totals.length - 2]) / totals[totals.length - 2] * 100) : 0;
+
+    const summaryPoints = [];
+
+    // 1. 费用概况
+    let overviewLine = T('summary.overview', lastLabel, `${currency}${Math.round(totalLast).toLocaleString()}`);
+    if (prevMonth) {
+        if (Math.abs(momChange) > 1) {
+            overviewLine += T('summary.vsGrow', momChange > 0 ? T('grow') : T('drop'), Math.abs(momChange).toFixed(0), prevLabel);
+            if (Math.abs(momChange) > 50) overviewLine += T('summary.significant');
+        } else {
+            overviewLine += T('summary.vsFlat', prevLabel);
+        }
+    }
+    summaryPoints.push(overviewLine);
+
+    // 2. 费用最高的 Workspace
+    const wsMonthly = {};
+    rows.filter(r => r.month === lastMonth).forEach(r => {
+        const ws = r.workspace_name || '-';
+        wsMonthly[ws] = (wsMonthly[ws] || 0) + r.total_amount;
+    });
+    const sortedWs = Object.entries(wsMonthly).sort((a, b) => b[1] - a[1]);
+    if (sortedWs.length > 0 && totalLast > 0) {
+        const topWs = sortedWs[0];
+        const wsPct = (topWs[1] / totalLast * 100).toFixed(0);
+        summaryPoints.push(T('summary.topWs', topWs[0], `${currency}${Math.round(topWs[1]).toLocaleString()}`, wsPct));
+    }
+
+    // 3. 各 category 环比变化中异常的
+    regionCatOrder.forEach(cat => {
+        const cPrev = prevMonth ? (catMonthly[cat][prevMonth] || 0) : 0;
+        const cLast = catMonthly[cat][lastMonth] || 0;
+        const cPct = cPrev > 0 ? ((cLast - cPrev) / cPrev * 100) : 0;
+        if (cPrev > 1 && cPct >= 50 && cLast > 100) {
+            summaryPoints.push(T('summary.catSurge', catName(cat), prevLabel, `${currency}${Math.round(cPrev).toLocaleString()}`, lastLabel, `${currency}${Math.round(cLast).toLocaleString()}`, cPct.toFixed(0)));
+        } else if (cPrev < 1 && cLast > 100) {
+            summaryPoints.push(T('summary.catNew', catName(cat), lastLabel, `${currency}${Math.round(cLast).toLocaleString()}`));
+        }
+    });
+
+    // 4. 从 insights 中提取 follow_ups
+    const regionAnalysisInsight = (insights.region_analysis || {});
+    const followUps = regionAnalysisInsight.follow_ups || [];
+    followUps.slice(0, 2).forEach(fu => {
+        const icon = fu.priority === '紧急' ? '🚨' : '⚠️';
+        const fuQuestion = pickLang(fu, 'question');
+        const fuContext = pickLang(fu, 'context');
+        // 检查是否提到了不在当前时间范围内的月份
+        const text = (fuQuestion || '') + (fuContext || '');
+        const mentionedMonths = text.match(/\d{4}-\d{2}/g) || [];
+        const monthNums = text.match(/(\d{1,2})月/g) || [];
+        let outOfRange = false;
+        if (mentionedMonths.length > 0) {
+            outOfRange = mentionedMonths.some(m => !MONTHS.includes(m));
+        } else if (monthNums.length > 0) {
+            const lastYear = MONTHS[MONTHS.length - 1].split('-')[0];
+            outOfRange = monthNums.some(mn => {
+                const num = parseInt(mn);
+                const fullMonth = `${lastYear}-${String(num).padStart(2, '0')}`;
+                return !MONTHS.includes(fullMonth);
+            });
+        }
+        if (outOfRange) return;
+        const keywords = (fuQuestion || '').match(/[A-Z_]{3,}/g) || [];
+        const alreadyMentioned = summaryPoints.some(p => keywords.some(kw => p.includes(kw)));
+        if (!alreadyMentioned && fuQuestion) {
+            summaryPoints.push(`${icon} ${fuQuestion}${fuContext ? '（' + fuContext + '）' : ''}`);
+        }
+    });
+
+    // 5. 从 insights.details 中提取异常条目
+    const raDetails = regionAnalysisInsight.details || [];
+    raDetails.filter(d => !d.expected || d.expected === '需确认').slice(0, 2).forEach(d => {
+        const dChange = pickLang(d, 'change') || (d.change || '');
+        const dReason = pickLang(d, 'reason') || (d.reason || '');
+        // 检查 change 字段中提到的月份是否在范围内
+        const changeText = dChange + dReason;
+        const mentionedMonths2 = changeText.match(/\d{4}-\d{2}/g) || [];
+        const monthNums2 = changeText.match(/(\d{1,2})月/g) || [];
+        let outOfRange2 = false;
+        if (mentionedMonths2.length > 0) {
+            outOfRange2 = mentionedMonths2.some(m => !MONTHS.includes(m));
+        } else if (monthNums2.length > 0) {
+            const lastYear2 = MONTHS[MONTHS.length - 1].split('-')[0];
+            outOfRange2 = monthNums2.some(mn => {
+                const num = parseInt(mn);
+                const fullMonth = `${lastYear2}-${String(num).padStart(2, '0')}`;
+                return !MONTHS.includes(fullMonth);
+            });
+        }
+        if (outOfRange2) return;
+        const itemName = d.item ? d.item.split('/').pop() : '';
+        const alreadyMentioned = summaryPoints.some(p => itemName && p.includes(itemName));
+        if (!alreadyMentioned) {
+            summaryPoints.push(`🚨 ${d.item}：${dChange}，${dReason}`);
+        }
+    });
+
+    // 6. Workspace 集中度建议
+    if (sortedWs.length > 1 && totalLast > 0) {
+        const topWsPct = sortedWs[0][1] / totalLast * 100;
+        if (topWsPct > 75) {
+            summaryPoints.push(T('summary.concentration', sortedWs[0][0], topWsPct.toFixed(0)));
+        }
+    }
+
+    // 7. 从 insights.conclusion 中提取建议类句子（按当前语言取双语文本 + 关键词）
+    const isEn = window.__LANG__ === 'en';
+    regionCatOrder.forEach(cat => {
+        const catInsight = insights[cat];
+        const conclText = pickLang(catInsight, 'conclusion');
+        if (!conclText) return;
+        const sentences = conclText.split(isEn ? /[.;]/ : /[。；]/);
+        sentences.forEach(s => {
+            const trimmed = s.trim();
+            const isAdvice = isEn
+                ? /recommend|suggest|confirm|watch|should|advis/i.test(trimmed)
+                : (trimmed.includes('建议') || trimmed.includes('需确认') || trimmed.includes('需关注'));
+            if (isAdvice && trimmed.length > 5) {
+                // 检查是否提到了不在当前时间范围内的月份
+                const mentionedMonths3 = trimmed.match(/\d{4}-\d{2}/g) || [];
+                const monthNums3 = trimmed.match(/(\d{1,2})月/g) || [];
+                let outOfRange3 = false;
+                if (mentionedMonths3.length > 0) {
+                    outOfRange3 = mentionedMonths3.some(m => !MONTHS.includes(m));
+                } else if (monthNums3.length > 0) {
+                    const lastYear3 = MONTHS[MONTHS.length - 1].split('-')[0];
+                    outOfRange3 = monthNums3.some(mn => {
+                        const num = parseInt(mn);
+                        const fullMonth = `${lastYear3}-${String(num).padStart(2, '0')}`;
+                        return !MONTHS.includes(fullMonth);
+                    });
+                }
+                if (outOfRange3) return;
+                const keywords = trimmed.match(/[A-Z_]{3,}/g) || [];
+                const alreadyMentioned = summaryPoints.some(p =>
+                    keywords.some(kw => p.includes(kw)) || p.includes(trimmed.slice(0, 15))
+                );
+                if (!alreadyMentioned) {
+                    summaryPoints.push(`💡 ${trimmed}`);
+                }
+            }
+        });
+    });
+
+    // 渲染摘要区块
+    html += `<div style="background:linear-gradient(135deg,#f0f7ff 0%,#fff 100%);border:1px solid #bfdbfe;border-radius:10px;padding:18px 22px;margin-bottom:20px;">`;
+    html += `<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+        <h2 style="font-size:16px;font-weight:600;margin:0;">${region.label}</h2>
+    </div>`;
+    html += `<div style="font-size:14px;font-weight:600;margin-bottom:8px;">${T('summary.title')}</div>`;
+    html += `<ul style="list-style:none;padding:0;margin:0;font-size:13px;line-height:2;color:#1e293b;">`;
+    summaryPoints.forEach(p => {
+        const isAlert = p.includes('🚨');
+        const isWarning = p.includes('⚠️');
+        const isSuggestion = p.startsWith('💡');
+        const pStyle = isAlert ? 'color:#e74c3c;font-weight:600;' : (isWarning ? 'color:#e74c3c;font-weight:500;' : (isSuggestion ? 'color:#2c3e50;' : ''));
+        html += `<li style="${pStyle}">• ${p}</li>`;
+    });
+    html += `</ul>`;
+    html += `</div>`;
+
+    // ===== 费用概览卡片（地域内）=====
+
+    // 找增长最多 category（绝对金额增量最大）
+    let maxAmtDiff = 0, maxAmtCatName = '-';
+    regionCatOrder.forEach(cat => {
+        const cPrev = prevMonth ? (catMonthly[cat][prevMonth] || 0) : 0;
+        const cLast = catMonthly[cat][lastMonth] || 0;
+        const d = cLast - cPrev;
+        if (d > maxAmtDiff) { maxAmtDiff = d; maxAmtCatName = catName(cat); }
+
+    });
+
+    // 找增长最快 category（百分比最高）
+    let maxCatPct = 0, maxCatName = '-';
+    regionCatOrder.forEach(cat => {
+        const cPrev = prevMonth ? (catMonthly[cat][prevMonth] || 0) : 0;
+        const cLast = catMonthly[cat][lastMonth] || 0;
+        const pct = cPrev > 0 ? (cLast - cPrev) / cPrev * 100 : 0;
+        if (pct > maxCatPct) { maxCatPct = pct; maxCatName = catName(cat); }
+    });
+
+    html += `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;">
+        <div style="background:linear-gradient(135deg,#ebf5ff 0%,#fff 100%);border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(52,152,219,0.08);border:1px solid #d6eaff;position:relative;overflow:hidden;">
+            <div style="position:absolute;top:-15px;right:-15px;width:60px;height:60px;background:rgba(52,152,219,0.06);border-radius:50%;"></div>
+            <div style="font-size:11px;color:#5b9bd5;font-weight:600;letter-spacing:0.5px;margin-bottom:8px;">${T('card.lastCost', lastLabel)}</div>
+            <div style="font-size:26px;font-weight:800;color:#1a365d;letter-spacing:-0.5px;">${currency}${Math.round(totalLast).toLocaleString()}</div>
+            <div style="font-size:11px;color:#7f9cbd;margin-top:6px;">${MONTHS.length > 1 ? T('card.vsFirst', MONTH_LABELS[MONTHS[0]], (totalChangePct >= 0 ? '+' : '') + totalChangePct.toFixed(0) + '%') : lastLabel}</div>
+        </div>
+        <div style="background:linear-gradient(135deg,${momChange > 0 ? '#fff5f5' : momChange < 0 ? '#f0fff4' : '#f8f9fb'} 0%,#fff 100%);border-radius:12px;padding:20px;box-shadow:0 2px 8px ${momChange > 0 ? 'rgba(231,76,60,0.08)' : 'rgba(39,174,96,0.08)'};border:1px solid ${momChange > 0 ? '#fecaca' : momChange < 0 ? '#bbf7d0' : '#e2e8f0'};position:relative;overflow:hidden;">
+            <div style="position:absolute;top:-15px;right:-15px;width:60px;height:60px;background:${momChange > 0 ? 'rgba(231,76,60,0.05)' : 'rgba(39,174,96,0.05)'};border-radius:50%;"></div>
+            <div style="font-size:11px;color:${momChange > 0 ? '#c0392b' : momChange < 0 ? '#27ae60' : '#718096'};font-weight:600;letter-spacing:0.5px;margin-bottom:8px;">${momChange > 0 ? '📈' : momChange < 0 ? '📉' : '➡️'} ${T('card.momChange')}</div>
+            <div style="font-size:26px;font-weight:800;color:${momChange > 0 ? '#e74c3c' : momChange < 0 ? '#27ae60' : '#2c3e50'};letter-spacing:-0.5px;">${momChange >= 0 ? '+' : ''}${momChange.toFixed(0)}%</div>
+            <div style="font-size:11px;color:#7f8c8d;margin-top:6px;">${T('card.vsPrev', prevMonth ? MONTH_LABELS[prevMonth] : '-')}</div>
+        </div>
+        <div style="background:linear-gradient(135deg,#fffbeb 0%,#fff 100%);border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(243,156,18,0.08);border:1px solid #fde68a;position:relative;overflow:hidden;">
+            <div style="position:absolute;top:-15px;right:-15px;width:60px;height:60px;background:rgba(243,156,18,0.05);border-radius:50%;"></div>
+            <div style="font-size:11px;color:#b45309;font-weight:600;letter-spacing:0.5px;margin-bottom:8px;">${T('card.maxChange')}</div>
+            <div style="font-size:20px;font-weight:800;color:#92400e;">${maxAmtCatName}</div>
+            <div style="font-size:12px;color:${maxAmtDiff >= 0 ? '#e74c3c' : '#27ae60'};font-weight:600;margin-top:6px;">${maxAmtDiff >= 0 ? '+' : ''}${currency}${Math.round(maxAmtDiff).toLocaleString()}</div>
+        </div>
+        <div style="background:linear-gradient(135deg,#f5f3ff 0%,#fff 100%);border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(139,92,246,0.08);border:1px solid #ddd6fe;position:relative;overflow:hidden;">
+            <div style="position:absolute;top:-15px;right:-15px;width:60px;height:60px;background:rgba(139,92,246,0.05);border-radius:50%;"></div>
+            <div style="font-size:11px;color:#6d28d9;font-weight:600;letter-spacing:0.5px;margin-bottom:8px;">${T('card.fastestCat')}</div>
+            <div style="font-size:20px;font-weight:800;color:#4c1d95;">${maxCatName}</div>
+            <div style="font-size:12px;color:${maxCatPct >= 0 ? '#e74c3c' : '#27ae60'};font-weight:600;margin-top:6px;">${maxCatPct >= 0 ? '↑' : '↓'} ${Math.abs(maxCatPct).toFixed(0)}%</div>
+        </div>
+    </div>`;
+
+    // ===== 地域内各类别月度费用趋势图 + 费用占比环形图（并排） =====
+    html += `<div class="section">
+        <div style="display:flex;gap:24px;flex-wrap:wrap;">
+            <div style="flex:1.2;min-width:0;">
+                <div class="section-title">${T('chart.catTrend')}</div>
+                <div class="chart" id="chart-region-trend-${regionId}"></div>
+            </div>
+            <div style="flex:0.8;min-width:240px;">
+                <div class="section-title">${T('chart.catPie', MONTH_LABELS[MONTHS[MONTHS.length-1]])}</div>
+                <div class="chart" id="chart-cat-pie-${regionId}"></div>
+            </div>
+        </div>
+    </div>`;
+
+    // ===== 视图切换 Tab：按资源 | 按 Workspace =====
+    html += `<div style="margin-bottom:20px;">
+        <div style="display:flex;gap:0;border-bottom:2px solid #e8ecf0;margin-bottom:0;">
+            <div class="view-tab active" data-view="resource" onclick="switchRegionView('${regionId}','resource',this)" style="padding:10px 20px;cursor:pointer;font-size:13px;font-weight:500;color:#3498db;border-bottom:2px solid #3498db;margin-bottom:-2px;transition:all 0.2s;">${T('view.byResource')}</div>
+            <div class="view-tab" data-view="workspace" onclick="switchRegionView('${regionId}','workspace',this)" style="padding:10px 20px;cursor:pointer;font-size:13px;font-weight:500;color:#7f8c8d;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all 0.2s;">${T('view.byWorkspace')}</div>
+        </div>
+    </div>`;
+
+    // 按资源视图（默认显示）
+    html += `<div id="view-resource-${regionId}">`;
+
+    // ===== 按 category 分 section（新结构：结论 + 归因表） =====
+    regionCatOrder.forEach(cat => {
+        const meta = CAT_META[cat] || { icon: '', name: cat, color: '#95a5a6' };
+        const amounts = MONTHS.map(m => catMonthly[cat][m] || 0);
+        const total = amounts.reduce((a, b) => a + b, 0);
+        if (total < 1) return;
+
+        const catRows2 = rows.filter(r => (r.sku_category || '').toLowerCase() === cat);
+        const details = {};
+        catRows2.forEach(row => {
+            const key = `${row.workspace_name || '-'}|${row.resource_name || '-'}|${row.sku_name}`;
+            if (!details[key]) details[key] = { workspace: row.workspace_name || '-', resource: row.resource_name || '-', sku: row.sku_name, months: {}, cruMonths: {} };
+            details[key].months[row.month] = (details[key].months[row.month] || 0) + row.total_amount;
+            details[key].cruMonths[row.month] = (details[key].cruMonths[row.month] || 0) + row.total_cru;
+        });
+        const detailRows = Object.values(details).sort((a, b) => {
+            return MONTHS.reduce((s, m) => s + (b.months[m] || 0), 0) - MONTHS.reduce((s, m) => s + (a.months[m] || 0), 0);
+        });
+
+        html += renderCategorySectionV2(regionId, cat, catRows2, detailRows, amounts, insights[cat], meta, currency);
+    });
+
+    html += `</div>`; // 关闭 view-resource
+
+    // 按 Workspace 视图（默认隐藏）
+    const wsMonthlyAll = {};
+    rows.forEach(row => {
+        const ws = row.workspace_name || '(未分配)';
+        if (!wsMonthlyAll[ws]) wsMonthlyAll[ws] = { name: ws, months: {}, cruMonths: {}, skus: {} };
+        wsMonthlyAll[ws].months[row.month] = (wsMonthlyAll[ws].months[row.month] || 0) + row.total_amount;
+        wsMonthlyAll[ws].cruMonths[row.month] = (wsMonthlyAll[ws].cruMonths[row.month] || 0) + row.total_cru;
+        const sku = row.sku_name || '-';
+        if (!wsMonthlyAll[ws].skus[sku]) wsMonthlyAll[ws].skus[sku] = {};
+        wsMonthlyAll[ws].skus[sku][row.month] = (wsMonthlyAll[ws].skus[sku][row.month] || 0) + row.total_amount;
+    });
+    const wsRows = Object.values(wsMonthlyAll).sort((a, b) => {
+        const aTotal = MONTHS.reduce((s, m) => s + (a.months[m] || 0), 0);
+        const bTotal = MONTHS.reduce((s, m) => s + (b.months[m] || 0), 0);
+        return bTotal - aTotal;
+    }).slice(0, 15);
+
+    const regionTotalCost = MONTHS.reduce((s, m) => s + (rows.filter(r => r.month === m).reduce((ss, r) => ss + r.total_amount, 0)), 0);
+    const wsPrevLabel = MONTHS.length > 1 ? MONTH_LABELS[MONTHS[MONTHS.length - 2]] : '-';
+
+    html += `<div id="view-workspace-${regionId}" style="display:none;">
+        <div style="background:#fff;border-radius:10px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04);">`;
+
+    // Workspace 总览洞察（Agent 生成）
+    const wsAnalysisData = (insights && insights.workspace_analysis) || null;
+    const wsSep = window.__LANG__ === 'en' ? ', ' : '、';
+    const wsSummaryText = pickLang(wsAnalysisData, 'summary');
+    if (wsAnalysisData && wsSummaryText) {
+        html += `<div class="insight-box" style="margin-bottom:16px;">
+            <strong>${T('ws.overview')}</strong>${wsSummaryText}`;
+        if (wsAnalysisData.new_workspaces && wsAnalysisData.new_workspaces.length > 0) {
+            html += `<br>${T('ws.new', wsAnalysisData.new_workspaces.join(wsSep))}`;
+        }
+        if (wsAnalysisData.inactive_workspaces && wsAnalysisData.inactive_workspaces.length > 0) {
+            html += `<br>${T('ws.inactive', wsAnalysisData.inactive_workspaces.join(wsSep))}`;
+        }
+        html += `</div>`;
+    }
+
+    html += `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+                <div style="font-size:14px;font-weight:600;">${T('ws.top', MONTH_LABELS[MONTHS[0]], MONTH_LABELS[MONTHS[MONTHS.length-1]])}</div>
+                <span style="font-size:11px;color:#94a3b8;">${T('ws.clickHint')}</span>
+            </div>
+            <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+            <table style="margin:0;font-size:12px;border-collapse:separate;border-spacing:0;">
+                <thead><tr>
+                    <th style="min-width:160px;position:sticky;left:0;z-index:2;background:#f8f9fb;">${T('field.workspace')}</th>
+                    <th class="num" style="min-width:80px;position:sticky;left:160px;z-index:2;background:#f8f9fb;border-right:2px solid #e2e8f0;">${T('th.momChange')}</th>`;
+    MONTHS.forEach(m => { html += `<th class="num" style="min-width:80px;">${MONTH_LABELS[m]}</th>`; });
+    html += `<th class="num" style="min-width:80px;">${T('th.total')}</th>
+                    <th class="num" style="min-width:70px;">${T('th.cruLast')}</th>
+                </tr></thead><tbody>`;
+
+    wsRows.forEach((ws, idx) => {
+        const wsTotal = MONTHS.reduce((s, m) => s + (ws.months[m] || 0), 0);
+        const wsLast = ws.months[MONTHS[MONTHS.length - 1]] || 0;
+        const wsPrev = MONTHS.length > 1 ? (ws.months[MONTHS[MONTHS.length - 2]] || 0) : 0;
+        const wsMom = wsPrev > 0 ? ((wsLast - wsPrev) / wsPrev * 100) : (wsLast > 0 ? 100 : 0);
+        const wsDiff = wsLast - wsPrev;
+        const lastCru = ws.cruMonths[MONTHS[MONTHS.length - 1]] || 0;
+
+        // 行高亮（第4项：异常变红）
+        let wsRowHighlight = '';
+        if (wsMom > 200 && wsDiff > 50) wsRowHighlight = 'row-surge-highlight';
+        else if (wsMom < -67 && Math.abs(wsDiff) > 50) wsRowHighlight = 'row-drop-highlight';
+
+        const changeColor = wsDiff > 0 ? '#e74c3c' : (wsDiff < 0 ? '#27ae60' : '#64748b');
+        const expandId = `ws-expand-${regionId}-${idx}`;
+
+        html += `<tr class="expandable-row ${wsRowHighlight}" onclick="toggleWsExpand('${expandId}')" style="cursor:pointer;">
+            <td style="font-weight:500;position:sticky;left:0;z-index:1;background:inherit;">${ws.name}</td>
+            <td class="num" style="position:sticky;left:160px;z-index:1;background:inherit;border-right:2px solid #e2e8f0;color:${changeColor};font-weight:600;">${wsDiff >= 0 ? '+' : ''}${currency}${Math.round(wsDiff).toLocaleString()}<br><span style="font-size:10px;font-weight:400;">(${wsMom >= 0 ? '+' : ''}${wsMom > 999 ? '>999' : wsMom.toFixed(0)}%)</span></td>`;
+        MONTHS.forEach(m => {
+            const amt = Math.round(ws.months[m] || 0);
+            html += `<td class="num">${currency}${amt.toLocaleString()}</td>`;
+        });
+        html += `<td class="num" style="font-weight:600;">${currency}${Math.round(wsTotal).toLocaleString()}</td>`;
+        html += `<td class="num">${lastCru.toFixed(1)}</td>`;
+        html += `</tr>`;
+
+        // 展开行：KPI + 月度趋势图 + SKU 饼图 + 智能分析
+        const colSpan = MONTHS.length + 4;
+        const wsCostPct = regionTotalCost > 0 ? (wsTotal / regionTotalCost * 100).toFixed(0) : 0;
+        const totalCru = MONTHS.reduce((s, m) => s + (ws.cruMonths[m] || 0), 0);
+        const activeDays = MONTHS.filter(m => (ws.months[m] || 0) > 0).length;
+        const skuTotals = Object.entries(ws.skus).map(([sku, months]) => ({
+            sku, total: MONTHS.reduce((s, m) => s + (months[m] || 0), 0)
+        })).sort((a, b) => b.total - a.total);
+        const topSku = skuTotals.length > 0 ? skuTotals[0].sku : '-';
+
+        const wsInsights = [];
+        // 优先使用 Agent 生成的 workspace_analysis conclusions（双语）
+        const agentWsObj = wsAnalysisData && wsAnalysisData.top_workspaces
+            ? wsAnalysisData.top_workspaces.find(w => w.name === ws.name)
+            : null;
+        const agentWsConclusion = agentWsObj ? pickLang(agentWsObj, 'conclusion') : null;
+
+        if (agentWsConclusion) {
+            wsInsights.push({ icon: '🤖', text: agentWsConclusion });
+        } else {
+            // 降级：使用纯算法生成的分析
+            if (wsMom > 50) wsInsights.push({ icon: '🔴', text: T('ws.i.surgeUp', wsMom.toFixed(0)) });
+            else if (wsMom > 20) wsInsights.push({ icon: '🟡', text: T('ws.i.mildUp', wsMom.toFixed(0)) });
+            else if (wsMom < -20) wsInsights.push({ icon: '🟢', text: T('ws.i.down', Math.abs(wsMom).toFixed(0)) });
+            else wsInsights.push({ icon: '✅', text: T('ws.i.flat') });
+        }
+
+        if (skuTotals.length > 0 && wsTotal > 0) {
+            const topSkuPct = (skuTotals[0].total / wsTotal * 100).toFixed(0);
+            if (topSkuPct > 70) wsInsights.push({ icon: '💰', text: T('ws.i.topSku', topSku, topSkuPct) });
+        }
+
+        // workspace 集中度预警（来自 Agent，双语）
+        const concWarn = pickLang(wsAnalysisData, 'concentration_warning');
+        if (idx === 0 && wsAnalysisData && concWarn) {
+            wsInsights.push({ icon: '⚠️', text: concWarn });
+        }
+
+        const chartId = `ws-chart-${regionId}-${idx}`;
+        const pieId = `ws-pie-${regionId}-${idx}`;
+
+        html += `<tr id="${expandId}" style="display:none;"><td colspan="${colSpan}" style="padding:0;background:#fafbfc;border-bottom:2px solid #e8ecf0;">
+            <div style="padding:20px 24px;">
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
+                    <div style="background:#fff;border-radius:8px;padding:12px 16px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+                        <div style="font-size:11px;color:#888;margin-bottom:4px;">${T('ws.kpi.total')}</div>
+                        <div style="font-size:18px;font-weight:700;color:#1a1a2e;">${currency}${Math.round(wsTotal).toLocaleString()}</div>
+                        <div style="font-size:11px;color:#888;margin-top:2px;">${T('ws.kpi.ofRegion', wsCostPct)}</div>
+                    </div>
+                    <div style="background:#fff;border-radius:8px;padding:12px 16px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+                        <div style="font-size:11px;color:#888;margin-bottom:4px;">${T('ws.kpi.cru')}</div>
+                        <div style="font-size:18px;font-weight:700;color:#1a1a2e;">${totalCru.toFixed(1)}</div>
+                        <div style="font-size:11px;color:#888;margin-top:2px;">${T('ws.kpi.activeMonths', activeDays)}</div>
+                    </div>
+                    <div style="background:#fff;border-radius:8px;padding:12px 16px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+                        <div style="font-size:11px;color:#888;margin-bottom:4px;">${T('ws.kpi.mom')}</div>
+                        <div style="font-size:18px;font-weight:700;color:${changeColor};">${wsMom >= 0 ? '+' : ''}${wsMom.toFixed(0)}%</div>
+                        <div style="font-size:11px;color:#888;margin-top:2px;">${prevLabel} → ${lastLabel}</div>
+                    </div>
+                    <div style="background:#fff;border-radius:8px;padding:12px 16px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+                        <div style="font-size:11px;color:#888;margin-bottom:4px;">${T('ws.kpi.mainSku')}</div>
+                        <div style="font-size:13px;font-weight:600;color:#1a1a2e;margin-top:6px;">${topSku}</div>
+                    </div>
+                </div>
+                <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:16px;">
+                    <div style="flex:1.2;min-width:280px;">
+                        <div style="font-size:12px;font-weight:600;margin-bottom:8px;color:#555;">${T('ws.trend')}</div>
+                        <div id="${chartId}" style="width:100%;height:200px;"></div>
+                    </div>
+                    <div style="flex:0.8;min-width:200px;">
+                        <div style="font-size:12px;font-weight:600;margin-bottom:8px;color:#555;">${T('ws.pieBySku')}</div>
+                        <div id="${pieId}" style="width:100%;height:200px;"></div>
+                    </div>
+                </div>
+                <div style="font-size:12px;font-weight:600;margin-bottom:8px;color:#555;">${T('ws.smart')}</div>
+                <div style="display:flex;flex-direction:column;gap:6px;">
+                    ${wsInsights.map(s => '<div style="font-size:12px;padding:6px 10px;background:#fff;border-radius:6px;line-height:1.6;box-shadow:0 1px 2px rgba(0,0,0,0.03);">' + s.icon + ' ' + s.text + '</div>').join('')}
+                </div>
+            </div>
+        </td></tr>`;
+    });
+
+    html += `</tbody></table></div></div></div>`;
+
+    container.innerHTML = html;
+
+    // 渲染地域内费用趋势图
+    setTimeout(() => {
+        const el = document.getElementById(`chart-region-trend-${regionId}`);
+        if (el) {
+            const chart = echarts.init(el);
+            charts[`region-trend-${regionId}`] = chart;
+            window.addEventListener('resize', () => chart.resize());
+
+            const catSeries = regionCatOrder.filter(cat => MONTHS.some(m => catMonthly[cat][m] > 0)).map(cat => ({
+                name: catName(cat),
+                type: 'bar',
+                stack: 'total',
+                data: MONTHS.map(m => Math.round(catMonthly[cat][m] || 0)),
+                itemStyle: { color: (CAT_META[cat] || { color: '#95a5a6' }).color },
+                emphasis: { focus: 'series' }
+            }));
+
+            // 总额折线
+            catSeries.push({
+                name: T('series.total'),
+                type: 'line',
+                data: totals,
+                itemStyle: { color: '#2c3e50' },
+                lineStyle: { width: 2, type: 'dashed' },
+                symbol: 'diamond',
+                symbolSize: 8,
+                z: 10
+            });
+
+            chart.setOption({
+                tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+                legend: { top: 0 },
+                grid: { left: 60, right: 30, bottom: 30, top: 50 },
+                xAxis: { type: 'category', data: MONTHS.map(m => MONTH_LABELS[m]) },
+                yAxis: { type: 'value', name: axisMoney(currency) },
+                series: catSeries,
+            });
+        }
+
+        // P1: 渲染费用占比环形图
+        const pieEl = document.getElementById(`chart-cat-pie-${regionId}`);
+        if (pieEl) {
+            const pieChart = echarts.init(pieEl);
+            charts[`cat-pie-${regionId}`] = pieChart;
+            window.addEventListener('resize', () => pieChart.resize());
+
+            const lastM = MONTHS[MONTHS.length - 1];
+            const pieData = regionCatOrder
+                .map(cat => ({
+                    name: catName(cat),
+                    value: Math.round(catMonthly[cat][lastM] || 0),
+                    itemStyle: { color: (CAT_META[cat] || { color: '#95a5a6' }).color }
+                }))
+                .filter(d => d.value > 0)
+                .sort((a, b) => b.value - a.value);
+
+            pieChart.setOption({
+                tooltip: { trigger: 'item', formatter: '{b}: ' + currency + '{c} ({d}%)' },
+                legend: { orient: 'vertical', right: 20, top: 'center', textStyle: { fontSize: 12 } },
+                series: [{
+                    type: 'pie',
+                    radius: ['40%', '70%'],
+                    center: ['35%', '50%'],
+                    avoidLabelOverlap: false,
+                    padAngle: 2,
+                    itemStyle: { borderRadius: 6, borderColor: '#fff', borderWidth: 2 },
+                    label: { show: true, position: 'outside', formatter: '{b}\n{d}%', fontSize: 11 },
+                    labelLine: { show: true },
+                    data: pieData
+                }]
+            });
+        }
+    }, 50);
+
+    // 渲染计算深度分析图表（在折叠区内，展开时触发）
+    setTimeout(() => { renderComputeCharts(regionId, rows.filter(r => (r.sku_category || '').toLowerCase() === 'compute')); }, 100);
+
+    // 渲染存储图表
+    setTimeout(() => { renderStorageCharts(regionId, insights); }, 150);
+}
+
+// ===== 从 insights.top_items 重建存储归因明细（解决 regions_data 截断问题）=====
+function rebuildStorageDetailFromInsights(insight, months, currency) {
+    if (!insight || !insight.top_items) return [];
+    const topItems = insight.top_items;
+
+    // 合并所有月份的 top_items，按 workspace_name 聚合
+    const wsMap = {}; // workspace_name -> { workspace, resource, sku, months: {m: amount}, cruMonths: {m: cru} }
+    const allMonths = insight.months || months; // insights 有完整月份列表
+
+    allMonths.forEach(m => {
+        const items = topItems[m] || [];
+        items.forEach(item => {
+            const ws = item.workspace_name || '-';
+            const key = `${ws}|${item.resource_name || 'storage'}|${item.sku_name || '托管存储容量'}`;
+            if (!wsMap[key]) {
+                wsMap[key] = {
+                    workspace: ws,
+                    resource: item.resource_name || 'storage',
+                    sku: item.sku_name || '托管存储容量',
+                    months: {},
+                    cruMonths: {}
+                };
+            }
+            wsMap[key].months[m] = (wsMap[key].months[m] || 0) + (item.amount || 0);
+            wsMap[key].cruMonths[m] = (wsMap[key].cruMonths[m] || 0) + (item.cru || 0);
+        });
+    });
+
+    // 转为数组并按总金额排序
+    const rows = Object.values(wsMap).sort((a, b) => {
+        const aTotal = months.reduce((s, m) => s + (a.months[m] || 0), 0);
+        const bTotal = months.reduce((s, m) => s + (b.months[m] || 0), 0);
+        return bTotal - aTotal;
+    });
+
+    return rows.slice(0, 15); // 存储是分散型，展示更多行
+}
+
+// ===== V2: 统一的 category section 渲染（结论 + 归因表格）=====
+function renderCategorySectionV2(regionId, cat, catRows, detailRows, amounts, insight, meta, currency) {
+    const feb = amounts[0], apr = amounts[amounts.length - 1];
+    const chgPct = feb > 0 ? ((apr - feb) / feb * 100) : (apr > 0 ? 100 : 0);
+    const diff = apr - feb;
+    const NOTES = window.__RESOURCE_NOTES__ || {};
+
+    // 一句话结论（模板化）
+    const catNm = catName(cat);
+    let catVerdict = '';
+    if (chgPct > 30) catVerdict = T('catv.surge', catNm, chgPct.toFixed(0), `${currency}${Math.round(diff).toLocaleString()}`);
+    else if (chgPct > 10) catVerdict = T('catv.mild', catNm, chgPct.toFixed(0), `${currency}${Math.round(diff).toLocaleString()}`);
+    else if (chgPct < -10) catVerdict = T('catv.down', catNm, chgPct.toFixed(0), `${currency}${Math.round(diff).toLocaleString()}`);
+    else catVerdict = T('catv.stable', catNm, `${chgPct >= 0 ? '+' : ''}${chgPct.toFixed(0)}`);
+
+    // LLM conclusion 仅在显示全量月份时使用（因为它是基于全量数据生成的静态文本）
+    const isFullRange = MONTHS.length === ALL_MONTHS.length && MONTHS[0] === ALL_MONTHS[0] && MONTHS[MONTHS.length-1] === ALL_MONTHS[ALL_MONTHS.length-1];
+    const llmConclusion = (isFullRange && insight && (insight.conclusion || insight.conclusion_en)) ? pickLang(insight, 'conclusion') : '';
+
+    let html = `<div style="background:#fff;border-radius:10px;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04);">`;
+
+    // 标题行
+    html += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+        <span style="width:10px;height:10px;border-radius:50%;background:${meta.color};display:inline-block;"></span>
+        <span style="font-size:14px;font-weight:600;">${catNm}</span>
+        <span style="font-size:12px;color:#718096;margin-left:8px;">${MONTH_LABELS[MONTHS[MONTHS.length-1]]} ${currency}${Math.round(apr).toLocaleString()}</span>
+        <span style="font-size:11px;margin-left:auto;color:${chgPct > 10 ? '#e53e3e' : chgPct < -10 ? '#38a169' : '#718096'};">${MONTH_LABELS[MONTHS[0]]}→${MONTH_LABELS[MONTHS[MONTHS.length-1]]} ${chgPct >= 0 ? '+' : ''}${chgPct.toFixed(0)}%</span>
+    </div>`;
+
+    // 结论区：仅全量月份范围时显示 LLM 结论，否则使用基于选中窗口动态计算的模板结论
+    if (llmConclusion) {
+        html += `<div class="insight-box" style="border-left-color:${meta.color};">${formatConclusion(llmConclusion)}</div>`;
+    } else {
+        html += `<div style="font-size:13px;color:#334155;margin-bottom:14px;padding:10px 14px;background:#f8fafc;border-radius:6px;border-left:3px solid ${meta.color};">${catVerdict}</div>`;
+    }
+
+    // ===== 核心：归因明细表 =====
+    // 存储类特殊处理：当 regions_data 行数不足时，从 insights.top_items 重建完整明细
+    let significantRows;
+    if (cat === 'storage' && detailRows.length < 5 && insight && insight.top_items) {
+        significantRows = rebuildStorageDetailFromInsights(insight, MONTHS, currency);
+    } else {
+        // 只展示有意义的资源（金额 > 10 或有明显变化的）
+        significantRows = detailRows.filter(d => {
+            const rowTotal = MONTHS.reduce((s, m) => s + (d.months[m] || 0), 0);
+            const rowDiff = Math.abs((d.months[MONTHS[MONTHS.length - 1]] || 0) - (d.months[MONTHS[0]] || 0));
+            return rowTotal > 10 || rowDiff > 20;
+        }).slice(0, 12);
+    }
+
+    if (significantRows.length > 0) {
+        // P2: 为每个表格生成唯一 ID
+        const tableId = `attr-table-${regionId}-${cat}`;
+        // P2: 百分比/绝对值切换 + 表头排序工具栏
+        html += `<div style="display:flex;align-items:center;margin-bottom:6px;">
+            <span style="font-size:11px;color:#94a3b8;">${T('detail.attr.header')}</span>
+            <div class="display-toggle">
+                <button class="display-toggle-btn active" onclick="switchDisplayMode('${tableId}','amount',this)">${T('detail.byAmount')}</button>
+                <button class="display-toggle-btn" onclick="switchDisplayMode('${tableId}','percent',this)">${T('detail.byPct')}</button>
+            </div>
+            <span style="font-size:10px;color:#b0b8c4;margin-left:auto;">${T('detail.sortHint')}</span>
+        </div>`;
+        html += `<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;position:relative;">`;
+        html += `<table id="${tableId}" style="margin:0;font-size:12px;border-collapse:separate;border-spacing:0;" data-region="${regionId}" data-cat="${cat}"><thead><tr>
+            <th style="min-width:140px;position:sticky;left:0;z-index:2;background:#f8f9fb;">${T('th.skuItem')}</th>
+            <th style="min-width:80px;position:sticky;left:140px;z-index:2;background:#f8f9fb;">${T('th.usage')}</th>
+            <th class="num sortable" style="min-width:90px;position:sticky;left:220px;z-index:2;background:#f8f9fb;" data-sort-col="change" onclick="sortAttrTable('${tableId}',this,'change')">${T('th.change')}</th>
+            <th style="min-width:160px;position:sticky;left:310px;z-index:2;background:#f8f9fb;">${T('th.reason')}</th>
+            <th style="min-width:120px;position:sticky;left:470px;z-index:2;background:#f8f9fb;border-right:2px solid #e2e8f0;">${T('th.query')}</th>`;
+        MONTHS.forEach((m, mi) => { html += `<th class="num sortable" style="min-width:70px;" data-sort-col="month-${mi}" onclick="sortAttrTable('${tableId}',this,'month-${mi}')">${MONTH_LABELS[m]}</th>`; });
+        html += `</tr></thead><tbody>`;
+
+        significantRows.forEach((d, rowIdx) => {
+            const rFirst = d.months[MONTHS[0]] || 0;
+            const rLast = d.months[MONTHS[MONTHS.length - 1]] || 0;
+            const rDiff = rLast - rFirst;
+            const rPct = rFirst > 0 ? ((rLast - rFirst) / rFirst * 100) : (rLast > 0 ? 100 : 0);
+            const cls = rDiff > 0 ? 'highlight-up' : rDiff < 0 ? 'highlight-down' : '';
+
+            const note = getResourceNote(d.resource, d.workspace);
+            const purpose = note ? note.purpose : '—';
+
+            // P1: 异常检测标签
+            const anomalyTags = detectAnomalies(d, regionId);
+
+            // 增长原因（模板化推断，语义 key）
+            let reasonKey = '';
+            if (rFirst === 0 && rLast > 0) reasonKey = 'reason.new';
+            else if (rLast === 0 && rFirst > 0) reasonKey = 'reason.stopped';
+            else if (rPct > 100) reasonKey = 'reason.surge';
+            else if (rPct > 30) reasonKey = 'reason.growth';
+            else if (rPct > 0) reasonKey = 'reason.up';
+            else if (rPct < -30) reasonKey = 'reason.down';
+            else reasonKey = 'reason.flat';
+            let reason = reasonText(reasonKey);
+            // 覆盖：如果 NOTES 里有详细说明，用更具体的
+            if (note && note.desc && (rPct > 30 || rPct < -30 || rFirst === 0)) {
+                reason = note.desc.length > 60 ? note.desc.substring(0, 60) + '...' : note.desc;
+            }
+
+            // 查询方式（明细可查的数据源）
+            // 基础计量: instance_usage；计算类下钻(集群归因/空转判定): job_history
+            let queryMethod = 'sys.information_schema.instance_usage';
+            if (cat === 'compute') {
+                queryMethod = 'sys.information_schema.job_history';
+            }
+
+            const rowId = `expand-${regionId}-${cat}-${rowIdx}`;
+            // P2: 计算该行各月金额占当月该品类总额的百分比
+            const rowMonthAmounts = MONTHS.map(m => d.months[m] || 0);
+            const catMonthTotals = MONTHS.map(m => significantRows.reduce((s, r) => s + (r.months[m] || 0), 0));
+            // 异常行高亮（变化超过200%且差额>50）
+            let rowHighlightCls = '';
+            if (rPct > 200 && rDiff > 50) rowHighlightCls = 'row-surge-highlight';
+            else if (rPct < -67 && Math.abs(rDiff) > 50) rowHighlightCls = 'row-drop-highlight';
+            html += `<tr class="expandable-row ${rowHighlightCls}" onclick="toggleExpandRow('${rowId}', this, event)" data-change="${rDiff}" data-change-pct="${rPct}">
+                <td style="font-weight:500;position:sticky;left:0;z-index:1;background:#fff;"><span class="expand-indicator" id="ind-${rowId}">▶</span>${d.resource}${anomalyTags}<br><span style="font-size:10px;color:#94a3b8;">${d.workspace}</span></td>
+                <td style="font-size:11px;color:#475569;position:sticky;left:140px;z-index:1;background:#fff;">${purpose}</td>
+                <td class="num ${cls}" style="position:sticky;left:220px;z-index:1;background:#fff;" data-amount="${Math.round(rDiff)}" data-percent="${rPct > 999 ? 999 : rPct.toFixed(1)}">${rDiff >= 0 ? '+' : ''}${currency}${Math.round(rDiff).toLocaleString()}<br><span style="font-size:10px;">(${rPct >= 0 ? '+' : ''}${rPct > 999 ? '>999' : rPct.toFixed(0)}%)</span></td>
+                <td style="font-size:11px;color:#475569;position:sticky;left:310px;z-index:1;background:#fff;">${reason}</td>
+                <td style="font-size:10px;color:#64748b;font-family:monospace;position:sticky;left:470px;z-index:1;background:#fff;border-right:2px solid #e2e8f0;">${queryMethod}</td>`;
+            MONTHS.forEach((m, mi) => {
+                const amt = Math.round(d.months[m] || 0);
+                const pct = catMonthTotals[mi] > 0 ? ((d.months[m] || 0) / catMonthTotals[mi] * 100).toFixed(1) : '0.0';
+                html += `<td class="num month-cell" data-amount="${amt}" data-percent="${pct}">${currency}${amt.toLocaleString()}</td>`;
+            });
+            html += `</tr>`;
+
+            // P1: 展开行（归因卡片 + 费用/CRU 双轴趋势图）— 使用全量月度数据
+            const colSpan = MONTHS.length + 5;
+            const sparkData = JSON.stringify(getFullResourceHistory(d, regionId));
+
+            // 归因分析：计算 CRU 变化和费用变化
+            const prevMonth = MONTHS.length > 1 ? MONTHS[MONTHS.length - 2] : null;
+            const lastMonth = MONTHS[MONTHS.length - 1];
+            const prevAmt = prevMonth ? (d.months[prevMonth] || 0) : 0;
+            const lastAmt = d.months[lastMonth] || 0;
+            const amtDiff = lastAmt - prevAmt;
+            const amtPctChg = prevAmt > 0 ? ((lastAmt - prevAmt) / prevAmt * 100) : (lastAmt > 0 ? 100 : 0);
+
+            // 从原始数据中获取 CRU 信息
+            const prevCruRows = (DATA.regions_data[regionId] || []).filter(r => r.month === prevMonth && r.resource_name === d.resource && (r.workspace_name || '-') === d.workspace && (r.sku_category || '').toLowerCase() === cat);
+            const lastCruRows = (DATA.regions_data[regionId] || []).filter(r => r.month === lastMonth && r.resource_name === d.resource && (r.workspace_name || '-') === d.workspace && (r.sku_category || '').toLowerCase() === cat);
+            const prevCru = prevCruRows.reduce((s, r) => s + (r.total_cru || 0), 0);
+            const lastCru = lastCruRows.reduce((s, r) => s + (r.total_cru || 0), 0);
+            const cruDiff = lastCru - prevCru;
+            const cruPctChg = prevCru > 0 ? ((lastCru - prevCru) / prevCru * 100) : (lastCru > 0 ? 100 : 0);
+
+            // 判断主因
+            let attrFactors = [];
+            if (prevAmt === 0 && lastAmt > 0) {
+                attrFactors.push({ icon: '🆕', text: T('reason.new'), main: true });
+            } else if (lastAmt === 0 && prevAmt > 0) {
+                attrFactors.push({ icon: '⏹', text: T('reason.stopped'), main: true });
+            } else if (prevAmt > 0) {
+                if (Math.abs(cruPctChg) > 10) {
+                    attrFactors.push({ icon: cruDiff > 0 ? '🔺' : '🔻', text: T('attr.cru', prevCru.toFixed(1), lastCru.toFixed(1), (cruPctChg >= 0 ? '+' : '') + cruPctChg.toFixed(0) + '%'), main: Math.abs(cruPctChg) >= Math.abs(amtPctChg) * 0.5 });
+                }
+                if (prevCru > 0 && lastCru > 0) {
+                    const prevUnitPrice = prevAmt / prevCru;
+                    const lastUnitPrice = lastAmt / lastCru;
+                    const pricePctChg = ((lastUnitPrice - prevUnitPrice) / prevUnitPrice * 100);
+                    if (Math.abs(pricePctChg) > 10) {
+                        attrFactors.push({ icon: pricePctChg > 0 ? '🔺' : '🔻', text: T('attr.price', currency + prevUnitPrice.toFixed(2), currency + lastUnitPrice.toFixed(2), (pricePctChg >= 0 ? '+' : '') + pricePctChg.toFixed(0) + '%'), main: false });
+                    }
+                }
+            }
+            if (attrFactors.length === 0 && Math.abs(amtPctChg) > 5) {
+                attrFactors.push({ icon: amtDiff > 0 ? '🔺' : '🔻', text: T('attr.costChg', (amtPctChg >= 0 ? '+' : '') + amtPctChg.toFixed(0) + '%'), main: false });
+            }
+
+            // 归因卡片 HTML
+            let attrCardHtml = '<div style="background:#f8fafc;border-radius:8px;padding:12px 16px;margin-bottom:12px;border:1px solid #e2e8f0;">';
+            attrCardHtml += '<div style="font-size:12px;font-weight:600;color:#1e293b;margin-bottom:8px;">' + T('attr.title') + '</div>';
+            attrCardHtml += '<div style="font-size:13px;color:#334155;margin-bottom:8px;">';
+            if (prevMonth) {
+                attrCardHtml += T('attr.prevToLast', MONTH_LABELS[prevMonth], currency + Math.round(prevAmt).toLocaleString(), MONTH_LABELS[lastMonth], currency + Math.round(lastAmt).toLocaleString());
+                if (prevAmt === 0 && lastAmt > 0) attrCardHtml += T('attr.new');
+                else if (lastAmt === 0 && prevAmt > 0) attrCardHtml += T('attr.stopped');
+                else attrCardHtml += ' （' + (amtPctChg >= 0 ? '+' : '') + amtPctChg.toFixed(0) + '%）';
+            } else {
+                attrCardHtml += T('attr.thisOnly', MONTH_LABELS[lastMonth], currency + Math.round(lastAmt).toLocaleString());
+            }
+            attrCardHtml += '</div>';
+            if (attrFactors.length > 0) {
+                attrFactors.forEach(function(f) {
+                    attrCardHtml += '<div style="font-size:12px;color:#475569;line-height:1.8;">' + f.icon + ' ' + f.text + (f.main ? ' ← <span style="color:#e74c3c;font-weight:600;">' + T('attr.detail.badge.main') + '</span>' : '') + '</div>';
+                });
+            }
+            attrCardHtml += '</div>';
+
+            html += `<tr id="row-${rowId}" style="display:none;"><td colspan="${colSpan}" style="padding:0;border-bottom:1px solid #e2e8f0;">
+                <div class="expand-detail" id="detail-${rowId}">
+                    ${attrCardHtml}
+                    <div style="display:flex;align-items:center;gap:16px;">
+                        <div class="sparkline" id="spark-${rowId}" data-spark='${sparkData}' style="flex:1;min-width:300px;height:100px;"></div>
+                        <div style="font-size:11px;color:#64748b;min-width:140px;line-height:2;">
+                            <div>${T('attr.fullTrend', ALL_MONTHS.length)}</div>
+                            <div>${T('attr.costMom', (rPct >= 0 ? '+' : '') + (rPct > 999 ? '>999' : rPct.toFixed(0)) + '%')}</div>
+                            <div>${T('attr.cruMom', prevCru > 0 ? (cruPctChg >= 0 ? '+' : '') + cruPctChg.toFixed(0) + '%' : (lastCru > 0 ? T('attr.cruNew') : '-'))}</div>
+                            <div>${T('attr.trend', rPct > 30 ? T('trend.up') : rPct < -30 ? T('trend.down') : T('trend.flat'))}</div>
+                        </div>
+                    </div>
+                </div>
+            </td></tr>`;
+
+            // 建议行已移除，仅保留数据结论
+        });
+
+        html += `</tbody></table></div>`;
+    }
+
+    // 存储特殊处理：表级明细 + 图表
+    if (cat === 'storage') {
+        html += renderStorageTableDetail(regionId);
+        // 存储也加一个 workspace 占比饼图和容量趋势图
+        if (insight && insight.top_items) {
+            html += `<details style="margin-top:14px;" open><summary style="cursor:pointer;font-size:12px;color:#718096;padding:4px 0;">${T('storage.charts')}</summary>`;
+            html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0;">
+                <div style="background:#f7fafc;border-radius:6px;padding:10px;"><div style="font-size:11px;color:#718096;margin-bottom:4px;">${T('storage.wsPie', MONTH_LABELS[MONTHS[MONTHS.length-1]])}</div><div style="width:100%;height:200px;" id="chart-storage-workspace-${regionId}"></div></div>
+                <div style="background:#f7fafc;border-radius:6px;padding:10px;"><div style="font-size:11px;color:#718096;margin-bottom:4px;">${T('storage.wsTrend')}</div><div style="width:100%;height:200px;" id="chart-storage-trend-${regionId}"></div></div>
+            </div>`;
+            html += `</details>`;
+        }
+    }
+
+    // 计算类：图表放折叠区
+    if (cat === 'compute' && detailRows.length > 0) {
+        html += `<details style="margin-top:14px;"><summary style="cursor:pointer;font-size:12px;color:#718096;padding:4px 0;">${T('compute.charts')}</summary>`;
+        html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0;">
+            <div style="background:#f7fafc;border-radius:6px;padding:10px;"><div style="font-size:11px;color:#718096;margin-bottom:4px;">${T('compute.skuType')}</div><div style="width:100%;height:180px;" id="chart-compute-skutype-${regionId}"></div></div>
+            <div style="background:#f7fafc;border-radius:6px;padding:10px;"><div style="font-size:11px;color:#718096;margin-bottom:4px;">${T('compute.cruVsAmt')}</div><div style="width:100%;height:180px;" id="chart-compute-cruvsamount-${regionId}"></div></div>
+            <div style="background:#f7fafc;border-radius:6px;padding:10px;"><div style="font-size:11px;color:#718096;margin-bottom:4px;">${T('compute.wsShare')}</div><div style="width:100%;height:180px;" id="chart-compute-workspace-${regionId}"></div></div>
+            <div style="background:#f7fafc;border-radius:6px;padding:10px;"><div style="font-size:11px;color:#718096;margin-bottom:4px;">${T('compute.treemap')}</div><div style="width:100%;height:180px;" id="chart-compute-treemap-${regionId}"></div></div>
+        </div>`;
+        html += `</details>`;
+    }
+
+    html += `</div>`;
+    return html;
+}
+
+// ===== P1: 异常检测标签 =====
+function detectAnomalies(d, regionId) {
+    // 基于全量数据中最近 3 个月判断
+    const allData = (DATA.regions_data[regionId] || []);
+    const recentMonths = ALL_MONTHS.slice(-3);
+    if (recentMonths.length < 2) return '';
+
+    const lastMonth = recentMonths[recentMonths.length - 1];
+    const prevMonth = recentMonths[recentMonths.length - 2];
+    const prevPrevMonth = recentMonths.length > 2 ? recentMonths[recentMonths.length - 3] : null;
+
+    // 获取该资源在这些月份的数据
+    const getAmount = (m) => d.months[m] || 0;
+    const getCRU = (m) => d.cruMonths ? (d.cruMonths[m] || 0) : 0;
+
+    const lastAmt = getAmount(lastMonth);
+    const prevAmt = getAmount(prevMonth);
+    const prevPrevAmt = prevPrevMonth ? getAmount(prevPrevMonth) : 0;
+    const lastCRU = getCRU(lastMonth);
+    const prevCRU = getCRU(prevMonth);
+
+    let tags = '';
+
+    // 🆕 新增：上月无数据，本月有
+    if (prevAmt === 0 && lastAmt > 0) {
+        tags += `<span class="anomaly-tag new-item" title="${T('tag.new.tip', '¥' + Math.round(lastAmt).toLocaleString())}">${T('tag.new')}</span>`;
+        return tags; // 新增资源不再检测其他
+    }
+
+    // 👻 已停：本月无数据，上月有
+    if (lastAmt === 0 && prevAmt > 0) {
+        tags += `<span class="anomaly-tag stopped" title="${T('tag.stopped.tip', '¥' + Math.round(prevAmt).toLocaleString())}">${T('tag.stopped')}</span>`;
+        return tags;
+    }
+
+    // 🔴 突增：CRU 环比 > 100%
+    if (prevCRU > 0 && lastCRU > 0) {
+        const cruPct = (lastCRU - prevCRU) / prevCRU * 100;
+        if (cruPct > 100) {
+            tags += `<span class="anomaly-tag surge" title="${T('tag.surge.tipCru', cruPct.toFixed(0))}">${T('tag.surge')}</span>`;
+        }
+    } else if (prevAmt > 0) {
+        // 无 CRU 数据时退化为金额判断
+        const amtPct = (lastAmt - prevAmt) / prevAmt * 100;
+        if (amtPct > 100) {
+            tags += `<span class="anomaly-tag surge" title="${T('tag.surge.tipAmt', amtPct.toFixed(0))}">${T('tag.surge')}</span>`;
+        }
+    }
+
+    // ⚠️ 单价异常：CRU 变化 <10% 但费用变化 >30%
+    if (prevCRU > 0 && prevAmt > 0 && lastCRU > 0 && lastAmt > 0) {
+        const cruChange = Math.abs((lastCRU - prevCRU) / prevCRU * 100);
+        const amtChange = Math.abs((lastAmt - prevAmt) / prevAmt * 100);
+        if (cruChange < 10 && amtChange > 30) {
+            tags += `<span class="anomaly-tag price-anomaly" title="${T('tag.price.tip', cruChange.toFixed(0), amtChange.toFixed(0))}">${T('tag.price')}</span>`;
+        }
+    }
+
+    // 📈 持续增长：连续 2 个月环比 >30%
+    if (prevPrevAmt > 0 && prevAmt > 0 && lastAmt > 0) {
+        const pct1 = (prevAmt - prevPrevAmt) / prevPrevAmt * 100;
+        const pct2 = (lastAmt - prevAmt) / prevAmt * 100;
+        if (pct1 > 30 && pct2 > 30) {
+            tags += `<span class="anomaly-tag sustained" title="${T('tag.sustained.tip', pct1.toFixed(0), pct2.toFixed(0))}">${T('tag.sustained')}</span>`;
+        }
+    }
+
+    return tags;
+}
+
+// ===== P1: 获取资源全量月度历史 =====
+function getFullResourceHistory(d, regionId) {
+    // 从 regions_data 中按 workspace+resource+sku 获取全量月度数据（含 CRU）
+    const allRows = DATA.regions_data[regionId] || [];
+    const monthly = {};
+    const cruMonthly = {};
+    ALL_MONTHS.forEach(m => { monthly[m] = 0; cruMonthly[m] = 0; });
+
+    allRows.forEach(row => {
+        if (row.resource_name === d.resource && row.workspace_name === (d.workspace === '-' ? null : d.workspace)) {
+            if (row.sku_name === d.sku) {
+                monthly[row.month] = (monthly[row.month] || 0) + row.total_amount;
+                cruMonthly[row.month] = (cruMonthly[row.month] || 0) + (row.total_cru || 0);
+            }
+        }
+    });
+
+    return ALL_MONTHS.map(m => ({ month: m, label: MONTH_LABELS[m], value: Math.round(monthly[m] || 0), cru: +(cruMonthly[m] || 0).toFixed(2) }));
+}
+
+function getFullMonthAmount(d, month, regionId) {
+    return d.months[month] || 0;
+}
+
+// ===== P2: 百分比/绝对值切换 =====
+function switchDisplayMode(tableId, mode, btn) {
+    // 更新按钮状态
+    btn.parentElement.querySelectorAll('.display-toggle-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const table = document.getElementById(tableId);
+    if (!table) return;
+    const currency = '¥'; // 国内默认
+
+    // 遍历 tbody 中所有数据行
+    table.querySelectorAll('tbody tr.expandable-row').forEach(row => {
+        // 月份金额列
+        row.querySelectorAll('td.month-cell[data-amount]').forEach(cell => {
+            const amt = parseFloat(cell.dataset.amount);
+            const pct = parseFloat(cell.dataset.percent);
+            cell.textContent = mode === 'percent' ? `${pct}%` : `${currency}${amt.toLocaleString()}`;
+        });
+        // 变化列（带 data-change-pct 的 num 单元格）
+        const changeCell = row.querySelector('td.num[data-amount]:not(.month-cell)');
+        if (changeCell) {
+            const amt = parseFloat(changeCell.dataset.amount);
+            const pct = parseFloat(changeCell.dataset.percent);
+            if (mode === 'percent') {
+                changeCell.innerHTML = `${pct >= 0 ? '+' : ''}${pct > 999 ? '>999' : pct.toFixed(0)}%`;
+            } else {
+                changeCell.innerHTML = `${amt >= 0 ? '+' : ''}${currency}${amt.toLocaleString()}<br><span style="font-size:10px;">(${pct >= 0 ? '+' : ''}${pct > 999 ? '>999' : pct.toFixed(0)}%)</span>`;
+            }
+        }
+    });
+}
+
+// ===== P2: 表头排序 =====
+function sortAttrTable(tableId, thEl, sortCol) {
+    const table = document.getElementById(tableId);
+    if (!table) return;
+    const tbody = table.querySelector('tbody');
+    if (!tbody) return;
+
+    // 确定排序方向
+    const wasAsc = thEl.classList.contains('sort-asc');
+    const wasDesc = thEl.classList.contains('sort-desc');
+    // 清除同表格所有 th 的排序状态
+    table.querySelectorAll('th.sortable').forEach(th => { th.classList.remove('sort-asc', 'sort-desc'); });
+    // 切换方向：默认 desc → asc → desc
+    const dir = wasDesc ? 'asc' : 'desc';
+    thEl.classList.add(`sort-${dir}`);
+
+    // 收集所有 expandable-row 及其对应的 expand detail row
+    const rowPairs = [];
+    const allRows = Array.from(tbody.querySelectorAll('tr'));
+    for (let i = 0; i < allRows.length; i++) {
+        const row = allRows[i];
+        if (row.classList.contains('expandable-row')) {
+            const pair = { main: row, extras: [] };
+            // 收集后续非 expandable-row 的行（展开行、建议行等）
+            let j = i + 1;
+            while (j < allRows.length && !allRows[j].classList.contains('expandable-row')) {
+                pair.extras.push(allRows[j]);
+                j++;
+            }
+            rowPairs.push(pair);
+            i = j - 1;
+        }
+    }
+
+    // 获取排序值
+    rowPairs.forEach(pair => {
+        if (sortCol === 'change') {
+            pair.sortVal = parseFloat(pair.main.dataset.change) || 0;
+        } else if (sortCol.startsWith('month-')) {
+            const colIdx = parseInt(sortCol.replace('month-', ''));
+            const cells = pair.main.querySelectorAll('td.month-cell[data-amount]');
+            pair.sortVal = cells[colIdx] ? parseFloat(cells[colIdx].dataset.amount) || 0 : 0;
+        } else {
+            pair.sortVal = 0;
+        }
+    });
+
+    // 排序
+    rowPairs.sort((a, b) => dir === 'asc' ? a.sortVal - b.sortVal : b.sortVal - a.sortVal);
+
+    // 重建 tbody
+    const frag = document.createDocumentFragment();
+    rowPairs.forEach(pair => {
+        frag.appendChild(pair.main);
+        pair.extras.forEach(ex => frag.appendChild(ex));
+    });
+    tbody.innerHTML = '';
+    tbody.appendChild(frag);
+}
+
+// ===== P1: 行展开/折叠 =====
+function toggleExpandRow(rowId, triggerEl, event) {
+    event.stopPropagation();
+    const expandRow = document.getElementById(`row-${rowId}`);
+    const detailDiv = document.getElementById(`detail-${rowId}`);
+    const indicator = document.getElementById(`ind-${rowId}`);
+
+    if (!expandRow) return;
+
+    const isOpen = expandRow.style.display === 'table-row';
+    if (isOpen) {
+        detailDiv.classList.remove('open');
+        indicator.classList.remove('open');
+        setTimeout(() => { expandRow.style.display = 'none'; }, 350);
+    } else {
+        expandRow.style.display = 'table-row';
+        indicator.classList.add('open');
+        // 触发 sparkline 渲染
+        setTimeout(() => {
+            detailDiv.classList.add('open');
+            renderSparkline(rowId);
+        }, 10);
+    }
+}
+
+function renderSparkline(rowId) {
+    const el = document.getElementById(`spark-${rowId}`);
+    if (!el || el.dataset.rendered) return;
+    el.dataset.rendered = 'true';
+
+    const sparkDataStr = el.dataset.spark;
+    if (!sparkDataStr) return;
+    const sparkData = JSON.parse(sparkDataStr);
+
+    const chart = echarts.init(el);
+    charts[`spark-${rowId}`] = chart;
+
+    const values = sparkData.map(d => d.value);
+    const cruValues = sparkData.map(d => d.cru || 0);
+    const labels = sparkData.map(d => d.label);
+    const hasCru = cruValues.some(v => v > 0);
+    const avgCost = values.reduce((a, b) => a + b, 0) / (values.length || 1);
+
+    if (hasCru) {
+        // 双轴模式：费用柱状图 + CRU 折线图
+        chart.setOption({
+            tooltip: { trigger: 'axis', formatter: (params) => {
+                let tip = '<b>' + params[0].name + '</b>';
+                params.forEach(p => { tip += '<br/>' + p.seriesName + ': ' + (p.seriesName === 'CRU' ? p.value.toFixed(1) : '¥' + p.value.toLocaleString()); });
+                return tip;
+            }},
+            legend: { show: true, top: 0, right: 0, textStyle: { fontSize: 9 }, itemWidth: 12, itemHeight: 8 },
+            grid: { left: 40, right: 40, top: 22, bottom: 20 },
+            xAxis: { type: 'category', data: labels, axisLabel: { fontSize: 9, interval: Math.max(0, Math.floor(labels.length / 6) - 1) }, axisLine: { lineStyle: { color: '#e2e8f0' } } },
+            yAxis: [
+                { type: 'value', name: axisMoney('¥'), nameTextStyle: { fontSize: 9 }, axisLabel: { fontSize: 9 }, splitLine: { lineStyle: { color: '#f1f5f9' } }, axisLine: { show: false } },
+                { type: 'value', name: 'CRU', nameTextStyle: { fontSize: 9 }, axisLabel: { fontSize: 9 }, splitLine: { show: false }, axisLine: { show: false } }
+            ],
+            series: [
+                {
+                    name: T('series.cost'), type: 'bar', data: values,
+                    itemStyle: { color: new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'#4a90d9'},{offset:1,color:'#a8d0f5'}]), borderRadius: [3,3,0,0] },
+                    barMaxWidth: 30,
+                    markLine: { silent: true, data: [{ yAxis: avgCost, label: { formatter: T('axis.avg', '¥' + Math.round(avgCost).toLocaleString()), fontSize: 9, color: '#f5a623' }, lineStyle: { color: '#f5a623', type: 'dashed', width: 1 } }] }
+                },
+                {
+                    name: 'CRU', type: 'line', yAxisIndex: 1, data: cruValues,
+                    smooth: true, lineStyle: { color: '#7b68ee', width: 2 },
+                    itemStyle: { color: '#7b68ee' }, symbol: 'circle', symbolSize: 4
+                }
+            ]
+        });
+    } else {
+        // 单轴模式：仅费用折线（兜底，无 CRU 数据时）
+        chart.setOption({
+            tooltip: { trigger: 'axis', formatter: (params) => `${params[0].name}<br/>¥${params[0].value.toLocaleString()}` },
+            grid: { left: 40, right: 10, top: 8, bottom: 20 },
+            xAxis: { type: 'category', data: labels, axisLabel: { fontSize: 9, interval: Math.max(0, Math.floor(labels.length / 6) - 1) }, axisLine: { lineStyle: { color: '#e2e8f0' } } },
+            yAxis: { type: 'value', axisLabel: { fontSize: 9 }, splitLine: { lineStyle: { color: '#f1f5f9' } }, axisLine: { show: false } },
+            series: [{
+                type: 'line', data: values, smooth: true, symbol: 'circle', symbolSize: 4,
+                lineStyle: { width: 2, color: '#3498db' },
+                areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(52,152,219,0.25)' }, { offset: 1, color: 'rgba(52,152,219,0.02)' }] } },
+                itemStyle: { color: '#3498db' },
+                markLine: { silent: true, symbol: 'none', lineStyle: { type: 'dashed', color: '#94a3b8' }, data: [{ type: 'average', name: 'avg' }], label: { fontSize: 9, formatter: T('axis.avg', '¥{c}') } }
+            }]
+        });
+    }
+}
+
+function formatConclusion(text) {
+    // 英文文本跳过中文正则裁剪，仅保留百分比高亮
+    if (window.__LANG__ === 'en') {
+        return text.replace(/\+\d+%/g, m => `<span class="alert">${m}</span>`);
+    }
+    // 移除建议性语句，仅保留数据结论
+    text = text.replace(/[，。]?无需(特别)?关注/g, '');
+    text = text.replace(/[，。]?需关注/g, '');
+    text = text.replace(/[，。]?建议[^。，]*[。，]?/g, '');
+    // 将纯数字 resource_name 替换为可读描述
+    text = text.replace(/主因：(\d+)/g, '主因：应用ID $1（AI Token 调用）');
+    text = text.replace(/主要来自：(\d+)/g, '主要来自：应用ID $1（AI Token 调用）');
+    text = text.replace(/128089（/g, '应用ID 128089 的 AI Token 调用（');
+    return text.replace(/\+\d+%/g, m => `<span class="alert">${m}</span>`);
+}
+
+function renderStorageTableDetail(regionId) {
+    const detail = window.__STORAGE_TABLE_DETAIL__;
+    if (!detail) return '';
+    const regionData = detail[regionId];
+    if (!regionData) return '';
+
+    let html = '<div style="margin-top:12px;margin-bottom:16px;">';
+    html += '<div style="font-size:13px;font-weight:600;margin-bottom:8px;color:#2c3e50;"> ' + T('storage.tableDetail') + '</div>';
+
+    for (const [ws, tables] of Object.entries(regionData)) {
+        if (typeof tables === 'string') {
+            // 权限不足的 workspace 直接显示提示
+            html += `<div style="font-size:12px;color:#7f8c8d;margin-bottom:8px;padding:6px 10px;background:#f8f9fb;border-radius:4px;"><b>${ws}</b>：${tables}</div>`;
+            continue;
+        }
+        html += `<div style="font-size:12px;font-weight:500;margin:8px 0 4px;color:#34495e;">Workspace: ${ws}</div>`;
+        html += '<table><thead><tr><th>' + T('storage.th.table') + '</th><th class="num">' + T('storage.th.size') + '</th><th class="num">' + T('storage.th.rows') + '</th><th>' + T('storage.th.note') + '</th></tr></thead><tbody>';
+        tables.forEach(t => {
+            const sizeStr = t.size_mb >= 1024 ? (t.size_mb / 1024).toFixed(1) + ' GB' : t.size_mb + ' MB';
+            const rowStr = t.rows >= 1000000 ? (t.rows / 1000000).toFixed(1) + 'M' : t.rows >= 1000 ? (t.rows / 1000).toFixed(0) + 'K' : t.rows;
+            const isLarge = t.size_mb >= 1000;
+            html += `<tr><td style="font-family:monospace;font-size:11px;${isLarge ? 'font-weight:600;color:#e74c3c;' : ''}">${t.table_name}</td>`;
+            html += `<td class="num" style="${isLarge ? 'font-weight:600;color:#e74c3c;' : ''}">${sizeStr}</td>`;
+            html += `<td class="num">${rowStr}</td>`;
+            html += `<td style="font-size:11px;color:#7f8c8d;">${t.note}</td></tr>`;
+        });
+        html += '</tbody></table>';
+    }
+
+    // 优化建议已移除
+
+    html += '</div>';
+    return html;
+}
+
+
+// ===== 存储分析图表渲染 =====
+function renderStorageCharts(regionId, insights) {
+    const storageInsight = insights.storage;
+    if (!storageInsight || !storageInsight.top_items) return;
+
+    const topItems = storageInsight.top_items;
+    const allInsightMonths = storageInsight.months || MONTHS;
+
+    // 从 top_items 提取各 workspace 的月度数据
+    const wsMonthly = {}; // workspace -> {month: amount}
+    allInsightMonths.forEach(m => {
+        const items = topItems[m] || [];
+        items.forEach(item => {
+            const ws = item.workspace_name || '-';
+            if (!wsMonthly[ws]) wsMonthly[ws] = {};
+            wsMonthly[ws][m] = (wsMonthly[ws][m] || 0) + (item.amount || 0);
+        });
+    });
+
+    // 1. Workspace 占比饼图（最新月）
+    const el1 = document.getElementById(`chart-storage-workspace-${regionId}`);
+    if (el1) {
+        const chart1 = echarts.init(el1);
+        charts[`storage-workspace-${regionId}`] = chart1;
+        window.addEventListener('resize', () => chart1.resize());
+
+        const lastMonth = MONTHS[MONTHS.length - 1];
+        const pieData = Object.entries(wsMonthly)
+            .map(([ws, monthly]) => ({ name: ws, value: Math.round(monthly[lastMonth] || 0) }))
+            .filter(d => d.value > 0)
+            .sort((a, b) => b.value - a.value);
+
+        chart1.setOption({
+            tooltip: { trigger: 'item', formatter: '{b}: \u00a5{c} ({d}%)' },
+            legend: { type: 'scroll', orient: 'vertical', right: 10, top: 10, bottom: 10, textStyle: { fontSize: 10 } },
+            series: [{
+                type: 'pie',
+                radius: ['35%', '65%'],
+                center: ['35%', '50%'],
+                avoidLabelOverlap: false,
+                label: { show: false },
+                data: pieData,
+                itemStyle: { borderRadius: 4, borderColor: '#fff', borderWidth: 2 }
+            }]
+        });
+    }
+
+    // 2. 各 Workspace 月度趋势（堆叠面积图）
+    const el2 = document.getElementById(`chart-storage-trend-${regionId}`);
+    if (el2) {
+        const chart2 = echarts.init(el2);
+        charts[`storage-trend-${regionId}`] = chart2;
+        window.addEventListener('resize', () => chart2.resize());
+
+        // 按总金额取 top 6 workspace
+        const wsSorted = Object.entries(wsMonthly)
+            .map(([ws, monthly]) => ({ ws, total: MONTHS.reduce((s, m) => s + (monthly[m] || 0), 0), monthly }))
+            .sort((a, b) => b.total - a.total)
+            .slice(0, 6);
+
+        const colors = ['#2ecc71', '#3498db', '#9b59b6', '#e67e22', '#e74c3c', '#1abc9c'];
+        const series = wsSorted.map((item, idx) => ({
+            name: item.ws,
+            type: 'line',
+            stack: 'total',
+            areaStyle: { opacity: 0.3 },
+            data: MONTHS.map(m => Math.round(item.monthly[m] || 0)),
+            itemStyle: { color: colors[idx % colors.length] },
+            lineStyle: { width: 1.5 },
+            symbol: 'circle',
+            symbolSize: 4
+        }));
+
+        chart2.setOption({
+            tooltip: { trigger: 'axis' },
+            legend: { top: 0, textStyle: { fontSize: 10 } },
+            grid: { left: 50, right: 20, bottom: 25, top: 35 },
+            xAxis: { type: 'category', data: MONTHS.map(m => MONTH_LABELS[m]) },
+            yAxis: { type: 'value', name: axisMoney('\u00a5') },
+            series: series
+        });
+    }
+}
+
+// ===== 计算深度分析 - 图表渲染 =====
+function renderComputeCharts(regionId, catRows) {
+    // 键为 sku_code 匹配键（保留）；值为语义 code，显示时经 skuTypeName() 双语映射
+    const SKU_TYPE_MAP = {
+        'vc_gp_event': 'gp',
+        'vc_ap_event': 'ap',
+        'bulk_ingestion': 'bulk',
+        'stream_ingestion': 'stream',
+        'task_schedule': 'task'
+    };
+    const SKU_COLORS = {
+        'gp': '#3498db',
+        'ap': '#9b59b6',
+        'bulk': '#2ecc71',
+        'stream': '#e67e22',
+        'task': '#e74c3c'
+    };
+
+    // 1. SKU 类型堆叠图（type 为语义 code，显示时映射）
+    const skuTypeMonthly = {};
+    catRows.forEach(row => {
+        const type = SKU_TYPE_MAP[row.sku_code] || 'other';
+        if (!skuTypeMonthly[type]) skuTypeMonthly[type] = {};
+        skuTypeMonthly[type][row.month] = (skuTypeMonthly[type][row.month] || 0) + row.total_amount;
+    });
+
+    const el1 = document.getElementById(`chart-compute-skutype-${regionId}`);
+    if (el1) {
+        const chart1 = echarts.init(el1);
+        charts[`compute-skutype-${regionId}`] = chart1;
+        window.addEventListener('resize', () => chart1.resize());
+        const series1 = Object.entries(skuTypeMonthly).sort((a, b) => {
+            const aSum = Object.values(a[1]).reduce((s, v) => s + v, 0);
+            const bSum = Object.values(b[1]).reduce((s, v) => s + v, 0);
+            return bSum - aSum;
+        }).map(([code, monthly]) => ({
+            name: skuTypeName(code),
+            type: 'bar',
+            stack: 'total',
+            data: MONTHS.map(m => Math.round(monthly[m] || 0)),
+            itemStyle: { color: SKU_COLORS[code] || '#95a5a6' },
+        }));
+        chart1.setOption({
+            tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+            legend: { top: 0, textStyle: { fontSize: 11 } },
+            grid: { left: 50, right: 20, bottom: 25, top: 35 },
+            xAxis: { type: 'category', data: MONTHS.map(m => MONTH_LABELS[m]) },
+            yAxis: { type: 'value', name: axisMoney('¥') },
+            series: series1,
+        });
+    }
+
+    // 2. CRU vs 费用 双轴趋势
+    const cruMonthly = {};
+    const amtMonthly = {};
+    MONTHS.forEach(m => { cruMonthly[m] = 0; amtMonthly[m] = 0; });
+    catRows.forEach(row => {
+        cruMonthly[row.month] += row.total_cru;
+        amtMonthly[row.month] += row.total_amount;
+    });
+
+    const el2 = document.getElementById(`chart-compute-cruvsamount-${regionId}`);
+    if (el2) {
+        const chart2 = echarts.init(el2);
+        charts[`compute-cruvsamount-${regionId}`] = chart2;
+        window.addEventListener('resize', () => chart2.resize());
+        chart2.setOption({
+            tooltip: { trigger: 'axis' },
+            legend: { top: 0, textStyle: { fontSize: 11 } },
+            grid: { left: 55, right: 55, bottom: 25, top: 35 },
+            xAxis: { type: 'category', data: MONTHS.map(m => MONTH_LABELS[m]) },
+            yAxis: [
+                { type: 'value', name: T('series.cost') + '(' + axisMoney('¥') + ')', position: 'left' },
+                { type: 'value', name: 'CRU', position: 'right' }
+            ],
+            series: [
+                { name: T('series.cost'), type: 'bar', data: MONTHS.map(m => Math.round(amtMonthly[m])), itemStyle: { color: '#3498db', borderRadius: [3,3,0,0] } },
+                { name: 'CRU', type: 'line', yAxisIndex: 1, data: MONTHS.map(m => Math.round(cruMonthly[m])), itemStyle: { color: '#e74c3c' }, lineStyle: { width: 2 }, symbol: 'circle', symbolSize: 6 }
+            ]
+        });
+    }
+
+    // 3. Workspace 占比饼图（最新月）
+    const wsLatest = {};
+    catRows.filter(r => r.month === MONTHS[MONTHS.length - 1]).forEach(row => {
+        const ws = row.workspace_name || 'unknown';
+        wsLatest[ws] = (wsLatest[ws] || 0) + row.total_amount;
+    });
+    const el3 = document.getElementById(`chart-compute-workspace-${regionId}`);
+    if (el3) {
+        const chart3 = echarts.init(el3);
+        charts[`compute-workspace-${regionId}`] = chart3;
+        window.addEventListener('resize', () => chart3.resize());
+        const pieData = Object.entries(wsLatest).sort((a, b) => b[1] - a[1]).map(([name, value]) => ({ name, value: Math.round(value) }));
+        chart3.setOption({
+            tooltip: { trigger: 'item', formatter: '{b}: ¥{c} ({d}%)' },
+            legend: { type: 'scroll', orient: 'vertical', right: 10, top: 20, bottom: 20, textStyle: { fontSize: 11 } },
+            series: [{
+                type: 'pie',
+                radius: ['40%', '70%'],
+                center: ['35%', '50%'],
+                avoidLabelOverlap: false,
+                label: { show: false },
+                data: pieData,
+                itemStyle: { borderRadius: 4, borderColor: '#fff', borderWidth: 2 }
+            }]
+        });
+    }
+
+    // 4. Treemap（workspace → resource）
+    const el4 = document.getElementById(`chart-compute-treemap-${regionId}`);
+    if (el4) {
+        const chart4 = echarts.init(el4);
+        charts[`compute-treemap-${regionId}`] = chart4;
+        window.addEventListener('resize', () => chart4.resize());
+
+        // 构建 treemap 数据
+        const wsResMap = {};
+        catRows.filter(r => r.month === MONTHS[MONTHS.length - 1]).forEach(row => {
+            const ws = row.workspace_name || 'unknown';
+            if (!wsResMap[ws]) wsResMap[ws] = {};
+            const res = row.resource_name || '-';
+            wsResMap[ws][res] = (wsResMap[ws][res] || 0) + row.total_amount;
+        });
+        const treemapData = Object.entries(wsResMap).map(([ws, resources]) => ({
+            name: ws,
+            value: Object.values(resources).reduce((s, v) => s + v, 0),
+            children: Object.entries(resources).map(([res, val]) => ({ name: res, value: Math.round(val) }))
+        })).sort((a, b) => b.value - a.value);
+
+        chart4.setOption({
+            tooltip: { formatter: (info) => `${info.name}<br/>¥${info.value.toLocaleString()}` },
+            series: [{
+                type: 'treemap',
+                data: treemapData,
+                roam: false,
+                levels: [
+                    { itemStyle: { borderColor: '#fff', borderWidth: 2, gapWidth: 2 }, upperLabel: { show: true, height: 20, fontSize: 11 } },
+                    { itemStyle: { borderColor: '#f0f0f0', borderWidth: 1, gapWidth: 1 }, upperLabel: { show: false } }
+                ],
+                label: { show: true, fontSize: 10, formatter: '{b}\n¥{c}' },
+                breadcrumb: { show: false }
+            }]
+        });
+    }
+}
+
+function renderOverviewChart(regionId, catMonthly) {
+    const el = document.getElementById(`chart-overview-${regionId}`);
+    if (!el) return;
+    const chart = echarts.init(el);
+    charts[`overview-${regionId}`] = chart;
+    window.addEventListener('resize', () => chart.resize());
+
+    const series = CAT_ORDER.filter(cat => MONTHS.some(m => (catMonthly[cat] || {})[m] > 0)).map(cat => ({
+        name: (CAT_META[cat] || { name: cat }).name,
+        type: 'bar',
+        stack: 'total',
+        data: MONTHS.map(m => Math.round((catMonthly[cat] || {})[m] || 0)),
+        itemStyle: { color: (CAT_META[cat] || { color: '#95a5a6' }).color, borderRadius: [0, 0, 0, 0] },
+        emphasis: { focus: 'series' },
+    }));
+
+    chart.setOption({
+        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+        legend: { top: 0 },
+        grid: { left: 50, right: 30, bottom: 30, top: 40 },
+        xAxis: { type: 'category', data: MONTHS.map(m => MONTH_LABELS[m]) },
+        yAxis: { type: 'value', name: axisMoney('¥') },
+        series: series,
+    });
+}
+
+function renderCatChart(cat, regionId, rows) {
+    const el = document.getElementById(`chart-${cat}-${regionId}`);
+    if (!el) return;
+    const chart = echarts.init(el);
+    charts[`${cat}-${regionId}`] = chart;
+    window.addEventListener('resize', () => chart.resize());
+
+    // 按 resource_name + month 汇总 top 5
+    const resourceMonthly = {};
+    rows.filter(r => (r.sku_category || '').toLowerCase() === cat).forEach(row => {
+        const key = row.resource_name || row.sku_name || '-';
+        if (!resourceMonthly[key]) resourceMonthly[key] = {};
+        resourceMonthly[key][row.month] = (resourceMonthly[key][row.month] || 0) + row.total_amount;
+    });
+
+    const sorted = Object.entries(resourceMonthly).sort((a, b) => {
+        const aSum = Object.values(a[1]).reduce((s, v) => s + v, 0);
+        const bSum = Object.values(b[1]).reduce((s, v) => s + v, 0);
+        return bSum - aSum;
+    });
+    const topN = sorted.slice(0, 5);
+    const colors = ['#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6'];
+
+    const series = topN.map(([name, monthly], idx) => ({
+        name: name,
+        type: 'bar',
+        data: MONTHS.map(m => Math.round(monthly[m] || 0)),
+        itemStyle: { color: colors[idx], borderRadius: [2, 2, 0, 0] },
+    }));
+
+    chart.setOption({
+        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+        legend: { top: 0, type: 'scroll', textStyle: { fontSize: 11 } },
+        grid: { left: 50, right: 20, bottom: 25, top: 35 },
+        xAxis: { type: 'category', data: MONTHS.map(m => MONTH_LABELS[m]) },
+        yAxis: { type: 'value', name: axisMoney('¥') },
+        series: series,
+    });
+}
+
+// 在线/离线双模式 loader
+async function loadBillingData() {
+    // 离线模式：已有内联数据，直接渲染
+    if (window.__BILLING_INFRA_DATA__) {
+        init();
+        return;
+    }
+    // 在线模式：从 API 加载
+    try {
+        const container = document.querySelector('.container');
+        container.innerHTML = `<div class="skeleton-container">
+            <div class="skeleton-header"></div>
+            <div class="skeleton-meta"></div>
+            <div class="skeleton-tabs">
+                <div class="skeleton-tab"></div>
+                <div class="skeleton-tab"></div>
+                <div class="skeleton-tab"></div>
+            </div>
+            <div class="skeleton-cards">
+                <div class="skeleton-card"><div class="skeleton-card-label"></div><div class="skeleton-card-value"></div><div class="skeleton-card-trend"></div></div>
+                <div class="skeleton-card"><div class="skeleton-card-label"></div><div class="skeleton-card-value"></div><div class="skeleton-card-trend"></div></div>
+                <div class="skeleton-card"><div class="skeleton-card-label"></div><div class="skeleton-card-value"></div><div class="skeleton-card-trend"></div></div>
+                <div class="skeleton-card"><div class="skeleton-card-label"></div><div class="skeleton-card-value"></div><div class="skeleton-card-trend"></div></div>
+            </div>
+            <div class="skeleton-section">
+                <div class="skeleton-section-title"></div>
+                <div class="skeleton-chart"></div>
+            </div>
+            <div class="skeleton-section">
+                <div class="skeleton-section-title"></div>
+                <div class="skeleton-table-row"><div class="skeleton-table-cell"></div><div class="skeleton-table-cell"></div><div class="skeleton-table-cell"></div><div class="skeleton-table-cell"></div></div>
+                <div class="skeleton-table-row"><div class="skeleton-table-cell"></div><div class="skeleton-table-cell"></div><div class="skeleton-table-cell"></div><div class="skeleton-table-cell"></div></div>
+                <div class="skeleton-table-row"><div class="skeleton-table-cell"></div><div class="skeleton-table-cell"></div><div class="skeleton-table-cell"></div><div class="skeleton-table-cell"></div></div>
+                <div class="skeleton-table-row"><div class="skeleton-table-cell"></div><div class="skeleton-table-cell"></div><div class="skeleton-table-cell"></div><div class="skeleton-table-cell"></div></div>
+            </div>
+            <div class="skeleton-status">${T('loading')}</div>
+        </div>`;
+        const res = await fetch('/api/billing');
+        const json = await res.json();
+        if (json.status === 'loading') {
+            container.innerHTML = `<div class="skeleton-container">
+                <div class="skeleton-header"></div>
+                <div class="skeleton-meta"></div>
+                <div class="skeleton-tabs">
+                    <div class="skeleton-tab"></div>
+                    <div class="skeleton-tab"></div>
+                </div>
+                <div class="skeleton-cards">
+                    <div class="skeleton-card"><div class="skeleton-card-label"></div><div class="skeleton-card-value"></div><div class="skeleton-card-trend"></div></div>
+                    <div class="skeleton-card"><div class="skeleton-card-label"></div><div class="skeleton-card-value"></div><div class="skeleton-card-trend"></div></div>
+                    <div class="skeleton-card"><div class="skeleton-card-label"></div><div class="skeleton-card-value"></div><div class="skeleton-card-trend"></div></div>
+                    <div class="skeleton-card"><div class="skeleton-card-label"></div><div class="skeleton-card-value"></div><div class="skeleton-card-trend"></div></div>
+                </div>
+                <div class="skeleton-section">
+                    <div class="skeleton-section-title"></div>
+                    <div class="skeleton-chart"></div>
+                </div>
+                <div class="skeleton-status">${T('loading.firstRun')}<br><small>${T('loading.autoRefresh')}</small></div>
+            </div>`;
+            setTimeout(loadBillingData, 5000);
+            return;
+        }
+        if (json.status === 'error') {
+            container.innerHTML = `<div style="padding:60px;text-align:center;color:#e74c3c;">${T('err.load', json.message)}<br><br><button onclick="location.reload()" style="padding:8px 16px;cursor:pointer;">${T('retry')}</button></div>`;
+            return;
+        }
+        window.__BILLING_INFRA_DATA__ = json.data;
+        // 重新读取全局变量并渲染
+        location.reload();
+    } catch (e) {
+        const container = document.querySelector('.container');
+        if (container) {
+            container.innerHTML = `<div style="padding:60px;text-align:center;color:#e74c3c;">${T('err.net', e.message)}<br><br><small style="color:#95a5a6;">${T('err.net.hint')}</small><br><br><button onclick="location.reload()" style="padding:8px 16px;cursor:pointer;">${T('retry')}</button></div>`;
+        }
+    }
+}
+// ===== 视图切换：按资源 / 按 Workspace =====
+function switchRegionView(regionId, view, tabEl) {
+    const tabs = tabEl.parentElement.querySelectorAll('.view-tab');
+    tabs.forEach(t => {
+        if (t.dataset.view === view) {
+            t.style.color = '#3498db';
+            t.style.borderBottomColor = '#3498db';
+            t.style.fontWeight = '600';
+        } else {
+            t.style.color = '#7f8c8d';
+            t.style.borderBottomColor = 'transparent';
+            t.style.fontWeight = '500';
+        }
+    });
+    const resourceView = document.getElementById(`view-resource-${regionId}`);
+    const workspaceView = document.getElementById(`view-workspace-${regionId}`);
+    if (view === 'resource') {
+        resourceView.style.display = '';
+        workspaceView.style.display = 'none';
+    } else {
+        resourceView.style.display = 'none';
+        workspaceView.style.display = '';
+    }
+}
+
+function toggleWsExpand(expandId) {
+    const row = document.getElementById(expandId);
+    if (!row) return;
+    const isHidden = row.style.display === 'none';
+    row.style.display = isHidden ? '' : 'none';
+
+    if (isHidden && !row.dataset.rendered) {
+        row.dataset.rendered = '1';
+        const parts = expandId.replace('ws-expand-', '').split('-');
+        const idx = parseInt(parts.pop());
+        const regionId = parts.join('-');
+        const chartId = `ws-chart-${regionId}-${idx}`;
+        const pieId = `ws-pie-${regionId}-${idx}`;
+
+        const regionRows = (DATA.regions_data[regionId] || []).filter(r => MONTHS.includes(r.month));
+        const wsMonthlyAll2 = {};
+        regionRows.forEach(r => {
+            const ws = r.workspace_name || '(未分配)';
+            if (!wsMonthlyAll2[ws]) wsMonthlyAll2[ws] = { name: ws, months: {}, cruMonths: {}, skus: {} };
+            wsMonthlyAll2[ws].months[r.month] = (wsMonthlyAll2[ws].months[r.month] || 0) + r.total_amount;
+            wsMonthlyAll2[ws].cruMonths[r.month] = (wsMonthlyAll2[ws].cruMonths[r.month] || 0) + r.total_cru;
+            const sku = r.sku_name || '-';
+            if (!wsMonthlyAll2[ws].skus[sku]) wsMonthlyAll2[ws].skus[sku] = {};
+            wsMonthlyAll2[ws].skus[sku][r.month] = (wsMonthlyAll2[ws].skus[sku][r.month] || 0) + r.total_amount;
+        });
+        const sortedWs = Object.values(wsMonthlyAll2).sort((a, b) => {
+            return MONTHS.reduce((s, m) => s + (b.months[m] || 0), 0) - MONTHS.reduce((s, m) => s + (a.months[m] || 0), 0);
+        });
+        const wsData = sortedWs[idx];
+        if (!wsData) return;
+
+        const currency = getCurrency(regionId);
+
+        setTimeout(() => {
+            const chartEl = document.getElementById(chartId);
+            if (chartEl) {
+                const chart = echarts.init(chartEl);
+                const costData = MONTHS.map(m => +(wsData.months[m] || 0).toFixed(2));
+                const cruData = MONTHS.map(m => +(wsData.cruMonths[m] || 0).toFixed(2));
+                const avgCost = costData.reduce((a, b) => a + b, 0) / (costData.length || 1);
+                chart.setOption({
+                    tooltip: { trigger: 'axis', formatter: p => { return '<b>' + MONTH_LABELS[MONTHS[p[0].dataIndex]] + '</b><br/>' + T('series.cost') + ': ' + currency + p[0].value.toLocaleString() + '<br/>CRU: ' + (p[1] ? p[1].value.toFixed(1) : '-'); } },
+                    grid: { left: 45, right: 45, bottom: 25, top: 20 },
+                    xAxis: { type: 'category', data: MONTHS.map(m => MONTH_LABELS[m]), axisLabel: { fontSize: 11 } },
+                    yAxis: [{ type: 'value', name: axisMoney(currency), nameTextStyle: { fontSize: 10 } }, { type: 'value', name: 'CRU', nameTextStyle: { fontSize: 10 } }],
+                    series: [
+                        { name: T('series.cost'), type: 'bar', data: costData, itemStyle: { color: new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'#4a90d9'},{offset:1,color:'#a8d0f5'}]), borderRadius: [4,4,0,0] }, barMaxWidth: 40,
+                          markLine: { silent: true, data: [{ yAxis: avgCost, label: { formatter: T('axis.avg', currency + Math.round(avgCost).toLocaleString()), fontSize: 10, color: '#f5a623' }, lineStyle: { color: '#f5a623', type: 'dashed', width: 1 } }] }
+                        },
+                        { name: 'CRU', type: 'line', yAxisIndex: 1, data: cruData, smooth: true, lineStyle: { color: '#7b68ee', width: 2 }, itemStyle: { color: '#7b68ee' }, symbol: 'circle', symbolSize: 5 }
+                    ]
+                });
+                window.addEventListener('resize', () => chart.resize());
+            }
+
+            const pieEl = document.getElementById(pieId);
+            if (pieEl) {
+                const pieChart = echarts.init(pieEl);
+                const skuEntries = Object.entries(wsData.skus).map(([sku, months]) => ({
+                    name: sku, value: +MONTHS.reduce((s, m) => s + (months[m] || 0), 0).toFixed(2)
+                })).filter(e => e.value > 0).sort((a, b) => b.value - a.value).slice(0, 6);
+                const skuColors = ['#4a90d9', '#f5a623', '#7b68ee', '#50c878', '#e74c3c', '#95a5a6'];
+                pieChart.setOption({
+                    tooltip: { trigger: 'item', formatter: p => p.name + ': ' + currency + p.value.toLocaleString() + ' (' + p.percent + '%)' },
+                    series: [{ type: 'pie', radius: ['35%', '65%'], center: ['50%', '55%'], data: skuEntries.map((e, i) => ({ ...e, itemStyle: { color: skuColors[i % skuColors.length] } })), label: { show: true, formatter: '{b}\n{d}%', fontSize: 10 }, emphasis: { label: { fontSize: 12, fontWeight: 'bold' } } }]
+                });
+                window.addEventListener('resize', () => pieChart.resize());
+            }
+        }, 50);
+    }
+}
+
+loadBillingData();
+</script>
+</body>
+</html>
