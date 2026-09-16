@@ -119,17 +119,16 @@ cz-cli agent llm add my-gateway \
   --api-key <AI-Gateway-API-Key>
 ```
 
-After adding the configuration, list the available models and set the default model using the full `<configuration-name>/<model-id>` reference. See [AI Agent Integration → Configure LLM](cz-cli-agent.md) for details.
+After adding the configuration, list the available models and set the default model using the full `<configuration-name>/<model-id>` reference. See [cz-cli Installation and Usage Guide → Configure an LLM for the cz-cli Agent](setup_cz_cli.md#configure-an-llm-for-the-cz-cli-agent) for details.
 
 ## Related Documents
 
 **cz-cli Documentation**
 
-- [Installation and Configuration Guide](setup_cz_cli.md) — Installation, Profile configuration, output formats, upgrades, FAQ
+- [Installation and Configuration Guide](setup_cz_cli.md) — Installation, Profile, MCP, Agent LLM configuration, output formats, upgrades, FAQ
 - [SQL Execution and Data Exploration](cz-cli-sql.md) — Full reference for sql, schema, table, job, workspace commands
 - [Studio Task Development and Operations](cz-cli-studio-tasks.md) — Task creation, scheduling, runs operations, backfill, task flow
 - [Studio External Data Source Management](cz-cli-datasource.md) — Data source browsing, connectivity testing, sample data preview
-- [AI Agent Integration](cz-cli-agent.md) — Agent LLM configuration, natural language operations, enterprise bot scenarios
 
 **Lakehouse Related Documents**
 

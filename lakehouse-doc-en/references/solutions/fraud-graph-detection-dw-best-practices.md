@@ -648,9 +648,9 @@ doc_transaction_edge + doc_account_node (ODS)
 
 ## Related Documentation
 
-- [CREATE DYNAMIC TABLE](create-dynamic-table.md) — Syntax reference and incremental refresh mechanism
-- [MERGE INTO](merge.md) — Incremental upsert syntax reference
-- [CREATE INDEX](create-index.md) — Bloomfilter / Inverted / Vector index syntax
-- [SQL Functions](create-sql-function.md) — SQL UDF creation and calling conventions
-- [ZettaPark Python Task Development Guide](studio-python-task-zettapark.md) — ZettaPark graph algorithm integration
-- [Medallion Architecture: Pure SQL Dynamic Table Approach](lakehouse-medallion-sql-dt-guide.md) — Three-layer data warehouse reference
+- [CREATE DYNAMIC TABLE](../create-dynamic-table.md) — Syntax reference and incremental refresh mechanism
+- [MERGE INTO](../merge.md) — Incremental upsert syntax reference
+- [CREATE INDEX](../index_guide.md) — Bloomfilter / Inverted / Vector index syntax
+- [SQL Functions](../create-sql-function.md) — SQL UDF creation and calling conventions
+- [ZettaPark Python Task Development Guide](../studio-python-task-zettapark.md) — ZettaPark graph algorithm integration
+- [Medallion Architecture: Pure SQL Dynamic Table Approach](../lakehouse-medallion-sql-dt-guide.md) — Three-layer data warehouse reference

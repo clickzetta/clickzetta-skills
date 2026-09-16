@@ -627,7 +627,7 @@ The `/` path has 13 hits with 3 threat behaviors. `/etc/passwd` and `/shell.php`
 - [CREATE INVERTED INDEX](../create-inverted-index.md) — Inverted index syntax
 - [CREATE DYNAMIC TABLE](../create-dynamic-table.md) — Dynamic Table DDL full parameters
 - [Time Travel](../timetravel.md) — Historical snapshot query syntax and retention policy
-- [External Function Development Guide (Python)](../RemoteFunction-dev-guide-python3.md) — External Function integration with threat intelligence APIs
-- [Lakehouse Security Baseline Best Practices](../lakehouse-security-baseline-best-practices.md) — Permission controls and auditing
+- [External Function Development Guide (Python)](../external-function-combo-practice.md) — External Function integration with threat intelligence APIs
+- [Security Features Overview](../security_overview.md) — Permission controls and auditing
 
 > ⚠️ **Note (pending manual verification)**: Column Masking currently matches by username via `current_user()`, and all usernames authorized to view plaintext must be added individually to the `IN()` list in the masking function. If your Lakehouse version supports role-based dynamic matching (e.g., `HAS_ROLE('role_name')`), you can use roles instead of a username list for easier maintenance. Contact Singdata technical support to confirm whether your version supports this function.

@@ -270,6 +270,6 @@ Maintainers are responsible for:
 
 - [Question Asking Guide](datagpt-question-asking-guide.md) — How to ask questions that are more likely to get accurate answers
 - [Analysis Patterns Guide](datagpt-analysis-patterns-guide.md) — Common analysis patterns such as trends, comparisons, rankings, and proportions
-- [Using Dashboards](datagpt-dashboard-bi-analyst-guide.md) — Save Q&A results as shareable dashboards
+- [DataGPT Dashboard User Guide](datagpt-dashboard-guide.md) — Save Q&A results as shareable dashboards
 - [Handling Feedback](datagpt-feedback-loop-guide.md) — Submit feedback to help improve the system
 - [Troubleshooting Q&A Accuracy Issues](datagpt-qa-accuracy-troubleshooting-guide.md) — Diagnostic methods when answers are inaccurate

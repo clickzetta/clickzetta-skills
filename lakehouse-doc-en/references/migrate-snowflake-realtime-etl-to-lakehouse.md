@@ -246,8 +246,8 @@ def suppress_stderr():
 
 with suppress_stderr():
     # Install kaggle
-    subprocess.run([sys.executable, "-m", "pip", "install", "kaggle", "--target", "/home/system_normal", "-i", "https://pypi.tuna.tsinghua.edu.cn/simple"], stderr=subprocess.DEVNULL)
-    sys.path.append('/home/system_normal')
+    subprocess.run([sys.executable, "-m", "pip", "install", "kaggle", "--target", "/tmp/python_packages", "-i", "https://pypi.tuna.tsinghua.edu.cn/simple"], stderr=subprocess.DEVNULL)
+    sys.path.insert(0, '/tmp/python_packages')
 
 import pandas as pd
 import boto3
@@ -284,7 +284,7 @@ def upload_df_to_s3():
             # Setup Kaggle API
 
             # Ensure the directory exists
-            config_dir = '/home/system_normal/tempdata/.config/kaggle'
+            config_dir = '/tmp/kaggle_data/.config/kaggle'
             if not os.path.exists(config_dir):
                 os.makedirs(config_dir)
 
@@ -310,13 +310,13 @@ def upload_df_to_s3():
             csv_file = 'Insurance claims data.csv'
 
             # Download the entire dataset as a zip file
-            api.dataset_download_files(dataset, path='/home/system_normal/tempdata')
+            api.dataset_download_files(dataset, path='/tmp/kaggle_data')
 
             # Extract the CSV file from the downloaded zip file
-            with zipfile.ZipFile('/home/system_normal/tempdata/insurance-claims.zip', 'r') as zip_ref:
-                zip_ref.extract(csv_file, path='/home/system_normal/tempdata')
+            with zipfile.ZipFile('/tmp/kaggle_data/insurance-claims.zip', 'r') as zip_ref:
+                zip_ref.extract(csv_file, path='/tmp/kaggle_data')
 
-            policy_data, vehicles_data, customers_data, claims_data = load_random_sample(f'/home/system_normal/tempdata/{csv_file}', 20)
+            policy_data, vehicles_data, customers_data, claims_data = load_random_sample(f'/tmp/kaggle_data/{csv_file}', 20)
             # Convert DataFrame to CSV string
             policy = policy_data.to_csv(index=False)
             vehicles = vehicles_data.to_csv(index=False)

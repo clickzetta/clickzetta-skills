@@ -26,6 +26,12 @@ Migrating from another platform? See [SQL Syntax Compatibility Reference](sql-re
 | [External Tables](create-external-table.md) | Table definitions for external data sources such as Kafka external tables |
 | [Indexes](sql_index_guide.md) | Create and manage bloom filter indexes, inverted indexes, and vector indexes |
 
+## Archive and Recovery
+
+| Page | Description |
+|------|-------------|
+| [Archive and Recovery](archive-recovery.md) | Archive partitions, retrieve archived files, and check retrieval status |
+
 ## Storage, Connections, and Ecosystem
 
 | Page | Description |

@@ -1,0 +1,3 @@
+# Conversational Data Analytics (Data Analytics Agent (DataGPT))
+
+Lakehouse Data Analytics Agent (DataGPT) is a next-generation conversational data analytics tool built on a cloud-native Lakehouse architecture. It combines the natural language understanding capabilities of large language models (LLMs) with the enterprise-grade data processing power of the Lakehouse engine, transforming data analysis into an intuitive conversational experience. With the Data Analytics Agent (DataGPT), even non-technical business users can easily explore data value and drive intelligent, data-informed decisions. For detailed usage, see [Conversational AI Data Analytics Tool: Data Analytics Agent (DataGPT)](datagpt_intro.md)

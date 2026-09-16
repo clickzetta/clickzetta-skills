@@ -848,12 +848,12 @@ best_practice_saas_dw   | v_tenant_churn_risk        | true    | false
 
 ## Related Documentation
 
-- [Create Dynamic Table](../references/create-dynamic-table.md) — syntax reference and incremental refresh mechanism
-- [Continuous Kafka Data Ingestion with PIPE](../references/pipe-kafka.md) — full Kafka PIPE parameter reference
-- [Dynamic Data Masking](../references/dynamic-mask.md) — Column Masking policy creation and binding
-- [User Permission Management (RBAC)](../references/rbac.md) — GRANT / REVOKE syntax and role management
-- [Create View](../references/create-view.md) — VIEW and Semantic View syntax
-- [Medallion Architecture: Pure SQL Dynamic Table Approach](lakehouse-medallion-sql-dt-guide.md) — large-scale three-layer data warehouse reference
+- [Create Dynamic Table](../create-dynamic-table.md) — syntax reference and incremental refresh mechanism
+- [Continuous Kafka Data Ingestion with PIPE](../pipe-kafka.md) — full Kafka PIPE parameter reference
+- [Dynamic Data Masking](../dynamic-mask.md) — Column Masking policy creation and binding
+- [User Permission Management (RBAC)](../roles.md) — GRANT / REVOKE syntax and role management
+- [Create View](../create-view.md) — VIEW and Semantic View syntax
+- [Medallion Architecture: Pure SQL Dynamic Table Approach](../lakehouse-medallion-sql-dt-guide.md) — large-scale three-layer data warehouse reference
 - [Industrial IoT Device Health Monitoring Data Warehouse Best Practices](iot-device-health-monitoring-dw-best-practices.md) — similar four-layer data warehouse architecture reference
 
 > ⚠️ **Note (pending manual verification)**: Column Masking currently matches by username via `current_user()`, and all usernames authorized to view plaintext must be added individually to the `IN()` list in the masking function. If your Lakehouse version supports role-based dynamic matching (e.g., `HAS_ROLE('role_name')`), you can use roles instead of a username list for easier maintenance. Contact Singdata technical support to confirm whether your version supports this function.

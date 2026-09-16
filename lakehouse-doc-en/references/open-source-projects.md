@@ -166,7 +166,6 @@ A SQL replay tool for reproducing and comparing query behavior in production env
 ## Related Documents
 
 - [cz-cli Installation and Setup](setup_cz_cli.md)
-- [cz-cli Agent Integration](cz-cli-agent.md)
 - [dbt Integration Guide](eco_integration/dbt.md)
 - [dbt Hands-On Series](dbt-practice-series.md)
 - [Spark Connector](spark-connector-summary.md)

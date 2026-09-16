@@ -458,7 +458,7 @@ In addition to reading external Iceberg tables, Singdata Lakehouse itself expose
 - **Direction 1 (main flow in this guide)**: External Spark writes Iceberg → Lakehouse External Catalog federated read
 - **Direction 2 (reverse)**: Lakehouse internal tables → exposed Iceberg REST API → external Spark/Trino reads
 
-For configuration of the outbound Iceberg REST API, see [Access Lakehouse via Spark and Iceberg REST Catalog](spark-lakehouse-iceberg-rest.md).
+For configuration of the outbound Iceberg REST API, see [Access Lakehouse via Spark and Iceberg REST Catalog](../spark-lakehouse-iceberg-rest.md).
 
 ---
 

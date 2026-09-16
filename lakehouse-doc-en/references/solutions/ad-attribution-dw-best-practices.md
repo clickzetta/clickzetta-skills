@@ -641,6 +641,6 @@ Douyin's `cost_per_conversion = 60000` (budget 120,000 / 2 conversions); Google'
 - [CREATE DYNAMIC TABLE](../create-dynamic-table.md)
 - [CREATE PIPE](../create-pipe.md)
 - [CREATE TABLE STREAM](../create-table-stream.md)
-- [CREATE BLOOMFILTER INDEX](../bloomfilter-index.md)
+- [CREATE BLOOMFILTER INDEX](../create-bloomfilter-index.md)
 - [CREATE INVERTED INDEX](../inverted-index.md)
 - [Medallion Architecture: Pure SQL Dynamic Table Approach](../lakehouse-medallion-sql-dt-guide.md)

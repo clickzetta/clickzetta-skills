@@ -788,7 +788,7 @@ MES System (Kafka)                   Manual Sampling (CSV)
 - [Create Dynamic Table](../create-dynamic-table.md) — syntax reference and incremental refresh mechanism
 - [Continuous Kafka Data Ingestion with PIPE](../pipe-kafka.md) — full Kafka PIPE parameter reference
 - [Import Files from Object Storage (COPY INTO)](../copy-into-table.md) — Volume + COPY INTO syntax
-- [Create Index](../create-index.md) — Bloomfilter / Inverted / Vector index syntax
+- [Create Index](../index_guide.md) — Bloomfilter / Inverted / Vector index syntax
 - [Dynamic Table Scheduling and Studio Tasks](../dynamic_table_using_studio.md) — Studio Task configuration for refresh scheduling
-- [Medallion Architecture: Pure SQL Dynamic Table Approach](lakehouse-medallion-sql-dt-guide.md) — three-layer data warehouse reference
+- [Medallion Architecture: Pure SQL Dynamic Table Approach](../lakehouse-medallion-sql-dt-guide.md) — three-layer data warehouse reference
 - [Industrial IoT Device Health Monitoring Data Warehouse Best Practices](iot-device-health-monitoring-dw-best-practices.md) — similar architecture reference

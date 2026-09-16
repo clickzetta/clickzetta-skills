@@ -631,7 +631,7 @@ FROM best_practice_energy_ts.doc_gold_daily_load_profile
 ORDER BY load_date;
 ```
 
-> 💡 **Tip**: Before deploying an External Function you need to configure an `API_CONNECTION`. See [Create External Function](../create-external-function.md) and the [External Function Development Guide](../external-function-dev-guide-python3.md) for details.
+> 💡 **Tip**: Before deploying an External Function you need to configure an `API_CONNECTION`. See [Create External Function](../create_external_function.md) and the [External Function Development Guide](../external-function-combo-practice.md) for details.
 
 ---
 
@@ -703,7 +703,7 @@ doc_kafka_raw_load          doc_pjme_load_raw
 - [Continuous Kafka Data Ingestion with PIPE](../pipe-kafka.md) — full Kafka PIPE parameter reference
 - [SQL Time-Series Analysis Guide](../SQL_TimeSeries_Guide.md) — complete usage of LAG / LEAD / rolling windows
 - [SQL Window Functions Guide](../sql_data_transform_windows.md) — window function syntax and scenario coverage
-- [Create Index](../create-index.md) — Bloomfilter / Inverted / Vector index syntax
-- [Create External Function](../create-external-function.md) — External Function development and deployment
+- [Create Index](../index_guide.md) — Bloomfilter / Inverted / Vector index syntax
+- [Create External Function](../create_external_function.md) — External Function development and deployment
 - [Medallion Architecture: Pure SQL Dynamic Table Approach](../lakehouse-medallion-sql-dt-guide.md) — large-scale three-layer data warehouse reference
 - [Industrial IoT Device Health Monitoring Data Warehouse Best Practices](iot-device-health-monitoring-dw-best-practices.md) — reference for similar time-series analysis

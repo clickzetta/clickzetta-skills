@@ -27,7 +27,7 @@ Choose your path by role to quickly find the documentation you need.
 
 **Step 4 — Dashboards, feedback, and personalization**
 
-[Using Dashboards](datagpt-dashboard-bi-analyst-guide.md) — View shared dashboards and ask follow-up questions around them
+[DataGPT Dashboard User Guide](datagpt-dashboard-guide.md) — View shared dashboards and ask follow-up questions around them
 [Handling Feedback](datagpt-feedback-loop-guide.md) — Submit calibration feedback when answers are inaccurate or charts are wrong
 [User Settings](datagpt-user-settings-guide.md) — Change logo, theme, and chart color scheme
 
@@ -45,7 +45,7 @@ Choose your path by role to quickly find the documentation you need.
 
 **Step 2 — Build dashboards**
 
-[Using Dashboards](datagpt-dashboard-bi-analyst-guide.md) — Save charts/tables to dashboards, manage layout and sharing
+[DataGPT Dashboard User Guide](datagpt-dashboard-guide.md) — Save charts/tables to dashboards, manage layout and sharing
 [Table Rendering](table_rendering.md) — Adjust table styles and layout
 [Dashboard Version Management](dashboard-version-management-guide.md) — Manage multiple versions and change history
 

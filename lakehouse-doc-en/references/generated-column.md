@@ -1,99 +1,123 @@
-## Generated Columns
-Generated Columns are columns in a database table whose values are automatically calculated from the values of other columns in the table through an expression. When such a column is created, a calculation rule is defined, and the database management system automatically fills in the column's values based on this rule, without requiring the user to explicitly insert or update these values. An application scenario could be when data integration synchronization does not support transformation, and Generated Columns can be used for transformation.
+# Generated Column
+
+## Generated Column
+
+A Generated Column is a column in a Lakehouse table whose value is automatically computed from other columns in the table via an expression. The computation rule is defined at creation time and the system maintains the column value automatically — no explicit insert or update is required. Common use cases include performing field transformations at the database layer during data integration sync, or extracting JSON fields into standalone columns and building indexes to accelerate queries.
+
+Generated columns support two storage modes:
+
+| Mode | Keyword | Description |
+| --- | --- | --- |
+| **VIRTUAL** (default) | Omit or write `VIRTUAL` | Not written to Parquet files; computed dynamically at query time. No extra storage overhead. |
+| **STORED** | `STORED` | Materialized into Parquet files at write time. Queries read the column directly; the optimizer can reuse it; supports CLUSTER BY. |
 
 ## Syntax
-```SQL
+
+```sql
 CREATE TABLE [ IF NOT EXISTS ] table_name
 (
-    column_definition GENERATED ALWAYS AS ( expr ), [column_definition,...]
+    column_definition,
+    -- VIRTUAL (default): not written to file, computed at read time
+    col_name data_type GENERATED ALWAYS AS ( expr ) [VIRTUAL],
+    -- STORED: materialized at write time
+    col_name data_type GENERATED ALWAYS AS ( expr ) STORED,
+    [column_definition, ...]
 )
-[ PARTITIONED BY (column_name column_type | column_name ) ];
+[ PARTITIONED BY (column_name column_type | column_name) ];
 ```
-* **GENERATED ALWAYS AS (expr)**: Automatically generates the value of the column through the expression `expr`. The expression can include constants and built-in scalar deterministic SQL functions. Non-deterministic functions such as (current\_date, random, current\_timestamp, context functions) or operators are not supported. Aggregate functions, window functions, or table functions are also not supported. Partition columns using generated columns are supported.
 
-- **Example**:
-```SQL
--- Correct usage
-CREATE TABLE t_genet (
+**GENERATED ALWAYS AS (expr)**: Automatically generates the column value via expression `expr`. Expressions support constants and built-in deterministic scalar functions. The following are not supported:
+
+* Non-deterministic functions: `current_date()`, `current_timestamp()`, `rand()`, etc.
+* Aggregate functions: `sum()`, `count()`, `avg()`, etc.
+* Window functions: `row_number()`, `rank()`, etc.
+* Subqueries
+* Self-references or circular dependencies
+
+Using a generated column as a partition column is supported.
+
+**Examples**:
+
+```sql
+-- VIRTUAL generated column (default): not persisted to disk, computed at read time
+CREATE TABLE t_virtual (
     col1 TIMESTAMP,
-    hour int GENERATED ALWAYS AS (hour(col1)),
-    pt STRING GENERATED ALWAYS AS (date_format(col1, 'yyyy-MM-dd'))
+    hour_col INT    GENERATED ALWAYS AS (hour(col1)),
+    pt      STRING  GENERATED ALWAYS AS (date_format(col1, 'yyyy-MM-dd'))
 ) PARTITIONED BY (pt);
+
+-- STORED generated column: materialized at write time, supports CLUSTER BY
+CREATE TABLE t_stored (
+    col1   INT,
+    col2   INT GENERATED ALWAYS AS (col1 + 1) STORED
+) CLUSTERED BY (col2) SORTED BY (col2) INTO 8 BUCKETS;
+
+-- JSON extraction + inverted index (typical VIRTUAL use case)
+CREATE TABLE t_json (
+    id      INT,
+    payload JSON,
+    level   STRING GENERATED ALWAYS AS (json_extract_string(payload, '$.level')),
+    INDEX idx_level(level) USING INVERTED
+) USING PARQUET;
 ```
+
 ### Difference Between Generated Columns and Default Values
 
-1. **Partition Column Support**:
+| Comparison | Default Value (DEFAULT) | Generated Column (GENERATED ALWAYS AS) |
+| --- | --- | --- |
+| Partition column support | Not supported | Supported |
+| Non-deterministic functions | Supported (e.g. `current_timestamp()`) | Not supported |
+| Can a value be specified at insert time? | Yes; if not specified, the default value is used | No; the value is entirely determined by the expression |
+| Source of column value | Static constant or non-deterministic function | Computed result from other columns |
+| Behavior of existing rows after ALTER TABLE ADD | Existing rows have the column filled with NULL | VIRTUAL: computed by expression at read time, immediately visible; STORED: existing rows are NULL (old files are not re-materialized) |
 
-   1. **Default Values**: Currently, setting default values for partition columns is not supported.
-   2. **Generated Columns**: Supports generating values for partition columns.
+### Restrictions
 
-2. **Function Support**:
-
-   1. **Default Values**: Supports using non-deterministic functions, such as `current_timestamp()`.
-   2. **Generated Columns**: Does not support non-deterministic functions, only deterministic scalar functions can be used.
-
-3. **Value Specification in Insert Operations**:
-
-   1. **Default Values**: When inserting data, a static value can be specified for the column. If not specified, the default value is used.
-   2. **Generated Columns**: When inserting data, values cannot be specified for generated columns; their values are entirely determined by the generation expression.
-
-4. **Source of Column Values**:
-
-   1. **Default Values**: Does not support column values derived from transformations of other columns.
-   2. **Generated Columns**: Supports column values derived from transformations of other columns, i.e., values can be computed based on other columns.
-
-5. **Handling Existing Data Rows**:
-
-   1. **Default Values**: When adding a column with a default value to an existing table, the column in existing data rows will be filled with null.
-   2. **Generated Columns**: For existing data rows, the values of generated columns will be transformed according to the generation expression and display the transformed data.
-
-### Usage Restrictions
-
-* When using generated columns, you cannot explicitly specify the value of the column in insert operations; it will be automatically generated by the expression. However, to be compatible with Hive syntax, Lakehouse allows you to specify a static value for partition fields. Nevertheless, the specified static value will not take effect, and the query result will still be determined by the specified generation expression.
-* Writing through real-time interfaces and batch interfaces is not supported, including batch import and real-time writing in Studio data integration.
-* Generated columns do not support non-deterministic functions such as (current\_date\random\current\_timestamp\context functions) or operators, and do not support aggregate functions, window functions, or table functions.
+* An explicit value cannot be specified for a generated column at insert time; doing so raises error `insert.generated.column`. Exception: specifying a static value for a partition field does not raise an error, but the specified value has no effect — the query result is still determined by the expression (Hive syntax compatibility).
+* Writing via real-time interfaces and batch interfaces is not supported (including bulk import and real-time write in Studio data integration).
+* A VIRTUAL generated column cannot be used in `CLUSTER BY` / `SORTED BY`; use STORED mode instead.
+* Generated columns are not supported in column definitions of Dynamic Tables or materialized views.
+* When executing `DROP COLUMN`, if the column being dropped is referenced by another generated column, error `column.dependency` is raised. Delete the dependent column first.
 
 ### Inserting Data
 
-* When using generated columns, you cannot specify a constant value for the column. For example, if the hour column is generated by `col1`, you cannot specify the value of hour during insertion. Doing so will result in an error.
+When inserting, provide only the base columns; generated columns are maintained automatically by the system:
 
-**Error Example**:
-```SQL
--- The specified 2024-09-26 will not take effect because pt is generated from col1. Although it will not report an error, the value will not be written.
-CREATE TABLE t_genet (
-    col1 TIMESTAMP,
-    pt STRING GENERATED ALWAYS AS (date_format(col1, 'yyyy-MM-dd'))
-) PARTITIONED BY (pt);
-INSERT INTO t_genet (col1,pt) VALUES (current_timestamp, '2024-09-26');
+```sql
+-- Correct: insert only col1; pt is computed automatically by the expression
+INSERT INTO t_virtual (col1) VALUES (TIMESTAMP '2024-09-26 10:00:00');
+
+-- Incorrect: explicitly specifying a generated column value raises insert.generated.column
+INSERT INTO t_virtual (col1, pt) VALUES (TIMESTAMP '2024-09-26 10:00:00', '2024-09-26');
 ```
-**Correct Example**：
-```SQL
--- Can be executed, only insert col1, pt will be automatically calculated by the generation rule
-INSERT INTO t_genet (col1) VALUES (current_timestamp);
-```
-# Specify Generated Column When Adding Field
+
+---
+
+# Adding a Generated Column via ALTER TABLE
 
 ## Syntax
-```SQL
--- Add column
+
+```sql
 ALTER TABLE table_name ADD COLUMN
-      column1_name_identifier data_type [column_properties]
-      [FIRST | AFTER column1_name_identifier]  ,....
-
-column_properties:==
-    GENERATED ALWAYS AS ( expr ) |
-    COMMENT column_comment 
+    column_name data_type GENERATED ALWAYS AS ( expr )
+    [FIRST | AFTER column_name]
+    [COMMENT column_comment];
 ```
-* **GENERATED ALWAYS AS (expr)**: Specifies an expression used to automatically generate the value of a newly added column. For existing rows in the table, the column will be filled with the result of the expression. The expression can include constants and built-in scalar deterministic SQL functions. Non-deterministic functions such as (current\_date, random, current\_timestamp, etc.) or operators are not supported. Aggregate functions, window functions, or table functions are also not supported.
 
-## Usage Restrictions
+**Notes**:
 
-* Adding generated columns to existing columns is not supported
+* By default, only **VIRTUAL** generated columns can be added. After adding, existing data rows are computed dynamically by the expression at query time and are immediately visible.
+* Adding a **STORED** generated column requires enabling the configuration `cz.sql.alter.table.add.generated.column.enable.stored=true`. The column value in existing Parquet files will be NULL (old files are not rewritten).
+* Modifying an existing regular column into a generated column is not supported (`MODIFY COLUMN` does not support `GENERATED ALWAYS AS`).
 
-## Example
-Adding a Generated Column
-```SQL
+## Examples
+
+```sql
+-- Add a VIRTUAL generated column (recommended, works out of the box)
 ALTER TABLE my_table ADD COLUMN
-    generated_col TIMESTAMP GENERATED ALWAYS AS (date_format(col1, 'yyyy-MM-dd')) FIRST;
+    year_col INT GENERATED ALWAYS AS (year(event_time))
+    AFTER event_time;
+
+-- After adding, year_col for existing rows is computed automatically at query time
+SELECT id, event_time, year_col FROM my_table LIMIT 5;
 ```
-In this example, `generated_col` will be added as the first column in the table, and the `generated_col` for all existing data rows will be generated based on the current timestamp.

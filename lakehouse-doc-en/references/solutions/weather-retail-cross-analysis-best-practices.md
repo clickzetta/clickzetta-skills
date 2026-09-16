@@ -725,7 +725,7 @@ You can also add to the `refresh_ads_replenishment` task:
 
 - [CREATE DYNAMIC TABLE](../create-dynamic-table.md) — Dynamic Table full syntax and parameters
 - [CREATE PIPE](../create-pipe.md) — OSS PIPE creation and configuration
-- [External Function Development Guide (Python)](../RemoteFunction-dev-guide-python3.md) — External Function development and deployment
+- [External Function Development Guide (Python)](../external-function-combo-practice.md) — External Function development and deployment
 - [Window Functions Guide](../windowfunction.md) — `ROWS BETWEEN` syntax and usage
 - [Studio Task Scheduling Guide](../dynamic_table_task.md) — Dynamic Table scheduling task configuration
 - [Medallion Architecture: Pure SQL Dynamic Table Approach](../lakehouse-medallion-sql-dt-guide.md) — three-layer data warehouse Dynamic Table reference architecture

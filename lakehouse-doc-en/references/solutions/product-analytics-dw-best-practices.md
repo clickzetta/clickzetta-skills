@@ -740,5 +740,5 @@ doc_ab_assignments
 - [Funnel Analysis SQL Guide](../SQL_Funnel_Analysis_Guide.md) — detailed usage of Window Function funnel analysis
 - [Continuous Kafka Data Ingestion with PIPE](../pipe-kafka.md) — full Kafka PIPE parameter reference
 - [Table Stream Concepts and Usage](../table_stream.md) — Stream modes, offset management, and consumption patterns
-- [Medallion Architecture: Pure SQL Dynamic Table Approach](lakehouse-medallion-sql-dt-guide.md) — large-scale three-layer data warehouse reference
-- [Create Index](../create-index.md) — Bloomfilter / Inverted / Vector index syntax
+- [Medallion Architecture: Pure SQL Dynamic Table Approach](../lakehouse-medallion-sql-dt-guide.md) — large-scale three-layer data warehouse reference
+- [Create Index](../index_guide.md) — Bloomfilter / Inverted / Vector index syntax

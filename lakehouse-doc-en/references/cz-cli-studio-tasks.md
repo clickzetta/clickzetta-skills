@@ -229,7 +229,7 @@ cz-cli -p prod task flow instances <flow_task_name>
 **cz-cli Documentation**
 
 * [Installation and Configuration Guide](setup_cz_cli.md) — Installation, Profile configuration, basic usage
-* [AI Agent Integration](cz-cli-agent.md) — Agent LLM configuration, natural language operations
+* [AI Agent Integration](setup_cz_cli.md#using-with-ai-agents) — MCP, Agent LLM configuration, and natural language operations
 * [External Data Source Management](cz-cli-datasource.md) — Data source browsing and testing
 
 **Lakehouse Related Documentation**

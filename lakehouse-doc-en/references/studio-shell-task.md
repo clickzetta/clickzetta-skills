@@ -28,7 +28,7 @@ Shell tasks run in a Linux Pod managed by Studio. A new Pod is started for each 
 | Pre-installed CLI tools | `python3`, `curl`, `wget`, `awk`, `sed`, `grep`, `find`, `tar`, `gzip` |
 | Pre-installed Python packages | `clickzetta`, `clickzetta_dbutils`, `pandas`, `requests`, `boto3`, `oss2` |
 
-> 💡 **Tip**: The Pod environment is not preserved after destruction. If you need to install additional packages, use `pip install --target /home/system_normal <pkg>` at the beginning of the script, and add `sys.path.append('/home/system_normal')` in your Python code.
+> 💡 **Tip**: The Pod environment is not preserved after destruction. If you need to install additional packages, use `python3 -m pip install --target /tmp/python_packages <pkg>` at the beginning of the script, and use `sys.path.insert(0, '/tmp/python_packages')` in your Python code.
 
 **Connecting to Lakehouse**: Obtain a connection via `clickzetta_dbutils` — no need to hardcode credentials:
 

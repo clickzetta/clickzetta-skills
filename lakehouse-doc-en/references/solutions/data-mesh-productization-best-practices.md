@@ -657,8 +657,8 @@ Three Semantic Views (`is_dynamic = false`) correspond to single-domain data pro
 
 ## Related Documentation
 
-- [GRANT](grant.md) — Grant syntax and role management
-- [CREATE VIEW](create-view.md) — View creation syntax
-- [CREATE DYNAMIC TABLE](create-dynamic-table.md) — Dynamic Table syntax and incremental refresh mechanism
-- [Medallion Architecture: Pure SQL Dynamic Table Approach](lakehouse-medallion-sql-dt-guide.md) — Layered data warehouse reference
+- [GRANT](../grant-privileges.md) — Grant syntax and role management
+- [CREATE VIEW](../create-view.md) — View creation syntax
+- [CREATE DYNAMIC TABLE](../create-dynamic-table.md) — Dynamic Table syntax and incremental refresh mechanism
+- [Medallion Architecture: Pure SQL Dynamic Table Approach](../lakehouse-medallion-sql-dt-guide.md) — Layered data warehouse reference
 - [Industrial IoT Device Health Monitoring Data Warehouse Best Practices](iot-device-health-monitoring-dw-best-practices.md) — Complete data warehouse build reference

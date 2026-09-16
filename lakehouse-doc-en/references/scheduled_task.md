@@ -218,7 +218,7 @@ Before creating or enabling a Scheduled Task, it is recommended to check:
 
 - [Message Notifications](datagpt-notification-guide.md)
 - [Reading Analysis Results](datagpt-answer-reading-guide.md)
-- [Using Dashboards](datagpt-dashboard-bi-analyst-guide.md)
+- [DataGPT Dashboard User Guide](datagpt-dashboard-guide.md)
 - [Chart Auto-Refresh Configuration](chart-auto-refresh-guide.md)
 - [Validating Q&A Quality](datagpt-domain-qa-validation-guide.md)
 - [Troubleshooting Q&A Accuracy Issues](datagpt-qa-accuracy-troubleshooting-guide.md)

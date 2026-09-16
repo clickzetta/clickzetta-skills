@@ -165,7 +165,7 @@ Column hiding is a semantic configuration that achieves column-level governance 
 1. [Question Asking Guide](datagpt-question-asking-guide.md) — Structure of good questions
 2. [Analysis Patterns Guide](datagpt-analysis-patterns-guide.md) — Looking up numbers, comparisons, trends, rankings, attribution
 3. [Reading Analysis Results](datagpt-answer-reading-guide.md) — Reading values, tables, charts, SQL, logs
-4. [Using Dashboards](datagpt-dashboard-bi-analyst-guide.md) — From Q&A to dashboards
+4. [DataGPT Dashboard User Guide](datagpt-dashboard-guide.md) — From Q&A to dashboards
 5. [Using Data & Exploration](datagpt-data-exploration-guide.md) — Data tab + structured exploration
 6. [Handling Feedback](datagpt-feedback-loop-guide.md) — Submitting and improving
 7. [Notifications](datagpt-notification-guide.md) — Viewing background task status

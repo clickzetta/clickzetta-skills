@@ -333,7 +333,7 @@ CONNECTION = conn_id_graph
 RESOURCE_URIS = 'volume://func_volume/id_graph.zip';
 ```
 
-> ⚠️ **Note**: External Functions require packaging the function code as a `.zip` and uploading it to a Volume. The function class must use the `module.ClassName` format and declare parameter types via the `@annotate` decorator. See the [External Function Development Guide](../references/create-external-function.md) for details.
+> ⚠️ **Note**: External Functions require packaging the function code as a `.zip` and uploading it to a Volume. The function class must use the `module.ClassName` format and declare parameter types via the `@annotate` decorator. See the [External Function Development Guide](../external-function-combo-practice.md) for details.
 
 **SQL UDF substitute (test environment)**
 
@@ -935,9 +935,9 @@ best_practice_marketing_cdp    ods_retail_transactions   false
 
 ## Related Documentation
 
-- [MERGE INTO](../references/merge-into.md) — syntax reference and MATCHED / NOT MATCHED clause details
-- [Create Dynamic Table](../references/create-dynamic-table.md) — incremental refresh mechanism and static partition mode for partitioned DTs
-- [Create External Function](../references/create-external-function.md) — package, deploy, and call external HTTP services
-- [Continuous Kafka Data Ingestion with PIPE](../references/pipe-kafka.md) — Kafka PIPE parameters and READ_KAFKA syntax
-- [BITMAP Functions](../sql_functions/aggregate_functions/bitmap.md) — full parameters for GROUP_BITMAP_STATE / BITMAP_AND / BITMAP_OR
+- [MERGE INTO](../merge.md) — syntax reference and MATCHED / NOT MATCHED clause details
+- [Create Dynamic Table](../create-dynamic-table.md) — incremental refresh mechanism and static partition mode for partitioned DTs
+- [Create External Function](../create_external_function.md) — package, deploy, and call external HTTP services
+- [Continuous Kafka Data Ingestion with PIPE](../pipe-kafka.md) — Kafka PIPE parameters and READ_KAFKA syntax
+- [BITMAP Functions](../bitmap-type.md) — full parameters for GROUP_BITMAP_STATE / BITMAP_AND / BITMAP_OR
 - [Ad Attribution Data Warehouse Best Practices](ad-attribution-dw-best-practices.md) — multi-channel event ingestion and attribution models

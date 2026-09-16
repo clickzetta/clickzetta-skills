@@ -89,7 +89,7 @@ All LLMs are managed and controlled by **[AI Gateway](aigateway.md)**. Analytics
 [Reading Analysis Results](datagpt-answer-reading-guide.md) — Understanding values, tables, and charts
 [Analysis Patterns Guide](datagpt-analysis-patterns-guide.md) — Lookup, comparison, trends, rankings
 [Using Data and Exploration](datagpt-data-exploration-guide.md) — See which tables and fields are in the current domain
-[Using Dashboards](datagpt-dashboard-bi-analyst-guide.md) — Save charts, share with your team
+[DataGPT Dashboard User Guide](datagpt-dashboard-guide.md) — Save charts, share with your team
 [Handling Feedback](datagpt-feedback-loop-guide.md) — Submit corrections when answers are inaccurate
 
 → [Analyst Guide](datagpt-analyst-guide.md) (complete directory)
