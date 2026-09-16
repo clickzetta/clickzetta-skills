@@ -20,17 +20,26 @@ The default system image includes some commonly used dependency packages to supp
 * urllib2
 * ...
 
-To meet specific runtime requirements, the Pod environment provides limited environment customization capabilities. You can perform custom installations under the `/home/system_normal` path. Below is a sample code snippet demonstrating how to install custom packages (lines 4 and 5) and use them in the Python environment. Please note that after the Python task is completed, the Pod environment will be destroyed, so any environment customizations will not be retained.
+To meet specific runtime requirements, the Pod environment provides limited environment customization capabilities. Python tasks run as a non-root user, so use `--target` to install third-party packages into a dedicated temporary directory under `/tmp`. After the Python task completes, the Pod environment is destroyed, so environment customizations are not retained.
+
+> ⚠️ **Note**: Do not install dependencies under `/home` or into system Python directories. Python tasks do not guarantee that these directories are writable.
 
 ```py
 import subprocess
 import sys
 
-subprocess.check_call([sys.executable, "-m", "pip", "install", "mysql-connector-python","--target", "/home/system_normal", "-i", "https://pypi.tuna.tsinghua.edu.cn/simple"])
-sys.path.append('/home/system_normal')
+TARGET_DIR = "/tmp/python_packages"
+
+subprocess.check_call([
+    sys.executable, "-m", "pip", "install",
+    "mysql-connector-python",
+    "--target", TARGET_DIR,
+    "--index-url", "https://pypi.tuna.tsinghua.edu.cn/simple",
+    "--no-cache-dir",
+])
+sys.path.insert(0, TARGET_DIR)
 
 import mysql.connector
-
 ```
 
 Create connection:

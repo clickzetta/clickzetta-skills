@@ -508,11 +508,11 @@ kafka_raw_events        bronze_sensor_events
 
 ## Related Documentation
 
-- [CREATE DYNAMIC TABLE](create-dynamic-table.md) — Syntax reference and incremental refresh mechanism
-- [Import Kafka Data Continuously with Pipe](pipe-kafka.md) — Kafka PIPE full parameter reference
-- [Dynamic Data Masking](dynamic-mask.md) — Column Masking policy creation and binding
-- [CREATE INDEX](create-index.md) — Bloomfilter / Inverted / Vector index syntax
-- [Volume + Pipe + Dynamic Table End-to-End Practice](lakehouse-volume-pipe-acceleration-guide.md) — Object storage ingestion solution
-- [Medallion Architecture: Pure SQL Dynamic Table Approach](lakehouse-medallion-sql-dt-guide.md) — Large-scale three-layer data warehouse reference
+- [CREATE DYNAMIC TABLE](../create-dynamic-table.md) — Syntax reference and incremental refresh mechanism
+- [Import Kafka Data Continuously with Pipe](../pipe-kafka.md) — Kafka PIPE full parameter reference
+- [Dynamic Data Masking](../dynamic-mask.md) — Column Masking policy creation and binding
+- [CREATE INDEX](../index_guide.md) — Bloomfilter / Inverted / Vector index syntax
+- [Volume + Pipe + Dynamic Table End-to-End Practice](../lakehouse-volume-pipe-acceleration-guide.md) — Object storage ingestion solution
+- [Medallion Architecture: Pure SQL Dynamic Table Approach](../lakehouse-medallion-sql-dt-guide.md) — Large-scale three-layer data warehouse reference
 
 > ⚠️ **Note**: Column Masking currently matches authorized usernames via `current_user()`. Add all usernames that need plaintext access to the masking function allowlist. If your Lakehouse version supports role-based dynamic evaluation (such as `HAS_ROLE('role_name')`), you can use roles instead of username lists for more flexible maintenance. Contact Singdata technical support to confirm whether your version supports this function.

@@ -1,117 +1,147 @@
-# Dashboard Version Management - User Guide
+# Dashboard Version Management
 
-## **Feature Overview**
+Dashboard version management records stable dashboard versions, saves unpublished changes as drafts, and uses an edit lock to prevent users from overwriting each other's changes.
 
-When using Analytics Agent, users often iterate on dashboard charts through ASK AI conversations. However, after multiple rounds of modifications, charts may deviate from expectations. Previously, the only option was to describe requirements again and have the Agent redo the work.
+After the upgrade, a published version is created only when you click **Publish Dashboard**. You can try different layouts and analysis approaches, then publish once you are satisfied with the result.
 
-Now, the system automatically saves a version each time AI modifies a dashboard chart. Users can view historical versions at any time and restore with one click, completely solving the problem of "can't go back after making bad changes."
+> ⚠️ **Note**: In this version, Ask AI chart modifications no longer create a new version automatically. A version is created only when you publish the dashboard. Manual editing and Ask AI editing follow the same edit-lock rules.
 
-## Core Value
+## What Problems Does It Solve?
 
-* **Recover from mistakes**: Not satisfied after multiple iterations? Restore to a previously satisfactory version with one click
+| Problem                                                                                                       | How Dashboard Version Management Helps                                                                       |
+| ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Each Ask AI modification used to create a version, producing too many versions that were difficult to manage. | Changes are first autosaved as a draft. A confirmed version is created only after you publish the dashboard. |
+| You want to return to an earlier result after several rounds of changes.                                      | Preview a historical version and continue editing from that version.                                         |
+| Multiple people's edits interfere with one another.                                                           | Only one person can hold the edit lock for a dashboard at a time.                                            |
+| You leave halfway through editing and cannot find your progress when you return.                              | Unpublished changes are saved in the draft so that you can continue editing later.                           |
 
-* **Explore with confidence**: No need to worry about losing the current effect; freely try new analytical perspectives
+## Three Key Concepts
 
-* **Traceable collaboration**: Modifications on shared dashboards are recorded, so you know who changed what and when
+| Concept               | What It Means for You                                                                                                            |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| **Published version** | Stable content visible to other people. Viewers always see the most recently published version.                                  |
+| **Draft**             | The working copy currently being edited. Unpublished changes are saved here and do not immediately affect what other people see. |
+| **Edit lock**         | Permission to edit a dashboard. Only one person at a time can update the draft, edit the dashboard, or publish a version.        |
 
-## How to Use
+A complete workflow looks like this:
 
-### 1. Open the Version Panel
+```Plain
+View dashboard → Click "Edit Dashboard" and acquire the edit lock → Make changes and save the draft → Preview changes → Click "Publish Dashboard" → Create a new version and release the edit lock
+```
 
-Click the **Version History** button in the upper right corner of the dashboard page
+## Step 1: Check the Current Status
 
-:-: ![](/.topwrite/assets/image_1780902105757.png =527)
+When you open a dashboard, the available actions depend on your permissions and the current lock status:
 
-### 2. View Historical Versions
+| Scenario                                                    | What You See                                                                                                              |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| You have view-only permission.                              | View the latest published content, version history, and historical version previews. The editing option is not displayed. |
+| You have editing permission, and no one is editing.         | Click **Edit Dashboard** to acquire the edit lock.                                                                        |
+| You have editing permission, but another person is editing. | The lock holder's name and start time are displayed, for example, "Alex is editing."                                      |
+| You already hold the edit lock.                             | The dashboard enters edit mode and displays **Publish Dashboard** and **Exit Edit**.                                      |
 
-Each version card in the version panel contains:
+## Step 2: Enter Edit Mode and Modify the Dashboard
 
-:-: ![](/.topwrite/assets/image_1780902136018.png =366)
+### Acquire the Edit Lock
 
-* Version number (V1, V2, V3...)
+1. Click **Edit Dashboard** in the upper-right corner of the dashboard.
 
-* Modifier's avatar and name
+:-: ![](.topwrite/assets/image_1788346624619.png =316)
 
-* Modification time
+2. The system checks whether you have editing permission and attempts to acquire the edit lock.
+3. Once the lock is acquired, the current draft is loaded and the dashboard enters edit mode.
 
-* Change detail description
+If another person already holds the lock, the system displays the lock holder's name. Try again later or copy the dashboard. You cannot forcibly take over the lock, which prevents accidental actions from overwriting another person's changes.
 
-### 3. Preview Historical Versions
+:-: ![](.topwrite/assets/dashboard-version-lock-held.png =464)
 
-Click on a version card to view a snapshot of the dashboard at that version (read-only, not editable).
+### Modify the Dashboard
 
-### 4. Restore a Historical Version
+In edit mode, you can manually edit the dashboard or use Ask AI to make changes, including:
 
-Hover over a version card and click the **Restore** button:
+* Dragging, resizing, or rearranging charts;
+* Adding, modifying, or deleting charts and tables;
+* Changing chart names, styles, or query logic;
+* Adjusting the dashboard name or global parameters;
+* Asking Ask AI to modify the dashboard using natural language.
 
-:-: ![](/.topwrite/assets/image_1780902285772.png =558)
+When the dashboard changes, the page displays **Current changes are not saved yet**. The message disappears after the changes are saved. If you continue editing while a save request is in progress, the message remains until the latest changes have been saved.
 
-* The system will show a confirmation prompt: "The rollback operation will create a new version based on this version"
+:-: ![](.topwrite/assets/image_1788346662633.png =403)
 
-* After clicking **Confirm**, the system will create a new version based on the selected historical version (e.g., restoring from V3 will generate V7 with the note "This version is derived from V3")
+### Edit Lock Timeout
 
-* Existing version records will not be lost
+The edit lock remains valid for **30 minutes**. Whenever changes are successfully saved to the draft, whether manually or automatically, the timer restarts. If the system receives no new draft-save request for 30 consecutive minutes—for example, because you closed the page or were inactive for an extended period—the edit lock is automatically released so that another person with editing permission can continue editing.
 
-## Version Generation Rules
+After the lock expires, the system displays **Dashboard editing timed out**. Your editing permission has been released, but your draft is preserved. Re-enter edit mode to continue working.
 
-### What operations automatically generate versions?
+:-: ![](.topwrite/assets/dashboard-version-edit-timeout.jpg =368)
 
-* Modifying dashboard charts through ASK AI conversations (adding, modifying, or deleting charts)
+### Save the Draft
 
-### What operations do NOT generate versions?
+Saving a draft does not create a version or make unpublished content visible to other people. You can:
 
-* Pure text conversations (no chart changes produced)
+* Click **Save Draft** or press `Ctrl+S` to save manually;
+* Wait for the system to autosave when there are unsaved changes.
 
-### Version Retention Limit
+Once saved, the draft remains available in the dashboard. Saved draft content is not deleted if you exit edit mode, close the page, or the edit lock expires after an extended period without saving.
 
-* The system retains up to 100 recent versions
+## Step 3: Publish and Create a New Version
 
-* Early versions exceeding the limit will be marked as "Expired"
+A new published version is created only after you click **Publish Dashboard** and confirm the action.
 
-## Dashboard Visibility and Version Permissions
+1. Click **Publish Dashboard** in edit mode.
+2. Optionally enter a version note, such as `Added the East China sales trend chart.`
+3. Click **Confirm Publish**.
 
-### Private Dashboard
+:-: ![](.topwrite/assets/dashboard-version-publish.png =427)
 
-* All versions are visible only to the creator
+After publishing:
 
-### Shared Dashboard
+* The draft content becomes the new published version;
+* The version note is saved with that version;
+* The edit lock is released so that another person with editing permission can continue editing;
+* Existing versions are not overwritten or deleted.
 
-* All versions are visible to users within the same tenant
+An initial version, **V1**, is created with every new dashboard. Version history is therefore available as soon as the dashboard is created.
 
-### Private to Shared Transition
+## Step 4: View Version History
 
-:-: ![](/.topwrite/assets/image_1780902352447.png =704)
+Click **Version History** on the dashboard page to view its publication history. Each version card typically includes:
 
-* Versions before the sharing time point are visible only to the creator
+* Version number, such as V1, V2, or V3;
+* Publisher;
+* Publication time;
+* Version note entered by the person who published it, if any.
 
-* Versions created after sharing are visible to all users
+:-: ![](.topwrite/assets/dashboard-version-history.png =408)
 
-* The version panel displays a divider at the sharing time point, marked "Dashboard was converted to shared at XX time. Versions below are visible only to you."
+## Step 5: Preview or Edit from a Historical Version
 
-### Example Scenario
+### Preview a Historical Version
 
-1\. User A creates a private dashboard, generating V1 through V3
+Click a version card to open a read-only snapshot of that version. The preview is for reviewing historical content only. It cannot be edited directly and does not change the current dashboard.
 
-2\. At V4, converts the dashboard to shared
+### Start Editing from This Version
 
-3\. V5 is modified by User B, V6 is modified by User A
+To continue editing from a historical version:
 
-4\. User B opens version history: can only see V4, V5, V6 (V1 through V3 are not visible)
+1. Open the preview of the target version.
+2. Click **Edit from this version**.
 
-5\. User A opens version history: can see all V1 through V6
+:-: ![](.topwrite/assets/dashboard-version-start-editing.png =338)
 
-## Notes
+3. The system attempts to acquire the edit lock.
+4. Once the lock is acquired, the selected version is loaded into the current draft.
+5. Review and modify the draft, then click **Publish Dashboard** when you are ready.
 
-1\. Only chart changes produced through ASK AI conversations automatically generate versions; manual drag-and-drop editing does not trigger version creation
+Starting from a historical version does not create a new version immediately. A new version is created only when you publish the draft. All intermediate versions and the original selected version remain available.
 
-2\. Restoring does not delete intermediate versions; instead, it creates a new version based on the target version
+## Related documentation
 
-3\. The version retention limit is 100; it is recommended to periodically confirm the status of important versions
-
-## Related Documentation
-
-* [Chart Auto-Refresh Settings](chart-auto-refresh-guide.md) — Set automatic data updates for dashboard charts
-* [Table Rendering](table_rendering.md) — Generate complex table layouts through natural language
-* [Conversational Data Analytics (Analytics Agent)](datagpt_introduction.md) — Return to feature overview
+* [DataGPT Dashboard User Guide](datagpt-dashboard-guide.md)
+* [Table Rendering](table_rendering.md)
+* [Chart Auto-Refresh Configuration](chart-auto-refresh-guide.md)
+* [Conversational Data Analytics (Analytics Agent)](datagpt_introduction.md)
 
 ^

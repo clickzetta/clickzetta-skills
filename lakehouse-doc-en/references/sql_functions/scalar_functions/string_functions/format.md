@@ -96,6 +96,6 @@ SELECT FORMAT('user %s has %d points (%.1f%%)', 'alice', 320, 64.5);
 
 #### Related Functions
 
-* [DATE_FORMAT](../date_functions/date_format.md): Date formatting function that uses date-specific placeholders such as `%Y`, `%m`, and `%d`.
+* [DATE_FORMAT](../datetime_functions/date_format.md): Date formatting function that uses date-specific placeholders such as `%Y`, `%m`, and `%d`.
 * [CONCAT](concat.md): String concatenation without format control.
-* [PRINTF](printf.md): An alias function with the same behavior as `FORMAT` (if supported).
+* [PRINTF](format_string.md): An alias function with the same behavior as `FORMAT` (if supported).

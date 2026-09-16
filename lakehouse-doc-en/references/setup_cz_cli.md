@@ -1,7 +1,5 @@
 # cz-cli Installation and Usage Guide
 
-^
-
 **cz-cli** is the command-line and AI Agent operational tool for Singdata Lakehouse. It encapsulates Lakehouse capabilities — connection configuration, SQL execution, Schema and table management, Studio task development, task execution inspection, Job diagnostics, and more — into stable CLI commands. Users can operate directly in the terminal, and AI Agents such as Codex, Claude Code, Cursor, Kiro, and Hermes can use natural language to assist with data warehouse development and operations.
 
 With cz-cli, users can delegate tasks like "create a test data warehouse", "check why today's tasks failed", "backfill data for a time range", "query table schema and sample data" to cz-cli for execution; cz-cli performs the actual operations and returns structured results.
@@ -22,12 +20,15 @@ With cz-cli, users can delegate tasks like "create a test data warehouse", "chec
 | Studio Tasks           | Create SQL, offline integration, real-time sync, and other tasks; configure scheduling, publish online, and manually execute | cz-cli task                                                  |
 | Run Inspection         | View task execution records, logs, dependencies, statistics; retry on failure and backfill data | cz-cli runs, cz-cli attempts                                  |
 | Performance Diagnostics | View SQL Job status, results, and execution profile              | cz-cli job, cz-cli sql --job-profile                          |
-| AI Agent Integration   | Enable Agents to invoke Singdata capabilities using natural language | cz-cli agent run                                              |
+| AI Agent Integration   | Enable Agents to invoke Singdata capabilities using natural language | cz-cli mcp init, cz-cli agent run                             |
 | Data Source Management | Manage external data sources, preparing for sync and import tasks | cz-cli datasource                                            |
 
 ## Prerequisites
 
-Before installation, confirm you have the following information. Refer to the documentation if unsure:
+Before installation, confirm that you have the information required by your sign-in method. For help finding it, see:
+
+* [Singdata Lakehouse Key Concepts](key-concepts.md) — Understand instances, Workspaces, Schemas, and Virtual Clusters.
+* [Supported Cloud Platforms and Regions](supported-cloud-platforms.md#service-domains) — Find service endpoints and instance domains for each cloud provider and region.
 
 | Item                | Description                           | Example                                                                                    |
 | ------------------- | ------------------------------------- | ----------------------------------------------------------------------------------------- |
@@ -37,8 +38,6 @@ Before installation, confirm you have the following information. Refer to the do
 | Username & Password | Account credentials for connecting to Singdata | data\_user                                                                                |
 | Default Schema      | Schema to use after login             | public                                                                                    |
 | Default Compute Group | Virtual Cluster used for SQL execution or tasks | DEFAULT                                                                                   |
-
-If using a Personal Access Token (PAT), you can replace username and password with the PAT.
 
 ## Installing cz-cli
 
@@ -282,7 +281,143 @@ cz-cli -p prod runs wait <run_id>
 
 ## Using with AI Agents
 
-A key value of cz-cli is giving AI Agents a controllable, auditable entry point for operating Singdata. Users can have Agents invoke cz-cli via command line within tools such as Codex, Claude Code, Cursor, Kiro, and Hermes.
+A key value of cz-cli is giving AI Agents a controllable, auditable entry point for operating Singdata. You can register cz-cli with external Agents such as Claude Code, Cursor, Codex, and Kiro through MCP, or use the built-in `agent run` entry point.
+
+The two approaches differ as follows:
+
+| Approach | When to Use | Model Source | Configuration |
+| --- | --- | --- | --- |
+| External Agent calls cz-cli through MCP | You already use Claude Code, Cursor, Codex, Kiro, or a similar tool | The external Agent's model | `cz-cli mcp init` or manual MCP configuration |
+| Built-in cz-cli Agent | You want to start natural-language tasks directly from the terminal | Model configured in `~/.clickzetta/llm.json` | `cz-cli agent llm` |
+
+For either approach, first install cz-cli, configure a Lakehouse Profile, and verify the connection:
+
+```bash
+cz-cli profile list
+cz-cli status
+```
+
+### Configure cz-cli MCP for External Agents
+
+`cz-cli mcp init` registers the local cz-cli executable as a standard input/output (stdio) MCP Server and writes the configuration required by external Agents. You only need to run `cz-cli mcp init`; do not run `cz-cli mcp serve` manually. The external Agent starts the MCP Server automatically when needed.
+
+Run the initialization command without options to let cz-cli detect supported clients on your machine:
+
+```bash
+cz-cli mcp init
+```
+
+You can also select clients explicitly. The current version supports `claude`, `cursor`, and `codex`. Repeat `-a` or `--client` to select multiple clients:
+
+```bash
+# Claude Code
+cz-cli mcp init -a claude
+
+# Codex
+cz-cli mcp init -a codex
+
+# Claude Code, Cursor, and Codex
+cz-cli mcp init -a claude -a cursor -a codex
+
+# All natively supported clients
+cz-cli mcp init --all
+```
+
+By default, cz-cli writes user-level global configuration so the MCP Server is available across projects. To configure only the current project, run the command from the project root with `--no-global`:
+
+```bash
+cz-cli mcp init -a claude --no-global
+cz-cli mcp init -a codex --no-global
+```
+
+The generated MCP configuration uses the absolute path to the cz-cli executable. First obtain that path:
+
+```bash
+command -v cz-cli
+```
+
+Place the returned absolute path in `command`. The configuration written by `cz-cli mcp init` is equivalent to:
+
+```json
+{
+  "mcpServers": {
+    "cz-cli": {
+      "command": "/absolute/path/to/cz-cli",
+      "args": ["mcp", "serve"]
+    }
+  }
+}
+```
+
+#### Claude Code
+
+Initialize the configuration:
+
+```bash
+cz-cli mcp init -a claude
+```
+
+Restart Claude Code, then check the MCP status:
+
+```bash
+claude mcp list
+```
+
+#### Codex
+
+Initialize the configuration:
+
+```bash
+cz-cli mcp init -a codex
+```
+
+Restart Codex, then check the MCP status:
+
+```bash
+codex mcp list
+```
+
+#### Kiro
+
+The current `cz-cli mcp init` command does not provide a `kiro` client option, so configure it manually. Kiro uses `.kiro/settings/mcp.json` for workspace-level configuration and `~/.kiro/settings/mcp.json` for user-level configuration. Add the following definition to the required file:
+
+```json
+{
+  "mcpServers": {
+    "cz-cli": {
+      "command": "/absolute/path/to/cz-cli",
+      "args": ["mcp", "serve"]
+    }
+  }
+}
+```
+
+Replace `/absolute/path/to/cz-cli` with the path returned by `command -v cz-cli`. Restart Kiro, then enter `/mcp` in an interactive chat to view the server status and available tools.
+
+> ⚠️ **Note**: Do not replace the absolute path with the string `"cz-cli"`. An Agent started from a graphical interface may not inherit your Shell PATH, which can prevent the MCP Server from starting.
+
+#### Select a Lakehouse Profile
+
+The generated MCP configuration does not pin a Profile. When started, `cz-cli mcp serve` reads `default_profile` from `profiles.toml`. To switch the default environment, run:
+
+```bash
+cz-cli profile use <profile>
+```
+
+If an Agent must always use a specific environment, manually pin the Profile in the MCP arguments:
+
+```json
+{
+  "mcpServers": {
+    "cz-cli": {
+      "command": "/absolute/path/to/cz-cli",
+      "args": ["mcp", "serve", "--profile", "<profile>"]
+    }
+  }
+}
+```
+
+For production, use a dedicated low-privilege or read-only Profile with an explicit environment name, such as `prod-readonly`.
 
 ### Recommended Agent Prompt
 
@@ -322,6 +457,100 @@ If you use enterprise bots such as Hermes to host AI Agents, we recommend instal
 * Enable manual confirmation for write, delete, deploy, decommission, backfill, and similar operations.
 * Implement whitelisting or approval controls for users who can access the bot.
 * Store credentials such as profiles, PATs, and passwords in controlled environment variables or local configuration — never in public documentation, chat history, or code repositories.
+
+## Configure an LLM for the cz-cli Agent
+
+`cz-cli agent run` requires an LLM. The LLM configuration is separate from the Lakehouse connection Profile:
+
+| Configuration | Location | Purpose |
+| --- | --- | --- |
+| Lakehouse Profile | `~/.clickzetta/profiles.toml` | Connect to an instance, Workspace, Schema, and compute group |
+| Agent LLM | `~/.clickzetta/llm.json` | Provide the model used by `cz-cli agent run` |
+
+> ⚠️ **Note**: Configuring MCP for an external Agent such as Claude Code, Codex, or Kiro does not configure the cz-cli Agent's LLM. Configure `cz-cli agent llm` only when you use `cz-cli agent run` or another capability that depends on cz-cli's internal model.
+
+### Configure the Singdata Built-in LLM with cz-cli Login
+
+Browser-based OAuth is recommended. The first sign-in configures the OAuth session, Lakehouse Profiles, and the Singdata built-in LLM:
+
+```bash
+cz-cli login prod
+```
+
+`prod` is the login session name. After sign-in, cz-cli creates Profiles such as `prod_0` and `prod_1` for the instances and Workspaces your account can access, and writes the LLM configuration to `~/.clickzetta/llm.json`.
+
+Signing in again with the same session name preserves the current LLM configuration by default, so a custom AI Gateway key is not overwritten. To rewrite the built-in LLM configuration from the current account, run:
+
+```bash
+cz-cli login prod --refresh-llm
+```
+
+### Connect an External LLM
+
+`cz-cli agent llm add` supports providers including `clickzetta`, `anthropic`, `openai`, `openai-compatible`, `bedrock`, `google`, `azure`, and `openrouter`.
+
+To connect OpenAI:
+
+```bash
+cz-cli agent llm add my-openai \
+  --provider openai \
+  --api-key "$OPENAI_API_KEY"
+```
+
+To connect an enterprise gateway or relay with an OpenAI-compatible API:
+
+```bash
+cz-cli agent llm add my-gateway \
+  --provider openai-compatible \
+  --base-url https://your-gateway.example.com/v1 \
+  --api-key "$LLM_API_KEY"
+```
+
+Set `--base-url` to the gateway's actual OpenAI-compatible API endpoint, not its console URL. Never place a real API key in documentation, source control, or chat history.
+
+### Verify and Manage LLMs
+
+Show the active model and all configuration details:
+
+```bash
+cz-cli agent llm show
+```
+
+List all configured LLM entries:
+
+```bash
+cz-cli agent llm list
+```
+
+Test API connectivity for an entry:
+
+```bash
+cz-cli agent llm test my-openai
+```
+
+List the models available through an entry:
+
+```bash
+cz-cli agent llm models my-openai
+```
+
+Set the default model using the full `<entry-name>/<model-id>` reference:
+
+```bash
+cz-cli agent llm use my-openai/gpt-4.1
+```
+
+Remove an LLM entry:
+
+```bash
+cz-cli agent llm remove my-openai
+```
+
+After configuration, run a simple task to verify that the Agent can use both the model and the Lakehouse Profile:
+
+```bash
+cz-cli -p <profile> agent run "Check the connection status, then list the schemas in the current workspace"
+```
 
 ## Output Formats and Automation
 
@@ -447,10 +676,10 @@ cz-cli -p prod job result <job_id>
 
 ### Q: How can I reduce the risk of misoperations?
 
-* Queries, inspections, and diagnostics can be executed by the Agent directly.
-* For write, delete, task deploy, task decommission, backfill, and retry-on-failure actions, we recommend requiring the Agent to first present a plan and wait for manual confirmation.
-* Configure a separate low-privilege account or read-only profile for the Agent.
 * Use explicit profile names for production environments, e.g., prod-readonly, prod-operator.
+* For write, delete, task deploy, task decommission, backfill, and retry-on-failure actions, we recommend requiring the Agent to first present a plan and wait for manual confirmation.
+* Queries, inspections, and diagnostics can be executed by the Agent directly.
+* Configure a separate low-privilege account or read-only profile for the Agent.
 
 ## Recommended Getting Started Path
 
@@ -459,7 +688,8 @@ cz-cli -p prod job result <job_id>
 3. Use schema list, table list, and sql --sync to complete a read-only query.
 4. In a test environment, try creating a table or inserting data to become familiar with the --write protection mechanism.
 5. Review task --help and runs --help to understand task development and operations commands.
-6. Hand cz-cli over to your AI Agent, with an agreement that high-risk operations require manual confirmation.
+6. Run `cz-cli mcp init` to register cz-cli with an external Agent, or configure an LLM and use `cz-cli agent run`.
+7. Require manual confirmation for high-risk operations performed by an Agent.
 
 For concepts such as account name (account\_name) and service name (instance\_name) and how to find them, see: <https://www.singdata.com/documents/key-concepts>
 
@@ -469,7 +699,4 @@ For concepts such as account name (account\_name) and service name (instance\_na
 
 - [SQL Execution and Data Exploration](cz-cli-sql.md) — Complete command reference for sql, schema, table, job, workspace
 - [Studio Task Development and Operations](cz-cli-studio-tasks.md) — Task creation, scheduling, runs operations, backfill, task flow
-- [AI Agent Integration](cz-cli-agent.md) — Agent LLM configuration, natural language operations, enterprise bot scenarios
 - [External Data Source Management](cz-cli-datasource.md) — Data source browsing, connectivity testing, sample data preview
-
-^

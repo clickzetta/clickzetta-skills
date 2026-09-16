@@ -706,4 +706,4 @@ Full scheduling chain:
 - [CREATE DYNAMIC TABLE](../create-dynamic-table.md) — Full Dynamic Table syntax and parameter reference
 - [Medallion Architecture: Pure SQL Dynamic Table Approach](../lakehouse-medallion-sql-dt-guide.md) — Complete three-layer data warehouse build reference
 - [OSS Object Storage Data Import Pipeline Practice](../lakehouse-volume-pipe-acceleration-guide.md) — Volume + PIPE end-to-end configuration
-- [CREATE TABLE ... PARTITIONED BY](../create-table.md) — Partition table syntax and partition pruning optimization
+- [CREATE TABLE ... PARTITIONED BY](../create-table-ddl.md) — Partition table syntax and partition pruning optimization

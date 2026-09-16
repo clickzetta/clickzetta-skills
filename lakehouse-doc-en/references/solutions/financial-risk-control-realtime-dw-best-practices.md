@@ -638,11 +638,11 @@ GRANT SELECT ON DYNAMIC TABLE best_practice_financial_risk.ads_txn_risk_score
 
 ## Related Documentation
 
-- [CREATE DYNAMIC TABLE](../sql_reference/create-dynamic-table.md) — Full syntax and parameter reference for Dynamic Table
-- [CREATE PIPE](../sql_reference/create-pipe.md) — Kafka PIPE configuration and `READ_KAFKA` parameter reference
-- [CREATE FUNCTION](../sql_reference/create-function.md) — SQL UDF syntax
-- [Column Masking](../security/column-masking.md) — Column-level masking configuration and permissions
-- [GRANT / REVOKE](../sql_reference/grant-revoke.md) — RBAC permission management
+- [CREATE DYNAMIC TABLE](../create-dynamic-table.md) — Full syntax and parameter reference for Dynamic Table
+- [CREATE PIPE](../create-pipe.md) — Kafka PIPE configuration and `READ_KAFKA` parameter reference
+- [CREATE FUNCTION](../create-sql-function.md) — SQL UDF syntax
+- [Column Masking](../dynamic-mask.md) — Column-level masking configuration and permissions
+- [GRANT / REVOKE](../role-privilege-manage.md) — RBAC permission management
 - [Industrial IoT Device Health Monitoring Data Warehouse Best Practices](iot-device-health-monitoring-dw-best-practices.md) — Reference for similar architectures
 
 > ⚠️ **Note**: Column Masking currently matches authorized usernames via `current_user()`. Add all usernames that need plaintext access to the masking function's allowlist. If your Lakehouse version supports role-based dynamic evaluation (such as `HAS_ROLE('role_name')`), use roles instead of username lists for more flexible maintenance. Contact Singdata technical support to confirm whether your version supports this function.

@@ -823,10 +823,10 @@ Data flow architecture:
 
 ## Related Documentation
 
-- [Create Dynamic Table](create-dynamic-table.md) — DDL syntax reference and incremental refresh mechanism
-- [Continuous Kafka Data Ingestion with PIPE](pipe-kafka.md) — full Kafka PIPE parameter reference
-- [MERGE INTO](merge.md) — UPSERT syntax reference
-- [Create Index](create-index.md) — Bloomfilter / Inverted / Vector index syntax
-- [Semantic View](semantic-view-overview.md) — Semantic View creation and Analytics Agent integration
-- [Studio Task Scheduling](task_scheduling.md) — Task DAG configuration and Cron scheduling
-- [Medallion Architecture: Pure SQL Dynamic Table Approach](lakehouse-medallion-sql-dt-guide.md) — three-layer data warehouse reference
+- [Create Dynamic Table](../create-dynamic-table.md) — DDL syntax reference and incremental refresh mechanism
+- [Continuous Kafka Data Ingestion with PIPE](../pipe-kafka.md) — full Kafka PIPE parameter reference
+- [MERGE INTO](../merge.md) — UPSERT syntax reference
+- [Create Index](../index_guide.md) — Bloomfilter / Inverted / Vector index syntax
+- [Semantic View](../semantic-view-overview.md) — Semantic View creation and Analytics Agent integration
+- [Studio Task Scheduling](../task_scheduling.md) — Task DAG configuration and Cron scheduling
+- [Medallion Architecture: Pure SQL Dynamic Table Approach](../lakehouse-medallion-sql-dt-guide.md) — three-layer data warehouse reference

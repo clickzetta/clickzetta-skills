@@ -134,4 +134,4 @@ Only rows where `gid = 0` are kept — subtotals grouped by region — excluding
 #### Related Documentation
 
 * [GROUPING](grouping.md)
-* [GROUP BY GROUPING SETS / ROLLUP / CUBE](../../sql_syntax/groupby-extensions.md)
+* [GROUP BY GROUPING SETS / ROLLUP / CUBE](../../groupby.md)

@@ -1,6 +1,6 @@
 # Singdata Lakehouse — Release Notes
 
-- [Release Notes](https://singdata.com/documents/release-notes): A landing page indexing the release notes history for the Singdata Lakehouse platform.
+- [Release Notes](https://singdata.com/documents/releasenotes): A landing page indexing the release notes history for the Singdata Lakehouse platform.
 - [Lakehouse Studio Release Notes](https://singdata.com/documents/lakehouse-studio-release-note): Stub page titled Lakehouse Studio Release Notes History, intended to aggregate Studio version updates but currently without content.
 - [May 14, 2026 - 2.2.0](https://singdata.com/documents/rn_2026-05-14): May 14, 2026 (v2.2) Lakehouse release notes covering DataAgent intelligent pipeline creation, data integration enhancements, encrypted task parameters, conditional branching, and job history and operations center improvements.
 - [April 1, 2026 - 2.1.0](https://singdata.com/documents/rn_2026-04-01): This release (Release 2026.04.01, v2.1) introduces a series of new features, enhancements, and fixes.
@@ -50,7 +50,7 @@
 - [April 14, 2026 - v1.1](https://singdata.com/documents/release-note-0414-1.1): Release notes (1.1) introducing Web Search, conversational scheduled tasks, natural-language table rendering, row-level permissions, plus session memory, Skills mechanism, and chart improvements.
 - [May 19, 2026 - v1.2](https://singdata.com/documents/release-note-2026-05-19): May 19, 2026 release notes renaming DataGPT to Analytics Agent and adding dynamic row-level permissions, dashboard version management, Open API, chart auto-correction, and GPT-5.5 support.
 - [AI Gateway Release Notes](https://singdata.com/documents/aigatewayupdate): Documentation for AI Gateway Release Notes in Singdata Lakehouse.
-- [February 5, 2026 - 1.0](https://singdata.com/documents/aigw-2026-2-5-1.0): Release Date**: February 5, 2026 Release Scope**: Simultaneous release across Alibaba Cloud Shanghai and AWS Singapore regions 1.
+- [February 5, 2026 - 1.0](https://singdata.com/documents/2026_05_12_111): AI Gateway V1.0 release notes covering the standardized OpenAI-compatible API gateway, launched simultaneously in Alibaba Cloud Shanghai and AWS Singapore regions.
 - [March 8, 2026 - 1.0.1](https://singdata.com/documents/aigw-2026-3-8-1.0.1): Release Date**: March 8, 2026 Release Scope**: Simultaneous release across Alibaba Cloud Shanghai and AWS Singapore regions 1.
 - [March 29, 2026 - 1.0.2](https://singdata.com/documents/aigw-2026-3-29-1.0.2): Release Date**: March 29, 2026 Release Scope**: Simultaneous release across Alibaba Cloud Shanghai and AWS Singapore regions 1.
 - [April 28, 2026 - 1.1](https://singdata.com/documents/aigw-2026-4-28-1.1): Release Date**: April 28, 2026 Release Scope**: Simultaneous release across Alibaba Cloud Shanghai and AWS Singapore regions 1.
@@ -59,3 +59,6 @@
 - [May 21, 2026 - 1.3](https://singdata.com/documents/aigw-2026-5-21-1.3): Release Date**: May 21, 2026 Release Scope**: Simultaneous release across Alibaba Cloud Shanghai and AWS Singapore regions 1. **Platform model library expansion**: Added the Seedream 5.
 - [May 28, 2026 - 1.4](https://singdata.com/documents/aigw-2026-5-28-1.4): Release Date**: May 28, 2026 Release Scope**: Simultaneous release across Alibaba Cloud Shanghai and AWS Singapore regions 1.
 - [June 3, 2026 - 1.5](https://singdata.com/documents/aigw-2026-6-3-1.5): Release Date**: June 3, 2026  **Release Scope**: Simultaneous release across Alibaba Cloud Shanghai and AWS Singapore regions 1.
+- [June 16, 2026 - Lakehouse Studio v2.2.1](https://singdata.com/documents/rn_2026-06-16): Studio v2.2.1 release notes introducing new features, enhancements, and fixes, rolled out in stages to Alibaba Cloud Shanghai/Hangzhou, Tencent Cloud, AWS Beijing, and Singapore regions.
+- [July 1, 2026 - Data Engineering Agent v2.3.0](https://singdata.com/documents/rn_2026-07-01): Data Engineering Agent v2.3.0 release notes covering new features, enhancements, and fixes for the Studio-integrated data engineering agent, rolled out across domestic and international regions.
+- [Release Notes 2026-07-31](https://singdata.com/documents/release-note-2026-07-31): Analytics Agent release notes for July 31, 2026 introducing Effect Evaluation and other new features, rolled out to Alibaba Cloud Shanghai and Singapore regions.

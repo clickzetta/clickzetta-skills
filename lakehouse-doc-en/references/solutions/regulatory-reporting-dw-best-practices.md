@@ -611,12 +611,12 @@ best_practice_reg_reporting      | doc_ads_ifrs9_provision_report  | true
 
 ## Related Documentation
 
-- [Time Travel Data Recovery](data-recovery-with-time-travel.md) — TIMESTAMP AS OF syntax and RESTORE TABLE usage
-- [Dynamic Table](dynamic-table.md) — Incremental refresh mechanism and REFRESH command
-- [Dynamic Data Masking](dynamic-mask.md) — Column Masking policy creation and binding
-- [Studio Task Scheduling](dynamic_table_task.md) — Manage Dynamic Table refresh scheduling through Studio Task
-- [Data Quality Checks](lakehouse-dqc-guide.md) — Attach data quality rules to Studio Tasks
-- [Table Design Guide](lakehouse_table_design_guide.md) — Partition, primary key, and NOT NULL constraint design
+- [Time Travel Data Recovery](../data-recovery-with-time-travel.md) — TIMESTAMP AS OF syntax and RESTORE TABLE usage
+- [Dynamic Table](../dynamic-table.md) — Incremental refresh mechanism and REFRESH command
+- [Dynamic Data Masking](../dynamic-mask.md) — Column Masking policy creation and binding
+- [Studio Task Scheduling](../dynamic_table_task.md) — Manage Dynamic Table refresh scheduling through Studio Task
+- [Data Quality Checks](../lakehouse-dqc-guide.md) — Attach data quality rules to Studio Tasks
+- [Table Design Guide](../lakehouse_table_design_guide.md) — Partition, primary key, and NOT NULL constraint design
 - [Real-Time Financial Risk Control Data Warehouse Best Practices](financial-risk-control-realtime-dw-best-practices.md) — Real-time risk control reference
 
 > ⚠️ **Note**: Column Masking currently matches authorized usernames via `current_user()`. Add all usernames that need plaintext access to the masking function's allowlist. If your Lakehouse version supports role-based dynamic evaluation (such as `HAS_ROLE('role_name')`), use roles instead of username lists. Contact Singdata technical support to confirm whether your version supports this function.

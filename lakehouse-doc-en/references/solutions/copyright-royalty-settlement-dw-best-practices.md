@@ -825,4 +825,4 @@ doc_platform_plays (ODS play records)
 - [Time Travel](../timetravel.md) — Historical version queries and TIMESTAMP AS OF usage
 - [Import Data from Object Storage with Pipe](../pipe-storage-object.md) — OSS PIPE full parameter reference
 - [SCD with Table Stream and MERGE INTO](../slowly-changing-dimensions-with-streams-and-tasks.md) — Contract SCD reference implementation
-- [Medallion Architecture: Pure SQL Dynamic Table Approach](lakehouse-medallion-sql-dt-guide.md) — Multi-layer data warehouse reference architecture
+- [Medallion Architecture: Pure SQL Dynamic Table Approach](../lakehouse-medallion-sql-dt-guide.md) — Multi-layer data warehouse reference architecture

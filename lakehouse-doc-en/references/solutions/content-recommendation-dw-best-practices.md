@@ -866,7 +866,7 @@ Studio Task scheduling path: `best_practices/content_rec/`
 
 - [CREATE DYNAMIC TABLE](../create-dynamic-table.md) — Syntax reference and incremental refresh mechanism
 - [Import Kafka Data Continuously with Pipe](../pipe-kafka.md) — Kafka PIPE full parameter reference
-- [CREATE INDEX](../create-index.md) — Bloomfilter / Inverted / Vector index syntax and BUILD INDEX process
-- [ZettaPark Python Development Guide](../zettapark-python-guide.md) — Session creation, DataFrame API, task configuration
-- [Medallion Architecture: Pure SQL Dynamic Table Approach](lakehouse-medallion-sql-dt-guide.md) — Large-scale three-layer data warehouse reference
+- [CREATE INDEX](../index_guide.md) — Bloomfilter / Inverted / Vector index syntax and BUILD INDEX process
+- [ZettaPark Python Development Guide](../lakehousepython-zettapark.md) — Session creation, DataFrame API, task configuration
+- [Medallion Architecture: Pure SQL Dynamic Table Approach](../lakehouse-medallion-sql-dt-guide.md) — Large-scale three-layer data warehouse reference
 - [Industrial IoT Device Health Monitoring Data Warehouse Best Practices](iot-device-health-monitoring-dw-best-practices.md) — Another complete Bronze/Silver/Gold case study

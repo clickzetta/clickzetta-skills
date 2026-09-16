@@ -698,4 +698,4 @@ SKU × Store × forecast_date: forecast_qty / lower / upper / model_version
 - [ZettaPark Data Engineering Guide](../zettapark-etl-guide.md) — `applyInPandas` and parallel task development
 - [Create External Function](../create_external_function.md) — encapsulate HTTP API calls
 - [COPY INTO Data Import](../copy-into-table.md) — OSS PIPE batch import parameter reference
-- [Medallion Architecture: Pure SQL Dynamic Table Approach](lakehouse-medallion-sql-dt-guide.md) — three-layer data warehouse structure reference
+- [Medallion Architecture: Pure SQL Dynamic Table Approach](../lakehouse-medallion-sql-dt-guide.md) — three-layer data warehouse structure reference

@@ -383,5 +383,5 @@ If exploration results have long-term value, it is recommended to return to the 
 - [Question Asking Guide](datagpt-question-asking-guide.md) — How to ask questions that are more likely to get accurate answers
 - [Reading Analysis Results](datagpt-answer-reading-guide.md) — How to determine whether an answer is trustworthy
 - [Analysis Patterns Guide](datagpt-analysis-patterns-guide.md) — Common analysis patterns such as trends, comparisons, rankings, and proportions
-- [Using Dashboards](datagpt-dashboard-bi-analyst-guide.md) — Save Q&A results as shareable dashboards
+- [DataGPT Dashboard User Guide](datagpt-dashboard-guide.md) — Save Q&A results as shareable dashboards
 - [Answer Builder Best Practices](datagpt-answer-builder-best-practices.md) — Answer builder configuration that the exploration page depends on

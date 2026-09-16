@@ -1,6 +1,6 @@
-# Lakehouse Pricing
+# Lakehouse Pricing 
 
-This page describes the pricing model and unit prices for Singdata Lakehouse, covering compute (measured in CRU\*hour), storage, and network data transfer. AI Gateway model invocation is billed by tokens; for unit prices see [AI Gateway Pricing](pricing-ai-gateway.md). The pricing entry point is [Pricing and Billing](pricing.md). 
+This page describes the pricing model and unit prices for Singdata Lakehouse, covering compute (measured in CRU\*hour), storage, and network data transfer. AI Gateway model invocation is billed by tokens; for unit prices see [AI Gateway Pricing](pricing-ai-gateway.md). The pricing entry point is [Pricing and Billing](pricing.md).   
 
 ## Overview of Billing Methods
 
@@ -8,9 +8,16 @@ Singdata Lakehouse is an integrated data platform built on cloud-native technolo
 
 The billing of Singdata Lakehouse is mainly based on the following aspects:
 
-* **Computing Resources**: The billing usage unit for computing resources is **CRU\*hour**. The platform converts the computing power used and the actual runtime into CRU\*hour usage. The use of general-purpose, analytical, and synchronous computing clusters for data integration or data analysis, tasks processed using Python or Shell scripts, and operations such as automatic materialized views (Auto\_MV), data compression, and job scheduling automatically handled by the system will all generate computing resource consumption. Singdata will measure and bill based on the actual amount of computing power consumed.
-* **Storage Resources**: The billing unit for storage resources is **GiB**, and billing is based on the actual storage capacity you use on Singdata Lakehouse. The following scenarios will occupy storage capacity: 1) Data stored in Lakehouse in the form of tables, materialized views, etc.; 2) Data deleted but not yet cleaned up within the lifecycle of the data table; 3) Cached query results. Items 2 and 3 are currently only measured and temporarily free of charge.
+* **Computing Resources**: The billing usage unit for computing resources is **CRU\*hour**. The platform converts the computing power used and the actual runtime into CRU\*hour usage. The use of general-purpose, analytical, and synchronous computing clusters for data integration or data analysis, IGS (Ingestion Service) for real-time data ingestion, tasks processed using Python or Shell scripts, and operations such as automatic materialized views (Auto\_MV), data compression, and job scheduling automatically handled by the system will all generate computing resource consumption. Singdata will measure and bill based on the actual amount of computing power consumed.
+* **Storage Resources**: The billing unit for storage resources is **GiB**, and billing is based on the actual storage capacity you use on Singdata Lakehouse. The following scenarios will occupy storage capacity: 1) Data stored in Lakehouse in the form of tables, materialized views, etc.; 2) Historical data retained after table updates or deletions; 3) Managed Table Volume and User Volume storage; 4) Cached query results.
 * **Network Data Transfer**: The billing unit for network data transfer is **GB**, and billing is based on the actual amount of data transferred. The following scenarios will incur network data transfer fees: 1) Data queries through the public network, including full downloads of query results; 2) Data transfer between Singdata Lakehouse and other data sources; 3) Network connectivity through the Internet, cross-VPC connections, dedicated lines, or other methods. For Internet network traffic, only the data transfer volume flowing out of Singdata Lakehouse is measured; uploading data to Singdata Lakehouse is free of charge.
+
+> ⚠️ **Billing Adjustment Notice**: Starting September 1, 2026, Singdata Lakehouse will adjust the billing of the following items. See the sections below for detailed billing rules and prices.
+
+| Change Type | Affected Billing Items |
+| ---- | ---- |
+| Billing method change | Synchronous Computing Clusters (real-time and offline integration fees are consolidated under the "Synchronous Computing Cluster" billing item, and the CRU\*hour unit price remains unchanged) |
+| Newly charged items | IGS Service, Multi-Version Retained Storage, Managed table_volume, Managed user_volume, Result Cache, Network Data Transfer |
 
 ## Billing Methods
 
@@ -34,7 +41,7 @@ Singdata Lakehouse can also provide enterprise customers with specified resource
 
 ### Computing Resource Billing
 
-The billing items for [computing resources](https://www.singdata.com/documents/virtual-cluster) include: general-purpose computing clusters, analytical computing clusters, synchronous computing clusters, task scheduling, and serverless jobs. The billing cycle for computing resources **is measured in hours**.
+The billing items for [computing resources](https://www.singdata.com/documents/virtual-cluster) include six types: general-purpose computing clusters, analytical computing clusters, synchronous computing clusters, task scheduling, serverless jobs, and IGS Service. The billing cycle for computing resources **is measured in hours**.
 
 The billing principles for each computing resource item are as follows:
 
@@ -86,14 +93,14 @@ Synchronous computing clusters are used for running data integration tasks, incl
 
 **Starting September 1, 2026, synchronous computing clusters will switch to the formal billing mode. Fees for real-time and offline integration will be recorded under the "Synchronous Computing Cluster" billing item.**
 
-> **Formal Billing Formula**:
+> 🗒️ **Formal Billing Formula**:  \
 > Synchronous Computing Cluster = Runtime (hours) × Hourly Computing Resource Usage (CRU\*hour) × Computing Resource Unit Price (USD/CRU\*hour)
 
 Before September 1, 2026, synchronous computing clusters will continue to use the trial operation billing mode. The system records billing details separately under the "Offline Integration" and "Real-time Integration" billing items on a per-job basis according to actual resource consumption. The CRU\*hour unit price remains unchanged under this billing model. When creating a synchronous cluster, you can use the "[Specification Estimation](https://www.singdata.com/documents/virtual-cluster)" feature to help determine the appropriate size.
 
 Offline integration tasks can automatically wake up the synchronous computing cluster and automatically stop it after the task is completed; real-time integration tasks require their synchronous computing cluster to remain in the "running" state. 
 
-> Billing Formulas during Trial Operation:
+> 🗒️ **Billing Formulas during Trial Operation**:  \
 > Offline Integration = Runtime (hours) × Hourly Computing Resource Usage for Offline Integration (CRU\*hour) × Computing Resource Unit Price (USD/CRU\*hour)
 >
 > Real-time Integration = Runtime (hours) × Hourly Computing Resource Usage for Real-time Integration (CRU\*hour) × Computing Resource Unit Price (USD/CRU\*hour)
@@ -132,31 +139,70 @@ The current CRU\*hour unit price for serverless jobs is the same as that of gene
 > 🗒️ **Billing Formula**:
 > Serverless Jobs = Runtime (hours) × Hourly Computing Resource Usage (CRU\*hour) × Computing Resource Unit Price (USD/CRU\*hour)
 
+#### IGS Service
+
+IGS (Ingestion Service) is ClickZetta Lakehouse's service for real-time data ingestion. Clients can push data to IGS through the RealtimeStream SDK or CDC. IGS receives the data and commits it to the target table, enabling real-time writes and relatively fast queries. It is suitable for scenarios such as real-time analytics, event stream processing, and immediate data updates.
+
+**IGS Service fees will be officially charged starting September 1, 2026.**
+
+> 🗒️ **Billing Formula**:
+> IGS Service = Runtime (hours) × Hourly Computing Resource Usage (CRU\*hour) × Computing Resource Unit Price (USD/CRU\*hour)
+
 ### Storage Capacity Billing
 
 Storage fees are calculated based on the actual storage capacity you use on the Lakehouse platform. The billing cycle for storage **is measured in days**.
 
-When you write data into the Lakehouse data warehouse, the written data and some of its metadata information will occupy storage capacity in Lakehouse. Lakehouse measures your actual data storage usage by sampling multiple times within a day and **uses the average value of the sampled storage capacity** as the storage capacity measurement value for that day for billing.
-
-When you use the [Time Travel ](https://www.singdata.com/documents/timetravel-summary)feature of Lakehouse, to ensure data multi-version and recoverability, Lakehouse will automatically back up your data in multiple versions. The multi-version backup data generated will incur corresponding storage fees, charged at the storage capacity unit price.
-
-When you perform SQL queries, to reduce the consumption of computing resources for repeated queries, the query results will be cached, exchanging storage costs for computing resource savings. This part of the storage usage will be included in "[Result Cache](https://www.singdata.com/documents/result_cache)" and charged at the storage capacity unit price.
-
-**Time Travel and Result Cache are currently free of charge**. You will be notified one month in advance when the billing status changes.
-
 > 🗒️ **Billing Formula**:
 > Storage = Storage Duration (days) / 30 (days) × Daily Average Storage (GiB) × Storage Unit Price (USD/GiB/month)
 
+#### Table Storage
+
+When you write data into the Lakehouse data warehouse, the written data and some of its metadata information will occupy storage capacity in Lakehouse. Lakehouse measures your actual data storage usage by sampling multiple times within a day and **uses the average value of the sampled storage capacity** as the storage capacity measurement value for that day for billing.
+
+#### Multi-Version Retained Storage
+
+After table data is updated or deleted, Lakehouse continues to retain the corresponding historical data versions for the duration of the retention period, forming multi-version retained storage. This storage provides the underlying storage for historical version features such as [Time Travel](https://www.singdata.com/documents/timetravel-summary); it is not a charge for Time Travel query operations themselves.
+
+**Multi-version retained storage fees will be officially charged starting September 1, 2026.**
+
+#### Managed table_volume Storage
+
+Each table is automatically associated with a [Table Volume](internal_volume.md#using-table-volume) storage space for import, export, and ETL files related to that table. The table_volume is managed by Lakehouse and exists with the table; it does not store the table's live data.
+
+**Managed table_volume storage fees will be officially charged starting September 1, 2026.**
+
+#### Managed user_volume Storage
+
+Each user automatically has a dedicated [User Volume](internal_volume.md#using-user-volume) storage space for uploading local files, temporarily storing data to be processed, or importing files into tables. The user_volume is managed by Lakehouse and cannot be accessed by other users.
+
+**Managed user_volume storage fees will be officially charged starting September 1, 2026.**
+
+#### Result Cache
+
+When you perform SQL queries, the query results are cached to reduce the computing resources consumed by repeated queries, exchanging storage costs for computing resource savings. This storage usage is included in [Result Cache](https://www.singdata.com/documents/result_cache).
+
+**Result Cache fees will be officially charged starting September 1, 2026.**
+
 ### Network Data Transfer Billing
 
-**Network data transfer fees will be officially charged starting September 1, 2026.**
+Network data transfer is billed in **GB**; only downstream data flowing out of Lakehouse is charged, while upstream data transferred into Lakehouse is not charged; fees are calculated based on the actual downstream transfer volume, with a billing cycle measured in hours. The following scenarios incur network data transfer fees:
 
-Network data transfer fees apply only to downstream data flowing out of Lakehouse; upstream data transferred into Lakehouse is not charged. Downstream data includes query results returned to the user side (such as Studio), data downloads or exports, and data transferred to other data sources. Fees are calculated based on the actual downstream data transfer volume, with a billing cycle **measured in hours**.
+#### Data Integration Traffic
 
-When you use dedicated lines, Private Link, or other network products to achieve cross-cloud vendor, cross-region, or cross-VPC network connectivity, the network connectivity itself will incur network data transfer fees. These fees may be charged by multiple parties due to different network connectivity methods. Network data transfer fees generated on the Singdata Lakehouse side are charged by Singdata, while network data transfer fees generated in your cloud platform account are charged directly by the cloud platform.
+Traffic generated when data integration tasks write data to external data sources.
+
+#### Query and Download Traffic
+
+Traffic generated when query results are returned to the user side (such as SQLLine, Lakehouse Studio, etc.) or when data is downloaded or exported.
+
+#### Fees from Network Connectivity
+
+When you use dedicated lines, Private Link, or other network products to establish cross-cloud vendor, cross-region, or cross-VPC connectivity, the network connectivity itself also incurs additional data transfer fees. Because the link involves both the Singdata Lakehouse side and your cloud platform account side, these fees are charged separately by each party: the portion generated on the Singdata Lakehouse side is charged by Singdata, and the portion generated in your cloud platform account is charged directly by the cloud platform.
 
 > 🗒️ **Billing Formula**:
 > Network Data Transfer = Data Transfer Volume (GB) × Network Data Transfer Unit Price (USD/GB)
+
+**Network data transfer fees will be officially charged starting September 1, 2026.**
 
 ### Other Cloud Resource Billing
 

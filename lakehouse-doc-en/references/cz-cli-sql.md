@@ -341,7 +341,7 @@ cz-cli -p prod sql \
 
 * [Installation and Configuration Guide](setup_cz_cli.md) — Installation, profile configuration
 * [Studio Task Development and Operations](cz-cli-studio-tasks.md) — Task management, runs
-* [AI Agent Integration](cz-cli-agent.md) — Agent LLM configuration, natural language operations
+* [AI Agent Integration](setup_cz_cli.md#using-with-ai-agents) — MCP, Agent LLM configuration, and natural language operations
 
 **Lakehouse Related Documentation**
 

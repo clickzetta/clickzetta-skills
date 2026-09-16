@@ -680,4 +680,4 @@ TO TIMESTAMP AS OF '2026-06-06T13:28:29.718';
 - [Column-Level Security (Dynamic Masking)](../dynamic-mask.md) — Column Masking full syntax and use cases
 - [User Management](../authority-management.md) — RBAC role creation and permission granting
 - [MySQL Multi-Table Offline Sync](../multitable_batch_sync.md) — full-database mirror sync configuration
-- [COPY INTO](../copy-into.md) — bulk data import from Volume / object storage
+- [COPY INTO](../copy-into-table.md) — bulk data import from Volume / object storage

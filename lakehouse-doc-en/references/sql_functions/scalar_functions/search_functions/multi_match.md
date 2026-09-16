@@ -111,4 +111,4 @@ Calling on a string literal (no Inverted Index) returns `null` without raising a
 * [MATCH_ALL](match_all.md)
 * [MATCH_PHRASE](match_phrase.md)
 * [MATCH_REGEXP](match_regexp.md)
-* [Index Best Practices](../../../index-manager.md)
+* [Index Best Practices](../../../lakehouse-index-best-practice.md)

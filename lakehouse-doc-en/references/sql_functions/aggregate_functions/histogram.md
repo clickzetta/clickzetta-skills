@@ -92,6 +92,6 @@ FROM (VALUES (1),(2),(2),(3)) t(v);
 
 #### Related Documentation
 
-* [MAP_KEYS](../map_functions/map_keys.md)
-* [MAP_VALUES](../map_functions/map_values.md)
+* [MAP_KEYS](../scalar_functions/nested_functions/map_keys.md)
+* [MAP_VALUES](../scalar_functions/nested_functions/map_values.md)
 * [APPROX_TOP_K](approx_top_k.md)

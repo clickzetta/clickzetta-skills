@@ -779,9 +779,9 @@ best_practice_retail_pos | doc_ads_store_ranking           | true
 
 ## Related Documentation
 
-- [Create Dynamic Table](create-dynamic-table.md) — syntax reference and incremental refresh mechanism
-- [Dynamic Table Parameterized Partition Definition](dynamic-table-parameters.md) — `PARTITIONED BY` + `SESSION_CONFIGS` full syntax
-- [Create Index](create-index.md) — Bloomfilter / Inverted / Vector index syntax
-- [External Catalog and External Schema](external_catalog_schema.md) — federated query entry point, Hive mounting
-- [Continuous Kafka Data Ingestion with PIPE](pipe-kafka.md) — full Kafka PIPE parameter reference
-- [Medallion Architecture: Pure SQL Dynamic Table Approach](lakehouse-medallion-sql-dt-guide.md) — large-scale three-layer data warehouse reference
+- [Create Dynamic Table](../create-dynamic-table.md) — syntax reference and incremental refresh mechanism
+- [Dynamic Table Parameterized Partition Definition](../dynamic-table-parameters.md) — `PARTITIONED BY` + `SESSION_CONFIGS` full syntax
+- [Create Index](../index_guide.md) — Bloomfilter / Inverted / Vector index syntax
+- [External Catalog and External Schema](../external_catalog_schema.md) — federated query entry point, Hive mounting
+- [Continuous Kafka Data Ingestion with PIPE](../pipe-kafka.md) — full Kafka PIPE parameter reference
+- [Medallion Architecture: Pure SQL Dynamic Table Approach](../lakehouse-medallion-sql-dt-guide.md) — large-scale three-layer data warehouse reference

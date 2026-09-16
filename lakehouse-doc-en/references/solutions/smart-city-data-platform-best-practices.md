@@ -791,7 +791,7 @@ Three roles were also created (`smart_city_viewer`, `dept_nypd_analyst`, `city_o
 
 ## Related Documentation
 
-- [COPY INTO Data Import](../copy-into.md) — COPY INTO full parameter reference and file format support
+- [COPY INTO Data Import](../copy-into-table.md) — COPY INTO full parameter reference and file format support
 - [Create External Schema](../create-external-schema.md) — Hive / JDBC external data source connections
 - [Create Dynamic Table](../create-dynamic-table.md) — syntax reference and incremental refresh mechanism
 - [Table Stream User Guide](../SQL_Table_Stream_Guide.md) — Stream creation, consumption, and offset management

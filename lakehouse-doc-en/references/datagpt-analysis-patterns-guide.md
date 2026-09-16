@@ -483,5 +483,5 @@ Compare active account count and average seat count by country
 - [Question Asking Guide](datagpt-question-asking-guide.md) — How to ask questions that are more likely to get accurate answers
 - [Reading Analysis Results](datagpt-answer-reading-guide.md) — How to determine whether an answer is trustworthy
 - [Using Data and Exploration](datagpt-data-exploration-guide.md) — View analytics domain data coverage and structured exploration
-- [Using Dashboards](datagpt-dashboard-bi-analyst-guide.md) — Save Q&A results as shareable dashboards
+- [DataGPT Dashboard User Guide](datagpt-dashboard-guide.md) — Save Q&A results as shareable dashboards
 - [Recommended Questions Configuration](datagpt-recommended-questions-guide.md) — Understand recommended questions for analytics domains

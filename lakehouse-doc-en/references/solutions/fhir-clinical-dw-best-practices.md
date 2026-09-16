@@ -670,11 +670,11 @@ The `best_practice_fhir_clinical` schema contains 11 tables in total:
 
 ## Related Documentation
 
-- [Create Dynamic Table](create-dynamic-table.md) — syntax reference and incremental refresh mechanism
-- [JSON Processing Guide](json_guide_for_complex_biz_cases.md) — complex JSON parsing and LATERAL VIEW expansion
-- [Dynamic Data Masking](dynamic-mask.md) — Column Masking policy creation and binding
-- [Time Travel](time-travel-concept.md) — TIMESTAMP AS OF syntax and retention period details
-- [Studio Task Scheduling](dynamic_table_using_studio.md) — create and manage refresh tasks
-- [Medallion Architecture: Pure SQL Dynamic Table Approach](lakehouse-medallion-sql-dt-guide.md) — three-layer data warehouse reference
+- [Create Dynamic Table](../create-dynamic-table.md) — syntax reference and incremental refresh mechanism
+- [JSON Processing Guide](../json_guide_for_complex_biz_cases.md) — complex JSON parsing and LATERAL VIEW expansion
+- [Dynamic Data Masking](../dynamic-mask.md) — Column Masking policy creation and binding
+- [Time Travel](../time-travel-concept.md) — TIMESTAMP AS OF syntax and retention period details
+- [Studio Task Scheduling](../dynamic_table_using_studio.md) — create and manage refresh tasks
+- [Medallion Architecture: Pure SQL Dynamic Table Approach](../lakehouse-medallion-sql-dt-guide.md) — three-layer data warehouse reference
 
 > ⚠️ **Note (pending manual verification)**: Column Masking currently matches by username via `current_user()`, and all usernames authorized to view plaintext must be added individually to the `IN()` list in the masking function. If your Lakehouse version supports role-based dynamic matching (e.g., `HAS_ROLE('role_name')`), you can use roles instead of a username list for easier maintenance. Contact Singdata technical support to confirm whether your version supports this function.

@@ -718,7 +718,7 @@ segment × fuel_type × region_code · claim_rate_pct / high_risk_rate_pct
 - [Create Dynamic Table](../create-dynamic-table.md) — syntax reference and incremental refresh mechanism
 - [Dynamic Data Masking](../dynamic-mask.md) — Column Masking policy creation and binding
 - [Time Travel](../timetravel.md) — `TIMESTAMP AS OF` syntax and use cases
-- [Create Index](../create-index.md) — Bloomfilter / Inverted / Vector index syntax
+- [Create Index](../index_guide.md) — Bloomfilter / Inverted / Vector index syntax
 - [Role Permission Management](../role-privilege-manage.md) — RBAC role creation and permission assignment
 - [Medallion Architecture: Pure SQL Dynamic Table Approach](../lakehouse-medallion-sql-dt-guide.md) — large-scale three-layer data warehouse reference
 

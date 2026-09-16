@@ -706,9 +706,9 @@ Data flow architecture:
 
 ## Related Documentation
 
-- [Create Dynamic Table](create-dynamic-table.md) — syntax reference and incremental refresh mechanism
-- [Continuous Kafka Data Ingestion with PIPE](pipe-kafka.md) — full Kafka PIPE parameter reference
-- [Table Stream User Guide](SQL_Table_Stream_Guide.md) — CREATE TABLE STREAM syntax and consumption patterns
-- [Create Index](create-index.md) — Bloomfilter / Inverted / Vector index syntax
+- [Create Dynamic Table](../create-dynamic-table.md) — syntax reference and incremental refresh mechanism
+- [Continuous Kafka Data Ingestion with PIPE](../pipe-kafka.md) — full Kafka PIPE parameter reference
+- [Table Stream User Guide](../sql_table_stream_guide.md) — CREATE TABLE STREAM syntax and consumption patterns
+- [Create Index](../index_guide.md) — Bloomfilter / Inverted / Vector index syntax
 - [Industrial IoT Device Health Monitoring Data Warehouse Best Practices](iot-device-health-monitoring-dw-best-practices.md) — similar three-layer architecture reference
-- [Medallion Architecture: Pure SQL Dynamic Table Approach](lakehouse-medallion-sql-dt-guide.md) — large-scale three-layer data warehouse reference
+- [Medallion Architecture: Pure SQL Dynamic Table Approach](../lakehouse-medallion-sql-dt-guide.md) — large-scale three-layer data warehouse reference

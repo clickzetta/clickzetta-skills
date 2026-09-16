@@ -115,5 +115,5 @@ Yes. In share-selection mode, you can select multiple user questions and Agent r
 
 - [Reading Analysis Results](datagpt-answer-reading-guide.md) — Assess whether answer content is appropriate to share.
 - [Handling Feedback](datagpt-feedback-loop-guide.md) — Report and follow up on issues found after sharing.
-- [Using Dashboards](datagpt-dashboard-bi-analyst-guide.md) — Turn stable analysis results into dashboards.
+- [DataGPT Dashboard User Guide](datagpt-dashboard-guide.md) — Turn stable analysis results into dashboards.
 - [Permission Management](datagpt-permission-management-guide.md) — Manage the analytics domains and data scopes that people can access.

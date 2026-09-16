@@ -44,12 +44,12 @@ The SQL engine of Lakehouse can directly pull data from object storage, which is
 * **File Formats**: Currently supported file formats include CSV, PARQUET, and ORC, which are commonly used formats in data analysis and processing.
 * **Import Methods**: Supports various data import methods, such as the COPY command, Volume, offline data integration import, and SDK bulk upload (BulkloadStream).
 
-### **Push Data to Ingestion Service**
+### **Push Data to IGS (Ingestion Service)**
 
-The Ingestion Service of Lakehouse provides a solution for scenarios requiring real-time data ingestion. Clients push data to the server, which is received and committed to the table by the Ingestion Service, including SDK real-time data streams (RealtimeStream) and CDC real-time writes.
+IGS (Ingestion Service) of Lakehouse provides a solution for scenarios requiring real-time data ingestion. Clients push data to the server, which is received and committed to the table by IGS, including SDK real-time data streams (RealtimeStream) and CDC real-time writes.
 
 * **Advantages**: The advantage of this method is that it improves the timeliness of data ingestion, achieving real-time writes and real-time readability.
-* **Resource Consumption**: Currently, the Ingestion Service is in preview and using this service is temporarily free of charge. However, please note that charges will be applied in the future.
+* **Resource Consumption**: Using IGS incurs computing resource consumption.
 * **Applicable Scenarios**: Suitable for business scenarios requiring real-time data stream processing, such as real-time analysis and instant data updates.
 
 # Batch Loading Recommendations

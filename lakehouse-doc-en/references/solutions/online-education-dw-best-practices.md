@@ -763,9 +763,9 @@ Inverted Index                                  Inverted Index (activity_type)
 
 ## Related Documentation
 
-- [Create Dynamic Table](create-dynamic-table.md) — syntax reference and incremental refresh mechanism
-- [Continuous Kafka Data Ingestion with PIPE](pipe-kafka.md) — full Kafka PIPE parameter reference
-- [Create Index](create-index.md) — Bloomfilter / Inverted / Vector index syntax
-- [Create External Function](create-external-function.md) — External Function deployment and invocation
-- [Medallion Architecture: Pure SQL Dynamic Table Approach](lakehouse-medallion-sql-dt-guide.md) — large-scale three-layer data warehouse reference
+- [Create Dynamic Table](../create-dynamic-table.md) — syntax reference and incremental refresh mechanism
+- [Continuous Kafka Data Ingestion with PIPE](../pipe-kafka.md) — full Kafka PIPE parameter reference
+- [Create Index](../index_guide.md) — Bloomfilter / Inverted / Vector index syntax
+- [Create External Function](../create_external_function.md) — External Function deployment and invocation
+- [Medallion Architecture: Pure SQL Dynamic Table Approach](../lakehouse-medallion-sql-dt-guide.md) — large-scale three-layer data warehouse reference
 - [Industrial IoT Device Health Monitoring Data Warehouse Best Practices](iot-device-health-monitoring-dw-best-practices.md) — reference for the same series of best practices

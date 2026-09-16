@@ -125,7 +125,7 @@ The following Agents can operate Lakehouse and Studio through cz-cli:
 | Kilo Code | Supports cz-cli tool calls for data pipeline development |
 | Codex (OpenAI) | Supports cz-cli tool calls for SQL generation and data engineering |
 
-Any AI Agent that supports shell tool calls can integrate through cz-cli. See [cz-cli Agent Integration](cz-cli-agent.md).
+Any AI Agent that supports shell tool calls can integrate through cz-cli. See [cz-cli Installation and Usage Guide](setup_cz_cli.md#using-with-ai-agents).
 
 ### AI Platforms Integrated via MCP Server
 
