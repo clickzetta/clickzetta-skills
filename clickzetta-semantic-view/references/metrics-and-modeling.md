@@ -289,7 +289,7 @@ SELECT * FROM semantic_view(
 
 Within-region shares sum to 100%. Constraints on `PARTITION BY` / `ORDER BY`:
 - Must reference a dimension's **qualified alias** (`orders.region`); a physical column name (`o_region`) or bare alias (`region`) raises `must reference a declared dimension by its alias`.
-- Same-table only — referencing a parent-table dimension raises `cannot resolve column`.
+- **Not** restricted to the metric's own table. A **parent-table** dimension works: verified with an `orders` metric carrying `PARTITION BY area.an` (a parent table reached through a FK), which partitioned across both child rows sharing that parent (38.46% / 61.54%) — so the partition genuinely spans the parent's children.
 - The dimension must appear in the query's `DIMENSIONS`, else `must also be requested as a dimension`.
 
 ---
@@ -625,7 +625,7 @@ When the dimension is queried, the engine walks the FK chain from `customer` to 
 ### Other modeling facts
 
 - **Composite primary keys and multi-hop FKs** are supported (`line_items` uses `(l_orderkey, l_linenumber)` and reaches customers via two hops).
-- **FK constraints**: FK and referenced column types must match (else `type ... does not match`); name the referenced column when it differs from the PK; a referenced table must be defined before the referencing table.
+- **FK constraints**: FK and referenced column types must match (else `type ... does not match`); name the referenced column when it differs from the PK; the referenced column must be the target's PK or a UNIQUE key. FK references resolve regardless of definition order — a referencing table may be declared before its target.
 
 ---
 

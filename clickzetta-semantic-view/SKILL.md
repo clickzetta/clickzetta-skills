@@ -133,7 +133,7 @@ COMMENT = 'Employee & department analysis';
 Notes:
 - `FOREIGN KEY (dept) REFERENCES depts (dept_name)` — when the FK column name differs from the referenced primary key, name the referenced column explicitly. **FK and referenced column types must match**, or CREATE fails.
 - `hire_year` is a computed dimension derived from a date via `YEAR()`.
-- The table referenced by a foreign key must be defined **before** the referencing table in `TABLES`.
+- FK references are resolved regardless of definition order — a referencing table may be listed **before** the table it points at (both the inline `FOREIGN KEY` and the top-level `RELATIONSHIPS` form). Listing parents first is still the clearer style.
 
 ### Metric capabilities (brief)
 
@@ -281,11 +281,11 @@ SELECT * FROM semantic_view(
 ## Important notes
 
 1. **No `FILTERS` clause**: named filters were removed. To filter, define a conditional metric with `FILTER (WHERE ...)`, or use an outer `WHERE` with a dimension short name.
-2. **TABLES order**: a referenced table must be defined before the table whose FK references it.
+2. **TABLES order**: FK references resolve regardless of order — a referencing table may be declared before its target.
 3. **FK type match**: FK column and referenced column must have the same type, or CREATE raises `type ... does not match`.
 4. **Idempotent scripts**: `DROP ... IF EXISTS` before `CREATE`, or use `CREATE OR REPLACE`.
 5. **Metadata is declarative**: `is_unique` / `is_time` / `enum_values` are annotations for AI/metadata tools — they do **not** affect SQL results, optimization, or value validation. Note `DESC EXTENDED` reads `is_unique`/`is_time` back as `true` whenever the clause was written at all (value not faithful); `synonyms` and `enum_values` read back faithfully.
-6. **Window metrics**: `PARTITION BY` / `ORDER BY` must reference a dimension's **qualified alias** (e.g. `orders.region`), same-table only, and that dimension must appear in the query's `DIMENSIONS`.
+6. **Window metrics**: `PARTITION BY` / `ORDER BY` must reference a dimension's **qualified alias** (e.g. `orders.region`) — a physical column or bare alias is rejected — and that dimension must appear in the query's `DIMENSIONS`. It may belong to **another** logical table: a parent reached through a FK works and the partition spans that parent's children.
 7. **PRIVATE objects** cannot be queried/filtered directly — only composed into a PUBLIC fact/metric.
 8. **VARIABLES**: declared right after `TABLES` (before `FACTS`/`DIMENSIONS`/`METRICS`, else `Syntax error at or near 'VARIABLES'`). Dimension/metric expressions reference a variable by its **bare name** (no `alias.` prefix). Bind at query time with `semantic_view(... VARIABLES <name> => <value>)` (`=>` or `=`, constant only); unbound variables use their default. `DEFAULT` and `=` are equivalent and both read back as `DEFAULT`.
 9. **FACTS naming**: the syntax is `<alias>.<fact_name> AS <physical_column>` — **fact name first, physical column second**. A metric references a fact by its **qualified** name (`COUNT(orders.order_id)`); the bare fact name raises `cannot resolve column`. Keep the fact name **different from the physical column name** — when the two collide (an "identity passthrough" such as `orders.o_orderkey AS o_orderkey`), the view still creates, and other facts in the same `FACTS` clause can still reference it, but **no metric can** (`cannot resolve column 'o_orderkey'`).

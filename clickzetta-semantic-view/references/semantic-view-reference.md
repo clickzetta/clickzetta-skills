@@ -54,7 +54,7 @@ TABLES (
 | `WITH SYNONYMS ( '<synonym>' )` | Logical-table synonyms, to improve discoverability |
 | `COMMENT = '<description>'` | Logical-table description |
 
-- A table referenced by a foreign key must be defined **before** the referencing table.
+- FK references are resolved regardless of definition order: a table may reference another declared **later** in `TABLES`. This holds for both the inline `FOREIGN KEY` and the top-level `RELATIONSHIPS` form.
 - Multi-hop foreign keys are supported (e.g. `line_items → orders → customers`).
 
 ---
@@ -212,7 +212,7 @@ Constraints and behaviours:
 - Arithmetic-expression metrics: `MAX(col) - MIN(col)`, `SUM(col) / COUNT(col)`, `SUM(col) * 100.0 / SUM(col)`.
 - Table-level derived metrics (name **carries** an `alias.` prefix): reference other named metrics on the **same** logical table, e.g. `emps.avg AS emps.total_salary / emps.headcount`.
 - View-level derived metrics (name is **bare**, no `alias.` prefix): reference named metrics on **any** logical table, enabling **cross-table / cross-grain** division, e.g. `return_rate AS returns.total_returns / sales.total_sales`. The engine aggregates each referenced metric at its own grain and aligns on the query dimension, so sibling fact tables do not fan out; view-level metrics may nest-reference other view-level metrics. `SHOW SEMANTIC METRICS` reports `table_name` as **NULL** for these, and the owning table for table-level ones.
-- Window-function metrics: `RANK()`/`ROW_NUMBER()` ranking, or `SUM(SUM(...)) OVER (...)` for share/running totals. `PARTITION BY`/`ORDER BY` must reference a dimension's **qualified alias**, same-table only, and that dimension must appear in the query's `DIMENSIONS`.
+- Window-function metrics: `RANK()`/`ROW_NUMBER()` ranking, or `SUM(SUM(...)) OVER (...)` for share/running totals. `PARTITION BY`/`ORDER BY` must reference a dimension's **qualified alias** (a physical column or bare alias is rejected), and that dimension must appear in the query's `DIMENSIONS`. The dimension is **not** limited to the metric's own table — a parent-table dimension reached through a FK works.
 
 **Not supported:**
 - A **table-prefixed** metric body referencing an unrelated table's **raw column** → `cannot resolve column` (e.g. `sales.x AS SUM(sales.amount) / COUNT(product.p_key)`). Combine named metrics with a view-level derived metric instead.

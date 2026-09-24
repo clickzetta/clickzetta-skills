@@ -27,7 +27,7 @@ Quick reference for what semantic views support, how to diagnose errors, and how
 | `SHOW SEMANTIC RELATIONSHIPS / TABLES` | Supported | RELATIONSHIPS: FK rows incl. `relationship_type` (`MANY_TO_ONE`); TABLES: logical→physical mapping incl. `base_table`/`primary_key` |
 | Query parameters (`VARIABLES`) | Supported | Declared after `TABLES`; referenced by bare name; bound at query time with `VARIABLES <name> => <value>` (default otherwise) |
 | PUBLIC / PRIVATE visibility | Supported | PRIVATE can only be composed, not queried directly |
-| Window-function metrics (RANK / share / running total) | Supported | `PARTITION BY`/`ORDER BY`: qualified dim alias, same-table, dim must be in query |
+| Window-function metrics (RANK / share / running total) | Supported | `PARTITION BY`/`ORDER BY`: qualified dim alias (not a physical column or bare alias); the dimension must be in the query. It may live on **another** table — a parent reached by FK works |
 | Table-prefixed metric body referencing another table's raw column | Not supported | `cannot resolve column`; combine named metrics via a view-level derived metric instead |
 | Grouping a coarse metric by a finer dimension (drill-down) | Blocked | `invalid dimension ... finer grain` (fan-out guard) |
 | Chasm trap (combining sibling-branch metrics) | Supported | Engine aggregates each branch at its own grain, no fan-out inflation |
@@ -142,7 +142,7 @@ SELECT
     department,
     avg_salary,
     AI_COMPLETE(
-        '<model-name>',
+        '<connection-name>:<model-name>',
         'In one sentence, assess this department''s salary level. Department: ' || department
         || ', average salary: ' || CAST(avg_salary AS STRING)
     ) AS ai_comment
@@ -153,7 +153,7 @@ FROM semantic_view(
 );
 ```
 
-Requires AI Gateway configured with a valid model name. For large batches, materialize the results first (CTAS) then call the AI function over the table.
+Requires an `API CONNECTION ... TYPE ai_function` to exist, and the identifier is `'<connection-name>:<model-name>'` — a bare model name raises `Invalid model coordinates`. A semantic-view result feeds `AI_COMPLETE` like any other row set; if the gateway has no upstream configured for that model the function returns an `error_message` column instead of failing the query. For large batches, materialize the results first (CTAS) then call the AI function over the table.
 
 ### Via CZ-CLI
 
