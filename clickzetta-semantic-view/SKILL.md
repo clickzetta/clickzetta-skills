@@ -2,8 +2,8 @@
 name: clickzetta-semantic-view
 description: |
   Create, query, and manage ClickZetta Lakehouse Semantic Views — schema-level logical models that encapsulate multi-table JOINs and aggregations into a business-friendly layer of logical tables, dimensions, metrics, and facts. Query with the semantic_view() function without writing JOINs or GROUP BY manually.
-  Triggered when user says "create semantic view", "semantic view", "semantic layer", "define metrics", "define dimensions", "unified metric definitions", "business semantic model", "semantic_view()", "CREATE OR REPLACE SEMANTIC VIEW", "FACTS", "PRIVATE metric", "conditional metric", "window metric", "SHOW SEMANTIC VIEWS", "GRANT SELECT ON SEMANTIC VIEW".
-  Keywords: semantic view, dimension, metric, fact, logical model, unified metrics, semantic layer, grain, chasm trap, FILTER metric
+  Triggered when user says "create semantic view", "semantic view", "semantic layer", "define metrics", "define dimensions", "unified metric definitions", "business semantic model", "semantic_view()", "CREATE OR REPLACE SEMANTIC VIEW", "FACTS", "PRIVATE metric", "conditional metric", "window metric", "cross-table metric", "view-level derived metric", "drill-down count", "SHOW SEMANTIC VIEWS", "GRANT SELECT ON SEMANTIC VIEW".
+  Keywords: semantic view, dimension, metric, fact, logical model, unified metrics, semantic layer, grain, chasm trap, FILTER metric, cross-table metric, view-level derived metric, drill-down count
 ---
 
 # ClickZetta Semantic View
@@ -41,9 +41,9 @@ Rule of thumb: build a semantic view when the payoff of *consistent definitions*
 | Component | Keyword | Description |
 |---|---|---|
 | Logical tables | `TABLES` | Map physical tables, declare PRIMARY/FOREIGN keys; the engine handles JOINs automatically |
-| Facts | `FACTS` | Pass a child-table column through as a logical fact so a parent-table metric can aggregate it (cross-table modeling) |
+| Facts | `FACTS` | Pass a child-table column through as a logical fact so a parent-table metric can aggregate it (cross-table modeling); also the way to get a per-parent row count that keeps childless parents at `0` |
 | Dimensions | `DIMENSIONS` | Categorical attributes (who/what/where/when); support computed expressions like `YEAR(hire_date)` |
-| Metrics | `METRICS` | Aggregate measures — general aggregates, conditional (`FILTER (WHERE ...)`), arithmetic, same-table derived, and window metrics |
+| Metrics | `METRICS` | Aggregate measures — general aggregates, conditional (`FILTER (WHERE ...)`), arithmetic, table-level derived, view-level derived (cross-table), and window metrics |
 | Variables | `VARIABLES` | Named query parameters with default values — dimension/metric expressions reference them, bound at query time so one view serves multiple thresholds/definitions |
 
 Any dimension / metric / fact can be prefixed with `PRIVATE` to hide it from direct query — it can only be composed into other `PUBLIC` objects (encapsulate intermediate calculations).
@@ -145,7 +145,7 @@ METRICS (
     orders.open_revenue  AS SUM(o_totalprice) FILTER (WHERE o_status = 'O'),
     -- Arithmetic expression
     emps.salary_range    AS MAX(salary) - MIN(salary),
-    -- Same-table derived (reference other named metrics)
+    -- Table-level derived (has a table prefix: same-table metrics only)
     emps.total_salary    AS SUM(salary),
     emps.headcount       AS COUNT(id),
     emps.avg_salary      AS emps.total_salary / emps.headcount,
@@ -155,7 +155,26 @@ METRICS (
 )
 ```
 
-Also supported: `COUNT(DISTINCT ...)`, `APPROX_COUNT_DISTINCT`, `STDDEV`, `VARIANCE`, `MEDIAN`, `PERCENTILE`, `GROUP_CONCAT`, etc. Cross-table metric division (referencing an unrelated table's columns) is **not** supported — do that in the outer SQL. Full rules and verified outputs: [references/metrics-and-modeling.md](references/metrics-and-modeling.md).
+Also supported: `COUNT(DISTINCT ...)`, `APPROX_COUNT_DISTINCT`, `STDDEV`, `VARIANCE`, `MEDIAN`, `PERCENTILE`, `GROUP_CONCAT`, etc. Full rules and verified outputs: [references/metrics-and-modeling.md](references/metrics-and-modeling.md).
+
+#### Two kinds of derived metric — the table prefix decides
+
+- **Table-level derived** (`alias.name AS ...`) — may reference named metrics on the **same** logical table only.
+- **View-level derived** (bare `name AS ...`, **no prefix**) — may reference named metrics on **any** logical table, enabling **cross-table / cross-grain** division. The engine aggregates each referenced metric at its own grain, then aligns on the query dimension, so sibling fact tables do **not** fan out. A view-level derived metric may also nest-reference another view-level derived metric.
+
+```sql
+-- sales and returns are sibling fact tables sharing the product dimension
+METRICS (
+    sales.total_sales     AS SUM(sales.amount),
+    returns.total_returns AS SUM(returns.amount),
+    return_rate AS returns.total_returns / sales.total_sales,   -- view-level: cross-table division
+    return_pct  AS return_rate * 100                            -- view-level: nests another view-level metric
+)
+```
+
+`SHOW SEMANTIC METRICS` reports `table_name` as **NULL** for view-level derived metrics, and the owning table for table-level ones — that is how you tell them apart.
+
+> ⚠️ A **table-prefixed** metric body may only reference its own table's columns (plus finer-grain child columns passed through `FACTS`) — referencing another table's raw column raises `cannot resolve column`. To combine across tables, define named metrics per table first, then combine them with a view-level derived metric.
 
 ---
 
@@ -232,6 +251,8 @@ SELECT * FROM semantic_view(
 
 > **Grain matters**: query grain is driven by the metric's table. Orphan child rows appear with a `NULL` dimension; dimension members with no fact rows do not appear. Metrics from two sibling one-to-many branches (chasm-trap fan-out) can be combined in one query — the engine aggregates each branch at its own grain and aligns on the dimension, without inflating. See [references/metrics-and-modeling.md](references/metrics-and-modeling.md).
 
+> **Parents with no child rows — `METRICS` vs `FACTS` decides.** A drill-down count requested as a **metric** omits parent rows that have no children (e.g. a customer with no orders never appears). Define that count as a **fact** instead and request it with the `FACTS` keyword, and every parent row is kept — a parent with no children returns **`0`**, so an outer `= 0` filter is equivalent to `NOT EXISTS (child_table)`. `METRICS` and `FACTS` **cannot be mixed in one `semantic_view()` query**.
+
 ---
 
 ## Managing a semantic view
@@ -267,4 +288,5 @@ SELECT * FROM semantic_view(
 6. **Window metrics**: `PARTITION BY` / `ORDER BY` must reference a dimension's **qualified alias** (e.g. `orders.region`), same-table only, and that dimension must appear in the query's `DIMENSIONS`.
 7. **PRIVATE objects** cannot be queried/filtered directly — only composed into a PUBLIC fact/metric.
 8. **VARIABLES**: declared right after `TABLES` (before `FACTS`/`DIMENSIONS`/`METRICS`, else `Syntax error at or near 'VARIABLES'`). Dimension/metric expressions reference a variable by its **bare name** (no `alias.` prefix). Bind at query time with `semantic_view(... VARIABLES <name> => <value>)` (`=>` or `=`, constant only); unbound variables use their default. `DEFAULT` and `=` are equivalent and both read back as `DEFAULT`.
+9. **FACTS naming**: the syntax is `<alias>.<fact_name> AS <physical_column>` — **fact name first, physical column second**. A metric references a fact by its **qualified** name (`COUNT(orders.order_id)`); the bare fact name raises `cannot resolve column`. Keep the fact name **different from the physical column name** — when the two collide (an "identity passthrough" such as `orders.o_orderkey AS o_orderkey`), the view still creates, and other facts in the same `FACTS` clause can still reference it, but **no metric can** (`cannot resolve column 'o_orderkey'`).
 

@@ -135,6 +135,61 @@ Derived metrics can only combine metrics from the **same logical table**.
 
 ---
 
+## View-level derived metrics (cross-table / cross-grain)
+
+Dropping the `alias.` prefix turns a metric into a **view-level derived metric**. Unlike the table-level form above, it may reference named metrics on **any** logical table — including **cross-table, cross-grain** combinations. The engine computes each referenced metric at its own grain, then aligns them on the query dimension, so sibling fact tables do not fan out.
+
+```sql
+CREATE TABLE doc_test.doc_vs_product (p_key INT, p_name STRING);
+CREATE TABLE doc_test.doc_vs_sales   (s_id INT, s_pkey INT, amount DECIMAL(12,2));
+CREATE TABLE doc_test.doc_vs_returns (r_id INT, r_pkey INT, amount DECIMAL(12,2));
+
+INSERT INTO doc_test.doc_vs_product VALUES (1,'X'),(2,'Y');
+INSERT INTO doc_test.doc_vs_sales   VALUES (1,1,60.00),(2,2,40.00);
+INSERT INTO doc_test.doc_vs_returns VALUES (1,1,5.00),(2,2,13.00);
+
+CREATE SEMANTIC VIEW doc_test.sv_vsderived
+TABLES (
+    product AS doc_test.doc_vs_product PRIMARY KEY (p_key),
+    sales   AS doc_test.doc_vs_sales   PRIMARY KEY (s_id) FOREIGN KEY (s_pkey) REFERENCES product,
+    returns AS doc_test.doc_vs_returns PRIMARY KEY (r_id) FOREIGN KEY (r_pkey) REFERENCES product
+)
+DIMENSIONS (
+    product.pname AS product.p_name
+)
+METRICS (
+    sales.total_sales     AS SUM(sales.amount),
+    returns.total_returns AS SUM(returns.amount),
+    return_rate AS returns.total_returns / sales.total_sales,   -- view-level: cross-table division
+    return_pct  AS return_rate * 100                            -- view-level: nests another view-level metric
+);
+
+SELECT * FROM semantic_view(
+    doc_test.sv_vsderived
+    DIMENSIONS pname
+    METRICS total_sales, total_returns, return_rate, return_pct
+) ORDER BY pname;
+```
+
+```
++-------+-------------+---------------+--------------------+----------------+
+| pname | total_sales | total_returns |    return_rate     |   return_pct   |
++-------+-------------+---------------+--------------------+----------------+
+| X     |    60.00    |      5.00     | 0.0833333333333333 | 8.333333333333 |
+| Y     |    40.00    |     13.00     | 0.3250000000000000 | 32.500000000000|
++-------+-------------+---------------+--------------------+----------------+
+```
+
+`sales` and `returns` are sibling fact tables sharing the `product` dimension. `return_rate` aggregates each leg at its own grain and divides on the shared dimension — no fan-out.
+
+Telling the two forms apart in metadata: `SHOW SEMANTIC METRICS IN <view>` reports `table_name` as **NULL** for view-level derived metrics and the owning table (`SALES`, `RETURNS`) for table-level ones.
+
+> ⚠️ What is still unsupported is a **table-prefixed** metric body referencing another table's **raw column** — `sales.x AS SUM(sales.amount) / COUNT(product.p_key)` raises `cannot resolve column 'p_key'`. The fix is not to drop into outer SQL but to define named metrics per table and combine them with a view-level derived metric.
+
+Decimal division widens precision: above, `return_rate` comes back as `decimal(38,16)` and `return_pct` as `decimal(38,12)`. Apply `ROUND(...)` in the metric body or in the outer query when you need fixed scale.
+
+---
+
 ## PRIVATE intermediate metrics
 
 `PRIVATE` encapsulates an intermediate quantity: it can be composed into other `PUBLIC` metrics but not queried directly. Good for exposing only the final measure (e.g. margin %) while hiding intermediates (total revenue, total cost).
@@ -251,21 +306,25 @@ METRICS (
 
 Inner `SUM` rolls `lineitem` up to order grain; outer `AVG` rolls up to query grain.
 
-**Identity passthrough (FACTS)** — to have a parent metric reference a child column, declare it as a fact first. Two patterns:
+**Passthrough (FACTS)** — to have a parent metric reference a child column, declare it as a fact first. The syntax is `<alias>.<fact_name> AS <physical_column>` — **fact name first, physical column second**. Two patterns:
 
 ```sql
--- Pattern 1: combined aggregate in FACTS, query with FACTS keyword
+-- Pattern 1: combined aggregate defined inside FACTS, queried with the FACTS keyword
 FACTS (
     orders.o_orderkey AS o_orderkey,
     customer.order_count AS COUNT(orders.o_orderkey)
 )
 -- query: SELECT * FROM semantic_view(sv FACTS customer.order_count)
 
--- Pattern 2: FACTS only passes through (alias differs from column), aggregate in METRICS
+-- Pattern 2: FACTS only passes through, aggregation stays in METRICS
 FACTS (orders.order_id AS o_orderkey)
 METRICS (customer.order_count AS COUNT(orders.order_id))
 -- query: SELECT * FROM semantic_view(sv METRICS customer.order_count)
 ```
+
+> ⚠️ **Name the fact differently from the physical column.** Inside `FACTS` a passthrough named after its own column (`orders.o_orderkey AS o_orderkey`) is accepted, and other facts in the same `FACTS` clause can reference it — but **no metric can**: both `COUNT(orders.o_orderkey)` and bare `COUNT(o_orderkey)` in `METRICS` raise `cannot resolve column 'o_orderkey'`, even though the view creates fine. Pattern 2 above avoids this by naming the fact `order_id`.
+>
+> A metric references a fact by its **qualified** name (`COUNT(orders.order_id)`); the bare fact name raises `cannot resolve column 'order_id'`.
 
 Worked FACTS example (Pattern 2):
 
@@ -320,7 +379,7 @@ at an equal or coarser grain, otherwise it would be fanned out and double-counte
 
 > ⚠️ A metric can aggregate its own table or a finer child's columns, but **not a coarser parent's columns**. `SUM(orders.o_totalprice)` inside a child `lineitem` metric raises `cannot resolve column`.
 
-**Cross-table metric division is not supported** — a metric body may only reference its own table's columns; `COUNT(customer.c_custkey) / COUNT(nation.n_nationkey)` raises `cannot resolve column 'n_nationkey'`. Do cross-table composite calculations in the outer SQL.
+**A table-prefixed metric body cannot reference another table's raw column** — `sales.x AS SUM(sales.amount) / COUNT(product.p_key)` raises `cannot resolve column 'p_key'`. For cross-table arithmetic, define named metrics per table and combine them with a **view-level derived metric** (see the section above) — that path is supported and grain-safe.
 
 ---
 
@@ -419,6 +478,64 @@ SELECT * FROM semantic_view(
 
 Alice has 2 orders; order 101 has 2 line items (qty 5, 3), order 102 has none. `order_count` is 2 (not inflated to 3 by line rows) and `qty_total` correctly sums to 8. This is the value of the semantic layer over a hand-written `orders JOIN line_items` (which would double-count orders). Orphan order 105 still appears as `customer_name = NULL`: it has 1 order but no line items, so `qty_total` is `NULL` — **a child metric returns `NULL`, not 0, for a parent row with no child rows**; use `COALESCE(qty_total, 0)` in the outer query when you need 0.
 
+### Parents with no child rows: `METRICS` vs `FACTS` decides
+
+Whether a parent row that has **no** child rows shows up at all — and whether it reports `0` or `NULL` — depends on whether the aggregate is requested as a **metric** or a **fact**. The two cannot be mixed in one query.
+
+| Requested as | Parent rows with no children | Fix |
+|---|---|---|
+| `METRICS` | **Omitted entirely** (no group is produced). A child-anchored metric rolled up to an orphan parent reads `NULL`, not 0 | Outer `COALESCE(metric, 0)`; to keep every parent row, switch to the `FACTS` form |
+| `FACTS` | **Kept, returning `0`** (the child table is outer-joined onto the parent) | Outer `= 0` filter is equivalent to `NOT EXISTS (child_table)` |
+
+Worked example — `Carol` has no orders:
+
+```sql
+CREATE TABLE doc_test.fct_cust (c_custkey INT, c_name STRING);
+CREATE TABLE doc_test.fct_ord (o_orderkey INT, o_custkey INT, o_totalprice DECIMAL(12,2));
+INSERT INTO doc_test.fct_cust VALUES (1,'Alice'),(2,'Bob'),(3,'Carol');
+INSERT INTO doc_test.fct_ord VALUES (101,1,250.00),(102,1,150.00),(103,2,300.00);
+
+CREATE SEMANTIC VIEW doc_test.sv_facts
+TABLES (
+    customer AS doc_test.fct_cust PRIMARY KEY (c_custkey),
+    orders   AS doc_test.fct_ord  PRIMARY KEY (o_orderkey)
+        FOREIGN KEY (o_custkey) REFERENCES customer
+)
+FACTS (
+    orders.o_orderkey AS o_orderkey,
+    customer.order_count AS COUNT(orders.o_orderkey)
+)
+DIMENSIONS (
+    customer.cust_name AS c_name
+);
+
+-- Requested as FACTS: every parent row kept, childless parent = 0
+SELECT * FROM semantic_view(
+    doc_test.sv_facts
+    DIMENSIONS customer.cust_name
+    FACTS customer.order_count
+) ORDER BY cust_name;
+```
+
+```
++-----------+-------------+
+| cust_name | order_count |
++-----------+-------------+
+| Alice     |      2      |
+| Bob       |      1      |
+| Carol     |      0      |
++-----------+-------------+
+```
+
+The same count requested as `METRICS` (via a `FACTS` passthrough + `METRICS` aggregate, Pattern 2 above) returns only `Alice 2` and `Bob 1` — **`Carol` disappears**. Choosing between the two is a modelling decision, not a bug.
+
+Mixing the two in one query is rejected:
+
+```
+CZLH-42000: FACTS and METRICS cannot be requested in the same semantic_view() query
+CZLH-42000: when FACTS are specified, all facts and dimensions in the query must come from the same logical table
+```
+
 ### Multi-branch fan-out (chasm trap): handled automatically
 
 `orders` and `addresses` are two independent one-to-many branches under `customers`. The classic chasm-trap problem: naively joining both branches through `customers` would cross Alice's 2 orders with her 2 addresses into 4 rows, inflating both counts. The engine instead **aggregates each branch at its own grain, then aligns on the dimension**, so combining both branches' metrics in one query returns correct numbers — no inflation:
@@ -467,6 +584,42 @@ SELECT * FROM semantic_view(
 
 > Earlier versions raised `No relationship found for table` on cross-branch combinations and required splitting into separate queries. The current version handles the fan-out automatically — you can put multiple branches' metrics in one query. Still verify row counts and magnitudes match expectations.
 
+### Denormalized dimensions: a child dimension can borrow a parent column
+
+A dimension is not restricted to its own table's columns — it may reference a **parent table's** column directly, pulling a parent attribute down to the child's grain so queries need no hand-written JOIN. Because the parent is unique in a many-to-one relationship, the borrow is safe and does not fan out.
+
+```sql
+CREATE SEMANTIC VIEW doc_test.sv_denorm
+TABLES (
+    region   AS doc_test.grain_region   PRIMARY KEY (r_regionkey),
+    customer AS doc_test.grain_customer PRIMARY KEY (c_custkey)
+        FOREIGN KEY (c_regionkey) REFERENCES region
+)
+DIMENSIONS (
+    customer.cust_region_name AS region.r_name    -- child dimension borrowing the parent's column
+)
+METRICS (
+    customer.cust_count AS COUNT(customer.c_custkey)
+);
+
+SELECT * FROM semantic_view(
+    doc_test.sv_denorm
+    DIMENSIONS cust_region_name
+    METRICS cust_count
+) ORDER BY cust_region_name;
+```
+
+```
++------------------+------------+
+| cust_region_name | cust_count |
++------------------+------------+
+| East             |     2      |
+| West             |     1      |
++------------------+------------+
+```
+
+When the dimension is queried, the engine walks the FK chain from `customer` to `region` and projects the borrowed column. Declaring the dimension on the parent instead (`region.region_name AS region.r_name`) also works — the only difference is which logical table owns the dimension.
+
 ### Other modeling facts
 
 - **Composite primary keys and multi-hop FKs** are supported (`line_items` uses `(l_orderkey, l_linenumber)` and reaches customers via two hops).
@@ -494,4 +647,7 @@ Standard SQL semantics; the confusing points:
 | Some dimension members missing | Member has no fact rows in the metric table (e.g. a customer with no orders) | Query the dimension table directly when you need the full set |
 | Cross-branch numbers look off | Sibling-branch metrics combined (chasm-trap fan-out) | Supported — the engine aggregates each branch at its own grain, no inflation; verify counts/magnitudes match expectations |
 | Cross-table metric values inflated | Hand-written JOIN double-counts | Let the semantic view aggregate per metric grain; don't hand-write JOINs |
+| Childless parent rows vanish (e.g. a customer with no orders) | The drill-down count was requested as `METRICS` — empty groups produce no row | Define the count as a fact and request it with `FACTS`; the row is kept and returns `0`, so an outer `= 0` filter equals `NOT EXISTS (child)` |
+| A cross-table division fails with `cannot resolve column` on another table's raw column | A **table-prefixed** metric body cannot reach outside its own table | Define a named metric per table, then combine them in a **view-level derived metric** (no `alias.` prefix) |
+| `cannot resolve column` when a metric references a `FACTS` entry | Fact referenced by its bare name, or the fact name collides with its own physical column (`orders.o_orderkey AS o_orderkey`) | Reference it qualified (`COUNT(orders.order_id)`); give the fact a name different from the physical column |
 

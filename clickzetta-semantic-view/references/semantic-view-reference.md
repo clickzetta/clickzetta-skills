@@ -142,11 +142,13 @@ SELECT * FROM semantic_view(
 [ PRIVATE ] <alias>.<fact_name> AS { <column_expression> | <aggregate_expression> }
 ```
 
-`FACTS` declares logical facts, chiefly so a **parent-table metric can reference a child-table column**. A parent metric cannot aggregate a child column directly; declare that child column as a fact (identity passthrough), then reference it from the metric.
+`FACTS` declares logical facts, chiefly so a **parent-table metric can reference a child-table column**. A parent metric cannot aggregate a child column directly; declare that child column as a fact, then reference it from the metric.
+
+The clause reads `<alias>.<fact_name> AS <physical_column>` — **fact name first, physical column second**. Keep the fact name **different from the physical column name**.
 
 | Form | Description |
 |---|---|
-| `<alias>.<fact> AS <column_expr>` | Identity passthrough: expose a child column as a fact (alias may differ from the physical column name) so a parent metric can reference it |
+| `<alias>.<fact> AS <column_expr>` | Passthrough: expose a child column as a fact so a parent metric can reference it |
 | `<alias>.<fact> AS <aggregate_expr>` | Define a combined aggregate directly inside `FACTS`; select it in queries with the `FACTS` keyword |
 | `PRIVATE` prefix | Fact can only be composed into other PUBLIC objects, not queried directly |
 
@@ -160,11 +162,17 @@ FACTS (
 )
 -- query: SELECT * FROM semantic_view(sv FACTS customer.order_count)
 
--- Pattern 2: FACTS only passes through (alias differs from physical column); aggregate in METRICS
+-- Pattern 2: FACTS only passes through (fact name differs from the physical column); aggregate in METRICS
 FACTS (orders.order_id AS o_orderkey)
 METRICS (customer.order_count AS COUNT(orders.order_id))
 -- query: SELECT * FROM semantic_view(sv METRICS customer.order_count)
 ```
+
+Constraints and behaviours:
+
+- A metric references a fact by its **qualified** name (`COUNT(orders.order_id)`); the bare fact name raises `cannot resolve column 'order_id'`.
+- A passthrough named after its own column (`orders.o_orderkey AS o_orderkey`) is accepted and the view creates, but **no metric can reference it** — `COUNT(orders.o_orderkey)` and bare `COUNT(o_orderkey)` both raise `cannot resolve column 'o_orderkey'`. Only other facts in the same `FACTS` clause can reference it. Use Pattern 2's distinct naming instead.
+- A drill-down count defined as a fact and requested with `FACTS` keeps **every** parent row, returning `0` for a parent with no children (same as `NOT EXISTS`); requested as `METRICS`, that row is omitted. `METRICS` and `FACTS` cannot appear in the same `semantic_view()` query.
 
 ---
 
@@ -181,7 +189,7 @@ METRICS (customer.order_count AS COUNT(orders.order_id))
 
 | Parameter | Description |
 |---|---|
-| `AS <expression>` | A column name or a computed expression (e.g. `YEAR(o_orderdate)`); computed dimensions return integer type for `YEAR`/`MONTH` |
+| `AS <expression>` | A column name or a computed expression (e.g. `YEAR(o_orderdate)`); computed dimensions return integer type for `YEAR`/`MONTH`. A dimension on a child table may also reference a **parent** table's column (denormalized dimension) — safe because the parent is unique in a many-to-one, so it does not fan out |
 | `WITH SYNONYMS` | Dimension synonyms; lets users reference the same dimension by different business terms |
 | `is_unique = true` | Declarative annotation that dimension values are unique — **no SQL-layer effect** |
 | `is_time = true` | Declarative annotation of a time-type dimension — **no SQL-layer effect** |
@@ -202,11 +210,12 @@ METRICS (customer.order_count AS COUNT(orders.order_id))
 - General aggregates beyond `COUNT`/`SUM`/`AVG`/`MIN`/`MAX`: `COUNT(DISTINCT ...)`, `SUM(DISTINCT ...)`, `APPROX_COUNT_DISTINCT`, `STDDEV`, `VARIANCE`, `MEDIAN`, `PERCENTILE(col, p)`, `GROUP_CONCAT`, `ANY_VALUE`, etc.
 - Conditional aggregation: `COUNT(CASE WHEN ...)` and `<agg>(...) FILTER (WHERE <cond>)` — each filter is independent; segmented KPIs can be defined side by side and queried together.
 - Arithmetic-expression metrics: `MAX(col) - MIN(col)`, `SUM(col) / COUNT(col)`, `SUM(col) * 100.0 / SUM(col)`.
-- Same-table derived metrics: reference other named metrics in the same logical table, e.g. `emps.avg AS emps.total_salary / emps.headcount`.
+- Table-level derived metrics (name **carries** an `alias.` prefix): reference other named metrics on the **same** logical table, e.g. `emps.avg AS emps.total_salary / emps.headcount`.
+- View-level derived metrics (name is **bare**, no `alias.` prefix): reference named metrics on **any** logical table, enabling **cross-table / cross-grain** division, e.g. `return_rate AS returns.total_returns / sales.total_sales`. The engine aggregates each referenced metric at its own grain and aligns on the query dimension, so sibling fact tables do not fan out; view-level metrics may nest-reference other view-level metrics. `SHOW SEMANTIC METRICS` reports `table_name` as **NULL** for these, and the owning table for table-level ones.
 - Window-function metrics: `RANK()`/`ROW_NUMBER()` ranking, or `SUM(SUM(...)) OVER (...)` for share/running totals. `PARTITION BY`/`ORDER BY` must reference a dimension's **qualified alias**, same-table only, and that dimension must appear in the query's `DIMENSIONS`.
 
 **Not supported:**
-- Cross-table metric division (referencing an unrelated table's columns) → `cannot resolve column`. Do cross-table composite calculations in the outer SQL of the `semantic_view()` query.
+- A **table-prefixed** metric body referencing an unrelated table's **raw column** → `cannot resolve column` (e.g. `sales.x AS SUM(sales.amount) / COUNT(product.p_key)`). Combine named metrics with a view-level derived metric instead.
 
 ---
 
@@ -252,6 +261,8 @@ FROM semantic_view(
 - Names may be qualified (`alias.name`) or short (when unique in the view).
 - Results are grouped by the requested dimensions automatically — no `GROUP BY`.
 - At least one `DIMENSIONS` / `METRICS` / `FACTS` is required.
+- `METRICS` and `FACTS` **cannot be requested in the same query** (`FACTS and METRICS cannot be requested in the same semantic_view() query`); when `FACTS` are used, all facts and dimensions must come from the same logical table.
+- A drill-down count requested as `FACTS` keeps every parent row (childless parent = `0`); requested as `METRICS` the childless parent produces no row.
 - Only `METRICS` → single-row global aggregate; only `DIMENSIONS` → deduplicated dimension list.
 - `SELECT col1, col2 FROM semantic_view(...)` (partial columns) is supported; `ORDER BY` / `LIMIT` go on the outer query.
 

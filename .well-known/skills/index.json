@@ -169,7 +169,7 @@
     },
     {
       "name": "clickzetta-semantic-view",
-      "description": "Create, query, and manage ClickZetta Lakehouse Semantic Views — schema-level logical models that encapsulate multi-table JOINs and aggregations into a business-friendly layer of logical tables, dimensions, metrics, and facts, queried with the semantic_view() function.",
+      "description": "Create, query, and manage ClickZetta Lakehouse Semantic Views — schema-level logical models that encapsulate multi-table JOINs and aggregations into a business-friendly layer of logical tables, dimensions, metrics, and facts. Covers table-level and view-level (cross-table) derived metrics, conditional and window metrics, FACTS passthrough and drill-down counts, denormalized dimensions, and semantic_view() queries.",
       "files": [
         "SKILL.md",
         "references/semantic-view-reference.md",

@@ -10,10 +10,14 @@ Quick reference for what semantic views support, how to diagnose errors, and how
 |---|---|---|
 | General aggregates (DISTINCT / STDDEV / MEDIAN / PERCENTILE / GROUP_CONCAT ...) | Supported | Not limited to COUNT/SUM/AVG/MIN/MAX |
 | Arithmetic-expression metrics (MAX-MIN, SUM/COUNT ...) | Supported | Correct alone and mixed |
-| Derived metrics (same-table division / referencing named metrics) | Supported | Same logical table only |
+| Table-level derived metrics (prefixed, same-table division / named-metric references) | Supported | Same logical table only |
+| View-level derived metrics (unprefixed, cross-table / cross-grain) | Supported | No `alias.` prefix; references named metrics on any table, each aggregated at its own grain. `SHOW SEMANTIC METRICS` reports `table_name` as **NULL** for these |
 | Conditional metrics `FILTER (WHERE ...)` | Supported | Multiple filter metrics can be queried together |
 | Two-level aggregation (parent aggregates child column) | Supported | `AVG(SUM(child.col))` |
-| Identity passthrough `FACTS` | Supported | Prerequisite for a parent metric to reference a child column |
+| Passthrough `FACTS` | Supported | Prerequisite for a parent metric to reference a child column. Name the fact **differently from the physical column**, or no metric can reference it |
+| Drill-down count that keeps childless parents | Supported via `FACTS` | Requested as `FACTS` every parent row is kept and a childless parent returns `0`; requested as `METRICS` that row is omitted |
+| Denormalized dimension (child dimension borrows a parent column) | Supported | Parent is unique in a many-to-one, so the borrow does not fan out |
+| `METRICS` and `FACTS` in one query | Not supported | `FACTS and METRICS cannot be requested in the same semantic_view() query` |
 | NULL handling | Standard SQL | NULL dims form own group; aggregates skip NULL; zero-divide → NULL |
 | `WITH SYNONYMS` / `enum_values` read-back | Faithful | In `DESC EXTENDED`, values match creation |
 | `is_unique` / `is_time` read-back | Not faithful | Reads back `true` whenever declared, regardless of set value |
@@ -24,7 +28,7 @@ Quick reference for what semantic views support, how to diagnose errors, and how
 | Query parameters (`VARIABLES`) | Supported | Declared after `TABLES`; referenced by bare name; bound at query time with `VARIABLES <name> => <value>` (default otherwise) |
 | PUBLIC / PRIVATE visibility | Supported | PRIVATE can only be composed, not queried directly |
 | Window-function metrics (RANK / share / running total) | Supported | `PARTITION BY`/`ORDER BY`: qualified dim alias, same-table, dim must be in query |
-| Cross-table metric division (referencing other table's columns) | Not supported | `cannot resolve column` |
+| Table-prefixed metric body referencing another table's raw column | Not supported | `cannot resolve column`; combine named metrics via a view-level derived metric instead |
 | Grouping a coarse metric by a finer dimension (drill-down) | Blocked | `invalid dimension ... finer grain` (fan-out guard) |
 | Chasm trap (combining sibling-branch metrics) | Supported | Engine aggregates each branch at its own grain, no fan-out inflation |
 | `ALTER` add/drop dimension or metric | Not supported | Use `CREATE OR REPLACE`; `RENAME TO` cannot carry a schema prefix |
@@ -49,7 +53,10 @@ Quick reference for what semantic views support, how to diagnose errors, and how
 | `DESC` returns empty | Missing `EXTENDED`, or used `DESC SEMANTIC VIEW` | Use `DESC EXTENDED <name>` or `SHOW CREATE SEMANTIC VIEW` |
 | `SHOW SEMANTIC VIEWS LIKE` returns empty | `SHOW` does not support `LIKE` | Drop LIKE, list all and filter yourself |
 | Cross-table metric values too large / duplicated | Hand-written JOIN caused fan-out | Let the semantic view aggregate per grain; don't hand-write JOINs |
-| Dimension member missing (e.g. a customer absent) | That member has no fact rows in the metric table | Query the dimension table directly for the full set |
+| Dimension member missing (e.g. a customer absent) | That member has no fact rows in the metric table | Query the dimension table directly for the full set — or, if it's a drill-down count, define it as a fact and request it with `FACTS` so the row is kept at `0` |
+| Create: `cannot resolve column` on another table's raw column | A **table-prefixed** metric body referencing an unrelated table's column | Define a named metric per table, then combine them with an unprefixed **view-level derived metric** |
+| Query: `FACTS and METRICS cannot be requested in the same semantic_view() query` | Both keywords used in one `semantic_view()` call | Split into two queries |
+| Create: `cannot resolve column` when a metric references a `FACTS` entry | Fact referenced by bare name, or the fact name equals its own physical column | Reference it qualified (`COUNT(orders.order_id)`); rename the fact so it differs from the physical column |
 
 ---
 
