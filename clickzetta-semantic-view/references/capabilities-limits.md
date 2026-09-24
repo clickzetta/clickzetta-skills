@@ -50,7 +50,7 @@ Quick reference for what semantic views support, how to diagnose errors, and how
 | Query: `table or view not found - semantic_view` | Passed no DIMENSIONS/METRICS/FACTS | Specify at least one dimension, metric, or fact |
 | Create: `already exists` | View exists and no replace syntax used | Use `CREATE OR REPLACE`, or add `IF NOT EXISTS` |
 | Query: `is PRIVATE and cannot be selected` | Queried a PRIVATE object directly | Query the PUBLIC metric that composes it |
-| `DESC` returns empty | Missing `EXTENDED`, or used `DESC SEMANTIC VIEW` | Use `DESC EXTENDED <name>` or `SHOW CREATE SEMANTIC VIEW` |
+| `DESC` output lacks workspace / creator / properties | The leading `# detailed table information` block only appears with `EXTENDED` | Use `DESC EXTENDED <name>`; plain `DESC` (and `DESC SEMANTIC VIEW` / `DESCRIBE SEMANTIC VIEW`) still return the logical-tables / relationships / dimensions / metrics sections |
 | `SHOW SEMANTIC VIEWS LIKE` returns empty | `SHOW` does not support `LIKE` | Drop LIKE, list all and filter yourself |
 | Cross-table metric values too large / duplicated | Hand-written JOIN caused fan-out | Let the semantic view aggregate per grain; don't hand-write JOINs |
 | Dimension member missing (e.g. a customer absent) | That member has no fact rows in the metric table | Query the dimension table directly for the full set — or, if it's a drill-down count, define it as a fact and request it with `FACTS` so the row is kept at `0` |

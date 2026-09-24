@@ -310,7 +310,7 @@ Returns `schema_name`, `table_name`. Does **not** support `LIKE`; no global cros
 DESC EXTENDED <view_name>;
 ```
 
-Must include `EXTENDED` (`DESC <name>`, `DESC SEMANTIC VIEW`, `DESCRIBE SEMANTIC VIEW` all return empty). Output is organized into `# detailed table information`, `#logical tables`, `#dimensions`, `#metrics` sections, each row having `column_name`, `data_type`, `comment`. Dimension metadata (`synonyms`/`is_unique`/`is_time`/`enum_values`) is listed as extra rows under each dimension.
+`DESC EXTENDED <name>` is the fullest form. `DESC <name>`, `DESC SEMANTIC VIEW <name>` and `DESCRIBE SEMANTIC VIEW <name>` are **not** empty — they return the same sectioned output minus the leading `# detailed table information` block, which only `EXTENDED` adds (it carries workspace / schema / name / creator / created_time / last_modified_time / comment / properties / version / type, plus trailing `format` and `statistics` rows). The remaining sections are `#logical tables`, `#relationships`, `#dimensions`, `#metrics`, each row having `column_name`, `data_type`, `comment`. Dimension metadata (`synonyms`/`is_unique`/`is_time`/`enum_values`) is listed as extra rows under each dimension.
 
 ### Introspection (structured, one row per object)
 

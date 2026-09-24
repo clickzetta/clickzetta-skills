@@ -266,7 +266,7 @@ SELECT * FROM semantic_view(
 | `ALTER SEMANTIC VIEW <name> SET PROPERTIES ('k'='v')` | Set custom properties (merge/upsert semantics) |
 | `ALTER SEMANTIC VIEW <name> UNSET PROPERTIES ('k')` | Remove a property |
 | `SHOW SEMANTIC VIEWS [ IN <schema> ]` | List views (returns `schema_name`, `table_name`) |
-| `DESC EXTENDED <name>` | View full structure — **must** include `EXTENDED` |
+| `DESC EXTENDED <name>` | View full structure — `EXTENDED` adds the leading `# detailed table information` block; plain `DESC` returns the remaining sections |
 | `SHOW SEMANTIC DIMENSIONS / METRICS / FACTS IN <name>` | Structured, one-row-per-object introspection (incl. `access` = PUBLIC/PRIVATE) |
 | `SHOW SEMANTIC RELATIONSHIPS IN <name>` | Foreign-key relationships, one row each (incl. `relationship_type`, e.g. `MANY_TO_ONE`) |
 | `SHOW SEMANTIC TABLES IN <name>` | Logical-to-physical table mapping (incl. `base_table`, `primary_key`) |

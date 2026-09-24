@@ -122,14 +122,16 @@ SELECT * FROM semantic_view(
 ```
 
 ```
-+-------------+--------------+-----------+--------------+------------+
-| department  | total_salary | headcount | salary_range | avg_salary |
-+-------------+--------------+-----------+--------------+------------+
-| Engineering |  230000.00   |     2     |   30000.00   | 115000.00  |
-| HR          |   80000.00   |     1     |      0.00    |  80000.00  |
-| Marketing   |  185000.00   |     2     |    5000.00   |  92500.00  |
-+-------------+--------------+-----------+--------------+------------+
++-------------+--------------+-----------+--------------+------------------------+
+| department  | total_salary | headcount | salary_range |       avg_salary       |
++-------------+--------------+-----------+--------------+------------------------+
+| Engineering |  230000.00   |     2     |   30000.00   | 115000.000000000000000000 |
+| HR          |   80000.00   |     1     |      0.00    |  80000.000000000000000000 |
+| Marketing   |  185000.00   |     2     |    5000.00   |  92500.000000000000000000 |
++-------------+--------------+-----------+--------------+------------------------+
 ```
+
+> ⚠️ **Division widens the scale.** `avg_salary` is a decimal division, so the result carries far more decimals than its inputs (21 places above) — not the 2 places of `total_salary`. Round in the metric body or in the outer query when the output must be tidy: `ROUND(emps.total_salary / emps.headcount, 2)`.
 
 Derived metrics can only combine metrics from the **same logical table**.
 
@@ -222,12 +224,12 @@ SELECT * FROM semantic_view(
 ```
 
 ```
-+--------+------------+
-| region | margin_pct |
-+--------+------------+
-| East   |   40.00    |
-| West   |   37.50    |
-+--------+------------+
++--------+----------------+
+| region |   margin_pct   |
++--------+----------------+
+| East   | 40.00000000000 |
+| West   | 37.50000000000 |
++--------+----------------+
 ```
 
 Querying a PRIVATE metric directly:
@@ -274,15 +276,15 @@ SELECT * FROM semantic_view(
 ```
 
 ```
-+--------+----------+---------+---------------+
-| region | orderkey | revenue | pct_of_region |
-+--------+----------+---------+---------------+
-| East   |   101    | 250.00  |    50.00      |
-| East   |   102    | 150.00  |    30.00      |
-| East   |   103    | 100.00  |    20.00      |
-| West   |   104    | 400.00  |    40.00      |
-| West   |   105    | 600.00  |    60.00      |
-+--------+----------+---------+---------------+
++--------+----------+---------+--------------------+
+| region | orderkey | revenue |   pct_of_region    |
++--------+----------+---------+--------------------+
+| East   |   101    | 250.00  | 50.000000000000    |
+| East   |   102    | 150.00  | 30.000000000000    |
+| East   |   103    | 100.00  | 20.000000000000    |
+| West   |   104    | 400.00  | 40.000000000000    |
+| West   |   105    | 600.00  | 60.000000000000    |
++--------+----------+---------+--------------------+
 ```
 
 Within-region shares sum to 100%. Constraints on `PARTITION BY` / `ORDER BY`:
@@ -633,7 +635,7 @@ Standard SQL semantics; the confusing points:
 
 - **NULL dimension values form their own group** — not dropped. All NULL rows aggregate into a single `NULL` group.
 - **Aggregates skip NULL**: `SUM`/`AVG`/`MIN`/`MAX`/`COUNT(<col>)` ignore NULL. So `AVG`'s denominator is the **non-NULL row count**; `COUNT(<col>)` counts non-NULL only, while `COUNT(<pk>)` counts all rows — they can differ within a group.
-- **Empty result sets**: for empty tables or filtered-out groups, `COUNT` returns `0`, while `SUM`/`AVG` return `NULL` (no error).
+- **Empty result sets**: a `METRICS`-only (global aggregate) query over an **empty table** returns a single row — `COUNT` = `0`, `SUM`/`AVG` = `NULL`, no error. Add `DIMENSIONS` and there are no groups, so the query returns **0 rows** instead.
 - **Division by zero returns NULL**: a derived metric whose denominator computes to `0` returns `NULL`, not an error. No zero-guard needed, but a `NULL` result may come from a zero divide rather than missing data.
 - `STDDEV`/`VARIANCE` default to the sample form (`_SAMP`); a group with a single non-NULL value returns `NULL` (sample stddev is mathematically undefined), not `0`.
 
