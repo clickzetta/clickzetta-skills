@@ -9,7 +9,7 @@ on:
   push:
     paths:
       - 'clickzetta-ossie-interop/**'
-      - '.github/workflows/ossie-offline-tests.yml'
+      - '.github/workflows/ossie-interop-tests.yml'
   pull_request:
     paths:
       - 'clickzetta-ossie-interop/**'

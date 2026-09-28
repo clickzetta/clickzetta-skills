@@ -2,7 +2,7 @@
 name: clickzetta-ossie-interop
 description: |
   Exchange ClickZetta Lakehouse Semantic Views with Apache Ossie, the open semantic model interchange standard. Export a semantic view to Ossie Core Spec YAML, import Ossie YAML (including Snowflake READ_OSSIE_YAML output, dbt, Databricks and other converters) as a CREATE SEMANTIC VIEW, check round trips, and derive an Ossie ontology skeleton (concepts, relationships, mappings). Deterministic scripts do the parsing, generation and validation; the agent handles judgement calls such as rewriting Snowflake expressions and wording ontology verbalizations.
-  Triggered when the user says "Ossie", "OSI", "Open Semantic Interchange", "export semantic view to YAML", "import Ossie YAML", "migrate Snowflake semantic view to ClickZetta", "semantic model interchange", "ontology from semantic view", "ontology_mappings".
+  Triggered when the user says "Ossie", "Open Semantic Interchange", "export semantic view to YAML", "import Ossie YAML", "migrate Snowflake semantic view to ClickZetta", "semantic model interchange", "ontology from semantic view", "ontology_mappings".
   Keywords: ossie, open semantic interchange, semantic model, semantic view, yaml, interoperability, snowflake, ontology, custom_extensions, round trip, cz-cli
 ---
 
