@@ -10,10 +10,14 @@ Quick reference for what semantic views support, how to diagnose errors, and how
 |---|---|---|
 | General aggregates (DISTINCT / STDDEV / MEDIAN / PERCENTILE / GROUP_CONCAT ...) | Supported | Not limited to COUNT/SUM/AVG/MIN/MAX |
 | Arithmetic-expression metrics (MAX-MIN, SUM/COUNT ...) | Supported | Correct alone and mixed |
-| Derived metrics (same-table division / referencing named metrics) | Supported | Same logical table only |
+| Table-level derived metrics (prefixed, same-table division / named-metric references) | Supported | Same logical table only |
+| View-level derived metrics (unprefixed, cross-table / cross-grain) | Supported | No `alias.` prefix; references named metrics on any table, each aggregated at its own grain. `SHOW SEMANTIC METRICS` reports `table_name` as **NULL** for these |
 | Conditional metrics `FILTER (WHERE ...)` | Supported | Multiple filter metrics can be queried together |
 | Two-level aggregation (parent aggregates child column) | Supported | `AVG(SUM(child.col))` |
-| Identity passthrough `FACTS` | Supported | Prerequisite for a parent metric to reference a child column |
+| Passthrough `FACTS` | Supported | Prerequisite for a parent metric to reference a child column. Name the fact **differently from the physical column**, or no metric can reference it |
+| Drill-down count that keeps childless parents | Supported via `FACTS` | Requested as `FACTS` every parent row is kept and a childless parent returns `0`; requested as `METRICS` that row is omitted |
+| Denormalized dimension (child dimension borrows a parent column) | Supported | Parent is unique in a many-to-one, so the borrow does not fan out |
+| `METRICS` and `FACTS` in one query | Not supported | `FACTS and METRICS cannot be requested in the same semantic_view() query` |
 | NULL handling | Standard SQL | NULL dims form own group; aggregates skip NULL; zero-divide → NULL |
 | `WITH SYNONYMS` / `enum_values` read-back | Faithful | In `DESC EXTENDED`, values match creation |
 | `is_unique` / `is_time` read-back | Not faithful | Reads back `true` whenever declared, regardless of set value |
@@ -23,8 +27,8 @@ Quick reference for what semantic views support, how to diagnose errors, and how
 | `SHOW SEMANTIC RELATIONSHIPS / TABLES` | Supported | RELATIONSHIPS: FK rows incl. `relationship_type` (`MANY_TO_ONE`); TABLES: logical→physical mapping incl. `base_table`/`primary_key` |
 | Query parameters (`VARIABLES`) | Supported | Declared after `TABLES`; referenced by bare name; bound at query time with `VARIABLES <name> => <value>` (default otherwise) |
 | PUBLIC / PRIVATE visibility | Supported | PRIVATE can only be composed, not queried directly |
-| Window-function metrics (RANK / share / running total) | Supported | `PARTITION BY`/`ORDER BY`: qualified dim alias, same-table, dim must be in query |
-| Cross-table metric division (referencing other table's columns) | Not supported | `cannot resolve column` |
+| Window-function metrics (RANK / share / running total) | Supported | `PARTITION BY`/`ORDER BY`: qualified dim alias (not a physical column or bare alias); the dimension must be in the query. It may live on **another** table — a parent reached by FK works |
+| Table-prefixed metric body referencing another table's raw column | Not supported | `cannot resolve column`; combine named metrics via a view-level derived metric instead |
 | Grouping a coarse metric by a finer dimension (drill-down) | Blocked | `invalid dimension ... finer grain` (fan-out guard) |
 | Chasm trap (combining sibling-branch metrics) | Supported | Engine aggregates each branch at its own grain, no fan-out inflation |
 | `ALTER` add/drop dimension or metric | Not supported | Use `CREATE OR REPLACE`; `RENAME TO` cannot carry a schema prefix |
@@ -46,10 +50,13 @@ Quick reference for what semantic views support, how to diagnose errors, and how
 | Query: `table or view not found - semantic_view` | Passed no DIMENSIONS/METRICS/FACTS | Specify at least one dimension, metric, or fact |
 | Create: `already exists` | View exists and no replace syntax used | Use `CREATE OR REPLACE`, or add `IF NOT EXISTS` |
 | Query: `is PRIVATE and cannot be selected` | Queried a PRIVATE object directly | Query the PUBLIC metric that composes it |
-| `DESC` returns empty | Missing `EXTENDED`, or used `DESC SEMANTIC VIEW` | Use `DESC EXTENDED <name>` or `SHOW CREATE SEMANTIC VIEW` |
+| `DESC` output lacks workspace / creator / properties | The leading `# detailed table information` block only appears with `EXTENDED` | Use `DESC EXTENDED <name>`; plain `DESC` (and `DESC SEMANTIC VIEW` / `DESCRIBE SEMANTIC VIEW`) still return the logical-tables / relationships / dimensions / metrics sections |
 | `SHOW SEMANTIC VIEWS LIKE` returns empty | `SHOW` does not support `LIKE` | Drop LIKE, list all and filter yourself |
 | Cross-table metric values too large / duplicated | Hand-written JOIN caused fan-out | Let the semantic view aggregate per grain; don't hand-write JOINs |
-| Dimension member missing (e.g. a customer absent) | That member has no fact rows in the metric table | Query the dimension table directly for the full set |
+| Dimension member missing (e.g. a customer absent) | That member has no fact rows in the metric table | Query the dimension table directly for the full set — or, if it's a drill-down count, define it as a fact and request it with `FACTS` so the row is kept at `0` |
+| Create: `cannot resolve column` on another table's raw column | A **table-prefixed** metric body referencing an unrelated table's column | Define a named metric per table, then combine them with an unprefixed **view-level derived metric** |
+| Query: `FACTS and METRICS cannot be requested in the same semantic_view() query` | Both keywords used in one `semantic_view()` call | Split into two queries |
+| Create: `cannot resolve column` when a metric references a `FACTS` entry | Fact referenced by bare name, or the fact name equals its own physical column | Reference it qualified (`COUNT(orders.order_id)`); rename the fact so it differs from the physical column |
 
 ---
 
@@ -135,7 +142,7 @@ SELECT
     department,
     avg_salary,
     AI_COMPLETE(
-        '<model-name>',
+        '<connection-name>:<model-name>',
         'In one sentence, assess this department''s salary level. Department: ' || department
         || ', average salary: ' || CAST(avg_salary AS STRING)
     ) AS ai_comment
@@ -146,7 +153,7 @@ FROM semantic_view(
 );
 ```
 
-Requires AI Gateway configured with a valid model name. For large batches, materialize the results first (CTAS) then call the AI function over the table.
+Requires an `API CONNECTION ... TYPE ai_function` to exist, and the identifier is `'<connection-name>:<model-name>'` — a bare model name raises `Invalid model coordinates`. A semantic-view result feeds `AI_COMPLETE` like any other row set; if the gateway has no upstream configured for that model the function returns an `error_message` column instead of failing the query. For large batches, materialize the results first (CTAS) then call the AI function over the table.
 
 ### Via CZ-CLI
 

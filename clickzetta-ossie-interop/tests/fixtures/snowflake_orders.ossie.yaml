@@ -1,0 +1,65 @@
+# Shaped like Snowflake SYSTEM$READ_OSSIE_YAML_FROM_SEMANTIC_VIEW output: SNOWFLAKE dialect only,
+# upper-case 3-part sources, Snowflake-only features in custom_extensions[SNOWFLAKE].
+semantic_model:
+- name: SNOW_ORDERS
+  description: Orders model authored in Snowflake
+  datasets:
+  - name: customers
+    source: SNOW_DB.SALES.CUSTOMERS
+    primary_key: [customer_id]
+    description: Customer master
+    fields:
+    - name: customer_name
+      expression:
+        dialects:
+        - {dialect: SNOWFLAKE, expression: customers.customer_name}
+      dimension: {}
+      description: Customer name
+      custom_extensions:
+      - {vendor_name: SNOWFLAKE, data: '{"synonyms":["client"],"sample_values":["Acme","Globex"]}'}
+    - name: region
+      expression:
+        dialects:
+        - {dialect: SNOWFLAKE, expression: customers.region}
+      dimension: {}
+      custom_extensions:
+      - {vendor_name: SNOWFLAKE, data: '{"is_enum":true,"sample_values":["EAST","WEST"]}'}
+  - name: orders
+    source: SNOW_DB.SALES.ORDERS
+    primary_key: [order_id]
+    fields:
+    - name: order_month
+      expression:
+        dialects:
+        - {dialect: SNOWFLAKE, expression: "DATE_TRUNC('MONTH', orders.order_date)"}
+      dimension: {is_time: true}
+    - name: is_completed
+      expression:
+        dialects:
+        - {dialect: SNOWFLAKE, expression: "IFF(orders.status = 'COMPLETED', 1, 0)"}
+    - name: order_id
+      expression:
+        dialects:
+        - {dialect: SNOWFLAKE, expression: orders.order_id}
+      custom_extensions:
+      - {vendor_name: SNOWFLAKE, data: '{"access_modifier":"private_access"}'}
+  relationships:
+  - name: orders_to_customers
+    from: orders
+    to: customers
+    from_columns: [customer_id]
+    to_columns: [customer_id]
+  metrics:
+  - name: order_count
+    expression:
+      dialects:
+      - {dialect: SNOWFLAKE, expression: COUNT(orders.order_id)}
+    description: Number of orders
+  - name: completion_rate
+    expression:
+      dialects:
+      - {dialect: SNOWFLAKE, expression: "DIV0(SUM(orders.is_completed), COUNT(orders.order_id))"}
+    custom_extensions:
+    - {vendor_name: SNOWFLAKE, data: '{"synonyms":["completion ratio"]}'}
+  custom_extensions:
+  - {vendor_name: SNOWFLAKE, data: '{"custom_instructions":"Fiscal year starts in February"}'}

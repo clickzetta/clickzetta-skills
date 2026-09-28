@@ -1,0 +1,33 @@
+# Agent review of enrich_from_ontology.py output for apache/ossie examples/flights.yaml.
+# Each entry is a judgement call the ontology does not settle on its own.
+dimensions:
+  - ROUTE.dist_grp            # DistanceGroup is a 1..10 bucket (ontology requires 1 <= x <= 10): group by it
+time_dimensions:
+  - AIRPORT.opened            # unmapped; an opening date
+  - FLIGHT.wheels_on          # unmapped; actual touchdown time
+  - FLIGHT.wheels_off         # unmapped; actual take-off time
+datatypes:
+  AIRPORT.opened: Date
+  FLIGHT.wheels_on: DateTime
+  FLIGHT.wheels_off: DateTime
+  FLIGHT.air_time: Decimal
+  FLIGHT.duration: Decimal
+  FLIGHT.scheduled_duration: Decimal
+# FLIGHT reaches CARRIER directly (flight_operated_by) and through AIRCRAFT (flight_aircraft >
+# aircraft_carrier), and AIRPORT as departure or destination (route_departure / route_destination).
+# ClickZetta needs each flight metric to name its path with USING: carrier = operating carrier,
+# airport = departure airport unless the metric is about arrivals.
+metrics:                      # the ontology defines no counts; add the usual flight KPIs
+  - {name: flight_count, table: FLIGHT, expression: "COUNT(FLIGHT.id)", description: "Number of flights",
+     using: [flight_operated_by, route_departure]}
+  - {name: cancelled_flights, table: FLIGHT, expression: "COUNT(FLIGHT.id) FILTER (WHERE FLIGHT.cancelled)", description: "Flights that were canceled",
+     using: [flight_operated_by, route_departure]}
+  - {name: diverted_flights, table: FLIGHT, expression: "COUNT(FLIGHT.id) FILTER (WHERE FLIGHT.diverted)", description: "Flights that were diverted",
+     using: [flight_operated_by, route_departure]}
+  - {name: total_flight_distance, table: FLIGHT, expression: "SUM(FLIGHT.distance)", description: "Miles flown",
+     using: [flight_operated_by, route_departure]}
+  - {name: total_seats, table: AIRCRAFT, expression: "SUM(AIRCRAFT.nr_seats)", description: "Seats across the fleet"}
+  - {name: runway_count, table: RUNWAY, expression: "COUNT(RUNWAY.designator)", description: "Number of runways"}
+using:                        # derived metrics: the ontology rule fixes the airport role; add the carrier path
+  avg_departure_delay: [flight_route, route_departure, flight_operated_by]
+  avg_arrival_delay: [flight_route, route_destination, flight_operated_by]
