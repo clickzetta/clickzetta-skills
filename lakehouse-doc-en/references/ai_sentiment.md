@@ -152,7 +152,7 @@ SELECT AI_SENTIMENT('endpoint:qwen3-max-preview',
 -- Returns: positive
 
 -- Emoji sentiment
-SELECT AI_SENTIMENT('endpoint:qwen3-max-preview', 'Tonight''s dinner 🤮🤮🤮') AS sentiment;
+SELECT AI_SENTIMENT('endpoint:qwen3-max-preview', 'Tonight\'s dinner 🤮🤮🤮') AS sentiment;
 -- Returns: negative
 
 SELECT AI_SENTIMENT('endpoint:qwen3-max-preview', 'Got a gift! 🎉❤️😍') AS sentiment;

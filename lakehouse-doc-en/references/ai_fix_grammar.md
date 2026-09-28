@@ -121,7 +121,7 @@ SELECT AI_FIX_GRAMMAR(
     'endpoint:qwen3-max-preview',
     'Je suis allé au magasin et je achète du pain.'
 ) AS fixed;
--- Returns: Je suis allé au magasin et j''ai acheté du pain.
+-- Returns: Je suis allé au magasin et j'ai acheté du pain.
 
 -- Mixed Chinese-English text unification
 SELECT AI_FIX_GRAMMAR(

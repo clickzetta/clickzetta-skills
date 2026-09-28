@@ -26,7 +26,7 @@ did not create, and each drops everything on exit — including on failure. A le
 from a killed run will therefore block the suite until someone drops it; that is deliberate, since
 auto-dropping could destroy work.
 
-`.github/workflows/ossie-offline-tests.yml` runs the offline suite and the scale test on every push
+`.github/workflows/ossie-interop-tests.yml` runs the offline suite and the scale test on every push
 and pull request that touches `clickzetta-ossie-interop/`. The live suites are manual because they need a
 profile.
 
@@ -53,9 +53,9 @@ product problem and is not.
 its profile before creating anything and releases it from its own cleanup:
 
 ```
-ABORT: another live suite is already running against profile 'aliyun_shanghai_prod'.
+ABORT: another live suite is already running against profile '<profile>'.
        ... Wait for it, or remove the stale lock if that run died: tests/.locks/<profile>.lock
-       lock held by: pid 56897 on MacBook-Pro-6.local
+       lock held by: pid <pid> on <host>
 ```
 
 Exit code 3. A lock left behind by a killed run is not detected as stale — remove the directory the

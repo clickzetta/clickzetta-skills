@@ -143,7 +143,7 @@ SELECT
     avg_salary,
     AI_COMPLETE(
         '<connection-name>:<model-name>',
-        'In one sentence, assess this department''s salary level. Department: ' || department
+        'In one sentence, assess this department\'s salary level. Department: ' || department
         || ', average salary: ' || CAST(avg_salary AS STRING)
     ) AS ai_comment
 FROM semantic_view(
