@@ -117,7 +117,11 @@ Import orders `TABLES` so that referenced tables come first.
 Import writes the metadata ClickZetta cannot hold, or rewrites when it stores a view, as zlib+base64 JSON into view properties:
 
 ```sql
--- Written by ossie_to_sv.py; values are split into 2000-character chunks (6000-character values verified)
+-- Written by ossie_to_sv.py; values are split into 2000-character chunks.
+-- A 12-dataset x 100-field model produces 7 chunks (~14 KB of base64): applied to a live instance
+-- and read back through DESC EXTENDED, so this is a tested size, not a limit. A 100-dataset model
+-- produces 9; only the offline round trip has been run at that size.
+-- See tests/scale/run_scale_test.py.
 ALTER SEMANTIC VIEW my_schema.sales_sv SET PROPERTIES ('ossie_sidecar_0' = 'OSSIE1:0:1:eNp9...');
 ```
 
