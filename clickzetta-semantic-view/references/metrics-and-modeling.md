@@ -294,6 +294,86 @@ Within-region shares sum to 100%. Constraints on `PARTITION BY` / `ORDER BY`:
 
 ---
 
+## Choosing the join path (USING)
+
+When two tables can be joined more than one way, a metric has to say which way it goes, or the
+engine has to guess. **`USING ( <rel_name> [ , ... ] )` between the metric name and `AS` decides it:**
+
+```sql
+METRICS (
+    flight.flight_count USING (flight_operated_by, route_departure) AS COUNT(flight.id),
+    flight.avg_arrival_delay USING (flight_route, route_destination, flight_operated_by)
+        AS AVG(flight.arr_delay)
+)
+```
+
+`flight_count` counts flights and groups them by the **departure** airport; `avg_arrival_delay` needs
+the **destination** one. Both reference the same `AIRPORT` table through different relationships —
+a role-playing join.
+
+Setup that produces this shape:
+
+```sql
+CREATE TABLE doc_test.role_airport (code STRING, name STRING);
+CREATE TABLE doc_test.role_route  (id INT, orig_code STRING, dest_code STRING);
+CREATE TABLE doc_test.role_flight (id INT, route_id INT, dep_delay INT, arr_delay INT);
+INSERT INTO doc_test.role_airport VALUES ('JFK','John F. Kennedy'), ('LAX','Los Angeles');
+INSERT INTO doc_test.role_route  VALUES (1,'JFK','LAX'), (2,'LAX','JFK');
+INSERT INTO doc_test.role_flight VALUES (1,1,10,20), (2,1,30,40), (3,2,50,60);
+
+CREATE SEMANTIC VIEW doc_test.sv_roles
+TABLES (
+    airport AS doc_test.role_airport PRIMARY KEY (code),
+    route   AS doc_test.role_route   PRIMARY KEY (id),
+    flight  AS doc_test.role_flight  PRIMARY KEY (id)
+        FOREIGN KEY (route_id) REFERENCES route
+)
+RELATIONSHIPS (
+    route_departure   AS route (orig_code) REFERENCES airport (code),
+    route_destination AS route (dest_code) REFERENCES airport (code)
+)
+DIMENSIONS (
+    airport.name AS airport.name
+)
+METRICS (
+    flight.departures USING (route_departure) AS COUNT(flight.id),
+    flight.arrivals   USING (route_destination) AS COUNT(flight.id)
+);
+```
+
+The two metrics answer different questions about the same airport, and they do not agree — which is
+the point:
+
+```sql
+SELECT * FROM semantic_view(doc_test.sv_roles
+  DIMENSIONS airport.name METRICS flight.departures, flight.arrivals) ORDER BY name;
+```
+
+```
++-------------------+------------+----------+
+|       name        | departures | arrivals |
++-------------------+------------+----------+
+| John F. Kennedy   |     2      |    1     |
+| Los Angeles       |     1      |    2     |
++-------------------+------------+----------+
+```
+
+JFK is the origin of both flights on route 1 and the destination of the one on route 2, so it has two
+departures and one arrival; LAX is the mirror image.
+
+**How much of the path to name.** Naming any one relationship on the intended path is enough for that
+path to win; the other tables on it stay reachable. Above, `USING (route_departure)` alone decided the
+path, and `airport.name` still resolved through it. Naming the whole chain
+(`flight_route, route_departure, flight_operated_by`) is also accepted and is what the
+[ossie interop skill](../../clickzetta-ossie-interop/SKILL.md) generates — useful when a path is
+long and you want it pinned at every hop.
+
+**The engine does not validate the names.** A `CREATE` with `USING (no_such_relationship)` succeeds,
+and a query over it also succeeds: the unknown name is ignored and the metric falls back to whatever
+path the engine picks. There is no error to catch, so a typo silently changes nothing — or silently
+picks the wrong path once a second one exists. Verify the names against
+`SHOW SEMANTIC RELATIONSHIPS IN <view>` rather than trusting the `CREATE` to fail.
+
 ## Cross-table metrics & grain (FACTS, two-level aggregation)
 
 A foreign key defines a one-to-many relationship: the referenced side is the **parent** (coarser grain), the referencing side is the **child** (finer grain). A metric can aggregate its own table's columns (single-level), or a finer child's columns (two-level).

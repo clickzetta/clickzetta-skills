@@ -62,10 +62,22 @@ TABLES (
 ## Relationship definition
 
 ```sql
-<ref_alias> ( <fk_column> [ , ... ] ) REFERENCES <referenced_alias> [ ( <ref_column> [ , ... ] ) ]
+[ <rel_name> AS ] <ref_alias> ( <fk_column> [ , ... ] ) REFERENCES <referenced_alias> [ ( <ref_column> [ , ... ] ) ]
 ```
 
-`RELATIONSHIPS` is a top-level clause that declares foreign keys, equivalent to the inline `FOREIGN KEY` inside a logical table — the same relationship may be written either inline or collected in `RELATIONSHIPS`. Both are accepted on create; `SHOW CREATE SEMANTIC VIEW` / `DESC EXTENDED` normalize the read-back to the `RELATIONSHIPS` form. FK and referenced column types must match; name the referenced column explicitly when the names differ. List multiple columns in order for a composite key.
+`RELATIONSHIPS` is a top-level clause that declares foreign keys, equivalent to the inline `FOREIGN KEY` inside a logical table — the same relationship may be written either inline or collected in `RELATIONSHIPS`, but **not both at once**: declaring the same foreign-key columns twice is rejected with `logical table '<x>' declares the same relationship to '<y>' more than once`. `SHOW CREATE SEMANTIC VIEW` / `DESC EXTENDED` normalize the read-back to the `RELATIONSHIPS` form. FK and referenced column types must match; name the referenced column explicitly when the names differ. List multiple columns in order for a composite key.
+
+**Naming.** `<rel_name> AS ...` gives the relationship a name. An inline `FOREIGN KEY` comes back **unnamed** — `SHOW SEMANTIC RELATIONSHIPS` reports an empty `relationship_name` — so a name has to be written in `RELATIONSHIPS`. Names matter twice over:
+
+```sql
+RELATIONSHIPS (
+    route_departure   AS route (orig_airport_code) REFERENCES airport (code),
+    route_destination AS route (dest_airport_code) REFERENCES airport (code)
+)
+```
+
+- they are what a metric's `USING (...)` clause references, and
+- they are what lets **two relationships between the same pair of tables** coexist. Without names, such a view is rejected with `declares conflicting relationships`.
 
 ---
 
@@ -202,7 +214,7 @@ Constraints and behaviours:
 ## Metric definition
 
 ```sql
-[ PRIVATE ] <alias>.<metric_name> AS <aggregate_expression>
+[ PRIVATE ] <alias>.<metric_name> [ USING ( <rel_name> [ , ... ] ) ] AS <aggregate_expression>
     [ COMMENT = '<description>' ]
 ```
 
@@ -213,6 +225,7 @@ Constraints and behaviours:
 - Table-level derived metrics (name **carries** an `alias.` prefix): reference other named metrics on the **same** logical table, e.g. `emps.avg AS emps.total_salary / emps.headcount`.
 - View-level derived metrics (name is **bare**, no `alias.` prefix): reference named metrics on **any** logical table, enabling **cross-table / cross-grain** division, e.g. `return_rate AS returns.total_returns / sales.total_sales`. The engine aggregates each referenced metric at its own grain and aligns on the query dimension, so sibling fact tables do not fan out; view-level metrics may nest-reference other view-level metrics. `SHOW SEMANTIC METRICS` reports `table_name` as **NULL** for these, and the owning table for table-level ones.
 - Window-function metrics: `RANK()`/`ROW_NUMBER()` ranking, or `SUM(SUM(...)) OVER (...)` for share/running totals. `PARTITION BY`/`ORDER BY` must reference a dimension's **qualified alias** (a physical column or bare alias is rejected), and that dimension must appear in the query's `DIMENSIONS`. The dimension is **not** limited to the metric's own table — a parent-table dimension reached through a FK works.
+- `USING ( <rel_name> [ , ... ] )` — pins the join path a metric travels when several are possible. It sits between the metric name and `AS`: `flight.count USING (flight_operated_by, route_departure) AS COUNT(flight.id)`. The names are the ones declared in `RELATIONSHIPS`; naming **any one** relationship on the intended path is enough for that path to win, and tables off it stay reachable. Needed whenever two tables can be joined more than one way — a role-playing join (`route` → `airport` as departure *and* destination), or two paths between the same pair (`flight` → `carrier` directly and via `aircraft`). The engine does **not** validate the names: a misspelling is accepted at `CREATE` time and silently ignored at query time, so check them yourself. See [metrics-and-modeling.md](metrics-and-modeling.md).
 
 **Not supported:**
 - A **table-prefixed** metric body referencing an unrelated table's **raw column** → `cannot resolve column` (e.g. `sales.x AS SUM(sales.amount) / COUNT(product.p_key)`). Combine named metrics with a view-level derived metric instead.

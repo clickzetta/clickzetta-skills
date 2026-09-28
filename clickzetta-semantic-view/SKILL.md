@@ -63,7 +63,7 @@ TABLES (
     [ , ... ]
 )
 [ RELATIONSHIPS (
-    <ref_alias> ( <fk_column> [ , ... ] ) REFERENCES <referenced_alias> [ ( <ref_column> [ , ... ] ) ]
+    [ <rel_name> AS ] <ref_alias> ( <fk_column> [ , ... ] ) REFERENCES <referenced_alias> [ ( <ref_column> [ , ... ] ) ]
     [ , ... ]
 ) ]
 [ VARIABLES (
@@ -92,7 +92,7 @@ TABLES (
 
 > ⚠️ Clause order is fixed: `TABLES → RELATIONSHIPS → VARIABLES → FACTS → DIMENSIONS → METRICS`. Only `TABLES` is required; the rest are optional. An out-of-order clause raises `Syntax error at or near '<clause>'` (e.g. `VARIABLES` before `RELATIONSHIPS`, or `FACTS` after `DIMENSIONS`). Dimension metadata order is also fixed: `WITH SYNONYMS` must come before `is_unique`/`is_time`/`enum_values`.
 
-> Foreign keys have two equivalent forms: the inline `FOREIGN KEY` inside a logical table, or the top-level `RELATIONSHIPS` clause. Both are accepted on create; `SHOW CREATE SEMANTIC VIEW` / `DESC EXTENDED` always read them back normalized as a `RELATIONSHIPS` clause. `CREATE ... IF NOT EXISTS` silently skips when the view exists (mutually exclusive with `OR REPLACE`).
+> Foreign keys have two equivalent forms: the inline `FOREIGN KEY` inside a logical table, or the top-level `RELATIONSHIPS` clause. Pick **one** — declaring the same foreign-key columns both ways is rejected with `declares the same relationship ... more than once`. `SHOW CREATE SEMANTIC VIEW` / `DESC EXTENDED` always read them back normalized as a `RELATIONSHIPS` clause, and an inline foreign key comes back **unnamed** (`c (p_id) REFERENCES p (id)`, `relationship_name` empty). Give a relationship a name by writing it in `RELATIONSHIPS` as `<rel_name> AS ...`; that name is what a metric's `USING` clause references. `CREATE ... IF NOT EXISTS` silently skips when the view exists (mutually exclusive with `OR REPLACE`).
 
 ### Complete example
 
@@ -156,6 +156,19 @@ METRICS (
 ```
 
 Also supported: `COUNT(DISTINCT ...)`, `APPROX_COUNT_DISTINCT`, `STDDEV`, `VARIANCE`, `MEDIAN`, `PERCENTILE`, `GROUP_CONCAT`, etc. Full rules and verified outputs: [references/metrics-and-modeling.md](references/metrics-and-modeling.md).
+
+#### Pinning the join path with `USING`
+
+When two tables can be joined more than one way, say which way the metric goes: `USING ( <rel_name> [ , ... ] )` sits **between the metric name and `AS`**, and the names come from the `RELATIONSHIPS` clause.
+
+```sql
+METRICS (
+    flight.departures USING (route_departure)   AS COUNT(flight.id),   -- airport as origin
+    flight.arrivals   USING (route_destination) AS COUNT(flight.id)    -- airport as destination
+)
+```
+
+Naming any one relationship on the intended path is enough. The engine does **not** validate the names — a misspelling passes `CREATE` and is silently ignored at query time — so check them against `SHOW SEMANTIC RELATIONSHIPS IN <view>`. See [references/metrics-and-modeling.md](references/metrics-and-modeling.md).
 
 #### Two kinds of derived metric — the table prefix decides
 
