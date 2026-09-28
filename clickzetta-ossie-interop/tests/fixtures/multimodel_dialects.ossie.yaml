@@ -1,0 +1,48 @@
+# Fixture for two shapes the other fixtures do not have, so that two CLI flags
+# become testable offline:
+#   * more than one semantic_model  -> exercises ossie_to_sv.py --model
+#   * one field carrying several dialects -> exercises ossie_to_sv.py --prefer-dialect
+version: 0.2.0.dev0
+semantic_model:
+- name: FLAG_PRIMARY
+  description: First model; picked when --model is not given
+  datasets:
+  - name: events
+    source: FLAG_DB.PUBLIC.EVENTS
+    primary_key: [event_id]
+    fields:
+    - name: event_id
+      expression:
+        dialects:
+        - {dialect: ANSI_SQL, expression: events.event_id}
+      dimension: {}
+    - name: event_day
+      expression:
+        dialects:
+        - {dialect: ANSI_SQL, expression: "CAST(events.ts AS DATE)"}
+        - {dialect: SNOWFLAKE, expression: "TO_DATE(events.ts)"}
+        - {dialect: DATABRICKS, expression: "to_date(events.ts)"}
+      dimension: {is_time: true}
+  metrics:
+  - name: event_count
+    expression:
+      dialects:
+      - {dialect: ANSI_SQL, expression: COUNT(events.event_id)}
+      - {dialect: BIGQUERY, expression: "COUNT(events.event_id)"}
+- name: FLAG_SECONDARY
+  description: Second model; reachable only through --model
+  datasets:
+  - name: other
+    source: FLAG_DB.PUBLIC.OTHER
+    primary_key: [o_id]
+    fields:
+    - name: o_id
+      expression:
+        dialects:
+        - {dialect: ANSI_SQL, expression: other.o_id}
+      dimension: {}
+  metrics:
+  - name: other_count
+    expression:
+      dialects:
+      - {dialect: ANSI_SQL, expression: COUNT(other.o_id)}

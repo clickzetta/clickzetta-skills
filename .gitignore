@@ -18,3 +18,10 @@ __pycache__/
 # Skill eval artifacts (local-only)
 clickzetta-pipeline-review-workspace/
 clickzetta-pipeline-review/evals/
+
+# clickzetta-ossie-interop live test output (local-only)
+clickzetta-ossie-interop/tests/live_out/
+clickzetta-ossie-interop/tests/flights/out/
+clickzetta-ossie-interop/tests/tpcds/out/
+clickzetta-ossie-interop/tests/converters/out/
+clickzetta-ossie-interop/tests/.locks/

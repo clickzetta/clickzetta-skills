@@ -1,0 +1,36 @@
+name: clickzetta-ossie-interop offline tests
+
+# The offline suite needs no database and no credentials, so it can gate every change.
+# The live suites (tests/run_live_test.sh, tests/flights/, tests/tpcds/) require a cz-cli
+# profile and create objects in a schema they drop again - run those by hand, see
+# clickzetta-ossie-interop/tests/README.md.
+
+on:
+  push:
+    paths:
+      - 'clickzetta-ossie-interop/**'
+      - '.github/workflows/ossie-offline-tests.yml'
+  pull_request:
+    paths:
+      - 'clickzetta-ossie-interop/**'
+  workflow_dispatch:
+
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # pinned: the suite asserts on generated SQL text and on sqlglot parse results
+      - name: Install dependencies
+        run: pip install pyyaml==6.0.2 jsonschema==4.26.0 sqlglot==30.17.0
+
+      - name: Offline tests (no database, no credentials)
+        run: bash clickzetta-ossie-interop/tests/run_offline_tests.sh
+
+      - name: Scale test (no database, no credentials)
+        run: python3 clickzetta-ossie-interop/tests/scale/run_scale_test.py

@@ -144,6 +144,28 @@
       ]
     },
     {
+      "name": "clickzetta-ossie-interop",
+      "description": "Exchange ClickZetta Lakehouse Semantic Views with Apache Ossie, the open semantic model interchange standard.",
+      "files": [
+        "SKILL.md",
+        "references/mapping.md",
+        "references/ontology-derivation.md",
+        "references/snowflake-interop.md",
+        "scripts/czossie_common.py",
+        "scripts/derive_ontology.py",
+        "scripts/enrich_from_ontology.py",
+        "scripts/ossie_diff.py",
+        "scripts/ossie_to_sv.py",
+        "scripts/sv_ddl.py",
+        "scripts/sv_dump.py",
+        "scripts/sv_to_ossie.py",
+        "scripts/validate_ossie.py",
+        "scripts/schemas/NOTICE.md",
+        "scripts/schemas/ontology.json",
+        "scripts/schemas/ossie-schema.json"
+      ]
+    },
+    {
       "name": "clickzetta-overview",
       "description": "ClickZetta Lakehouse product overview: core concepts, object model, architecture, and Studio module introduction.",
       "files": [

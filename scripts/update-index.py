@@ -80,6 +80,14 @@ for d in sorted(os.listdir('.')):
         for f in sorted(os.listdir(refs_dir)):
             if f.endswith('.md'):
                 files.append(f'references/{f}')
+    # Bundled helper scripts (e.g. clickzetta-ossie-interop/scripts/): every file, excluding caches
+    scripts_dir = os.path.join(d, 'scripts')
+    if os.path.isdir(scripts_dir):
+        for base, dirs, fs in os.walk(scripts_dir):
+            dirs[:] = sorted(x for x in dirs if x != '__pycache__')
+            for f in sorted(fs):
+                if not f.endswith('.pyc'):
+                    files.append(os.path.relpath(os.path.join(base, f), d).replace(os.sep, '/'))
     skills.append({'name': d, 'description': desc, 'files': files})
 
 os.makedirs('.well-known/skills', exist_ok=True)

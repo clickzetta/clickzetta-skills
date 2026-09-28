@@ -1,0 +1,3 @@
+# Agent-supplied ClickZetta rewrites for SNOWFLAKE expressions (see clickzetta-sql-migration)
+datasets.orders.fields.is_completed: "IF(orders.status = 'COMPLETED', 1, 0)"
+metrics.completion_rate: "SUM(orders.is_completed) / NULLIF(COUNT(orders.order_id), 0)"
