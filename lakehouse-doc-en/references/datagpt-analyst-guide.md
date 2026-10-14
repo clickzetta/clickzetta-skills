@@ -2,18 +2,15 @@
 
 Choose your path by role to quickly find the documentation you need.
 
----
+***
 
-<div style="display:flex; flex-wrap:wrap; gap:16px; margin:8px 0">
-<div style="flex:1 1 280px; min-width:0; border:1px solid #DBEAFE; border-radius:8px; padding:20px 24px">
+
 
 ## Business Users
 
 **Goal: Ask questions in natural language, understand answers, and submit feedback**
 
 **Step 1 — Understand what you can ask in an analytics domain** (2 minutes)
-
-[Recommended Questions Configuration](datagpt-recommended-questions-guide.md) — Click example questions to get started directly
 [Using Data and Exploration](datagpt-data-exploration-guide.md) — See what tables and fields are available in the current domain
 
 **Step 2 — Learn how to ask questions**
@@ -31,8 +28,7 @@ Choose your path by role to quickly find the documentation you need.
 [Handling Feedback](datagpt-feedback-loop-guide.md) — Submit calibration feedback when answers are inaccurate or charts are wrong
 [User Settings](datagpt-user-settings-guide.md) — Change logo, theme, and chart color scheme
 
-</div>
-<div style="flex:1 1 280px; min-width:0; border:1px solid #DBEAFE; border-radius:8px; padding:20px 24px">
+
 
 ## BI Analysts / Business Analysts
 
@@ -55,15 +51,12 @@ Choose your path by role to quickly find the documentation you need.
 [Scheduled Tasks](scheduled_task.md) — Configure scheduled analysis and report delivery
 [Message Notifications](datagpt-notification-guide.md) — View status of background tasks such as imports and parsing
 
-**Step 4 — Recommended questions and feedback**
-
-[Recommended Questions Configuration](datagpt-recommended-questions-guide.md) — Design high-quality guiding questions for analytics domains
+**Step 4 — Feedback**
 [Handling Feedback](datagpt-feedback-loop-guide.md) — Improve questions and dashboard design based on feedback
 
-</div>
-</div>
 
----
+
+***
 
 ## If Answers Are Inaccurate
 
@@ -75,4 +68,4 @@ Handle in the following order:
 4. Submit calibration feedback explaining where the answer does not match business expectations
 5. BI analysts or maintainers review SQL statements and logs to determine whether the wrong fields were used or the configuration is incomplete
 
-See [Troubleshooting Q&A Accuracy Issues](datagpt-qa-accuracy-troubleshooting-guide.md) for details.
+See [Troubleshooting Q\&A Accuracy Issues](datagpt-qa-accuracy-troubleshooting-guide.md) for details.

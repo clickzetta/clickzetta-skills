@@ -1,10 +1,10 @@
 # Use Models
 
-After selecting a model in the Model Marketplace, you can view the model's endpoint information and usage examples, and copy the code directly to start calling.
+After selecting a model in **Model Plaza**, you can view the model's endpoint information and usage examples, and copy the code directly to start calling.
 
 ## Finding Model Endpoints
 
-Go to the **Model Marketplace**, click on any model to enter its detail page, where you can see:
+Go to **Model Plaza**, click on any model to enter its detail page, where you can see:
 
 - **Endpoint Management**: Lists the available endpoint names, service providers, status, and billing information for that model
 - **Model Usage Examples**: Provides curl and Python code examples that can be copied and used directly
@@ -13,6 +13,11 @@ The endpoint name format is `{provider}@{model_name}@{interface_type}`, for exam
 
 - `aliyun_bailian_bj@qwen/qwen3.7-max@open_ai` — Alibaba Cloud Bailian-Beijing, OpenAI-compatible interface
 - `aws_bedrock_us_east_1@anthropic/claude-opus-4.6@anthropic` — AWS Bedrock US-East-1, Anthropic interface
+
+## Viewing Prices
+
+To view current model prices, open **Model Plaza** on the [AI Gateway platform](https://aitoken.singdata.com/model) and select a model. On its details page, check the billing items, billing units, applicable pricing conditions, **List price**, and **Discounted Price** before making a call.
+For billing rules and charge calculation, see the [AI Gateway Billing Guide](pricing-ai-gateway.md).
 
 ## Two Interface Formats
 
@@ -116,13 +121,13 @@ print(message.content)
 
 ## Notes
 
-- Endpoint addresses differ by deployment region; use the actual example code in the Model Marketplace as the reference
+- Endpoint addresses differ by deployment region; use the actual example code in Model Plaza as the reference
 - OpenAI-compatible interface uses `Authorization: Bearer <key>`; Anthropic interface uses `x-api-key: <key>`
-- Model names must exactly match the model identifier in the endpoint; copy from the Model Marketplace detail page
+- Model names must exactly match the model identifier in the endpoint; copy from the Model Plaza detail page
 - API Keys must be created in advance in **API KEY Management** with calling permissions enabled for the corresponding model
 
 ## Related Documents
 
 - [Quick Start](quickstart.md) — Create API Key and configure routing
-- [Model Pricing](pricing-ai-gateway.md) — Billing standards for each model
+- [AI Gateway Billing Guide](pricing-ai-gateway.md) — Billing items, charge calculation, and price updates
 - [Call LLMs in SQL](lakehouse-ai-sql-analysis.md) — Calling via AI_COMPLETE in Lakehouse SQL

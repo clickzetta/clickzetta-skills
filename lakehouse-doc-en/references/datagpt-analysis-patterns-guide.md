@@ -8,17 +8,17 @@ The Analytics Agent understands natural language. Business users do not need to 
 
 Common business analysis questions can be categorized as:
 
-| Analysis Pattern | Typical Question | Recommended Output |
-| --- | --- | --- |
-| Lookup | What is the value of a metric | Numeric value, brief explanation |
-| Group comparison | Which categories are higher or lower | Table, bar chart |
-| Trend | How does a metric change over time | Line chart, trend table |
-| Ranking | Top N or Bottom N | Ranking table, bar chart |
-| Proportion | What is the composition | Table, pie chart, or donut chart |
-| Detail | Which records meet the criteria | Detail table |
-| Anomaly | Which metrics have unusual fluctuations | Table, chart, explanation |
-| Attribution | Why did a change occur | Layered comparison, explanation |
-| Time-series forecast | How might things change in the future | Trend chart, forecast values, confidence intervals, risk notes |
+| Analysis Pattern     | Typical Question                        | Recommended Output                                             |
+| -------------------- | --------------------------------------- | -------------------------------------------------------------- |
+| Lookup               | What is the value of a metric           | Numeric value, brief explanation                               |
+| Group comparison     | Which categories are higher or lower    | Table, bar chart                                               |
+| Trend                | How does a metric change over time      | Line chart, trend table                                        |
+| Ranking              | Top N or Bottom N                       | Ranking table, bar chart                                       |
+| Proportion           | What is the composition                 | Table, pie chart, or donut chart                               |
+| Detail               | Which records meet the criteria         | Detail table                                                   |
+| Anomaly              | Which metrics have unusual fluctuations | Table, chart, explanation                                      |
+| Attribution          | Why did a change occur                  | Layered comparison, explanation                                |
+| Time-series forecast | How might things change in the future   | Trend chart, forecast values, confidence intervals, risk notes |
 
 ## Lookup Questions
 
@@ -44,16 +44,16 @@ Using our standard active account definition, how many active accounts are on th
 
 Suitable scenarios:
 
-- What is today's sales revenue.
-- How many new customers were added this month.
-- How many active accounts are there currently.
-- What is the inventory level for a specific region.
+* What is today's sales revenue.
+* How many new customers were added this month.
+* How many active accounts are there currently.
+* What is the inventory level for a specific region.
 
 When reading the answer, focus on:
 
-- Whether the number represents the business object you want to see.
-- Whether it is constrained to the scope you care about.
-- If the question is time-related, whether you need to add a time qualifier like "this month" or "year-to-date".
+* Whether the number represents the business object you want to see.
+* Whether it is constrained to the scope you care about.
+* If the question is time-related, whether you need to add a time qualifier like "this month" or "year-to-date".
 
 ## Group Comparison Questions
 
@@ -73,16 +73,16 @@ Show account health overview by plan, including account count, active accounts, 
 
 Suitable scenarios:
 
-- Compare sales revenue by department.
-- Compare conversion rates by channel.
-- Compare gross margin by product line.
-- Compare account health by plan.
+* Compare sales revenue by department.
+* Compare conversion rates by channel.
+* Compare gross margin by product line.
+* Compare account health by plan.
 
 Question tips:
 
-- Use business language to specify the breakdown dimension, e.g., by plan, region, channel, department.
-- State the outcomes you care about, e.g., quantity, conversion rate, cancellation rate, revenue.
-- If you are unsure what to look at, start with an overview and then drill down into specific metrics.
+* Use business language to specify the breakdown dimension, e.g., by plan, region, channel, department.
+* State the outcomes you care about, e.g., quantity, conversion rate, cancellation rate, revenue.
+* If you are unsure what to look at, start with an overview and then drill down into specific metrics.
 
 A more general phrasing:
 
@@ -120,11 +120,11 @@ View the trend of new accounts by month since 2025, and display as a line chart
 
 Common time granularities:
 
-- By day.
-- By week.
-- By month.
-- By quarter.
-- By year.
+* By day.
+* By week.
+* By month.
+* By quarter.
+* By year.
 
 Trend questions should ideally include a natural language time range, such as "last 30 days", "last 12 months", or "year-to-date". If not specified, the system will use a default range, which may not match your business expectations.
 
@@ -166,21 +166,21 @@ Based on achievement records, track changes in active player count, total achiev
 
 Question tips:
 
-- Specify the metric to forecast, e.g., active user count, order count, revenue, achievement count.
-- Specify the time granularity, e.g., by day, by week, by month.
-- Specify the forecast period, e.g., next 7 days, next 3 months, next quarter.
-- If you know the data may be incomplete, remind the system to exclude anomalous months or incomplete periods.
-- Request forecast rationale, confidence intervals, or risk notes to help assess reliability.
+* Specify the metric to forecast, e.g., active user count, order count, revenue, achievement count.
+* Specify the time granularity, e.g., by day, by week, by month.
+* Specify the forecast period, e.g., next 7 days, next 3 months, next quarter.
+* If you know the data may be incomplete, remind the system to exclude anomalous months or incomplete periods.
+* Request forecast rationale, confidence intervals, or risk notes to help assess reliability.
 
 In practice, the Analytics Agent can first aggregate historical data by month, then run a time-series forecast and generate a forecast trend chart. The system may also automatically identify incomplete data periods — for example, excluding a month where data appears significantly lower than usual from the training window.
 
 When reading forecast results, focus on:
 
-- Whether the training data time range is reasonable.
-- Whether incomplete or anomalous data has been excluded.
-- Whether the forecast model or method is clearly explained.
-- Whether confidence intervals are provided.
-- Whether seasonality, trend changes, and external risks are addressed.
+* Whether the training data time range is reasonable.
+* Whether incomplete or anomalous data has been excluded.
+* Whether the forecast model or method is clearly explained.
+* Whether confidence intervals are provided.
+* Whether seasonality, trend changes, and external risks are addressed.
 
 Forecast results are useful for trend anticipation and operational monitoring, but should not be treated as definitive commitments. For critical business decisions, it is recommended that BI analysts further verify results against business events, data freshness, and SQL logs.
 
@@ -206,9 +206,9 @@ Plan ranking by highest cancellation rate
 
 Question tips:
 
-- Specify what to rank by, e.g., account count, revenue, cancellation rate, conversion rate.
-- Specify Top N or Bottom N clearly.
-- If you only care about a specific scope or time period, add the details.
+* Specify what to rank by, e.g., account count, revenue, cancellation rate, conversion rate.
+* Specify Top N or Bottom N clearly.
+* If you only care about a specific scope or time period, add the details.
 
 A more general phrasing:
 
@@ -276,10 +276,10 @@ List active accounts on the Basic plan, showing account name, country, source, a
 
 Question tips:
 
-- Specify which objects to list.
-- Specify which business information you want to see.
-- Clarify sorting if necessary.
-- Limit the number of records when data volume is large.
+* Specify which objects to list.
+* Specify which business information you want to see.
+* Clarify sorting if necessary.
+* Limit the number of records when data volume is large.
 
 Recommended:
 
@@ -311,9 +311,9 @@ Find channels where the cancellation rate spiked this month
 
 Question tips:
 
-- Specify which business phenomenon concerns you, e.g., rising cancellation rate, falling revenue, declining conversion rate.
-- Include a time range where possible, e.g., this month, last 30 days, last 12 weeks.
-- If you have a threshold, include business phrasing such as "much higher than last month" or "above 10%".
+* Specify which business phenomenon concerns you, e.g., rising cancellation rate, falling revenue, declining conversion rate.
+* Include a time range where possible, e.g., this month, last 30 days, last 12 weeks.
+* If you have a threshold, include business phrasing such as "much higher than last month" or "above 10%".
 
 A more specific phrasing:
 
@@ -363,10 +363,10 @@ Why is the cancellation rate highest for Premium plan? Break down by source and 
 
 When reading attribution results, note:
 
-- Attribution analysis is typically multi-dimensional comparison and correlation explanation, not strict causal proof.
-- If a dimension does not exist in the current analytics domain, the system may indicate it cannot analyze by that dimension, and will substitute with actually available fields.
-- Results should be viewed in terms of both "difference in active rate" and "contribution share". Some factors have a high active rate but a small sample; others have an average active rate but a large scale, making their overall impact greater.
-- For important conclusions, BI analysts should check SQL and logs to confirm the correct tables, fields, filters, and grouping were used.
+* Attribution analysis is typically multi-dimensional comparison and correlation explanation, not strict causal proof.
+* If a dimension does not exist in the current analytics domain, the system may indicate it cannot analyze by that dimension, and will substitute with actually available fields.
+* Results should be viewed in terms of both "difference in active rate" and "contribution share". Some factors have a high active rate but a small sample; others have an average active rate but a large scale, making their overall impact greater.
+* For important conclusions, BI analysts should check SQL and logs to confirm the correct tables, fields, filters, and grouping were used.
 
 In practice, the Analytics Agent can generate multiple charts around an attribution question, breaking down by country, game library size, achievement rarity, game type, and achievement depth, and summarize the ranking of influencing factors. For these types of questions, when data volume is large, runtime may be significantly longer than simple lookup questions.
 
@@ -374,16 +374,16 @@ In practice, the Analytics Agent can generate multiple charts around an attribut
 
 Different analysis patterns suit different chart types:
 
-| Analysis Pattern | Recommended Chart |
-| --- | --- |
-| Trend | Line chart |
-| Group comparison | Bar chart, horizontal bar chart |
-| Ranking | Horizontal bar chart, ranking table |
-| Proportion | Pie chart, donut chart, stacked chart |
-| Multi-metric comparison | Table, combo chart |
-| Detail | Table |
-| Attribution | Layered bar chart, comparison table |
-| Time-series forecast | Forecast line chart, confidence interval chart |
+| Analysis Pattern        | Recommended Chart                              |
+| ----------------------- | ---------------------------------------------- |
+| Trend                   | Line chart                                     |
+| Group comparison        | Bar chart, horizontal bar chart                |
+| Ranking                 | Horizontal bar chart, ranking table            |
+| Proportion              | Pie chart, donut chart, stacked chart          |
+| Multi-metric comparison | Table, combo chart                             |
+| Detail                  | Table                                          |
+| Attribution             | Layered bar chart, comparison table            |
+| Time-series forecast    | Forecast line chart, confidence interval chart |
 
 If the system's automatically selected chart does not match your expectations, you can specify in the question:
 
@@ -401,20 +401,20 @@ Not all questions need to be saved to a dashboard.
 
 Questions suitable for dashboards:
 
-- Reviewed daily, weekly, or monthly.
-- Needed for team sharing.
-- Require continuous anomaly monitoring.
-- Charts clearly express the business state.
-- Metric definitions are stable.
+* Reviewed daily, weekly, or monthly.
+* Needed for team sharing.
+* Require continuous anomaly monitoring.
+* Charts clearly express the business state.
+* Metric definitions are stable.
 
 Questions not suitable for dashboards:
 
-- One-time ad hoc queries.
-- Definitions not yet confirmed.
-- Data still being validated.
-- Question expression depends on current context.
+* One-time ad hoc queries.
+* Definitions not yet confirmed.
+* Data still being validated.
+* Question expression depends on current context.
 
-In practice, charts and tables from Q&A results can be saved directly to a dashboard. BI analysts can first explore using natural language, then save valuable results as dashboard components.
+In practice, charts and tables from Q\&A results can be saved directly to a dashboard. BI analysts can first explore using natural language, then save valuable results as dashboard components.
 
 If you already have clearly defined metrics, you can also use the "Exploration" feature on the analysis page for structured investigation. The exploration page lists queryable metrics and answer builders, supports adding comparison analysis and global filters, and returns baseline period, comparison period, and change rate after querying. It automatically suggests drill-down fields such as `plan`, `source`, and `country`. It is suitable for validating which dimensions drive metric changes before building a dashboard.
 
@@ -480,8 +480,9 @@ Compare active account count and average seat count by country
 
 ## Related Documentation
 
-- [Question Asking Guide](datagpt-question-asking-guide.md) — How to ask questions that are more likely to get accurate answers
-- [Reading Analysis Results](datagpt-answer-reading-guide.md) — How to determine whether an answer is trustworthy
-- [Using Data and Exploration](datagpt-data-exploration-guide.md) — View analytics domain data coverage and structured exploration
-- [DataGPT Dashboard User Guide](datagpt-dashboard-guide.md) — Save Q&A results as shareable dashboards
-- [Recommended Questions Configuration](datagpt-recommended-questions-guide.md) — Understand recommended questions for analytics domains
+* [Question Asking Guide](datagpt-question-asking-guide.md) — How to ask questions that are more likely to get accurate answers
+* [Reading Analysis Results](datagpt-answer-reading-guide.md) — How to determine whether an answer is trustworthy
+* [Using Data and Exploration](datagpt-data-exploration-guide.md) — View analytics domain data coverage and structured exploration
+* [DataGPT Dashboard User Guide](datagpt-dashboard-guide.md) — Save Q\&A results as shareable dashboards
+
+^

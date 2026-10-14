@@ -1,6 +1,14 @@
 # Configuring Access Control
 
-This document describes how to configure access control policies for accounts and metadata objects in Singdata Lakehouse. By properly configuring access control, you can ensure that access to data and objects is limited to authorized users and roles, following the principle of least privilege to enhance system security.
+This document explains how to configure access control for users and roles in Singdata Lakehouse. Lakehouse uses two independent permission systems: feature permissions control whether a role can open a Studio module and perform operations on its pages, while metadata privileges control which Workspaces, Schemas, Tables, Virtual Clusters, and other objects the role can access. Production roles usually require a combination of both.
+
+| Permission type | What it controls | How to configure it |
+| --- | --- | --- |
+| Feature permission | Studio menus, pages, and operations such as create, run, operate, and publish | Configure it on the role details page in the Web UI |
+| Metadata privilege | Viewing, using, querying, writing, modifying, and deleting Lakehouse objects | Use SQL `GRANT`/`REVOKE` or grant data privileges in the Web UI |
+| Role grant | Whether a user receives the feature permissions and metadata privileges assigned to a role | Use the Web UI or SQL `GRANT ROLE`/`REVOKE ROLE` |
+
+For example, to let a developer query a table from Studio, grant the **Development → Read, Execute** feature permissions, `USE` on a Virtual Cluster, and `READ METADATA` and `SELECT` on the target table. Configuring only one permission type is not sufficient for the complete operation.
 
 ## Instance-Level Management
 
@@ -14,7 +22,7 @@ In Singdata Lakehouse, the user who creates a service instance is granted the "i
 
 Service instance-level roles can only be granted via the Web UI. Only users with the `instance_admin` role can perform this operation.
 
-In the service instance, navigate to **Admin** -> **Security**, and switch to the **Roles** tab.
+In the service instance, navigate to **Management** -> **Security**, and switch to the **Roles** tab.
 
 
 Click on the instance role you want to grant to enter its detail page, then click **Grant to User**:
@@ -40,7 +48,7 @@ For a user to use compute clusters (VClusters) and execute SQL within a workspac
 
 **Via Web UI**
 
-After entering the service instance, click **Admin** -> **Workspaces** in the menu to go to the workspace list. Click on a workspace name to enter its detail page.
+After entering the service instance, click **Management** -> **Workspace** in the menu to go to the workspace list. Click on a workspace name to enter its detail page.
 
 
 On the workspace detail page, click the **+ Add User** button, and select users in the dialog. Only users who exist in the service instance and are not currently members of this workspace will be displayed. Select one or more users and click **Add User** or **Add User and Grant Role** to add the selected users to the workspace. After successful addition, you can find the new users in the workspace's **Users** list.
@@ -54,7 +62,7 @@ Note that users removed from a workspace will retain any data permissions direct
 
 To add a user to a workspace via JDBC, execute the following statement:
 
-```SQL
+```sql
 CREATE USER <user_name>;
 ```
 
@@ -62,7 +70,7 @@ Replace `<user_name>` with the username to add. Only users who exist in the serv
 
 To remove a user from a workspace:
 
-```SQL
+```sql
 DROP USER <user_name>;
 ```
 
@@ -92,9 +100,9 @@ For granting data permissions to the `workspace_analyst` role, refer to the GRAN
 
 **Using Custom Roles or Users**
 
-Custom roles and users can also execute SQL for development or data query analysis within a workspace after being granted appropriate permissions, but they cannot use the **Development** feature in the Web UI. Granting permissions to custom roles and users must be performed by users with the `workspace_admin` role. Refer to the following statements for authorization:
+Custom roles and users can execute SQL for development or data analysis in a workspace after receiving the required privileges. To let a custom role use Web UI features such as **Development**, **Operation Center**, **Notebook**, or **publish center**, also configure the corresponding feature permissions on the role details page. A user with the `workspace_admin` role must manage these grants. Use statements like the following to grant metadata privileges:
 
-```SQL
+```sql
 -- Grant usage and metadata read permissions on all compute clusters in the workspace to a custom role
 GRANT USE, READ METADATA ON ALL VCLUSTERS TO ROLE <CUSTOM_ROLE_NAME>;
 -- [Optional] Grant usage and metadata read permissions on a specific compute cluster to a custom role
@@ -108,16 +116,50 @@ GRANT SELECT, READ METADATA ON TABLE <TABLE_NAME> TO ROLE <CUSTOM_ROLE_NAME>;
 
 To grant permissions to a user, replace `TO ROLE <CUSTOM_ROLE_NAME>` with `TO USER <USER_NAME>` in the above statements.
 
-#### Submitting and Maintaining Scheduled Tasks
+#### Configuring Feature Permissions
 
-Submitting scheduled tasks in a workspace can only be done through the **Development** feature in the Web UI. The `workspace_admin` and `workspace_dev` roles have the permission to submit job scripts as scheduled tasks.
+Feature permissions determine whether a role can open a Studio module and perform specific operations within it. They can only be configured in the Web UI and cannot be granted with SQL `GRANT` or revoked with SQL `REVOKE`.
+
+Only a workspace administrator (`workspace_admin`) can manage feature permissions for roles in that workspace:
+
+1. Open **Management → Security → Roles**.
+2. Select the target Workspace and open the custom role you want to configure.
+3. On the role details page, open the **Permission** tab and switch to **Feature**.
+4. Click **Authorization Function**, then select the required feature domains and feature objects.
+5. Select the atomic operations to grant and click **OK**.
+
+The role details page displays the granted READ and WRITE operations by feature object. To change the operations, click **Edit** for the object. To revoke all permissions on a feature object, click **Remove**.
+
+> ⚠️ **Note**: `READ` and `WRITE` group atomic operations; they are not aggregate privileges that automatically include every read or write operation. Expand each group and review the specific operations. For example, the WRITE group for Task Instance maintenance contains Suspend, Make Success, Stop, Make Failed, Start, and Rerun.
+
+Feature permissions are organized as feature domain → feature object → READ/WRITE → atomic operation. See [Feature Objects and Privileges](feature-objects-and-privileges.md) for the complete permission reference.
+
+#### Combining Feature Permissions and Metadata Privileges
+
+The following examples show how common responsibilities combine the two permission systems. The listed feature permissions are suggested minimum starting points; adjust them for the task type and your team's separation of duties.
+
+| Responsibility | Suggested feature permissions | Required metadata privileges |
+| --- | --- | --- |
+| Developer | Development: Read, Download, Copy, Create, Update, Execute, Commit; Compute-Job History: Read | `USE` and `READ METADATA` on the target Virtual Cluster, plus the required Schema and data object privileges |
+| Publisher | publish: Read, Commit, Publish; Development: Read | Membership in the target Workspace and read privileges required by the publishing workflow |
+| Workspace operator | Read and required operations on Task maintenance, Task Instance maintenance, Complement Task maintenance, and Task Pipe maintenance; handle Alert Events; read Compute-Job History | Business table read/write privileges are not required by default; grant object privileges separately when data access is needed for troubleshooting |
+| Data quality administrator | Create, Update, Delete, and Execute on Data Quality Rules; Rerun and status operations on Data Validation Result | Metadata and query privileges on validation objects and `USE` on the execution cluster |
+| Notebook analyst | notebook: Read, Create, Update, Delete, Execute | Virtual Cluster `USE`, plus `READ METADATA` and `SELECT` on the target Tables or Views |
+
+> ⚠️ **Note**: Pausing or deleting a task, terminating or rerunning an instance, manually setting success or failure, modifying a PIPE, changing the workspace compute environment, and publishing a release can affect production workloads. Separate these high-impact operations from routine development permissions and review the grants regularly.
+
+Inspect feature permissions on the role details page. `SHOW GRANTS` displays SQL metadata privileges and role assignments; it does not display Studio feature permissions.
+
+#### Committing, Publishing, and Maintaining Scheduled Tasks
+
+Scheduled tasks can be committed and published through **Development** in the Web UI. The `workspace_admin` and `workspace_dev` roles include the corresponding development permissions by default. You can also grant **Development → Commit** and **Development → Publish** to a custom workspace role.
 
 
 ^
 
-The system role for maintaining scheduled tasks in a workspace is `workspace_sre` (Workspace SRE). Users with this role can manage scheduled tasks within their workspace through the **Task Operations** and **Monitoring & Alerting** features under the **Operations** menu, as well as the **Data Quality** feature under the **Data** menu.
+The system role for maintaining scheduled tasks in a workspace is `workspace_sre` (Workspace SRE). Users with this role can manage scheduled tasks in their workspace through **Operation Center → Task Maintenance**, **Operation Center → Alert**, and **Data → Data Quality**.
 
-The `workspace_sre` role has operational management permissions for all scheduled tasks in the workspace, but does not have compute resource usage or data object query permissions.
+The `workspace_sre` role has feature permissions for operating scheduled tasks in its workspace, but it does not have permission to use compute resources or query data objects. If an operator needs to use a Virtual Cluster or query data while troubleshooting, grant the required metadata privileges separately and with the smallest practical scope.
 
 For unified management of scheduled tasks across all workspaces in an instance, you can grant the instance-level role `instance_sre` (Instance SRE). This role's permissions are the union of all `workspace_sre` role permissions within the service instance.
 
@@ -125,13 +167,16 @@ For unified management of scheduled tasks across all workspaces in an instance, 
 
 To practice the principle of least privilege, it is recommended to create custom roles aligned with your organization's business functions and assign them permissions for specific objects and operations. This allows you to precisely control user access to specific data or objects.
 
-General process for creating custom roles:
+General process for creating and using custom roles:
 
-1. Create a custom role (CREATE ROLE statement).
-2. Grant required permissions to the role (GRANT statement).
-3. Grant the role to the appropriate users (GRANT ROLE statement or via Web UI).
+1. Create a custom workspace role in the Web UI or with `CREATE ROLE`.
+2. Configure the role's feature permissions in the Web UI.
+3. Grant the required metadata privileges with `GRANT` or through the Web UI.
+4. Grant the role to users with `GRANT ROLE` or through the Web UI.
 
-**Note**: In Singdata Lakehouse, roles cannot be granted to other roles; that is, role hierarchy is not supported. All roles are granted directly to users, eliminating the complexity of determining a user's effective permissions through hierarchical role inheritance.
+The Web UI supports creating custom workspace roles and configuring their feature permissions and data privileges. It does not currently support custom instance-level roles. Default permissions on system preset roles are managed by Lakehouse and cannot be modified like permissions on a custom role.
+
+> ⚠️ **Note**: In Singdata Lakehouse, roles cannot be granted to other roles; that is, role hierarchy is not supported. All roles are granted directly to users, eliminating the complexity of determining a user's effective permissions through hierarchical role inheritance.
 
 #### Granting or Revoking Roles from Users
 
@@ -139,7 +184,7 @@ You can grant or revoke roles from users via the Web UI or SQL. Only users with 
 
 **Via Web UI**
 
-On the **Security** -> **Roles** page, you can view instance-level and workspace-level roles in the current instance.
+On the **Management** -> **Security** -> **Roles** page, you can view instance-level and workspace-level roles in the current instance.
 
 
 The `instance_admin` role can view all instance-level roles and all workspace-level roles, and manage grants for all instance-level roles.
@@ -151,7 +196,7 @@ To grant a role, click the role name to enter its detail page, where you can vie
 
 To revoke a role, click the **...** menu next to a user and select **Remove User** to remove the user's association with that role.
 
-In the **Admin** -> **Workspaces** list, enter a workspace detail page, and on the **Roles** tab you can also view the role list within the workspace and grant or revoke roles using the same process.
+In the **Management** -> **Workspace** list, enter a workspace detail page, and on the **Roles** tab you can also view the role list within the workspace and grant or revoke roles using the same process.
 
 
 ***
@@ -160,19 +205,19 @@ In the **Admin** -> **Workspaces** list, enter a workspace detail page, and on t
 
 Only workspace-level users support SQL-based authorization. Execute the following statement in a workspace to grant a workspace role to a user:
 
-```SQL
+```sql
 Grant ROLE <ROLE_NAME> TO USER <USER_NAME>;
 ```
 
 Execute the following to revoke a role from a user:
 
-```SQL
+```sql
 REVOKE ROLE <ROLE_NAME> FROM USER <USER_NAME>;
 ```
 
 ### Example: Creating a Custom Role and Granting Permissions
 
-**Tip**: Creating custom roles and granting permissions to custom roles is currently not supported via the Web UI. You must use SQL.
+You can create a custom workspace role in the Web UI or with SQL. The following example uses SQL to create a role and grant metadata privileges. If the role also needs to use Studio features, configure its feature permissions in the Web UI as described in [Configuring Feature Permissions](#configuring-feature-permissions).
 
 Suppose you want to create a workspace-level role `r1` to manage a specific table `t1` in schema `s1`. You need to grant `r1`:
 
@@ -182,13 +227,13 @@ Suppose you want to create a workspace-level role `r1` to manage a specific tabl
 
 #### Create the Custom Role
 
-```
+```sql
 CREATE ROLE r1;
 ```
 
 #### Grant Permissions to the Role
 
-```
+```sql
 -- Grant usage permission on compute cluster (e.g., v1) to role r1
 GRANT use ON VCLUSTER v1 TO ROLE r1;
 -- [Optional] Grant read metadata permission on compute cluster (e.g., v1) to role r1
@@ -202,7 +247,7 @@ GRANT all ON table s1.t1 to ROLE r1;
 
 #### Grant the Role to a User
 
-```
+```sql
 GRANT ROLE r1 TO USER u1;
 ```
 
@@ -212,7 +257,7 @@ If you need a role that can only query (read-only access) all tables in a schema
 
 For example, to grant SELECT and READ METADATA permissions on all tables in schema `s1` to the `read_only` role:
 
-```
+```sql
 GRANT SELECT, READ METADATA ON ALL TABLES IN SCHEMA s1 TO ROLE read_only;
 ```
 
@@ -220,7 +265,7 @@ Note that if the `read_only` role does not have usage permission on a compute cl
 
 For example, granting the `read_only` role usage permission on a compute cluster named `demo_vcluster`:
 
-```
+```sql
 GRANT USE ON VCLUSTER demo_vcluster TO ROLE read_only;
 ```
 
@@ -228,7 +273,7 @@ GRANT USE ON VCLUSTER demo_vcluster TO ROLE read_only;
 
 Use the SHOW GRANTS command to view the current permission state of an object or role. For example:
 
-```
+```sql
 -- View granted permissions on schema d1.s1
 SHOW GRANTS ON SCHEMA d1.s1;
 
@@ -238,5 +283,17 @@ SHOW GRANTS TO ROLE r1;
 -- View permissions and roles granted to user smith
 SHOW GRANTS TO USER smith;
 ```
+
+`SHOW GRANTS` displays role assignments and metadata privileges. View feature permissions under **Management → Security → Roles → Permission → Feature**.
+
+## Related Documentation
+
+- [Access Control Overview](access-control-general.md)
+- [Metadata Objects and Privilege Points](meta-objects-and-privileges.md)
+- [Feature Objects and Privileges](feature-objects-and-privileges.md)
+- [Explanation of Permissions for Built-in Workspace Level Roles](permissions-of-built-in-workspace-level-roles.md)
+- [GRANT](grant-privileges.md)
+- [REVOKE](revoke-privileges.md)
+- [SHOW GRANTS](show-grants.md)
 
 ^

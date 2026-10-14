@@ -19,7 +19,7 @@ Pay-as-you-go billing for compute clusters, storage, and network data transfer.
 
 Token-based billing for unified access to mainstream LLMs (Anthropic Claude, OpenAI GPT, Qwen, DeepSeek, GLM, Kimi, MiniMax, and more).
 
-[View AI Gateway Pricing →](pricing-ai-gateway.md)
+[View AI Gateway Billing Guide →](pricing-ai-gateway.md)
 
 </td>
 </tr>

@@ -20,9 +20,9 @@ The diagram below shows the complete user journey. This guide covers the core st
 
 We have prepared a well-configured sample dataset for you, which includes a complete table configuration and metric system. You can start asking questions directly to experience intelligent analysis. This sample can also serve as a template to help you understand how to build your own analysis domain.
 
-Go to the product home page, find the analysis domain labeled "Sample", and click **Start Analysis**.&#x20;
+Navigate to the product homepage, select **New Session** in the upper-left corner, locate the Sample Analysis Domain in the upper-right corner, and you can start the analysis.
 
-:-: ![](/.topwrite/assets/image_1780898646591.png =583)
+:-: ![](/.topwrite/assets/img_v3_0215o_4875fe3b-9464-4728-a857-2cb03fe104fg.png =584)
 
 ## Method 2: Analyze Based on Your Own Data
 

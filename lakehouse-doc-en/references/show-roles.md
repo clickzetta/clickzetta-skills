@@ -101,7 +101,7 @@ SHOW INSTANCE ROLES [LIKE 'pattern'];
 
    | name | comment |
    |------|---------|
-   | instance_admin | System preset role for managing the creation and deletion of all workspaces in the instance, and for managing the granting of instance-level roles. |
+   | instance_admin | System preset role that can create workspaces in the instance and manage the granting of instance-level roles; it cannot delete workspaces. |
    | instance_datamap_admin | System preset role with management permissions for functions and objects in data assets. |
    | instance_datamap_user | System preset role with read-only permissions for data assets. |
    | instance_datasource_admin | System preset role with management permissions for data sources. |
@@ -117,5 +117,6 @@ SHOW INSTANCE ROLES [LIKE 'pattern'];
 
 ### Notes
 
-- Instance roles apply to the entire instance scope, with permissions higher than workspace roles. Grant them with caution.
+- Instance roles apply at the instance scope, while workspace roles apply to a specific workspace. Grant roles according to the required management scope.
+- `instance_admin` can create workspaces but cannot delete them. Only a user with the `workspace_admin` role in the target workspace can delete that workspace.
 - Executing this command requires instance-level role query permission.

@@ -114,13 +114,15 @@ A Singdata Lakehouse account provides various system preset roles after creation
 
 | **Role** | **Workspace** | **Virtual Cluster** | **Schema** | **Volume** | **Synonym** | **Function** | **Job** | **Table, Dynamic Table, View, etc.** |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **instance_admin** | create workspace&#xA;drop workspace&#xA;read metadata | / | / | / | / | / | / | / |
+| **instance_admin** | create workspace&#xA;read metadata | / | / | / | / | / | / | / |
 | **instance_sre** | / | / | / | / | / | / | read metadata | / |
-| **workspace_admin** | read metadata | all [with grant option] | all [with grant option] | all [with grant option] | all [with grant option] | all [with grant option] | all [with grant option] | all [with grant option] |
+| **workspace_admin** | drop workspace&#xA;read metadata | all [with grant option] | all [with grant option] | all [with grant option] | all [with grant option] | all [with grant option] | all [with grant option] | all [with grant option] |
 | **workspace_dev** | read metadata | read metadata&#xA;use | all | all | all | create&#xA;read metadata | read metadata | all |
 | **workspace_sre** | read metadata | / | / | / | / | / | read metadata | / |
 
 For the business meaning of data permission points, refer to: [Metadata and Permission Points](meta-objects-and-privileges.md)
+
+> ⚠️ **Note**: `instance_admin` can create workspaces but cannot delete them. Only a user with the `workspace_admin` role in the target workspace can delete that workspace.
 
 ## Q&A
 

@@ -75,13 +75,13 @@ Business objects cannot be authorized through SQL. Users obtain relevant permiss
 | --------------------- | --------------------- | --------------------------------------------------------------------------------------------------------- |
 | create workspace      | Create Workspace      | Default granted to instance administrator (instance\_admin role), not supported for other roles or users. |
 | create network policy | Create Network Policy | Default granted to instance administrator (instance\_admin role), not supported for other roles or users. |
-| drop workspace        | Drop Workspace        | Default granted to instance administrator (instance\_admin role), not supported for other roles or users. |
 
 ### Workspace Privileges
 
 | **Permission Point** | **Purpose**                    | **Description**                                                                                                              |
 | -------------------- | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
 | alter workspace      | Modify Workspace               | Default granted to the space administrator (workspace\_admin role) of the space, not supported for other roles or users.     |
+| drop workspace       | Drop Workspace                 | Default granted to the target workspace administrator (`workspace_admin` role), not supported for other roles or users. The `instance_admin` role does not have this privilege. |
 | create connection    | Create Connection Object       |                                                                                                                              |
 | create vcluster      | Create Virtual Cluster Object  |                                                                                                                              |
 | create schema        | Create Schema Object           |                                                                                                                              |
