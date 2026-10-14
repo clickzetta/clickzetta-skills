@@ -153,5 +153,6 @@ If the call succeeds, you will see a response similar to the following:
 ## Related Documentation
 
 - [AI Gateway Overview](introduction.md) — AI Gateway feature overview and architecture
-- [Model Pricing](pricing-ai-gateway.md) — Pricing and Token calculation rules for each model
+- [View Current Model Prices](https://aitoken.singdata.com/model) — Open Model Plaza and select a model to view its pricing information
+- [AI Gateway Billing Guide](pricing-ai-gateway.md) — Billing items, charge calculation, and price updates
 - [AI-Enhanced Data Analysis: Calling LLMs in SQL](lakehouse-ai-sql-analysis.md) — Call LLMs via AI Gateway in SQL

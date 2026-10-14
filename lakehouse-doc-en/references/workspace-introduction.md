@@ -13,6 +13,10 @@ After logging into Singdata Lakehouse and entering the Lakehouse instance, you c
 :-: To create a new WorkSpace, click the "New" button on the right side of the WorkSpace list. The user who creates the WorkSpace will be granted the "workspace\_admin" role by default, with permissions to use and manage all resource objects under the WorkSpace and manage members within the space.
 ![](.topwrite/assets/image_1739954456362.png =724)
 
+## Delete WorkSpace
+
+Only a user with the `workspace_admin` role in the target WorkSpace can delete that WorkSpace. A user with the `instance_admin` role can create WorkSpaces but does not have permission to delete them.
+
 ## Join WorkSpace
 
 Only users who join a WorkSpace can be granted corresponding roles and permissions to use the computing and data resources within the WorkSpace. When a new user is created for an account, the user initially does not join any WorkSpace and therefore does not have access or usage permissions for any WorkSpace.

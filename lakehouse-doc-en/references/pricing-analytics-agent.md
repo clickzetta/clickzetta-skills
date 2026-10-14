@@ -59,7 +59,7 @@ Analytics Agent calls LLMs to perform data analysis, and token consumption is bi
 | Fee | Actual consumption x per-model unit price |
 | Billing cycle | Settled hourly |
 
-Different models and token types (input / output / context cache) have different unit prices. The system calculates charges based on your actual usage. For detailed per-model rates, see [AI Gateway Pricing](pricing-ai-gateway.md).
+Different models and token types (input / output / context cache) have different unit prices. The system calculates charges based on your actual usage. For billing rules and how to view current model prices, see the [AI Gateway Billing Guide](pricing-ai-gateway.md).
 
 ## Web Search Fee
 

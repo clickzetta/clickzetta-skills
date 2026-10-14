@@ -51,7 +51,7 @@ response = client.chat.completions.create(
 |------|--------|
 | Understand AI Gateway features and positioning | [Product Introduction](introduction.md) |
 | Complete setup and call the first model in 10 minutes | [Quick Start](quickstart.md) |
-| View supported models and pricing | [Model Pricing](pricing-ai-gateway.md) |
+| View supported models and current prices | [Model Plaza](https://aitoken.singdata.com/model) |
 | Integrate your own third-party model (BYOK) | [Product Introduction → BYOK](introduction.md) |
 | Manage API Keys, set usage limits | [Product Introduction → API Key Management](introduction.md) |
 | Call LLMs in SQL for data analysis | [Call LLMs in SQL](lakehouse-ai-sql-analysis.md) |

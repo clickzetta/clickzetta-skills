@@ -57,6 +57,19 @@ CHANGE COLUMN column_name
 UNSET MASK;
 ```
 
+### Permissions Required for Queries
+
+Masking functions run when data is read. In addition to `SELECT` on the table, the querying user must have `USE FUNCTION` on every masking function executed by the query:
+
+```sql
+GRANT SELECT ON TABLE schema_name.table_name TO USER user_name;
+GRANT USE FUNCTION ON FUNCTION schema_name.masking_function TO USER user_name;
+```
+
+If a query executes multiple masking functions, grant `USE FUNCTION` on each function.
+
+> ⚠️ **Note**: `USE FUNCTION` only allows the masking function to execute; it does not grant access to the original value. The function still evaluates `current_user()` and `current_roles()` for the querying user to determine whether to return the original or masked value. If the user lacks `USE FUNCTION` on any required masking function, the entire query fails with a `NoPermission` error instead of returning `NULL` or a masked value for that column.
+
 ***
 
 ## Use Case Examples
@@ -191,6 +204,8 @@ SELECT * FROM user_data;
 
 * Only roles with `ALTER TABLE` permissions are allowed to modify masking policies.
 * Function creation requires `CREATE FUNCTION` permissions.
+* Querying a table with masking policies requires `SELECT` on the table and `USE FUNCTION` on every required masking function.
+* `USE FUNCTION` does not grant access to original values; the user or role conditions in the masking function determine whether the function returns an original or masked value.
 
 ### 2 Performance Recommendations
 

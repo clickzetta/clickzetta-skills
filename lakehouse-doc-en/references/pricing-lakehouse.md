@@ -1,6 +1,6 @@
 # Lakehouse Pricing 
 
-This page describes the pricing model and unit prices for Singdata Lakehouse, covering compute (measured in CRU\*hour), storage, and network data transfer. AI Gateway model invocation is billed by tokens; for unit prices see [AI Gateway Pricing](pricing-ai-gateway.md). The pricing entry point is [Pricing and Billing](pricing.md).   
+This page describes the pricing model and unit prices for Singdata Lakehouse, covering compute (measured in CRU\*hour), storage, and network data transfer. AI Gateway model invocation is billed by tokens; for billing rules, see the [AI Gateway Billing Guide](pricing-ai-gateway.md). The pricing entry point is [Pricing and Billing](pricing.md).
 
 ## Overview of Billing Methods
 
@@ -271,7 +271,7 @@ Taking an AWS Singapore Enterprise Edition service instance in SaaS mode as an e
 
 **Offline Integration Task Cost Example**
 
-The following examples apply only to the trial operation period before September 1, 2026. Offline integration tasks are not charged separately; only the running costs of the synchronous computing cluster to which the tasks are submitted are charged. Offline integration tasks can automatically wake up the synchronous computing cluster.
+The following examples apply only to the trial operation period before September 1, 2026.  Offline integration tasks can automatically wake up the synchronous computing cluster.
 
 An offline integration task generates computing resource usage for scheduling and concurrent execution. A single offline task typically generates at least approximately 0.05 CRU\*hour of scheduling resource usage per hour, with total hourly usage of at least approximately 0.1 CRU\*hour (0.05 CRU\*hour + 1 × 0.05 CRU\*hour). Based on this estimate, 5 single-concurrent offline integration tasks can fully utilize a synchronous computing cluster with hourly computing resource usage of 0.5 CRU\*hour.
 

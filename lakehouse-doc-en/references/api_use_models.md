@@ -313,5 +313,6 @@ print(message.content)
 ## 7. Related documentation
 
 - [Quick start](quickstart.md): Create an API key and configure routing.
-- [Model pricing](pricing-ai-gateway.md): Billing rates for each model.
+- [View current model prices](https://aitoken.singdata.com/model): Open Model Plaza and select a model to view its pricing information.
+- [AI Gateway Billing Guide](pricing-ai-gateway.md): Billing items, charge calculation, and price updates.
 - [Call LLMs with SQL](lakehouse-ai-sql-analysis.md): Call models through AI_COMPLETE in Lakehouse SQL.
