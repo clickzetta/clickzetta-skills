@@ -45,6 +45,7 @@ The repository currently contains 30 top-level `clickzetta-*` skills, one offici
 | Operations and governance | [clickzetta-volume-manager](./clickzetta-volume-manager/) | External Volume, User Volume, Table Volume, object storage mounting, file operations, import, and export. |
 | Operations and governance | [clickzetta-table-lineage](./clickzetta-table-lineage/) | Table lineage and cost visualization based on `information_schema.job_history` and generated HTML artifacts. |
 | Operations and governance | [clickzetta-schema-evolution-impact](./clickzetta-schema-evolution-impact/) | Read-only schema change analysis: writers/readers, column provenance, downstream contracts, and compatibility across one, N, or all reachable layers. |
+| Operations and governance | [clickzetta-billing-analyse](./clickzetta-billing-analyse/) | Account billing cost analysis from `information_schema.instance_usage` via cz-cli, producing a bilingual (EN/CN) HTML dashboard with `job_history` drill-down for compute anomalies. |
 | Observability | [singsight-install](./singsight-install/) | Connect AI coding agents (Claude Code, Hermes, OpenClaw, Opencode) to the Singsight observability platform via OpenTelemetry. |
 
 ## Routing Guide
@@ -66,6 +67,7 @@ Use the table below when deciding which skill should handle a user request.
 | Write native ClickZetta SQL, look up syntax, functions, permissions, VClusters, or official product behavior. | `lakehouse-doc-en` |
 | Migrate SQL from Snowflake, Databricks, or Spark SQL. | `clickzetta-sql-migration` |
 | Query metadata, table structures, job history, cost attribution, permissions, Time Travel, recovery, or platform operations. | `lakehouse-doc-en` |
+| Analyze account billing/metering cost, break it down by region, workspace, or SKU, and drill into compute cost anomalies. | `clickzetta-billing-analyse` |
 | Investigate query performance, `EXPLAIN`, Result Cache, `OPTIMIZE`, small files, or execution plans. | `lakehouse-doc-en` |
 | Manage users, roles, grants, masking policy, network policy, lifecycle, data sharing, SDK, BI, or Java/Python application docs. | `lakehouse-doc-en` |
 | Manage Volumes, object storage mounts, file upload/download, import, or export. | `clickzetta-volume-manager` |
