@@ -1,0 +1,340 @@
+{
+  "version": "schema-investigation.v3",
+  "notes": "Scorer only. Do not expose to evaluated agents. Fixture engine rules are assumptions, not ClickZetta facts.",
+  "expected": [
+    {
+      "id": "S01",
+      "origin": "raw_only",
+      "ms_conversion": true,
+      "passthrough": false,
+      "evidence": [
+        "e.measurement_start / 1000"
+      ],
+      "critical": [
+        "Division by 1000 alone does not prove post-change execution failure."
+      ]
+    },
+    {
+      "id": "S02",
+      "origin": "raw_only",
+      "ms_conversion": true,
+      "passthrough": false,
+      "evidence": [
+        "measurement_start AS t",
+        "t AS n",
+        "n / 1000"
+      ]
+    },
+    {
+      "id": "S03",
+      "origin": "other",
+      "target_column_used": false,
+      "ms_conversion": false,
+      "passthrough": false,
+      "evidence": [
+        "CONCAT(ds, ' ', hh, ':00:00')"
+      ],
+      "critical": [
+        "An output alias matching the root column does not prove root-column provenance."
+      ]
+    },
+    {
+      "id": "S04",
+      "origin": "raw_mixed",
+      "ms_conversion": false,
+      "passthrough_per_branch": true,
+      "other_type": "BIGINT",
+      "evidence": [
+        "r.measurement_start",
+        "c.measurement_start"
+      ],
+      "critical": [
+        "Do not report mixed provenance as raw_only.",
+        "Align UNION branches by position; determine common output type separately."
+      ]
+    },
+    {
+      "id": "S05",
+      "origin": "raw_only",
+      "ms_conversion": false,
+      "passthrough": true,
+      "target_in_join": false,
+      "evidence": [
+        "e.measurement_start",
+        "e.sku_code=s.sku_code"
+      ]
+    },
+    {
+      "id": "S06",
+      "origin": "other",
+      "ms_conversion_on_root": false,
+      "passthrough": false,
+      "evidence": [
+        "v.measurement_start / 1000",
+        "SELECT DISTINCT ds,hh"
+      ],
+      "critical": [
+        "There is a root table read, but the time arithmetic uses vc_events, not the root column."
+      ]
+    },
+    {
+      "id": "S07",
+      "origin": "raw_only",
+      "ms_duration": true,
+      "passthrough": false,
+      "evidence": [
+        "(e.measurement_end-e.measurement_start)/3600000"
+      ],
+      "critical": [
+        "A billing dependency exists even without projecting the original column."
+      ]
+    },
+    {
+      "id": "S08",
+      "origin": "raw_only",
+      "ms_conversion": false,
+      "ms_duration": false,
+      "passthrough": true,
+      "evidence": [
+        "measurement_start",
+        "tokens * 1000"
+      ],
+      "critical": [
+        "Unrelated numeric multiplication by 1000 is not a time conversion."
+      ]
+    },
+    {
+      "id": "S09",
+      "origin": "raw_only",
+      "target_in_window_order": true,
+      "ms_conversion": false,
+      "passthrough": true,
+      "evidence": [
+        "e.*",
+        "ORDER BY report_time,measurement_start,measurement_end"
+      ]
+    },
+    {
+      "id": "S10",
+      "origin": "raw_only",
+      "passthrough": false,
+      "evidence": [
+        "CAST(measurement_start AS BIGINT)"
+      ],
+      "critical": [
+        "Under strict direct-reference semantics CAST is not passthrough; value equivalence is a separate question."
+      ]
+    },
+    {
+      "id": "S11",
+      "origin": "raw_only",
+      "ms_conversion": true,
+      "impact": "insufficient_evidence",
+      "critical": [
+        "Without engine rules, do not guess how TIMESTAMP / 1000 behaves."
+      ]
+    },
+    {
+      "id": "S12",
+      "origin": "raw_only",
+      "impact": "execution_failure",
+      "evidence": [
+        "e.measurement_start/1000"
+      ],
+      "critical": [
+        "The failure follows fixture assumptions only; do not generalize to native ClickZetta rules."
+      ]
+    },
+    {
+      "id": "S13",
+      "target_column_used": false,
+      "ms_conversion": false,
+      "passthrough": false,
+      "impact": "unaffected",
+      "critical": [
+        "Unaffected applies only to this COUNT query under the stated assumptions, not the whole graph."
+      ]
+    },
+    {
+      "id": "S14",
+      "origin": "raw_only",
+      "passthrough": true,
+      "fixed_output_type": "BIGINT",
+      "impact": "insufficient_evidence",
+      "critical": [
+        "Direct projection does not prove a fixed BIGINT consumer schema automatically becomes TIMESTAMP."
+      ]
+    },
+    {
+      "id": "S15",
+      "origin": "raw_mixed",
+      "other_type": "unknown",
+      "impact": "insufficient_evidence",
+      "critical": [
+        "Missing corrections schema does not justify guessing BIGINT."
+      ]
+    },
+    {
+      "id": "S16",
+      "origin": "raw_only",
+      "ms_duration": true,
+      "ms_threshold": true,
+      "passthrough": true,
+      "evidence": [
+        "measurement_end-measurement_start <= 3600000"
+      ]
+    },
+    {
+      "id": "S17",
+      "origin": "raw_only",
+      "ms_conversion": true,
+      "impact": "silent_result_change",
+      "critical": [
+        "Use synthetic rules only; do not claim actual engine verification."
+      ]
+    },
+    {
+      "id": "S18",
+      "origin": "raw_only",
+      "ms_conversion": true,
+      "outer_duration_unit": "seconds",
+      "evidence": [
+        "measurement_start/1000",
+        "UNIX_TIMESTAMP(e)-UNIX_TIMESTAMP(s)"
+      ],
+      "critical": [
+        "The outer duration is seconds, not subtraction of raw millisecond integers."
+      ]
+    },
+    {
+      "id": "W01",
+      "critical": [
+        "Zero database requests.",
+        "Zero model requests.",
+        "Use the requested three columns.",
+        "Do not query DQC or turn not_queried into no rules."
+      ]
+    },
+    {
+      "id": "W02",
+      "critical": [
+        "Explicitly say main writer not found (Chinese: 查不到).",
+        "Do not infer main writer from creator or SQL job counts.",
+        "Refer to metering writer service, ingestion pipeline, or platform audit owner."
+      ]
+    },
+    {
+      "id": "W03",
+      "critical": [
+        "Report detail.",
+        "Do not query summary definitions or consumers.",
+        "Preserve internal-output mappings without counting a new business consumer."
+      ]
+    },
+    {
+      "id": "W04",
+      "critical": [
+        "Do not silently drop the required flag.",
+        "Label cached content as draft.",
+        "Observed SQL proves executed behavior, not the current published definition."
+      ]
+    },
+    {
+      "id": "W05",
+      "critical": [
+        "Retain both source edges.",
+        "Do not use a first-match CASE that loses the second root.",
+        "Per-source match totals are not globally unique jobs."
+      ]
+    },
+    {
+      "id": "W06",
+      "critical": [
+        "Do not conclude safe with critical evidence missing.",
+        "Separate denied, truncated, and not-queried evidence.",
+        "Do not execute DDL for validation."
+      ]
+    },
+    {
+      "id": "W07",
+      "critical": [
+        "Zero actual Jev requests.",
+        "Configured order is not invocation.",
+        "Explain Noul probability; never use bool(p).",
+        "Use separate rounds when impact depends on previously checked facts."
+      ]
+    },
+    {
+      "id": "W08",
+      "critical": [
+        "Warn before traversal that query volume may be very large.",
+        "Visit a/b/c/d with cycle detection and cache each definition version.",
+        "Retain b-d, c-d, and d-b edges.",
+        "After frontier exhaustion, claim completion only within the fixture scope.",
+        "Do not add a permission gate when all layers were already requested."
+      ]
+    },
+    {
+      "id": "W09",
+      "critical": [
+        "Report partial completion.",
+        "Save pending objects and failed gaps for resumption.",
+        "Permission failure is not an empty leaf.",
+        "Do not restart every completed layer."
+      ]
+    },
+    {
+      "id": "W10",
+      "critical": [
+        "Prefer Jev.",
+        "Use a verified actual model ID.",
+        "Optional does not mean skip an available suitable Jev client.",
+        "Simulation is not a real model request."
+      ]
+    },
+    {
+      "id": "W11",
+      "critical": [
+        "Skip unconfigured Jev and try configured Flash.",
+        "Do not ask for permission solely because Jev is absent.",
+        "Reuse evidence and structured judgment contract.",
+        "Flash self-reported confidence is not TypeSafe probability.",
+        "Do not configure keys or buy services."
+      ]
+    },
+    {
+      "id": "W12",
+      "critical": [
+        "Use bounded retry then rules/current-agent analysis.",
+        "Mark unresolved items unknown / human confirmation.",
+        "Do not block the investigation or upgrade silently to an expensive model.",
+        "Record failed attempts separately from successful calls."
+      ]
+    },
+    {
+      "id": "W13",
+      "critical": [
+        "Honor model opt-out; zero external requests.",
+        "Default Jev preference cannot override user restrictions.",
+        "Missing evidence remains unknown."
+      ]
+    },
+    {
+      "id": "W14",
+      "critical": [
+        "Root a is depth 0; b is depth 1 and c is depth 2.",
+        "Do not expand c to discover third-layer d.",
+        "Report depth-limited completion, not all-layer completion."
+      ]
+    },
+    {
+      "id": "W15",
+      "critical": [
+        "Follow renamed/transformed start_sec and expires_sec.",
+        "Do not recurse only through unchanged projections.",
+        "Show the transformation chain with evidence.",
+        "Keep unknown engine behavior insufficient_evidence."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,645 @@
+{
+  "version": "schema-investigation.v3",
+  "notes": "Synthetic offline reasoning excerpts only; do not execute. Not production facts or verified ClickZetta SQL/type behavior. Evaluated agents read this file only, not expected.json.",
+  "cases": [
+    {
+      "id": "S01",
+      "kind": "sql",
+      "request": "Analyze measurement_start provenance, millisecond operations, direct projection, and supported change impact using supplied evidence only. No queries or external models.",
+      "state": {
+        "target": {
+          "root_object": "demo.raw.events",
+          "column": "measurement_start"
+        },
+        "source_schemas": {
+          "demo.raw.events": {
+            "measurement_start": "BIGINT",
+            "measurement_end": "BIGINT",
+            "ds": "STRING",
+            "hh": "STRING"
+          }
+        },
+        "consumer_sql": "SELECT FROM_UNIXTIME(CAST(e.measurement_start / 1000 AS BIGINT)) AS measurement_start FROM demo.raw.events e"
+      }
+    },
+    {
+      "id": "S02",
+      "kind": "sql",
+      "request": "Analyze measurement_start provenance, millisecond operations, direct projection, and supported change impact using supplied evidence only. No queries or external models.",
+      "state": {
+        "target": {
+          "root_object": "demo.raw.events",
+          "column": "measurement_start"
+        },
+        "source_schemas": {
+          "demo.raw.events": {
+            "measurement_start": "BIGINT",
+            "measurement_end": "BIGINT",
+            "ds": "STRING",
+            "hh": "STRING"
+          }
+        },
+        "consumer_sql": "WITH a AS (SELECT measurement_start AS t FROM demo.raw.events), b AS (SELECT t AS n FROM a) SELECT FROM_UNIXTIME(CAST(n / 1000 AS BIGINT)) AS measurement_start FROM b"
+      }
+    },
+    {
+      "id": "S03",
+      "kind": "sql",
+      "request": "Analyze measurement_start provenance, millisecond operations, direct projection, and supported change impact using supplied evidence only. No queries or external models.",
+      "state": {
+        "target": {
+          "root_object": "demo.raw.events",
+          "column": "measurement_start"
+        },
+        "source_schemas": {
+          "demo.raw.events": {
+            "measurement_start": "BIGINT",
+            "measurement_end": "BIGINT",
+            "ds": "STRING",
+            "hh": "STRING"
+          }
+        },
+        "consumer_sql": "SELECT CONCAT(ds, ' ', hh, ':00:00') AS measurement_start FROM demo.raw.events"
+      }
+    },
+    {
+      "id": "S04",
+      "kind": "sql",
+      "request": "Analyze measurement_start provenance, millisecond operations, direct projection, and supported change impact using supplied evidence only. No queries or external models.",
+      "state": {
+        "target": {
+          "root_object": "demo.raw.events",
+          "column": "measurement_start"
+        },
+        "source_schemas": {
+          "demo.raw.events": {
+            "measurement_start": "BIGINT"
+          },
+          "demo.raw.events_corrections": {
+            "measurement_start": "BIGINT"
+          }
+        },
+        "consumer_sql": "SELECT r.measurement_start FROM demo.raw.events r UNION ALL SELECT c.measurement_start FROM demo.raw.events_corrections c"
+      }
+    },
+    {
+      "id": "S05",
+      "kind": "sql",
+      "request": "Analyze measurement_start provenance, millisecond operations, direct projection, and supported change impact using supplied evidence only. No queries or external models.",
+      "state": {
+        "target": {
+          "root_object": "demo.raw.events",
+          "column": "measurement_start"
+        },
+        "source_schemas": {
+          "demo.raw.events": {
+            "measurement_start": "BIGINT",
+            "measurement_end": "BIGINT",
+            "ds": "STRING",
+            "hh": "STRING",
+            "sku_code": "STRING"
+          },
+          "demo.sku.category": {
+            "sku_code": "STRING"
+          }
+        },
+        "consumer_sql": "SELECT e.measurement_start FROM demo.raw.events e JOIN demo.sku.category s ON e.sku_code=s.sku_code"
+      }
+    },
+    {
+      "id": "S06",
+      "kind": "sql",
+      "request": "Analyze measurement_start provenance, millisecond operations, direct projection, and supported change impact using supplied evidence only. No queries or external models.",
+      "state": {
+        "target": {
+          "root_object": "demo.raw.events",
+          "column": "measurement_start"
+        },
+        "source_schemas": {
+          "demo.raw.events": {
+            "measurement_start": "BIGINT",
+            "ds": "STRING",
+            "hh": "STRING"
+          },
+          "demo.public.vc_events": {
+            "measurement_start": "BIGINT",
+            "ds": "STRING",
+            "hh": "STRING"
+          }
+        },
+        "consumer_sql": "SELECT FROM_UNIXTIME(CAST(v.measurement_start / 1000 AS BIGINT)) AS measurement_start FROM demo.public.vc_events v JOIN (SELECT DISTINCT ds,hh FROM demo.raw.events) r ON v.ds=r.ds AND v.hh=r.hh"
+      }
+    },
+    {
+      "id": "S07",
+      "kind": "sql",
+      "request": "Analyze measurement_start provenance, millisecond operations, direct projection, and supported change impact using supplied evidence only. No queries or external models.",
+      "state": {
+        "target": {
+          "root_object": "demo.raw.events",
+          "column": "measurement_start"
+        },
+        "source_schemas": {
+          "demo.raw.events": {
+            "measurement_start": "BIGINT",
+            "measurement_end": "BIGINT",
+            "ds": "STRING",
+            "hh": "STRING",
+            "cpu": "DOUBLE"
+          }
+        },
+        "consumer_sql": "SELECT SUM(cpu * ((e.measurement_end-e.measurement_start)/3600000)) AS billing_amount FROM demo.raw.events e"
+      }
+    },
+    {
+      "id": "S08",
+      "kind": "sql",
+      "request": "Analyze measurement_start provenance, millisecond operations, direct projection, and supported change impact using supplied evidence only. No queries or external models.",
+      "state": {
+        "target": {
+          "root_object": "demo.raw.events",
+          "column": "measurement_start"
+        },
+        "source_schemas": {
+          "demo.raw.events": {
+            "measurement_start": "BIGINT",
+            "measurement_end": "BIGINT",
+            "ds": "STRING",
+            "hh": "STRING",
+            "tokens": "BIGINT"
+          }
+        },
+        "consumer_sql": "SELECT measurement_start, tokens * 1000 AS token_count FROM demo.raw.events"
+      }
+    },
+    {
+      "id": "S09",
+      "kind": "sql",
+      "request": "Analyze measurement_start provenance, millisecond operations, direct projection, and supported change impact using supplied evidence only. No queries or external models.",
+      "state": {
+        "target": {
+          "root_object": "demo.raw.events",
+          "column": "measurement_start"
+        },
+        "source_schemas": {
+          "demo.raw.events": {
+            "measurement_start": "BIGINT",
+            "measurement_end": "BIGINT",
+            "idempotent": "STRING",
+            "report_time": "BIGINT"
+          }
+        },
+        "consumer_sql": "SELECT e.*,ROW_NUMBER() OVER(PARTITION BY idempotent ORDER BY report_time,measurement_start,measurement_end) AS rn FROM demo.raw.events e"
+      }
+    },
+    {
+      "id": "S10",
+      "kind": "sql",
+      "request": "Analyze measurement_start provenance, millisecond operations, direct projection, and supported change impact using supplied evidence only. No queries or external models.",
+      "state": {
+        "target": {
+          "root_object": "demo.raw.events",
+          "column": "measurement_start"
+        },
+        "source_schemas": {
+          "demo.raw.events": {
+            "measurement_start": "BIGINT",
+            "measurement_end": "BIGINT",
+            "ds": "STRING",
+            "hh": "STRING"
+          }
+        },
+        "consumer_sql": "SELECT CAST(measurement_start AS BIGINT) AS measurement_start FROM demo.raw.events"
+      }
+    },
+    {
+      "id": "S11",
+      "kind": "sql",
+      "request": "Analyze measurement_start provenance, millisecond operations, direct projection, and supported change impact using supplied evidence only. No queries or external models.",
+      "state": {
+        "target": {
+          "root_object": "demo.raw.events",
+          "column": "measurement_start"
+        },
+        "source_schemas": {
+          "demo.raw.events": {
+            "measurement_start": "BIGINT",
+            "measurement_end": "BIGINT",
+            "ds": "STRING",
+            "hh": "STRING"
+          }
+        },
+        "consumer_sql": "SELECT e.measurement_start/1000 AS start_sec FROM demo.raw.events e",
+        "change_plan": {
+          "input_column_new_type": "TIMESTAMP",
+          "historical_values": "Preserve the same instant."
+        },
+        "engine_rules": []
+      }
+    },
+    {
+      "id": "S12",
+      "kind": "sql",
+      "request": "Analyze measurement_start provenance, millisecond operations, direct projection, and supported change impact using supplied evidence only. No queries or external models.",
+      "state": {
+        "target": {
+          "root_object": "demo.raw.events",
+          "column": "measurement_start"
+        },
+        "source_schemas": {
+          "demo.raw.events": {
+            "measurement_start": "BIGINT",
+            "measurement_end": "BIGINT",
+            "ds": "STRING",
+            "hh": "STRING"
+          }
+        },
+        "consumer_sql": "SELECT e.measurement_start/1000 AS start_sec FROM demo.raw.events e",
+        "change_plan": {
+          "input_column_new_type": "TIMESTAMP",
+          "historical_values": "Preserve the same instant."
+        },
+        "engine_rules": [
+          {
+            "fixture_only": true,
+            "rule": "Fixture only: TIMESTAMP / numeric fails type checking."
+          }
+        ]
+      }
+    },
+    {
+      "id": "S13",
+      "kind": "sql",
+      "request": "Analyze measurement_start provenance, millisecond operations, direct projection, and supported change impact using supplied evidence only. No queries or external models.",
+      "state": {
+        "target": {
+          "root_object": "demo.raw.events",
+          "column": "measurement_start"
+        },
+        "source_schemas": {
+          "demo.raw.events": {
+            "measurement_start": "BIGINT",
+            "measurement_end": "BIGINT",
+            "ds": "STRING",
+            "hh": "STRING"
+          }
+        },
+        "consumer_sql": "SELECT COUNT(*) AS n FROM demo.raw.events",
+        "change_plan": {
+          "scope": "Change only measurement_start type; preserve table readability, row count, row filtering, and privileges."
+        },
+        "engine_rules": [
+          {
+            "fixture_only": true,
+            "rule": "Fixture only: COUNT(*) does not depend on specific column types."
+          }
+        ]
+      }
+    },
+    {
+      "id": "S14",
+      "kind": "sql",
+      "request": "Analyze measurement_start provenance, millisecond operations, direct projection, and supported change impact using supplied evidence only. No queries or external models.",
+      "state": {
+        "target": {
+          "root_object": "demo.raw.events",
+          "column": "measurement_start"
+        },
+        "source_schemas": {
+          "demo.raw.events": {
+            "measurement_start": "BIGINT",
+            "measurement_end": "BIGINT",
+            "ds": "STRING",
+            "hh": "STRING"
+          }
+        },
+        "consumer_sql": "SELECT measurement_start FROM demo.raw.events",
+        "consumer_columns": {
+          "measurement_start": "BIGINT"
+        },
+        "change_plan": {
+          "root_new_type": "TIMESTAMP",
+          "migrate_consumer_schema": false
+        },
+        "engine_rules": []
+      }
+    },
+    {
+      "id": "S15",
+      "kind": "sql",
+      "request": "Analyze measurement_start provenance, millisecond operations, direct projection, and supported change impact using supplied evidence only. No queries or external models.",
+      "state": {
+        "target": {
+          "root_object": "demo.raw.events",
+          "column": "measurement_start"
+        },
+        "source_schemas": {
+          "demo.raw.events": {
+            "measurement_start": "BIGINT",
+            "measurement_end": "BIGINT",
+            "ds": "STRING",
+            "hh": "STRING"
+          }
+        },
+        "consumer_sql": "SELECT measurement_start FROM demo.raw.events UNION ALL SELECT measurement_start FROM demo.raw.events_corrections"
+      }
+    },
+    {
+      "id": "S16",
+      "kind": "sql",
+      "request": "Analyze measurement_start provenance, millisecond operations, direct projection, and supported change impact using supplied evidence only. No queries or external models.",
+      "state": {
+        "target": {
+          "root_object": "demo.raw.events",
+          "column": "measurement_start"
+        },
+        "source_schemas": {
+          "demo.raw.events": {
+            "measurement_start": "BIGINT",
+            "measurement_end": "BIGINT"
+          }
+        },
+        "consumer_sql": "SELECT * FROM demo.raw.events WHERE measurement_end-measurement_start <= 3600000",
+        "consumer_kind": "DQC",
+        "data_contract": "Input timestamps are epoch milliseconds; this rule enforces a one-hour limit."
+      }
+    },
+    {
+      "id": "S17",
+      "kind": "sql",
+      "request": "Analyze measurement_start provenance, millisecond operations, direct projection, and supported change impact using supplied evidence only. No queries or external models.",
+      "state": {
+        "target": {
+          "root_object": "demo.raw.events",
+          "column": "measurement_start"
+        },
+        "source_schemas": {
+          "demo.raw.events": {
+            "measurement_start": "BIGINT",
+            "measurement_end": "BIGINT",
+            "ds": "STRING",
+            "hh": "STRING"
+          }
+        },
+        "consumer_sql": "SELECT FROM_UNIXTIME(CAST(e.measurement_start AS BIGINT)/1000) AS measurement_start FROM demo.raw.events e",
+        "change_plan": {
+          "input_column_new_type": "TIMESTAMP",
+          "historical_values": "Preserve the same instant."
+        },
+        "engine_rules": [
+          {
+            "fixture_only": true,
+            "rule": "Fixture only: BIGINT CAST preserves milliseconds; TIMESTAMP CAST AS BIGINT returns epoch seconds; FROM_UNIXTIME accepts epoch seconds; both expressions execute."
+          }
+        ]
+      }
+    },
+    {
+      "id": "S18",
+      "kind": "sql",
+      "request": "Analyze measurement_start provenance, millisecond operations, direct projection, and supported change impact using supplied evidence only. No queries or external models.",
+      "state": {
+        "target": {
+          "root_object": "demo.raw.events",
+          "column": "measurement_start"
+        },
+        "source_schemas": {
+          "demo.raw.events": {
+            "measurement_start": "BIGINT",
+            "measurement_end": "BIGINT",
+            "ds": "STRING",
+            "hh": "STRING"
+          }
+        },
+        "consumer_sql": "WITH t AS (SELECT FROM_UNIXTIME(CAST(measurement_start/1000 AS BIGINT)) s,FROM_UNIXTIME(CAST(measurement_end/1000 AS BIGINT)) e FROM demo.raw.events) SELECT UNIX_TIMESTAMP(e)-UNIX_TIMESTAMP(s) AS seconds FROM t"
+      }
+    },
+    {
+      "id": "W01",
+      "kind": "workflow",
+      "request": "Do not execute any query or model call. Organize existing evidence as problem / possible cause / next handling.",
+      "state": {
+        "cached_evidence": [
+          {
+            "source": "task draft",
+            "state": "published_version_unverified"
+          },
+          {
+            "source": "DQC",
+            "state": "not_queried"
+          }
+        ]
+      }
+    },
+    {
+      "id": "W02",
+      "kind": "workflow",
+      "request": "There are over 2.2 billion rows but only two SQL writes in visible history. Who is the main writer?",
+      "state": {
+        "visible_sql_writes": 2,
+        "table_rows": "2.2 billion+",
+        "service_ingestion_audit": "missing"
+      }
+    },
+    {
+      "id": "W03",
+      "kind": "workflow",
+      "request": "Inspect only one downstream layer of the objects that directly project the target column.",
+      "state": {
+        "start": "demo.billing_dt.effective",
+        "direct_consumers": [
+          "demo.billing_dt.detail"
+        ],
+        "detail_consumers": [
+          "demo.billing_dt.summary"
+        ],
+        "raw_outputs": [
+          "demo.billing_dt.detail,demo.billing_dt.123__incr__456"
+        ]
+      }
+    },
+    {
+      "id": "W04",
+      "kind": "workflow",
+      "request": "Every cz-cli command must include --no-truncate. Obtain the task content that writes the ordinary table.",
+      "state": {
+        "task_content_error": "Unknown argument: truncate",
+        "cached_task": "draft",
+        "observed_job_sql": "available within the authorized history window"
+      }
+    },
+    {
+      "id": "W05",
+      "kind": "workflow",
+      "request": "Find direct consumers of both roots.",
+      "state": {
+        "sources": [
+          "demo.billing_dt.effective",
+          "demo.public.events"
+        ],
+        "job": {
+          "input_objects": "demo.billing_dt.effective,demo.public.events",
+          "output_objects": "demo.billing_dt.detail"
+        }
+      }
+    },
+    {
+      "id": "W06",
+      "kind": "workflow",
+      "request": "Can the column type be changed safely?",
+      "state": {
+        "ddl": "available",
+        "job_history": "truncated",
+        "dqc": "permission_denied",
+        "external_writer": "not_queried"
+      }
+    },
+    {
+      "id": "W07",
+      "kind": "workflow",
+      "request": "Explain how to use Jev with these local synthetic cases only; do not call a model.",
+      "state": {
+        "model_order": [
+          "jev",
+          "rules"
+        ],
+        "sdk_client_injected": false
+      }
+    },
+    {
+      "id": "W08",
+      "kind": "workflow",
+      "request": "Simulate discovery of all layers, traversal order, and completion conditions. Do not actually query.",
+      "state": {
+        "mode": "all",
+        "scope": "table_graph",
+        "root": "demo.raw.a",
+        "edges": [
+          [
+            "demo.raw.a",
+            "demo.public.b"
+          ],
+          [
+            "demo.raw.a",
+            "demo.public.c"
+          ],
+          [
+            "demo.public.b",
+            "demo.public.d"
+          ],
+          [
+            "demo.public.c",
+            "demo.public.d"
+          ],
+          [
+            "demo.public.d",
+            "demo.public.b"
+          ]
+        ],
+        "definitions": "all_available",
+        "channels": "complete_in_fixture"
+      }
+    },
+    {
+      "id": "W09",
+      "kind": "workflow",
+      "request": "Simulate recursive discovery of all layers; a permission failure has occurred.",
+      "state": {
+        "mode": "all",
+        "root": "demo.raw.a",
+        "visited": [
+          "demo.raw.a",
+          "demo.public.b"
+        ],
+        "pending": [
+          "demo.public.c"
+        ],
+        "errors": {
+          "demo.public.c": "permission_denied"
+        }
+      }
+    },
+    {
+      "id": "W10",
+      "kind": "workflow",
+      "request": "Simulate semantic routing: both Jev and a low-cost Flash client are available.",
+      "state": {
+        "model_clients": {
+          "typesafe_jev": "available",
+          "low_cost_flash": "available"
+        },
+        "semantic_judgment_needed": true
+      }
+    },
+    {
+      "id": "W11",
+      "kind": "workflow",
+      "request": "Simulate semantic routing: Jev is not configured; a low-cost Flash client is available.",
+      "state": {
+        "model_clients": {
+          "typesafe_jev": "not_configured",
+          "low_cost_flash": "available"
+        },
+        "semantic_judgment_needed": true
+      }
+    },
+    {
+      "id": "W12",
+      "kind": "workflow",
+      "request": "Simulate semantic routing: Jev is unavailable, Flash connection failed, and no other cheap model is available.",
+      "state": {
+        "model_clients": {
+          "typesafe_jev": "unavailable",
+          "low_cost_flash": "connection_error"
+        },
+        "remaining_low_cost_clients": [],
+        "semantic_judgment_needed": true
+      }
+    },
+    {
+      "id": "W13",
+      "kind": "workflow",
+      "request": "Simulate routing: use deterministic rules only; no external model calls.",
+      "state": {
+        "model_clients": {
+          "typesafe_jev": "available",
+          "low_cost_flash": "available"
+        }
+      }
+    },
+    {
+      "id": "W14",
+      "kind": "workflow",
+      "request": "Simulate discovery with a maximum depth of two.",
+      "state": {
+        "mode": 2,
+        "root": "demo.raw.a",
+        "edges": [
+          [
+            "demo.raw.a",
+            "demo.public.b"
+          ],
+          [
+            "demo.public.b",
+            "demo.public.c"
+          ],
+          [
+            "demo.public.c",
+            "demo.public.d"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "W15",
+      "kind": "workflow",
+      "request": "Simulate column-impact discovery across all layers.",
+      "state": {
+        "mode": "all",
+        "root": "demo.raw.a.measurement_start",
+        "first_consumer_sql": "SELECT measurement_start/1000 AS start_sec FROM demo.raw.a",
+        "second_consumer_sql": "SELECT start_sec+3600 AS expires_sec FROM demo.public.b"
+      }
+    }
+  ]
+}

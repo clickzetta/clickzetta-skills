@@ -190,6 +190,24 @@
       ]
     },
     {
+      "name": "clickzetta-schema-evolution-impact",
+      "description": "Read-only ClickZetta schema evolution impact analysis: identify writers and readers, trace column provenance, and assess downstream compatibility across one layer, a chosen depth, or all reachable layers.",
+      "files": [
+        "SKILL.md",
+        "references/acceptance.md",
+        "references/column-impact.md",
+        "references/investigation.md",
+        "references/model-judgment.md",
+        "references/queries-and-cli.md",
+        "references/troubleshooting.md",
+        "scripts/history_query.py",
+        "scripts/evals/cases.json",
+        "scripts/evals/expected.json",
+        "scripts/tests/test_history_query.py",
+        "scripts/tests/test_package.py"
+      ]
+    },
+    {
       "name": "clickzetta-semantic-view",
       "description": "Create, query, and manage ClickZetta Lakehouse Semantic Views — schema-level logical models that encapsulate multi-table JOINs and aggregations into a business-friendly layer of logical tables, dimensions, metrics, and facts. Covers table-level and view-level (cross-table) derived metrics, conditional and window metrics, FACTS passthrough and drill-down counts, denormalized dimensions, and semantic_view() queries.",
       "files": [
