@@ -56,6 +56,13 @@
       ]
     },
     {
+      "name": "clickzetta-compaction-adviser",
+      "description": "Diagnose table file counts, write history, and table model, then recommend Compaction parameters to control file count and improve tableScan performance.",
+      "files": [
+        "SKILL.md"
+      ]
+    },
+    {
       "name": "clickzetta-data-ingest-pipeline",
       "description": "Router skill: selects the best data ingestion method for ClickZetta Lakehouse based on data source, latency, sync scope, and continuity requirements.",
       "files": [
