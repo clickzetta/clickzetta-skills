@@ -196,7 +196,7 @@ In production environments, Lakehouse provides a rich set of parameters (Flags/P
 | Parameter / Property | Configuration Level | Recommended Value / Behavior | Description |
 |-------------|----------|---------------|------|
 | `cz.table.target.file.size` | Session | `134217728` (128MB) | **Core parameter**. Controls target file size, which in turn automatically adjusts DOP. Recommended replacement for the older `output.file.max.size`. |
-| `cz.compaction.strategy` | Table property | `dml` / `auto` | **MV + DT default is dml**. **Dimension tables should be set to dml**. To disable automatic Compaction, configure `disable`. |
+| `cz.compaction.strategy` | Table property | `background` / `dml` / `dml\|background` | The property default is `background`. **MV and DT are explicitly configured with `dml` at creation time** (this is not the property default). **Dimension tables should be set to dml**. To disable automatic Compaction, configure `disabled`. |
 | `data_lifecycle` | Table property | `14` | Controls data retention in days, productized. |
 | `cz.storage.parquet.json.storage.mode` | Session | `jsonb` | **No column extraction**. Suitable for querying the entire JSON (e.g., `SELECT json_column`). |
 | `cz.storage.parquet.json.storage.mode` | Session | `jsonb_extracted` | **Column extraction** (default). Suitable for querying partial JSON columns (e.g., `SELECT json_extract(...)`). |
@@ -344,7 +344,7 @@ Small files are a performance killer in Lakehouse. Frequent small-batch INSERT/U
 
 **Automatic Compaction**
 
-*   Regular tables and Dynamic Tables have automatic Compaction enabled by default (`cz.compaction.strategy = 'dml'`)
+*   Regular tables have background Compaction enabled by default (`cz.compaction.strategy = 'background'`); Dynamic Tables and Materialized Views are explicitly configured with `cz.compaction.strategy = 'dml'` at creation time
 *   Background processes periodically merge small files — no manual intervention needed
 
 **Manual OPTIMIZE**
