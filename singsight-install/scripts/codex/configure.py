@@ -1,7 +1,9 @@
 """Prepare a user-owned Codex relay, then route OTLP after it is healthy."""
 
 import argparse
+import fcntl
 import getpass
+import hashlib
 import json
 import os
 import plistlib
@@ -9,6 +11,7 @@ import secrets
 import socket
 import sys
 import tempfile
+from contextlib import contextmanager
 from pathlib import Path
 from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
@@ -27,7 +30,35 @@ def write_private(path, data):
     os.replace(tmp.name, path)
 
 
-def prepare(endpoint, switch_project=False):
+@contextmanager
+def configuration_lock():
+    # Serialize read/change with relay startup, including the bind to its port.
+    with (ROOT / "relay.lock").open("a") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        yield
+
+
+def credential_id(upstream):
+    # This was the queue filename in older installations.
+    return hashlib.sha256(json.dumps(upstream, sort_keys=True).encode()).hexdigest()
+
+
+def load_settings():
+    settings = json.loads(SETTINGS.read_text())
+    if "project_id" not in settings:
+        settings["project_id"] = credential_id(settings["upstream"])
+    return settings
+
+
+def require_stopped(settings):
+    with socket.socket() as sock:
+        if sock.connect_ex(("127.0.0.1", settings["port"])) == 0:
+            raise SystemExit(
+                "Stop the running relay before changing its project or credential."
+            )
+
+
+def prepare(endpoint, switch_project=False, rotate_key=False):
     url = urlsplit(endpoint)
     if (
         url.scheme != "https"
@@ -47,10 +78,18 @@ def prepare(endpoint, switch_project=False):
         with socket.socket() as sock:
             sock.bind(("127.0.0.1", 0))
             port = sock.getsockname()[1]
-        settings = {"port": port, "local_token": secrets.token_hex(32)}
+        settings = {"port": port}
     else:
-        settings = json.loads(SETTINGS.read_text())
-    if new_install or switch_project:
+        settings = load_settings()
+        if (
+            rotate_key
+            and settings["upstream"]["/v1/traces"]["endpoint"]
+            != endpoint.rstrip("/") + "/v1/traces"
+        ):
+            raise SystemExit(
+                "--rotate-key requires the same collector; use --switch-project for a different project."
+            )
+    if new_install or switch_project or rotate_key:
         key = supplied_key or getpass.getpass("SingSight Ingest Key: ")
         if not key.strip():
             raise SystemExit("An Ingest Key is required.")
@@ -69,17 +108,25 @@ def prepare(endpoint, switch_project=False):
     }
     if upstream != settings.get("upstream"):
         if not new_install:
-            if not switch_project:
+            if not (switch_project or rotate_key):
                 raise SystemExit(
-                    "Collector or Ingest Key differs. Stop the relay and use --switch-project to confirm the change."
+                    "Collector or Ingest Key differs. Use --switch-project or --rotate-key explicitly."
                 )
-            # A running process still has the old credentials. Require it to be
-            # unloaded before reporting a successful project switch.
-            with socket.socket() as sock:
-                if sock.connect_ex(("127.0.0.1", settings["port"])) == 0:
-                    raise SystemExit(
-                        "Stop the running relay before switching projects."
-                    )
+            require_stopped(settings)
+        projects = settings.setdefault("projects", {})
+        if not new_install:
+            projects[credential_id(settings["upstream"])] = settings["project_id"]
+        destination = credential_id(upstream)
+        if new_install or switch_project:
+            settings["project_id"] = projects.get(destination, secrets.token_hex(16))
+            settings["local_token"] = secrets.token_hex(32)
+        elif (
+            destination in projects and projects[destination] != settings["project_id"]
+        ):
+            raise SystemExit(
+                "That key is registered to another project. Use --switch-project."
+            )
+        projects[destination] = settings["project_id"]
         settings["upstream"] = upstream
         write_private(SETTINGS, json.dumps(settings).encode())
     if sys.platform == "darwin":
@@ -150,10 +197,13 @@ if __name__ == "__main__":
     sub = parser.add_subparsers(dest="action", required=True)
     prep = sub.add_parser("prepare")
     prep.add_argument("--endpoint", required=True)
-    prep.add_argument("--switch-project", action="store_true")
+    change = prep.add_mutually_exclusive_group()
+    change.add_argument("--switch-project", action="store_true")
+    change.add_argument("--rotate-key", action="store_true")
     sub.add_parser("activate").add_argument("--replace-exporters", action="store_true")
     args = parser.parse_args()
     if args.action == "prepare":
-        prepare(args.endpoint, args.switch_project)
+        with configuration_lock():
+            prepare(args.endpoint, args.switch_project, args.rotate_key)
     else:
         activate(args.replace_exporters)

@@ -1,22 +1,23 @@
 """Forward native OTLP messages, enriching existing Codex spans in place."""
 
+import argparse
 import gzip
-import hashlib
 import hmac
 import io
-import json
 import os
+import socket
 import sqlite3
+import sys
 import threading
 import time
 import uuid
 import zlib
 from http.client import HTTPException
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from pathlib import Path
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
+from configure import ROOT, configuration_lock, load_settings, require_stopped
 from google.protobuf.message import DecodeError
 from opentelemetry.proto.collector.logs.v1.logs_service_pb2 import (
     ExportLogsServiceRequest,
@@ -31,11 +32,10 @@ signals = {
     "/v1/logs": ExportLogsServiceRequest,
 }
 # Keep unresolved usage across separate exporter batches and process restarts.
-# The pending queue and UUID cache belong to exactly one collector + ingest key.
+# The pending queue and UUID cache belong to one logical project across key rotations.
 CONTEXT_TTL = 900
 MAX_PENDING_BYTES = 32 * 1024 * 1024
 MAX_PENDING_SPANS = 4096
-REPLAY_TTL = 86400
 
 
 class QueueFull(Exception):
@@ -64,10 +64,7 @@ def conversation(attrs):
 
 
 class UsageQueue:
-    def __init__(self, directory, target):
-        project = hashlib.sha256(
-            json.dumps(target, sort_keys=True).encode()
-        ).hexdigest()
+    def __init__(self, directory, project):
         self.db = sqlite3.connect(
             directory / f"usage-{project}.sqlite3", check_same_thread=False
         )
@@ -82,6 +79,7 @@ class UsageQueue:
                 trace BLOB, span BLOB, packet BLOB, queued REAL, retry REAL DEFAULT 0,
                 PRIMARY KEY(trace, span)
             );
+            CREATE INDEX IF NOT EXISTS pending_usage ON usage(queued) WHERE packet IS NOT NULL;
         """)
 
     def remember(self, item, attrs, now):
@@ -97,95 +95,101 @@ class UsageQueue:
             """,
                 (item.trace_id, session, attrs.get("model"), now, now - CONTEXT_TTL),
             )
+        return session
 
     def route(self, path, raw):
         msg = signals[path].FromString(raw)
         now = time.time()
-        # Commit the outbox before acknowledging any native exporter. Replays
-        # use the original trace/span identity, even if batched differently.
-        with self.lock, self.db:
-            if now - self.last_cleanup > 60:
-                self.db.execute(
-                    """DELETE FROM context WHERE seen < ? AND NOT EXISTS (
-                         SELECT 1 FROM usage WHERE trace=context.trace AND packet IS NOT NULL
-                       )""",
-                    (now - CONTEXT_TTL,),
-                )
-                self.db.execute(
-                    "DELETE FROM usage WHERE packet IS NULL AND queued < ?",
-                    (now - REPLAY_TTL,),
-                )
-                self.last_cleanup = now
-            if path == "/v1/logs":
-                for r in msg.resource_logs:
-                    for sc in r.scope_logs:
-                        for log in sc.log_records:
-                            self.remember(log, attributes(log), now)
-                direct = raw
-            else:
-                direct = self.route_spans(msg, now)
-        self.changed.set()
+        pending = []
+        # Commit correlation independently. Even a rejected full batch can
+        # unlock older usage and make room for the exporter's retry.
+        with self.lock:
+            with self.db:
+                if now - self.last_cleanup > 60:
+                    self.db.execute(
+                        """DELETE FROM context WHERE seen < ? AND NOT EXISTS (
+                            SELECT 1 FROM usage WHERE trace=context.trace AND packet IS NOT NULL
+                        )""",
+                        (now - CONTEXT_TTL,),
+                    )
+                    self.last_cleanup = now
+                if path == "/v1/logs":
+                    for r in msg.resource_logs:
+                        for sc in r.scope_logs:
+                            for log in sc.log_records:
+                                self.remember(log, attributes(log), now)
+                    direct = raw
+                else:
+                    direct, pending = self.split_spans(msg, now)
+            self.changed.set()
+            if pending:
+                with self.db:
+                    inserted = self.db.executemany(
+                        "INSERT OR IGNORE INTO usage(trace, span, packet, queued) VALUES(?,?,?,?)",
+                        pending,
+                    ).rowcount
+                    if inserted:
+                        size, rows = self.db.execute(
+                            "SELECT sum(length(packet)), count(*) FROM usage WHERE packet IS NOT NULL"
+                        ).fetchone()
+                        if size > MAX_PENDING_BYTES or rows > MAX_PENDING_SPANS:
+                            raise QueueFull()
         return direct
 
-    def route_spans(self, msg, now):
-        count = 0
-        inserted = False
-        for r in msg.resource_spans:
-            for sc in r.scope_spans:
-                keep = []
-                for sp in sc.spans:
-                    attrs = attributes(sp)
-                    self.remember(sp, attrs, now)
-                    session = conversation(attrs)
-                    add(sp, attrs, "gen_ai.conversation.id", session)
-                    add(sp, attrs, "session.id", session)
-                    if sp.name != "handle_responses" or not any(
-                        k in attrs
-                        for k in (
-                            "gen_ai.usage.input_tokens",
-                            "gen_ai.usage.output_tokens",
-                        )
+    def split_spans(self, msg, now):
+        direct_count = 0
+        pending = []
+        for resource in msg.resource_spans:
+            for scope in resource.scope_spans:
+                direct = []
+                for span in scope.spans:
+                    attrs = attributes(span)
+                    session = self.remember(span, attrs, now)
+                    if span.name == "handle_responses" and (
+                        "gen_ai.usage.input_tokens" in attrs
+                        or "gen_ai.usage.output_tokens" in attrs
                     ):
-                        keep.append(sp)
-                        continue
-                    packet = ExportTraceServiceRequest()
-                    group = packet.resource_spans.add(
-                        resource=r.resource, schema_url=r.schema_url
-                    )
-                    group.scope_spans.add(
-                        scope=sc.scope, schema_url=sc.schema_url
-                    ).spans.add().CopyFrom(sp)
-                    result = self.db.execute(
-                        "INSERT OR IGNORE INTO usage(trace, span, packet, queued) VALUES(?,?,?,?)",
-                        (sp.trace_id, sp.span_id, packet.SerializeToString(), now),
-                    )
-                    inserted |= result.rowcount > 0
-                del sc.spans[:]
-                sc.spans.extend(keep)
-                count += len(keep)
-        if inserted:
-            size, rows = self.db.execute(
-                "SELECT coalesce(sum(length(packet)),0), count(*) FROM usage WHERE packet IS NOT NULL"
-            ).fetchone()
-            if size > MAX_PENDING_BYTES or rows > MAX_PENDING_SPANS:
-                raise QueueFull()
-        return msg.SerializeToString() if count else b""
+                        packet = ExportTraceServiceRequest()
+                        group = packet.resource_spans.add(
+                            resource=resource.resource, schema_url=resource.schema_url
+                        )
+                        group.scope_spans.add(
+                            scope=scope.scope, schema_url=scope.schema_url
+                        ).spans.add().CopyFrom(span)
+                        pending.append(
+                            (
+                                span.trace_id,
+                                span.span_id,
+                                packet.SerializeToString(),
+                                now,
+                            )
+                        )
+                    else:
+                        add(span, attrs, "gen_ai.conversation.id", session)
+                        add(span, attrs, "session.id", session)
+                        direct.append(span)
+                del scope.spans[:]
+                scope.spans.extend(direct)
+                direct_count += len(direct)
+        return msg.SerializeToString() if direct_count else b"", pending
 
     def flush_one(self, send):
         now = time.time()
-        with self.lock:
+        with self.lock, self.db:
             row = self.db.execute(
-                """
-                SELECT u.trace, u.span, u.packet, c.session, c.model
-                FROM usage u LEFT JOIN context c ON c.trace = u.trace
-                WHERE u.packet IS NOT NULL AND u.retry <= ?
-                AND (c.trace IS NOT NULL OR u.queued <= ?)
-                ORDER BY u.queued LIMIT 1
-            """,
-                (now, now - CONTEXT_TTL),
+                """SELECT u.trace, u.span, u.packet, c.session, c.model
+                   FROM usage u JOIN context c ON c.trace = u.trace
+                   WHERE u.packet IS NOT NULL AND u.retry <= ?
+                   ORDER BY u.queued LIMIT 1""",
+                (now,),
             ).fetchone()
-        if row is None:
-            return False
+            if row is None:
+                return False
+            # Claim durably before the network call. A crash or a lost response
+            # leaves a receipt to reconcile, never a blind second submission.
+            self.db.execute(
+                "UPDATE usage SET retry=NULL WHERE trace=? AND span=?", row[:2]
+            )
         trace, span, raw, session, model = row
         packet = ExportTraceServiceRequest.FromString(raw)
         item = packet.resource_spans[0].scope_spans[0].spans[0]
@@ -199,23 +203,57 @@ class UsageQueue:
         item.name = "chat " + model if model else "chat"
         try:
             _, body, _ = send("/v1/traces", packet.SerializeToString())
-            if ExportTraceServiceResponse.FromString(
+            rejected = ExportTraceServiceResponse.FromString(
                 body
-            ).partial_success.rejected_spans:
-                raise OSError("Collector rejected usage span")
-        except (OSError, HTTPException, DecodeError):
-            with self.lock, self.db:
+            ).partial_success.rejected_spans
+        except (OSError, HTTPException, DecodeError) as exc:
+            reason = exc.reason if isinstance(exc, URLError) else exc
+            rejected = isinstance(
+                reason, (ConnectionRefusedError, socket.gaierror)
+            ) or (isinstance(exc, HTTPError) and exc.code in (401, 403, 429))
+            if not rejected:
+                print(
+                    "Unconfirmed usage receipt:",
+                    trace.hex(),
+                    span.hex(),
+                    file=sys.stderr,
+                    flush=True,
+                )
+                return True
+        with self.lock, self.db:
+            if rejected:
                 self.db.execute(
                     "UPDATE usage SET retry=? WHERE trace=? AND span=?",
                     (now + 30, trace, span),
                 )
-        else:
-            with self.lock, self.db:
+            else:
                 self.db.execute(
-                    "UPDATE usage SET packet=NULL, queued=? WHERE trace=? AND span=?",
-                    (now, trace, span),
+                    "UPDATE usage SET packet=NULL WHERE trace=? AND span=?",
+                    (trace, span),
                 )
         return True
+
+    def receipts(self, received=None, absent=None):
+        if not (received or absent):
+            for trace, span in self.db.execute(
+                "SELECT trace, span FROM usage WHERE packet IS NOT NULL AND retry IS NULL ORDER BY queued"
+            ):
+                print(trace.hex(), span.hex())
+            return
+        try:
+            trace, span = (bytes.fromhex(v) for v in (received or absent))
+        except ValueError as exc:
+            raise SystemExit("Expected hexadecimal trace and span IDs.") from exc
+        with self.db:
+            assignment = "packet=NULL" if received else "retry=0"
+            result = self.db.execute(
+                f"UPDATE usage SET {assignment} WHERE trace=? AND span=? AND packet IS NOT NULL AND retry IS NULL",
+                (trace, span),
+            )
+            if result.rowcount != 1:
+                raise SystemExit(
+                    "No unconfirmed receipt matches these IDs in the current project."
+                )
 
     def run(self, send):
         while True:
@@ -306,9 +344,23 @@ class Handler(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    settings = json.loads(Path(__file__).with_name("relay.json").read_text())
+    parser = argparse.ArgumentParser()
+    inspect = parser.add_subparsers(dest="command").add_parser("receipts")
+    action = inspect.add_mutually_exclusive_group()
+    action.add_argument("--received", nargs=2, metavar=("TRACE", "SPAN"))
+    action.add_argument("--absent", nargs=2, metavar=("TRACE", "SPAN"))
+    args = parser.parse_args()
     os.umask(0o077)
-    server = ThreadingHTTPServer(("127.0.0.1", settings["port"]), Handler)
-    queue = UsageQueue(Path(__file__).parent, settings["upstream"])
+    with configuration_lock():
+        settings = load_settings()
+        if args.command == "receipts":
+            if args.received or args.absent:
+                require_stopped(settings)
+            UsageQueue(ROOT, settings["project_id"]).receipts(
+                args.received, args.absent
+            )
+            sys.exit(0)
+        server = ThreadingHTTPServer(("127.0.0.1", settings["port"]), Handler)
+        queue = UsageQueue(ROOT, settings["project_id"])
     threading.Thread(target=queue.run, args=(forward,), daemon=True).start()
     server.serve_forever()

@@ -5,6 +5,7 @@ on:
       - 'singsight-install/**'
       - 'lakehouse-doc-en/references/singsight/**'
       - 'scripts/update-index.py'
+      - '.well-known/skills/index.json'
       - '.github/workflows/deploy-pages.yml'
       - '.github/workflows/singsight-codex-tests.yml'
 

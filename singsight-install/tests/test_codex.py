@@ -37,7 +37,7 @@ class CodexMappingTest(unittest.TestCase):
         self.delivered = []
 
     def open_queue(self, project):
-        queue = relay.UsageQueue(self.root, {"credential": project})
+        queue = relay.UsageQueue(self.root, project)
         self.addCleanup(queue.db.close)
         return queue
 
@@ -149,7 +149,7 @@ class CodexMappingTest(unittest.TestCase):
 
     def test_failed_send_retains_late_session_until_retry(self):
         def unavailable(path, data):
-            raise OSError("Collector unavailable")
+            raise ConnectionRefusedError("Collector unavailable")
 
         self.add_span("handle_responses", **{"gen_ai.usage.input_tokens": 2})
         with patch.object(relay.time, "time", return_value=1000):
@@ -177,11 +177,74 @@ class CodexMappingTest(unittest.TestCase):
         self.route()
         self.assertTrue(self.queue.flush_one(self.send))
 
-    def test_unavailable_context_expires_without_fabricating_session(self):
+    def test_log_after_context_ttl_still_attaches_to_usage(self):
         self.add_span("handle_responses", **{"gen_ai.usage.output_tokens": 1})
         with patch.object(relay.time, "time", return_value=1000):
             self.route()
         with patch.object(relay.time, "time", return_value=1001 + relay.CONTEXT_TTL):
+            self.assertFalse(self.queue.flush_one(self.send))
+            self.log(self.session)
+            self.assertTrue(self.queue.flush_one(self.send))
+        self.assertEqual(
+            relay.attributes(self.delivered[0])["session.id"], self.session
+        )
+
+    def test_full_queue_commits_context_even_if_new_usage_is_rejected(self):
+        first = self.add_span("handle_responses", **{"gen_ai.usage.output_tokens": 7})
+        with patch.object(relay, "MAX_PENDING_SPANS", 1):
+            self.route()
+            self.assertFalse(self.queue.flush_one(self.send))
+            del self.batch.spans[:]
+            self.add_span("codex.sampling", **{"conversation.id": self.session})
+            self.trace = uuid.uuid4().bytes
+            second = self.add_span(
+                "handle_responses", **{"gen_ai.usage.output_tokens": 3}
+            )
+            with self.assertRaises(relay.QueueFull):
+                self.route()
+            self.assertTrue(self.queue.flush_one(self.send))
+            self.assertEqual(
+                relay.attributes(self.delivered[0])["session.id"], self.session
+            )
+            self.route()
+            self.log(self.session)
             self.assertTrue(self.queue.flush_one(self.send))
             self.assertFalse(self.queue.flush_one(self.send))
-        self.assertNotIn("session.id", relay.attributes(self.delivered[0]))
+        self.assertEqual([s.span_id for s in self.delivered], [first, second])
+
+    def test_ack_loss_survives_restart_without_double_submission(self):
+        original = self.add_span(
+            "handle_responses", **{"gen_ai.usage.output_tokens": 9}
+        )
+        self.log(self.session)
+        self.route()
+
+        def accepted_but_ack_lost(path, raw):
+            self.send(path, raw)
+            raise ConnectionResetError("receipt lost")
+
+        self.assertTrue(self.queue.flush_one(accepted_but_ack_lost))
+        self.queue = self.open_queue("project A")
+        with patch.object(relay.time, "time", return_value=relay.time.time() + 172800):
+            self.route()
+            self.assertFalse(self.queue.flush_one(self.send))
+            self.queue.receipts(received=[self.trace.hex(), original.hex()])
+            self.route()
+            self.assertFalse(self.queue.flush_one(self.send))
+        self.assertEqual([s.span_id for s in self.delivered], [original])
+
+    def test_unconfirmed_but_verified_absent_can_retry_once(self):
+        original = self.add_span(
+            "handle_responses", **{"gen_ai.usage.output_tokens": 9}
+        )
+        self.log(self.session)
+        self.route()
+
+        def uncertain(*args):
+            raise TimeoutError()
+
+        self.assertTrue(self.queue.flush_one(uncertain))
+        self.queue.receipts(absent=[self.trace.hex(), original.hex()])
+        self.assertTrue(self.queue.flush_one(self.send))
+        self.assertFalse(self.queue.flush_one(self.send))
+        self.assertEqual([s.span_id for s in self.delivered], [original])

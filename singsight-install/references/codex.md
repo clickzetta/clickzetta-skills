@@ -16,11 +16,10 @@ Tested with Codex CLI 0.167.0-alpha.3.2. The desktop app must be fully quit and 
    SINGSIGHT_INGEST_KEY="${API_KEY:?Set the project Ingest Key from Step 2}" "$relay_dir/venv/bin/python" "$relay_dir/configure.py" prepare --endpoint "$ENDPOINT"
    ```
 
-   Preparation prompts privately for the key, or reads `SINGSIGHT_INGEST_KEY` from the installer environment. Do not put the key on the command line. The relay keeps upstream credentials in a mode-0600 file and listens only on loopback. An existing prepared installation retains its key and port. If either the collector URL or the Ingest Key differs, preparation stops instead of silently reusing existing credentials. To confirm a project switch or key rotation:
+   First-time preparation stores the collector credentials in a mode-0600 file. If the destination or key changes, unload the relay with `launchctl bootout "gui/$(id -u)/com.clickzetta.singsight-codex"` (also stop any foreground instance). Choose the operation based on the **project**, not the hostname:
 
-   1. Unload the LaunchAgent with `launchctl bootout "gui/$(id -u)/com.clickzetta.singsight-codex"` if loaded. Stop any foreground instance too.
-   2. Set `ENDPOINT` and `API_KEY` for the **new** project and rerun the prepare command above with `--switch-project`. It updates both upstream signals atomically and retains the local port and token.
-   3. Bootstrap the agent again as in step 3 below. Buffered usage is private to the old destination and key; it is never forwarded to the new project.
+   - **Different project:** rerun the prepare command with its endpoint/key and `--switch-project`. This selects a separate queue and replaces the local client token. Rebootstrap, run `activate --replace-exporters` after checking the exporter destinations, and restart Codex. Old processes receive HTTP 403 until restarted. Pending records stay with their project; switching back with a known project credential reopens its queue.
+   - **New key for the same project:** keep the endpoint and rerun prepare with `--rotate-key` and the new key. This preserves the project identity, pending usage, late-log correlation, delivered IDs and local client token. Rebootstrap the relay. Existing queues from older versions are reused in place.
 
 3. Load the generated LaunchAgent, then activate Codex's HTTP/protobuf log and trace exporters:
 
@@ -43,7 +42,17 @@ Tested with Codex CLI 0.167.0-alpha.3.2. The desktop app must be fully quit and 
 - Mark only a native `handle_responses` span carrying `gen_ai.usage.input_tokens` or `gen_ai.usage.output_tokens` as a `chat` operation. Preserve its trace ID, span ID and original usage. Leave streaming fragments, completion logs and turn-level totals out of the LLM count. Cached input and reasoning output are already represented in the totals.
 - Put the conversation UUID in `session.id` and `gen_ai.conversation.id`. SingSight counts distinct sessions and sums input plus output for spans classified as `llm_call`. Internal filesystem and authentication spans can be visible while both KPIs are zero.
 
-Usage records are queued on disk by original trace/span ID. A log may arrive in a later batch or after a relay restart. The relay waits up to 15 minutes for an unambiguous session before exporting usage without an inferred ID. It retries failed sends and suppresses exporter replays of a delivered span for 24 hours. The queue holds at most 4,096 pending spans or 32 MiB per destination and returns a retryable error when full. As with other OTLP senders, a lost acknowledgement after upstream acceptance can cause a retransmission.
+Usage is persisted by original trace/span ID. If context has not arrived, usage waits across batches and restarts without an age cutoff. The per-project queue accepts up to 4,096 pending spans or 32 MiB, then returns a retryable error for new usage. Context from the rejected batch can still release earlier records. After delivery, only the IDs are retained for replay suppression.
+
+### When the collector's acknowledgement is lost
+
+The relay records the send attempt before contacting the collector. If delivery becomes uncertain (including a process crash during the send), automatic retries would risk counting the same span twice. The original payload stays on disk. To list these receipts for the active project:
+
+```bash
+"$relay_dir/venv/bin/python" "$relay_dir/relay.py" receipts
+```
+
+Check each exact trace/span ID with the destination project after refresh. Unload the relay before resolving a receipt. Pass `receipts --received TRACE_ID SPAN_ID` to keep the delivered ID and release the payload when ingestion is confirmed. Use `receipts --absent TRACE_ID SPAN_ID` to re-enable delivery **only when the collector confirms it did not ingest the span**. A temporarily empty dashboard is insufficient evidence of absence; leave an inconclusive receipt pending. Bootstrap the relay again after resolution. A confirmed connection refusal or explicit rejection can retry automatically.
 
 ## Verify one real conversation
 
