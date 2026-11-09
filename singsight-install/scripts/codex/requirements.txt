@@ -1,0 +1,2 @@
+opentelemetry-proto==1.45.2
+tomlkit==0.13.3

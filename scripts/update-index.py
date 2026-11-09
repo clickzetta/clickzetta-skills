@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Regenerate .well-known/skills/index.json from main branch skill directories."""
 
+import argparse
 import json, os, re
 
 def extract_description(content):
@@ -64,9 +65,14 @@ def extract_description(content):
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(root)
 
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--include-docs', action='store_true',
+                    help='Include the official documentation knowledge base in the Pages catalog.')
+include_docs = parser.parse_args().include_docs
+
 skills = []
 for d in sorted(os.listdir('.')):
-    if not d.startswith('clickzetta-') and not d.startswith('cz-') or not os.path.isdir(d):
+    if d.startswith('.') or not os.path.isdir(d) or (d == 'lakehouse-doc-en' and not include_docs):
         continue
     skill_md = os.path.join(d, 'SKILL.md')
     if not os.path.exists(skill_md):

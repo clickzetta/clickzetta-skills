@@ -33,9 +33,11 @@
     },
     {
       "name": "clickzetta-billing-analyse",
-      "description": "Analyze account billing/metering cost from sys.information_schema.instance_usage via cz-cli and generate a bilingual (English/Chinese, defaults to English) HTML dashboard; drill down compute anomalies with sys.information_schema.job_history.",
+      "description": "Analyze ClickZetta account billing/metering cost from sys.information_schema.instance_usage via cz-cli, then generate a bilingual (English/Chinese, defaults to English) interactive HTML dashboard.",
       "files": [
-        "SKILL.md"
+        "SKILL.md",
+        "scripts/auto_collect.py",
+        "scripts/inject_html.py"
       ]
     },
     {
@@ -57,7 +59,7 @@
     },
     {
       "name": "clickzetta-compaction-adviser",
-      "description": "Diagnose table file counts, write history, and table model, then recommend Compaction parameters to control file count and improve tableScan performance.",
+      "description": "指导用户通过调整 Compaction 参数来控制单分区文件数、提升 tableScan/查询效率。",
       "files": [
         "SKILL.md"
       ]
@@ -223,12 +225,12 @@
     },
     {
       "name": "clickzetta-semantic-view",
-      "description": "Create, query, and manage ClickZetta Lakehouse Semantic Views — schema-level logical models that encapsulate multi-table JOINs and aggregations into a business-friendly layer of logical tables, dimensions, metrics, and facts. Covers table-level and view-level (cross-table) derived metrics, conditional and window metrics, FACTS passthrough and drill-down counts, denormalized dimensions, and semantic_view() queries.",
+      "description": "Create, query, and manage ClickZetta Lakehouse Semantic Views — schema-level logical models that encapsulate multi-table JOINs and aggregations into a business-friendly layer of logical tables, dimensions, metrics, and facts.",
       "files": [
         "SKILL.md",
-        "references/semantic-view-reference.md",
+        "references/capabilities-limits.md",
         "references/metrics-and-modeling.md",
-        "references/capabilities-limits.md"
+        "references/semantic-view-reference.md"
       ]
     },
     {
@@ -314,6 +316,17 @@
         "references/migration-spark-dataframe.md",
         "references/studio-task-pattern.md",
         "references/zettapark-api.md"
+      ]
+    },
+    {
+      "name": "singsight-install",
+      "description": "Guide users to connect their AI coding agents (Codex, Claude Code, Hermes Agent, OpenClaw, Opencode) to the Singsight AI Agent observability platform.",
+      "files": [
+        "SKILL.md",
+        "references/codex.md",
+        "scripts/codex/configure.py",
+        "scripts/codex/relay.py",
+        "scripts/codex/requirements.txt"
       ]
     }
   ]
