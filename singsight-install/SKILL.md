@@ -54,8 +54,15 @@ You need two values:
 Check if already configured in another agent:
 
 ```bash
-# Check Claude Code
-grep -o 'x-singsight-apikey=[^"]*' "$HOME/.claude/settings.json" 2>/dev/null | head -1
+# Check Claude Code (cc-genai-hook)
+python3 -c "
+import json, os
+p=os.path.expanduser('~/.claude/genai-hook.json')
+try:
+  c=json.load(open(p)); e=c.get('exporter',{})
+  if e.get('headers'): print('FOUND endpoint=' + str(e.get('endpoint')))
+except Exception: pass
+" 2>/dev/null
 
 # Check Hermes
 grep 'x-singsight-apikey' "$HOME/.hermes/.env" 2>/dev/null | head -1
@@ -103,92 +110,168 @@ Store as `$ENDPOINT` and `$API_KEY` for the following steps.
 
 ---
 
-## Step 3 — Claude Code
+## Step 3 — Claude Code (cc-genai-hook)
 
-Claude Code has built-in OpenTelemetry support. Configuration goes into `~/.claude/settings.json`.
+Claude Code 使用 **cc-genai-hook** 接入 Singsight，不使用 Claude Code 原生 OTel
+telemetry（`CLAUDE_CODE_ENABLE_TELEMETRY` / `OTEL_TRACES_EXPORTER` 那一套）。
 
-### 3a. Check if already configured
+cc-genai-hook 通过 Claude Code command hooks 读取 transcript，生成 gen_ai 语义的
+`invoke_agent` / `chat` / `execute_tool` / `subagent` spans，再通过 OTLP
+http/protobuf 发送到 Singsight。
 
-```bash
-if grep -q 'CLAUDE_CODE_ENABLE_TELEMETRY' "$HOME/.claude/settings.json" 2>/dev/null; then
-  echo "ALREADY_CONFIGURED"
-fi
-```
+> 如果当前环境已经有 `cc-genai-hook-install` skill，可以优先使用它完成安装和诊断；
+> 否则按下面的步骤执行。
 
-If already configured, **ASK THE USER**: "Claude Code already has telemetry configured. Want me to update the endpoint/key, or skip?"
-
-### 3b. Merge into settings.json
-
-```bash
-SETTINGS="$HOME/.claude/settings.json"
-mkdir -p "$(dirname "$SETTINGS")"
-[ -f "$SETTINGS" ] || echo '{}' > "$SETTINGS"
-cp "$SETTINGS" "$SETTINGS.bak.$(date +%Y%m%d-%H%M%S)"
-
-TMP=$(mktemp)
-jq --arg endpoint "$ENDPOINT" --arg key "$API_KEY" '
-  .env = (.env // {}) + {
-    "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
-    "CLAUDE_CODE_ENHANCED_TELEMETRY_BETA": "1",
-    "OTEL_METRICS_EXPORTER": "otlp",
-    "OTEL_LOGS_EXPORTER": "otlp",
-    "OTEL_TRACES_EXPORTER": "otlp",
-    "OTEL_EXPORTER_OTLP_PROTOCOL": "http/protobuf",
-    "OTEL_EXPORTER_OTLP_ENDPOINT": $endpoint,
-    "OTEL_EXPORTER_OTLP_HEADERS": ("x-singsight-apikey=" + $key),
-    "OTEL_LOG_TOOL_DETAILS": "1"
-  }
-' "$SETTINGS" > "$TMP" && mv "$TMP" "$SETTINGS"
-chmod 600 "$SETTINGS"
-```
-
-If `jq` is not installed, **ASK THE USER** how to proceed: `brew install jq` (macOS) or `apt install jq` (Linux).
-
-### 3c. Set user identity (recommended)
-
-For the Users and Retention dashboards to work, set `enduser.id`:
-
-```bash
-SETTINGS="$HOME/.claude/settings.json"
-TMP=$(mktemp)
-jq --arg uid "$(whoami)" '
-  .env["OTEL_RESOURCE_ATTRIBUTES"] = ("enduser.id=" + $uid)
-' "$SETTINGS" > "$TMP" && mv "$TMP" "$SETTINGS"
-```
-
-### 3d. Verify
+### 3a. 检查是否已经配置
 
 ```bash
 python3 -c "
-import json
-cfg = json.load(open('$HOME/.claude/settings.json'))
-env = cfg.get('env', {})
-assert env.get('CLAUDE_CODE_ENABLE_TELEMETRY') == '1', 'telemetry not enabled'
-assert env.get('OTEL_TRACES_EXPORTER') == 'otlp', 'traces not enabled'
-assert 'x-singsight-apikey=' in env.get('OTEL_EXPORTER_OTLP_HEADERS', ''), 'API key missing'
-print('✅ Claude Code configured successfully')
-print(f'   Endpoint: {env[\"OTEL_EXPORTER_OTLP_ENDPOINT\"]}')
-print(f'   Traces: enabled (beta)')
-print(f'   Metrics + Logs: enabled')
+import json, os
+p=os.path.expanduser('~/.claude/genai-hook.json')
+try:
+    c=json.load(open(p))
+    e=c.get('exporter',{})
+    print('FOUND endpoint=' + str(e.get('endpoint')))
+    print('headers=' + ','.join((e.get('headers') or {}).keys()))
+except FileNotFoundError:
+    print('NOT_CONFIGURED')
+except Exception as exc:
+    print('CONFIG_ERROR', exc)
 "
 ```
 
-Tell the user:
+如果已有配置，**ASK THE USER**：
 
-> ✅ Singsight is configured for Claude Code.
+> 我发现 Claude Code 已经配置了 cc-genai-hook。要复用同一个 endpoint / API key，
+> 还是更新为新的 Singsight 配置？
+
+不要回显 API key。
+
+### 3b. 安装 cc-genai-hook
+
+先检查 CLI：
+
+```bash
+command -v cc-genai-hook && cc-genai-hook --version
+```
+
+如果没有，安装到稳定目录。**不要**把 venv 放到临时目录，因为 Claude Code hooks
+会引用这个 Python。
+
+```bash
+CCGH_HOME="$HOME/.local/share/cc-genai-hook"
+mkdir -p "$CCGH_HOME"
+
+if [ -d "$CCGH_HOME/src/.git" ]; then
+  git -C "$CCGH_HOME/src" pull --ff-only
+else
+  git clone https://github.com/clickzetta/cc-genai-hook.git "$CCGH_HOME/src"
+fi
+
+python3 -m venv "$CCGH_HOME/venv"
+"$CCGH_HOME/venv/bin/pip" install -U pip setuptools wheel
+"$CCGH_HOME/venv/bin/pip" install "$CCGH_HOME/src"
+CCG="$CCGH_HOME/venv/bin/cc-genai-hook"
+"$CCG" --version
+```
+
+如果 CLI 已经在 PATH 中：
+
+```bash
+CCG="$(command -v cc-genai-hook)"
+```
+
+### 3c. 安装 Singsight hooks
+
+默认使用 **ordered 模式**：Stop 时统一解析 transcript，生成 chat / execute_tool /
+subagent，保证顺序。
+
+```bash
+"$CCG" install \
+  --mode command \
+  --endpoint "$ENDPOINT" \
+  --header "x-singsight-apikey=$API_KEY" \
+  --user "$(whoami)"
+```
+
+如果用户提供的 endpoint 已经是完整 `/v1/traces` URL：
+
+```bash
+"$CCG" install \
+  --mode command \
+  --endpoint "$ENDPOINT" \
+  --endpoint-kind full \
+  --header "x-singsight-apikey=$API_KEY" \
+  --user "$(whoami)"
+```
+
+可选 realtime 模式（工具 span 实时发送）：
+
+```bash
+"$CCG" install \
+  --mode command \
+  --tool-mode realtime \
+  --endpoint "$ENDPOINT" \
+  --header "x-singsight-apikey=$API_KEY" \
+  --user "$(whoami)"
+```
+
+注意：
+
+- ordered 是默认，也是推荐模式
+- realtime 会额外注册 `PostToolUse` / `PostToolUseFailure`
+- realtime 模式不展开 subagent 子树；subagent 只在 ordered 模式构建
+- 当前不支持 `--mode sidecar`
+
+### 3d. 安装器写入了什么
+
+- `~/.claude/genai-hook.json`（权限 `0600`）
+- 合并 `~/.claude/settings.json` hooks（自动备份）
+- 默认 hooks：
+  - `Stop`
+  - `SessionEnd`
+- realtime 模式额外：
+  - `PostToolUse`
+  - `PostToolUseFailure`
+
+安装器**不会**写入：
+
+- `CLAUDE_CODE_ENABLE_TELEMETRY`
+- `CLAUDE_CODE_ENHANCED_TELEMETRY_BETA`
+- `OTEL_TRACES_EXPORTER`
+- `OTEL_LOG_*`
+
+### 3e. 验证
+
+```bash
+"$CCG" doctor
+"$CCG" doctor --send-test
+"$CCG" config show
+```
+
+预期：
+
+- endpoint 是 Singsight collector + `/v1/traces`
+- protocol 是 `http/protobuf`
+- headers 只显示 `x-singsight-apikey` 这个名字，不显示值
+- hooks 至少包含 `Stop` 和 `SessionEnd`
+- `test span sent`
+
+如果用户之前配置过 Claude Code 原生 OTel（旧版 Singsight Skill）：
+
+1. 不要自动删除用户的原生设置。
+2. **ASK THE USER** 是否保留。
+3. 如果两边同时开启，会出现两套 trace，token / cost 可能重复统计。
+4. 建议二选一。
+
+告诉用户：
+
+> ✅ Singsight 已通过 cc-genai-hook 接入 Claude Code。
 >
-> **No restart needed** — Claude Code reads settings.json on each session. Your next conversation will appear in the Singsight dashboards within ~5 minutes.
->
-> What's being captured:
-> - **Traces** (beta): populates Trace Explorer, Agent Performance, Latency, and Error dashboards
-> - **Metrics**: populates Token Usage and Overview dashboards
-> - **Logs/Events**: populates Users, tool call details
->
-> Open the Singsight web UI and check Trace Explorer to see data flow in. Do not use the collector endpoint as the UI URL.
+> 不需要重启 Claude Code；hook 进程会在下一次会话/下一轮时读取配置。
+> 完成一次新的对话或工具调用后，数据通常会在几分钟内出现在 Singsight。
 
 Skip to **Step 7**.
-
----
 
 ## Step 4 — Hermes Agent
 
@@ -369,7 +452,7 @@ If a new session still produces nothing:
 - `HERMES_OTEL_CAPTURE_CONTENT` defaults to `true`, which attaches messages, tool arguments and tool
   results to every span. Oversized spans can be dropped without an error — set
   `HERMES_OTEL_CAPTURE_CONTENT=false` and retry.
-- Read the plugin's own log: `/tmp/tencent/hermes-agent.log` (override with `HERMES_OTEL_LOG_FILE`).
+- Read the plugin's own log (override its path with `HERMES_OTEL_LOG_FILE`).
 - Re-run the entry-point check from 4b using `$HERMES_PY`, and confirm `otel_tracing` is still in
   `plugins.enabled`.
 
@@ -644,7 +727,7 @@ Tell the user:
 ## Step 7 — Verify data in Singsight
 
 > **Important — Restart required for most agents:**
-> Hermes, OpenClaw, and Opencode only load OTel plugin configuration at process startup. Enabling telemetry or changing OTel environment variables will **not** take effect in an already-running session. After completing setup, you must **start a new process** (or restart the gateway/CLI) before traces will appear in Singsight. Claude Code is the exception — it re-reads `settings.json` on each new session automatically.
+> Hermes, OpenClaw, and Opencode only load OTel plugin configuration at process startup. Enabling telemetry or changing OTel environment variables will **not** take effect in an already-running session. After completing setup, you must **start a new process** (or restart the gateway/CLI) before traces will appear in Singsight. Claude Code is the exception — cc-genai-hook reads `~/.claude/genai-hook.json` per hook process, so a new Claude Code session picks up the configuration.
 >
 > A good verification pattern: start a fresh session (e.g. `hermes chat -q "hello"`), then search Singsight Trace Explorer by the new session's timestamp.
 
@@ -695,9 +778,11 @@ Tell the user:
 Summarize for the user (never echo the API key):
 
 **Claude Code:**
-- `~/.claude/settings.json`: added `env` block with OTel + telemetry variables
-- Signals: traces (beta) + metrics + logs
-- No restart needed
+- `~/.claude/genai-hook.json`: cc-genai-hook endpoint/header/tool_mode
+- `~/.claude/settings.json`: merged `Stop` / `SessionEnd` hooks (and `PostToolUse` / `PostToolUseFailure` in realtime mode)
+- Signals: gen_ai traces (`invoke_agent` / `chat` / `execute_tool` / `subagent`)
+- No native Claude Code telemetry variables were written
+- No restart needed; a new session picks up the hooks
 
 **Hermes Agent:**
 - `~/.hermes/.env`: added OTLP exporter variables
