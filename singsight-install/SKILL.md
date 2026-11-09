@@ -2,8 +2,8 @@
 name: singsight-install
 description: |
   Guide users to connect their AI coding agents (Codex, Claude Code, Hermes Agent, OpenClaw, Opencode)
-  to the Singsight AI Agent observability platform. Automatically reports every LLM call, tool
-  execution, token usage, and session via OpenTelemetry.
+  to the Singsight AI Agent observability platform. Configure OpenTelemetry and verify
+  the sessions, calls and usage supported by the selected agent.
   Triggered when the user says "connect Singsight", "install Singsight", "configure Singsight",
   "Agent observability", "OTel integration", "report token usage", "monitor AI Agent", "singsight install".
   Keywords: singsight, install, observability, opentelemetry, otel, agent telemetry, codex, claude code, hermes, openclaw, opencode
@@ -12,7 +12,7 @@ description: |
 # Singsight — Install Skill for AI Coding Agents
 
 > **Note for the AI agent reading this file:**
-> You are guiding a user through connecting their AI coding agent to **Singsight**, an AI Agent observability platform. After setup, every LLM call, tool execution, token usage, and session will appear in Singsight dashboards automatically via OpenTelemetry.
+> You are guiding a user through connecting their AI coding agent to **Singsight**, an AI Agent observability platform. Use the selected agent’s verification steps to check which signals actually appear in the project.
 >
 > Work through the steps **in order**. When a step says **ASK THE USER**, stop and ask — do not invent answers. Never echo the API key back to the user; it is sensitive.
 
