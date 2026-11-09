@@ -1,6 +1,6 @@
 # Singsight — Install Skill for AI Coding Agents
 
-For **Codex**, use the [canonical install skill](../../../singsight-install/SKILL.md#step-6d--codex) and its real-session/token verification steps.
+For **Codex**, use the [canonical install skill](https://raw.githubusercontent.com/clickzetta/clickzetta-skills/refs/heads/main/singsight-install/SKILL.md) and its real-session/token verification steps.
 
 > **Note for the AI agent reading this file:**
 > You are guiding a user through connecting their AI coding agent to **Singsight**, an AI Agent observability platform. After setup, every LLM call, tool execution, token usage, and session will appear in Singsight dashboards automatically via OpenTelemetry.

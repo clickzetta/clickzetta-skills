@@ -731,7 +731,7 @@ In the prompt copied from the **selected project’s Settings → Quick Start**,
 
 > 帮我给 Codex 接入 SingSight：OTLP endpoint 是【粘贴当前 SingSight 项目 Quick Start 显示的完整 HTTPS 地址】，Ingest Key 我稍后提供。接入步骤见 https://raw.githubusercontent.com/clickzetta/clickzetta-skills/refs/heads/main/singsight-install/SKILL.md
 
-Use the project endpoint and Ingest Key from Step 2. Follow [the Codex installation and verification steps](codex/README.md). When reading this file from a raw GitHub URL, resolve `codex/README.md` relative to that URL, using the same revision.
+Use the project endpoint and Ingest Key from Step 2. Follow [the Codex installation and verification steps](references/codex.md). When reading this file from a raw GitHub URL, resolve `references/codex.md` relative to that URL, using the same revision.
 
 Codex's native OTLP exporter produces real traces even when Overview reports zero sessions and tokens. The bundled relay annotates native usage spans in place. Complete the real-turn reconciliation in the Codex guide **before reporting success**. A reachable endpoint, nonzero trace count, or successful configuration write is insufficient. If dashboard access is unavailable, report exactly which checks are still unverified. Proceed to Step 8.
 

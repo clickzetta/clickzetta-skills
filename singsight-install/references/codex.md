@@ -5,7 +5,7 @@ Tested with Codex CLI 0.167.0-alpha.3.2. The desktop app must be fully quit and 
 ## Configure
 
 1. Set `ENDPOINT` to the base HTTPS collector URL shown in the selected project’s **Settings → Quick Start**, and use an Ingest Key for that project. Ask for any missing value; there is no default collector hostname. If the prompt says the key will be provided later, wait for it. If this machine already uses a Codex relay, check its destination and run the verification below before installing a second one.
-2. From this skill directory (`singsight-install/codex`), install the three bundled files to a stable, private location. If following a raw URL without a checkout, download [configure.py](configure.py), [relay.py](relay.py) and [requirements.txt](requirements.txt) from the **same revision** first. Use Python 3.10+.
+2. From this skill directory (`singsight-install/scripts/codex`), install the three bundled files to a stable, private location. If following a raw URL without a checkout, download [configure.py](../scripts/codex/configure.py), [relay.py](../scripts/codex/relay.py) and [requirements.txt](../scripts/codex/requirements.txt) from the **same revision** first. Use Python 3.10+.
 
    ```bash
    relay_dir="$HOME/.local/share/singsight-codex"
@@ -13,10 +13,14 @@ Tested with Codex CLI 0.167.0-alpha.3.2. The desktop app must be fully quit and 
    install -m 600 configure.py relay.py requirements.txt "$relay_dir/"
    python3 -m venv "$relay_dir/venv"
    "$relay_dir/venv/bin/python" -m pip install -r "$relay_dir/requirements.txt"
-   "$relay_dir/venv/bin/python" "$relay_dir/configure.py" prepare --endpoint "$ENDPOINT"
+   SINGSIGHT_INGEST_KEY="${API_KEY:?Set the project Ingest Key from Step 2}" "$relay_dir/venv/bin/python" "$relay_dir/configure.py" prepare --endpoint "$ENDPOINT"
    ```
 
-   Preparation prompts privately for the key, or reads `SINGSIGHT_INGEST_KEY` from the installer environment. Do not put the key on the command line. The relay keeps upstream credentials in a mode-0600 file and listens only on loopback. An existing prepared installation retains its key and port. For a key rotation, stop the relay and replace only its upstream key in the private `relay.json` before starting it again.
+   Preparation prompts privately for the key, or reads `SINGSIGHT_INGEST_KEY` from the installer environment. Do not put the key on the command line. The relay keeps upstream credentials in a mode-0600 file and listens only on loopback. An existing prepared installation retains its key and port. If either the collector URL or the Ingest Key differs, preparation stops instead of silently reusing existing credentials. To confirm a project switch or key rotation:
+
+   1. Unload the LaunchAgent with `launchctl bootout "gui/$(id -u)/com.clickzetta.singsight-codex"` if loaded. Stop any foreground instance too.
+   2. Set `ENDPOINT` and `API_KEY` for the **new** project and rerun the prepare command above with `--switch-project`. It updates both upstream signals atomically and retains the local port and token.
+   3. Bootstrap the agent again as in step 3 below. Buffered usage is private to the old destination and key; it is never forwarded to the new project.
 
 3. Load the generated LaunchAgent, then activate Codex's HTTP/protobuf log and trace exporters:
 
@@ -38,6 +42,8 @@ Tested with Codex CLI 0.167.0-alpha.3.2. The desktop app must be fully quit and 
 - Forward native logs and traces. Match a valid conversation UUID directly or correlate a usage span by its OTLP trace ID with a Codex log/span carrying that UUID. Numeric runtime thread IDs are not session IDs. Ambiguous or missing context must not create a fabricated session.
 - Mark only a native `handle_responses` span carrying `gen_ai.usage.input_tokens` or `gen_ai.usage.output_tokens` as a `chat` operation. Preserve its trace ID, span ID and original usage. Leave streaming fragments, completion logs and turn-level totals out of the LLM count. Cached input and reasoning output are already represented in the totals.
 - Put the conversation UUID in `session.id` and `gen_ai.conversation.id`. SingSight counts distinct sessions and sums input plus output for spans classified as `llm_call`. Internal filesystem and authentication spans can be visible while both KPIs are zero.
+
+Usage records are queued on disk by original trace/span ID. A log may arrive in a later batch or after a relay restart. The relay waits up to 15 minutes for an unambiguous session before exporting usage without an inferred ID. It retries failed sends and suppresses exporter replays of a delivered span for 24 hours. The queue holds at most 4,096 pending spans or 32 MiB per destination and returns a retryable error when full. As with other OTLP senders, a lost acknowledgement after upstream acceptance can cause a retransmission.
 
 ## Verify one real conversation
 

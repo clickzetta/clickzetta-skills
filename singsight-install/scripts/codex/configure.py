@@ -27,7 +27,7 @@ def write_private(path, data):
     os.replace(tmp.name, path)
 
 
-def prepare(endpoint):
+def prepare(endpoint, switch_project=False):
     url = urlsplit(endpoint)
     if (
         url.scheme != "https"
@@ -39,35 +39,48 @@ def prepare(endpoint):
         or url.path.strip("/")
     ):
         raise SystemExit("Expected the HTTPS collector base URL from Quick Start.")
-    if SETTINGS.exists():
-        settings = json.loads(SETTINGS.read_text())
-        if (
-            settings["upstream"]["/v1/traces"]["endpoint"]
-            != endpoint.rstrip("/") + "/v1/traces"
-        ):
-            raise SystemExit(
-                "Existing relay targets another collector. Review it before replacing credentials."
-            )
-    else:
-        key = os.getenv("SINGSIGHT_INGEST_KEY") or getpass.getpass(
-            "SingSight Ingest Key: "
-        )
-        if not key.strip():
-            raise SystemExit("An Ingest Key is required.")
+    supplied_key = os.getenv("SINGSIGHT_INGEST_KEY")
+    if supplied_key is not None and not supplied_key.strip():
+        raise SystemExit("An Ingest Key is required.")
+    new_install = not SETTINGS.exists()
+    if new_install:
         with socket.socket() as sock:
             sock.bind(("127.0.0.1", 0))
             port = sock.getsockname()[1]
-        settings = {
-            "port": port,
-            "local_token": secrets.token_hex(32),
-            "upstream": {
-                path: {
-                    "endpoint": endpoint.rstrip("/") + path,
-                    "headers": {"x-singsight-apikey": key},
-                }
-                for path in SIGNALS.values()
-            },
+        settings = {"port": port, "local_token": secrets.token_hex(32)}
+    else:
+        settings = json.loads(SETTINGS.read_text())
+    if new_install or switch_project:
+        key = supplied_key or getpass.getpass("SingSight Ingest Key: ")
+        if not key.strip():
+            raise SystemExit("An Ingest Key is required.")
+    else:
+        key = (
+            supplied_key
+            or settings["upstream"]["/v1/traces"]["headers"]["x-singsight-apikey"]
+        )
+
+    upstream = {
+        path: {
+            "endpoint": endpoint.rstrip("/") + path,
+            "headers": {"x-singsight-apikey": key},
         }
+        for path in SIGNALS.values()
+    }
+    if upstream != settings.get("upstream"):
+        if not new_install:
+            if not switch_project:
+                raise SystemExit(
+                    "Collector or Ingest Key differs. Stop the relay and use --switch-project to confirm the change."
+                )
+            # A running process still has the old credentials. Require it to be
+            # unloaded before reporting a successful project switch.
+            with socket.socket() as sock:
+                if sock.connect_ex(("127.0.0.1", settings["port"])) == 0:
+                    raise SystemExit(
+                        "Stop the running relay before switching projects."
+                    )
+        settings["upstream"] = upstream
         write_private(SETTINGS, json.dumps(settings).encode())
     if sys.platform == "darwin":
         directory = Path.home() / "Library/LaunchAgents"
@@ -135,10 +148,12 @@ def activate(replace):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     sub = parser.add_subparsers(dest="action", required=True)
-    sub.add_parser("prepare").add_argument("--endpoint", required=True)
+    prep = sub.add_parser("prepare")
+    prep.add_argument("--endpoint", required=True)
+    prep.add_argument("--switch-project", action="store_true")
     sub.add_parser("activate").add_argument("--replace-exporters", action="store_true")
     args = parser.parse_args()
     if args.action == "prepare":
-        prepare(args.endpoint)
+        prepare(args.endpoint, args.switch_project)
     else:
         activate(args.replace_exporters)
