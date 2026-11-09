@@ -315,6 +315,17 @@
         "references/studio-task-pattern.md",
         "references/zettapark-api.md"
       ]
+    },
+    {
+      "name": "singsight-install",
+      "description": "Connect Codex, Claude Code, Hermes, OpenClaw and Opencode to SingSight and verify agent telemetry.",
+      "files": [
+        "SKILL.md",
+        "codex/README.md",
+        "codex/configure.py",
+        "codex/relay.py",
+        "codex/requirements.txt"
+      ]
     }
   ]
 }

@@ -47,7 +47,7 @@ The repository currently contains 32 top-level `clickzetta-*` skills, one offici
 | Operations and governance | [clickzetta-schema-evolution-impact](./clickzetta-schema-evolution-impact/) | Read-only schema change analysis: writers/readers, column provenance, downstream contracts, and compatibility across one, N, or all reachable layers. |
 | Operations and governance | [clickzetta-compaction-adviser](./clickzetta-compaction-adviser/) | Compaction diagnosis and tuning: inspect file counts and write history, identify IGS vs SQL-maintained tables, and recommend strategy, file-count, delta, and target file size parameters. |
 | Operations and governance | [clickzetta-billing-analyse](./clickzetta-billing-analyse/) | Account billing cost analysis from `information_schema.instance_usage` via cz-cli, producing a bilingual (EN/CN) HTML dashboard with `job_history` drill-down for compute anomalies. |
-| Observability | [singsight-install](./singsight-install/) | Connect AI coding agents (Claude Code, Hermes, OpenClaw, Opencode) to the Singsight observability platform via OpenTelemetry. |
+| Observability | [singsight-install](./singsight-install/) | Connect AI coding agents (Codex, Claude Code, Hermes, OpenClaw, Opencode) to the Singsight observability platform via OpenTelemetry. |
 
 ## Routing Guide
 

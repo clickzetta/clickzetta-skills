@@ -1,12 +1,12 @@
 ---
 name: singsight-install
 description: |
-  Guide users to connect their AI coding agents (Claude Code, Hermes Agent, OpenClaw, Opencode)
+  Guide users to connect their AI coding agents (Codex, Claude Code, Hermes Agent, OpenClaw, Opencode)
   to the Singsight AI Agent observability platform. Automatically reports every LLM call, tool
   execution, token usage, and session via OpenTelemetry.
   Triggered when the user says "connect Singsight", "install Singsight", "configure Singsight",
   "Agent observability", "OTel integration", "report token usage", "monitor AI Agent", "singsight install".
-  Keywords: singsight, install, observability, opentelemetry, otel, agent telemetry, claude code, hermes, openclaw, opencode
+  Keywords: singsight, install, observability, opentelemetry, otel, agent telemetry, codex, claude code, hermes, openclaw, opencode
 ---
 
 # Singsight — Install Skill for AI Coding Agents
@@ -22,16 +22,18 @@ description: |
 
 Determine which agent to instrument:
 
-1. If the user named one explicitly, use that.
+1. If the user named one explicitly, use that. For **Codex**, go to **Step 6D** directly; it collects its own credentials and verifies dashboard metrics. Do not probe another agent’s secrets.
 2. Else, auto-detect by the runtime you're answering from:
+   - If running inside Codex (e.g. `CODEX_THREAD_ID` is set) → **Codex**, Step 6D
    - If `~/.claude/` exists → **Claude Code**
    - If `~/.hermes/hermes-agent/` exists → **Hermes Agent**
    - If `~/.openclaw/openclaw.json` exists → **OpenClaw**
    - If `~/.config/opencode/opencode.json` exists → **Opencode**
-3. Else **ASK THE USER**: "Which agent should I instrument — Claude Code, Hermes Agent, OpenClaw, or Opencode?"
+3. Else **ASK THE USER**: "Which agent should I instrument — Codex, Claude Code, Hermes Agent, OpenClaw, or Opencode?"
 
 | Target | Status | Section |
 |---|---|---|
+| **Codex** | ✅ (macOS; CLI verified) | Step 6D |
 | **Claude Code** | ✅ | Step 3 |
 | **Hermes Agent** | ✅ | Step 4 |
 | **OpenClaw** | ✅ | Step 5 |
@@ -724,6 +726,16 @@ Tell the user:
 
 ---
 
+## Step 6D — Codex
+
+The Quick Start prompt works with just the agent name changed:
+
+> 帮我给 Codex 接入 SingSight：OTLP endpoint 是 https://cn-shanghai-alicloud-otel.api.clickzetta.com，Ingest Key 我稍后提供。接入步骤见 https://raw.githubusercontent.com/clickzetta/clickzetta-skills/refs/heads/main/singsight-install/SKILL.md
+
+Use the endpoint supplied by the user. Wait for the project's **Ingest Key** if missing; never print it. Follow [the Codex installation and verification steps](codex/README.md). When reading this file from a raw GitHub URL, resolve `codex/README.md` relative to that URL, using the same revision.
+
+Codex's native OTLP exporter produces real traces even when Overview reports zero sessions and tokens. The bundled relay annotates native usage spans in place. Complete the real-turn reconciliation in the Codex guide **before reporting success**. A reachable endpoint, nonzero trace count, or successful configuration write is insufficient. If dashboard access is unavailable, report exactly which checks are still unverified. Proceed to Step 8.
+
 ## Step 7 — Verify data in Singsight
 
 > **Important — Restart required for most agents:**
@@ -776,6 +788,8 @@ Tell the user:
 ## Step 8 — Report what changed
 
 Summarize for the user (never echo the API key):
+
+**Codex:** Report the relay and config locations, whether a fresh CLI or desktop process was tested, and the session, LLM call and exact token totals verified.
 
 **Claude Code:**
 - `~/.claude/genai-hook.json`: cc-genai-hook endpoint/header/tool_mode

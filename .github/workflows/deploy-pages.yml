@@ -40,6 +40,10 @@ jobs:
                       if ref.endswith('.md'):
                           files.append(f'references/{ref}')
 
+              if name == 'singsight-install':
+                  files.extend('codex/' + f for f in sorted(os.listdir(os.path.join(name, 'codex')))
+                               if f.endswith(('.py', '.md', '.txt')))
+
               desc = ''
               with open(skill_md) as f:
                   in_front = False
