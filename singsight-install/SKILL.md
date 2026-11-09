@@ -20,24 +20,19 @@ description: |
 
 ## Step 1 — Identify the target agent
 
-Determine which agent to instrument:
+1. Use the agent explicitly named by the user, even if a different agent is running.
+2. Otherwise, use the current agent if it can be identified (for example, a Codex session with `CODEX_THREAD_ID` set).
+3. If the runtime is unknown, check **all** the installation markers below. If exactly one matches, use that agent. If several or none match, **ASK THE USER** which agent to configure. Only check for existence; do not read credentials to identify an agent.
 
-1. If the user named one explicitly, use that. For **Codex**, go to **Step 6D** directly; it collects its own credentials and verifies dashboard metrics. Do not probe another agent’s secrets.
-2. Else, auto-detect by the runtime you're answering from:
-   - If running inside Codex (e.g. `CODEX_THREAD_ID` is set) → **Codex**, Step 6D
-   - If `~/.claude/` exists → **Claude Code**
-   - If `~/.hermes/hermes-agent/` exists → **Hermes Agent**
-   - If `~/.openclaw/openclaw.json` exists → **OpenClaw**
-   - If `~/.config/opencode/opencode.json` exists → **Opencode**
-3. Else **ASK THE USER**: "Which agent should I instrument — Codex, Claude Code, Hermes Agent, OpenClaw, or Opencode?"
-
-| Target | Status | Section |
+| Target | Installation check (when runtime is unknown) | Installation section |
 |---|---|---|
-| **Codex** | ✅ (macOS; CLI verified) | Step 6D |
-| **Claude Code** | ✅ | Step 3 |
-| **Hermes Agent** | ✅ | Step 4 |
-| **OpenClaw** | ✅ | Step 5 |
-| **Opencode** | ✅ | Step 6 |
+| **Codex** | `test -d "${CODEX_HOME:-$HOME/.codex}"` | Step 6D (macOS; CLI verified) |
+| **Claude Code** | `test -d "$HOME/.claude"` | Step 3 |
+| **Hermes Agent** | `test -d "$HOME/.hermes/hermes-agent"` | Step 4 |
+| **OpenClaw** | `test -f "$HOME/.openclaw/openclaw.json"` | Step 5 |
+| **Opencode** | `test -f "$HOME/.config/opencode/opencode.json"` | Step 6 |
+
+Once the target is known, follow Step 2 for the project connection parameters, then the selected installation section.
 
 ---
 
@@ -53,7 +48,11 @@ You need two values:
 
 ### 2a. Probe for existing config
 
-Check if already configured in another agent:
+Use connection parameters already supplied for the current project. If both are available, go to Step 2c. If only one is missing, ask only for that value in Step 2b. Treat an example placeholder as missing.
+
+For **Codex**, skip the cross-agent probes below. Use the selected project's Quick Start values; if a Codex relay already exists, check its destination as described in the Codex guide.
+
+For other agents, if neither value was supplied, check whether another agent is already configured:
 
 ```bash
 # Check Claude Code (cc-genai-hook)
@@ -85,11 +84,11 @@ grep -o 'x-singsight-apikey=[^"]*' "$HOME/.config/opencode/opencode.json" 2>/dev
 
 If found, **ASK THE USER**: "I found existing Singsight config for `<agent>`. Reuse the same endpoint and API Key for `<target>`?"
 
-If reuse confirmed, store as `$ENDPOINT` and `$API_KEY` and skip to Step 3.
+If reuse confirmed, store as `$ENDPOINT` and `$API_KEY` and continue to Step 2c.
 
 ### 2b. If not found — proactively prompt the user
 
-**You MUST actively tell the user where to get the values.** Say exactly this:
+**Tell the user where to find each missing value.** When both are missing, ask:
 
 > I need your Singsight **Endpoint** and **API Key** to complete the setup.
 >
@@ -108,7 +107,7 @@ If reuse confirmed, store as `$ENDPOINT` and `$API_KEY` and skip to Step 3.
 
 > **Protocol:** Singsight collector only supports `http/protobuf` (OTLP over HTTP). All agents must use this protocol. Do NOT use gRPC (`:4317`). Set the explicit protocol variable whenever the target agent supports it.
 
-Store as `$ENDPOINT` and `$API_KEY` for the following steps.
+Store the validated values as `$ENDPOINT` and `$API_KEY`, then follow the selected agent’s installation section in Step 1. Codex requires a base HTTPS URL.
 
 ---
 
@@ -728,11 +727,11 @@ Tell the user:
 
 ## Step 6D — Codex
 
-The Quick Start prompt works with just the agent name changed:
+In the prompt copied from the **selected project’s Settings → Quick Start**, change the agent name to Codex and keep the endpoint shown by that project. The bracketed text below is a placeholder:
 
-> 帮我给 Codex 接入 SingSight：OTLP endpoint 是 https://cn-shanghai-alicloud-otel.api.clickzetta.com，Ingest Key 我稍后提供。接入步骤见 https://raw.githubusercontent.com/clickzetta/clickzetta-skills/refs/heads/main/singsight-install/SKILL.md
+> 帮我给 Codex 接入 SingSight：OTLP endpoint 是【粘贴当前 SingSight 项目 Quick Start 显示的完整 HTTPS 地址】，Ingest Key 我稍后提供。接入步骤见 https://raw.githubusercontent.com/clickzetta/clickzetta-skills/refs/heads/main/singsight-install/SKILL.md
 
-Use the endpoint supplied by the user. Wait for the project's **Ingest Key** if missing; never print it. Follow [the Codex installation and verification steps](codex/README.md). When reading this file from a raw GitHub URL, resolve `codex/README.md` relative to that URL, using the same revision.
+Use the project endpoint and Ingest Key from Step 2. Follow [the Codex installation and verification steps](codex/README.md). When reading this file from a raw GitHub URL, resolve `codex/README.md` relative to that URL, using the same revision.
 
 Codex's native OTLP exporter produces real traces even when Overview reports zero sessions and tokens. The bundled relay annotates native usage spans in place. Complete the real-turn reconciliation in the Codex guide **before reporting success**. A reachable endpoint, nonzero trace count, or successful configuration write is insufficient. If dashboard access is unavailable, report exactly which checks are still unverified. Proceed to Step 8.
 

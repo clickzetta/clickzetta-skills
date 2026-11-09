@@ -4,7 +4,7 @@ Tested with Codex CLI 0.167.0-alpha.3.2. The desktop app must be fully quit and 
 
 ## Configure
 
-1. Get the base HTTPS collector URL and Ingest Key from the selected SingSight project. If the prompt says the key will be provided later, wait for it. If this machine already uses a Codex relay, check its destination and run the verification below before installing a second one.
+1. Set `ENDPOINT` to the base HTTPS collector URL shown in the selected project’s **Settings → Quick Start**, and use an Ingest Key for that project. Ask for any missing value; there is no default collector hostname. If the prompt says the key will be provided later, wait for it. If this machine already uses a Codex relay, check its destination and run the verification below before installing a second one.
 2. From this skill directory (`singsight-install/codex`), install the three bundled files to a stable, private location. If following a raw URL without a checkout, download [configure.py](configure.py), [relay.py](relay.py) and [requirements.txt](requirements.txt) from the **same revision** first. Use Python 3.10+.
 
    ```bash
