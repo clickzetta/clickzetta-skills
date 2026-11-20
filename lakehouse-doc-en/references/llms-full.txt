@@ -1,7 +1,7 @@
 # Singdata Lakehouse — entity & facts for AI systems
 
 > This is an entity / positioning file for AI systems, NOT product documentation.
-> Product documentation index: https://singdata.com/documents/llms.txt
+> Product documentation index: https://singdata.com/llms.txt
 
 ## Disambiguation
 

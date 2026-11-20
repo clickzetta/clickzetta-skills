@@ -1,5 +1,5 @@
 # Analytics Agent Pricing
-This page describes the fees you may incur when using Analytics Agent and how they are charged.
+This page describes the fees you may incur when using Analytics Agent and how they are charged.    
 
 ## Fee Overview
 
@@ -25,6 +25,8 @@ The tiered license fee consists of a Monthly subscription fee and a Token Overag
 **Example:** Subscribing for 3 months results in a one-time charge of $3,000 x 3 = **$9,000** at activation.
 
 > ⚠️ **Note**: Monthly subscription covers product authorization only and does not include any free token allowance. 
+
+**First-subscription offer**: If you have not yet subscribed to Analytics Agent, you can receive a one-time waiver of one month's subscription fee on your first subscription. This offer is not limited to new users.
 
 ### Token Overage
 

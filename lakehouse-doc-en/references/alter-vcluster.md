@@ -65,9 +65,9 @@ Compute cluster property configuration. The specific fields and descriptions are
 
 | Field Name | Description | Value Range | Default |
 |----------|----------|----------|--------|
-| `VCLUSTER_SIZE` | Compute cluster specification. Supports specifications from 1 CRU to 256 CRU, with progressively stronger compute power. (Integration clusters additionally support 0.25 CRU and 0.5 CRU small specifications.) | Number: 1-256, in CRU (Compute Resource Unit). | 1 |
-| `MIN_VCLUSTER_SIZE` | Applicable only to General Purpose clusters. Minimum specification when the compute cluster scales down; must be less than or equal to `MAX_VCLUSTER_SIZE`. Cannot be used together with `VCLUSTER_SIZE`. | Number: 1-256, in CRU. | None |
-| `MAX_VCLUSTER_SIZE` | Applicable only to General Purpose clusters. Maximum specification when the compute cluster scales up; must be greater than or equal to `MIN_VCLUSTER_SIZE`. Cannot be used together with `VCLUSTER_SIZE`. | Number: 1-256, in CRU. | None |
+| `VCLUSTER_SIZE` | Virtual cluster size. General Purpose and Analytics virtual clusters support 1–256 CRU (Analytics sizes must be powers of 2); Integration virtual clusters support 0.05–256 CRU. | In CRU (Compute Resource Unit). Integration: 0.05–256, step 0.025; other types: 1–256. | At creation: Integration: 0.25; other types: 1 |
+| `MIN_VCLUSTER_SIZE` | Applicable to General Purpose and Integration virtual clusters. Minimum specification when the compute cluster scales down; must be less than or equal to `MAX_VCLUSTER_SIZE`. Cannot be used together with `VCLUSTER_SIZE`. | General Purpose: 1–256; Integration: 0.05–256, step 0.025. In CRU. | None |
+| `MAX_VCLUSTER_SIZE` | Applicable to General Purpose and Integration virtual clusters. Maximum specification when the compute cluster scales up; must be greater than or equal to `MIN_VCLUSTER_SIZE`. Cannot be used together with `VCLUSTER_SIZE`. | General Purpose: 1–256; Integration: 0.05–256, step 0.025. In CRU. | None |
 | `MIN_REPLICAS` | Minimum number of compute cluster instances. Only applicable to Analytics Purpose clusters. | 1-10 | 1 |
 | `MAX_REPLICAS` | Maximum number of compute cluster instances. Only applicable to Analytics Purpose clusters. | 1-10 | 1 |
 | `AUTO_SUSPEND_IN_SECOND` | Idle duration before the cluster auto-suspends. Unit: seconds. -1 means never auto-suspend. | -1 or integer >= 0 | 600 |

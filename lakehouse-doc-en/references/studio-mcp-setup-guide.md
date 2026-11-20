@@ -83,7 +83,7 @@ Example:
       "args": [
         "-y",
         "mcp-remote",
-        "https://cn-shanghai-alicloud-mcp.api.clickzetta.com/mcp",
+        "https://ap-southeast-1-aws-mcp.api.singdata.com/mcp",
         "--allow-http",
         "--transport",
         "http",

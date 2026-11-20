@@ -18,7 +18,9 @@ A virtual cluster's specification defines the amount of compute resources availa
 | ---------------------------------- | ---------------------- | ---------------------- | ----------------- | ---------------------------------------------------------------------------- |
 | General Purpose (GP VCluster)      | 1                      | 256                    | 1                 | 1 CRU per step. Examples: 1, 2, 3, 4, 5, 6...256                             |
 | Analytics (AP VCluster)            | 1                      | 256                    | 1                 | Powers of 2. Examples: 1, 2, 4, 8, 16, 32, 64, 128, 256                      |
-| Integration (Integration VCluster) | 0.25                   | 256                    | 0.5               | Supports any decimal specification. Examples: 0.25, 0.5, 0.75, 1, 1.25...256 |
+| Integration (Integration VCluster) | 0.05 | 256                    | 0.25 | 0.025 CRU (examples: 0.05, 0.075, 0.1, 0.125...256) |
+
+The minimum size of an Integration virtual cluster is 0.05 CRU, and the default size is 0.25 CRU. Studio Web defaults to 0.25 CRU when creating an Integration virtual cluster. SQL creation also defaults to 0.25 CRU when `VCLUSTER_TYPE` is set to `INTEGRATION` and no size is specified.
 
 > ⚠️ **Note**: Analytics cluster specifications must be a power of 2 (1, 2, 4, 8, 16, 32, 64, 128, 256). Setting any other value will result in an error.
 

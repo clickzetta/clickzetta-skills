@@ -846,7 +846,7 @@ Studio Task scheduling path: `best_practices/content_rec/`
 
 ## Notes
 
-- **Bloomfilter Index does not support BUILD INDEX**: Bloomfilter indexes only apply to data written after creation; `BUILD INDEX` on existing data is not supported (unlike Vector and Inverted Indexes). If the table has substantial historical data that needs to be covered, rebuild the table and re-insert the data.
+- **Bloomfilter Index requires BUILD INDEX for existing data**: Bloomfilter indexes only apply automatically to data written after creation. For existing data, run `BUILD INDEX idx_bf_content_id ON bronze_interaction_events` to backfill the index (same as Vector and Inverted Indexes).
 
 - **Vector Index and Inverted Index must be explicitly built**: `CREATE INDEX` only processes subsequent new data. For existing data, manually run `BUILD INDEX <index_name> ON <table_name>` (in the same Schema context); otherwise vector search and full-text search results do not include data that existed before the index was created.
 

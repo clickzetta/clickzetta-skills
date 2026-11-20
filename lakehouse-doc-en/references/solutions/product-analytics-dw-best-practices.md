@@ -730,7 +730,7 @@ doc_ab_assignments
 
 - **Dynamic Table incremental refresh depends on upstream change tracking**: The first `REFRESH` computes a full snapshot; subsequent incremental refreshes only process changes since the last refresh point. Using `INSERT OVERWRITE` in the Bronze layer causes Dynamic Tables to fall back to a full refresh.
 
-- **Bloomfilter Index on existing data**: `CREATE BLOOMFILTER INDEX` only takes effect for data written after the index is created. For large volumes of existing data, the Bloomfilter's filtering acceleration is limited for that data (the BLOOMFILTER type does not support `BUILD INDEX` for existing data coverage).
+- **Bloomfilter Index on existing data**: `CREATE BLOOMFILTER INDEX` only takes effect for data written after the index is created. For large volumes of existing data, run `BUILD INDEX idx_bf_pa_user_id ON doc_events` to backfill the index.
 
 ---
 

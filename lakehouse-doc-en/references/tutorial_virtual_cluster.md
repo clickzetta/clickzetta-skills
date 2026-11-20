@@ -10,7 +10,7 @@ Singdata Lakehouse uses a storage-compute separation architecture — storage an
 |------|---------|---------|---------|
 | **General Purpose (GP)** | ETL batch processing, offline jobs | 1–256 CRU, step 1 | Vertical scaling: configure `MIN_VCLUSTER_SIZE` / `MAX_VCLUSTER_SIZE`, auto-adjusts spec based on load |
 | **Analytical (AP)** | BI reports, ad-hoc queries, high-concurrency online queries | 1–256 CRU, must be a power of 2 (1/2/4/8/16…) | Horizontal scaling: configure `MIN_REPLICAS` / `MAX_REPLICAS`, auto-adds/removes instances based on concurrency (up to 10) |
-| **Integration** | Real-time/offline data integration tasks | 0.25–256 CRU | Vertical scaling: configure `MIN_VCLUSTER_SIZE` / `MAX_VCLUSTER_SIZE`, auto-adjusts spec based on load |
+| **Integration** | Real-time/offline data integration tasks | 0.05–256 CRU | Vertical scaling: configure `MIN_VCLUSTER_SIZE` / `MAX_VCLUSTER_SIZE`, auto-adjusts spec based on load |
 
 > **Selection principle**: Use General Purpose for ETL, Analytical for BI and online queries, Integration for data sync tasks. Multiple clusters can be created in the same workspace to isolate resources for different workloads.
 
@@ -22,7 +22,7 @@ Singdata Lakehouse compute cluster elasticity operates at three levels:
 
 **AP (Analytical) — Horizontal elasticity**: When concurrent query count reaches the current instance limit, new instances (Replicas) are automatically added, up to 10 instances, linearly increasing total concurrency capacity. Instances are automatically reduced when concurrency drops; in-flight queries are not affected. Suitable for BI reports and high-concurrency online query scenarios.
 
-**Integration — Fine-grained vertical elasticity**: Minimum spec of 0.25 CRU, precisely matching the actual load of sync tasks, with extremely high resource utilization and costs that scale linearly with task count. Suitable for real-time CDC and offline integration tasks.
+**Integration — Fine-grained vertical elasticity**: Minimum spec of 0.05 CRU, precisely matching the actual load of sync tasks, with extremely high resource utilization and costs that scale linearly with task count. Suitable for real-time CDC and offline integration tasks.
 
 All three cluster types support **second-level cold start** (auto-wake on job submission), **auto-stop when idle** (no billing), and **no interruption to in-flight jobs during scaling**.
 

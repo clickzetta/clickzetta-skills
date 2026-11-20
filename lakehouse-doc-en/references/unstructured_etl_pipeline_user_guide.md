@@ -168,7 +168,7 @@ Singdata Lakehouse has built-in vector processing capabilities, optimized for RA
 | ----------- | -------------- | -------------- | ------------------------ |
 | GENERAL     | 1              | 256            | 1 CRU step              |
 | ANALYTICS   | 1              | 256            | Powers of 2 CRU         |
-| INTEGRATION | 0.25           | 256            | Supports any fractional CRU |
+| INTEGRATION | 0.05           | 256            | 0.025 CRU per step |
 
 #### Workspace Isolation
 
