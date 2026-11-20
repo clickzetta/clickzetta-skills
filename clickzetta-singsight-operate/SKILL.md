@@ -1,5 +1,5 @@
 ---
-name: singsight-operate
+name: clickzetta-singsight-operate
 description: |
   Operate a SingSight AI Agent observability project from the command line: query Trace/Span detail through cz-cli for troubleshooting and latency analysis, and use the SingSight Open API to preview evaluation scope, manage evaluators, run evaluations, read results, maintain evaluation datasets, and run regression evaluations. Works without the MCP server.
 
@@ -21,7 +21,7 @@ To connect an agent to SingSight in the first place (sending OpenTelemetry data)
 
 ## Before you start
 
-1. Run `ss config`. On `SINGSIGHT_NOT_CONFIGURED`, ask the user to create `~/.clickzetta/singsight.toml` (mode 600) from [references/config.example.toml](references/config.example.toml). Never invent an API key. The key must be an **Access** key; Ingest keys cannot exchange tokens.
+1. Run `ss config`. On `SINGSIGHT_NOT_CONFIGURED`, ask the user to create `~/.clickzetta/singsight.toml` (mode 600) from [references/config.md](references/config.md). Never invent an API key. The key must be an **Access** key; Ingest keys cannot exchange tokens.
 2. Run `ss schema-context` for the project schema, tables, columns, partition keys, and query rules (cached for 24 hours; `--refresh` bypasses the cache). The returned `queryRules` name MCP tools; map them to the commands below.
 
 ## Commands

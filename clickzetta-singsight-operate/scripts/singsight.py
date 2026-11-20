@@ -94,7 +94,7 @@ def load_project(config_path: str | None, project: str | None) -> dict:
         raise SingSightError(
             f"SingSight config not found: {path}",
             code="SINGSIGHT_NOT_CONFIGURED",
-            next_action="Create it from references/config.example.toml in the singsight-operate skill.",
+            next_action="Create it as described in references/config.md of the clickzetta-singsight-operate skill.",
         )
     with path.open("rb") as fh:
         try:

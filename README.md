@@ -6,7 +6,7 @@ The repository turns ClickZetta operational knowledge into reusable routing rule
 
 ## Repository Contents
 
-The repository currently contains 32 top-level `clickzetta-*` skills, one official documentation knowledge base, and two independent SingSight skills (`singsight-install`, `singsight-operate`):
+The repository currently contains 33 top-level `clickzetta-*` skills, one official documentation knowledge base, and one independent skill (`singsight-install`):
 
 - `lakehouse-doc-en`: English ClickZetta Lakehouse official documentation index and reference corpus.
 - `clickzetta-*`: task-oriented skills for ingestion, Studio tasks, dbt, modeling, dynamic tables, connectors, external integrations, governance, and operations.
@@ -48,7 +48,7 @@ The repository currently contains 32 top-level `clickzetta-*` skills, one offici
 | Operations and governance | [clickzetta-compaction-adviser](./clickzetta-compaction-adviser/) | Compaction diagnosis and tuning: inspect file counts and write history, identify IGS vs SQL-maintained tables, and recommend strategy, file-count, delta, and target file size parameters. |
 | Operations and governance | [clickzetta-billing-analyse](./clickzetta-billing-analyse/) | Account billing cost analysis from `information_schema.instance_usage` via cz-cli, producing a bilingual (EN/CN) HTML dashboard with `job_history` drill-down for compute anomalies. |
 | Observability | [singsight-install](./singsight-install/) | Connect AI coding agents (Claude Code, Hermes, OpenClaw, Opencode) to the Singsight observability platform via OpenTelemetry. |
-| Observability | [singsight-operate](./singsight-operate/) | Operate a SingSight project from the command line: trace troubleshooting via cz-cli SQL, evaluations, evaluators, results, datasets, and regression runs via the SingSight Open API, with bundled scripts. |
+| Observability | [clickzetta-singsight-operate](./clickzetta-singsight-operate/) | Operate a SingSight project from the command line: trace troubleshooting via cz-cli SQL, evaluations, evaluators, results, datasets, and regression runs via the SingSight Open API, with bundled scripts. |
 
 ## Routing Guide
 
@@ -67,7 +67,7 @@ Use the table below when deciding which skill should handle a user request.
 | Review an existing pipeline, diagnose task failures, inspect dependencies, or identify data quality issues. | `clickzetta-pipeline-review` |
 | Assess a proposed column/schema change, identify writers/readers, or trace downstream field usage and compatibility. | `clickzetta-schema-evolution-impact` |
 | Connect an AI agent to SingSight observability (OpenTelemetry setup). | `singsight-install` |
-| Troubleshoot SingSight agent traces, run evaluations, inspect evaluation results, or build evaluation datasets for regression. | `singsight-operate` |
+| Troubleshoot SingSight agent traces, run evaluations, inspect evaluation results, or build evaluation datasets for regression. | `clickzetta-singsight-operate` |
 | Write native ClickZetta SQL, look up syntax, functions, permissions, VClusters, or official product behavior. | `lakehouse-doc-en` |
 | Migrate SQL from Snowflake, Databricks, or Spark SQL. | `clickzetta-sql-migration` |
 | Query metadata, table structures, job history, cost attribution, permissions, Time Travel, recovery, or platform operations. | `lakehouse-doc-en` |

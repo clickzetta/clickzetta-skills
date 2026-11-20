@@ -1,6 +1,8 @@
-# singsight-operate configuration. Default path: ~/.clickzetta/singsight.toml (override with SINGSIGHT_CONFIG).
-# If it contains api_key, run: chmod 600 ~/.clickzetta/singsight.toml
+# Configuration
 
+Create `~/.clickzetta/singsight.toml` (or point `SINGSIGHT_CONFIG` at another path) and run `chmod 600` on it when it contains `api_key`. Check the result with `ss config`.
+
+```toml
 # Project used when neither --project nor SINGSIGHT_PROJECT is set; optional when only one project exists.
 default_project = "main"
 
@@ -25,3 +27,4 @@ workspace = "<lakehouse workspace>"
 # api_key_env = "SINGSIGHT_STAGING_API_KEY"
 # cz_profile = "<cz-cli profile>"
 # workspace = "<lakehouse workspace>"
+```

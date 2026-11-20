@@ -1,4 +1,4 @@
-"""Tests for scripts/singsight.py. Run: python3 -m unittest discover -s singsight-operate/scripts/tests"""
+"""Tests for scripts/singsight.py. Run: python3 -m unittest discover -s clickzetta-singsight-operate/scripts/tests"""
 
 import contextlib
 import io
