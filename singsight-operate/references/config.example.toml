@@ -1,0 +1,27 @@
+# singsight-operate configuration. Default path: ~/.clickzetta/singsight.toml (override with SINGSIGHT_CONFIG).
+# If it contains api_key, run: chmod 600 ~/.clickzetta/singsight.toml
+
+# Project used when neither --project nor SINGSIGHT_PROJECT is set; optional when only one project exists.
+default_project = "main"
+
+[projects.main]
+# SingSight service base URL (without the /open/api suffix)
+base_url = "https://<api-host>/singsight"
+# Access API key of the SingSight project (Ingest keys cannot exchange tokens). Use one of:
+api_key = "<access-api-key>"
+# api_key_env = "SINGSIGHT_API_KEY"   # read the key from an environment variable instead of the file
+
+# Used by `ss sql`: a cz-cli profile (see `cz-cli profile list`) and the Lakehouse workspace that holds
+# the project's data. The workspace must be the SingSight project's workspace; the profile's own
+# workspace is not necessarily the same.
+cz_profile = "<cz-cli profile>"
+workspace = "<lakehouse workspace>"
+# schema = "public"      # optional; defaults to the schema returned by schema-context
+# vcluster = "DEFAULT"   # optional; defaults to the vcluster of the cz-cli profile
+# cz_cli = "cz-cli"      # optional; path to the cz-cli executable
+
+# [projects.staging]
+# base_url = "https://<api-host>/singsight"
+# api_key_env = "SINGSIGHT_STAGING_API_KEY"
+# cz_profile = "<cz-cli profile>"
+# workspace = "<lakehouse workspace>"
