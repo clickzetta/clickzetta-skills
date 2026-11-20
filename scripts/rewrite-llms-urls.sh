@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Rewrite https://www.singdata.com/documents/<slug>[.txt] URLs to references/<file> paths.
+# Rewrite Singdata document URLs and root-level llms indexes to references/<file> paths.
 # Reads llms.txt on stdin, writes transformed content to stdout.
 # For slugs whose <slug>.md doesn't exist under references/, use explicit overrides.
 set -euo pipefail
@@ -30,7 +30,7 @@ content=$(printf '%s' "$content" \
   | sed -E '/^> Each section below is a focused sub-index; fetch only what you need\.$/d; /^## (Quick Start|User Guide|AI Guide|SQL Manual|Development Manual|Practice Tutorials|Release Notes|Other) → https:\/\/(www\.)?singdata\.com\/documents\/llms-[A-Za-z0-9_-]+\.txt$/d')
 
 urls=$(printf '%s' "$content" \
-  | grep -oE 'https://(www\.)?singdata\.com/documents/[A-Za-z0-9_-]+(\.txt)?' \
+  | { grep -oE 'https://(www\.)?singdata\.com/(documents/[A-Za-z0-9_-]+(\.txt)?|llms(-[A-Za-z0-9_-]+)?\.txt)' || test "$?" -eq 1; } \
   | sort -u)
 
 while IFS= read -r url; do

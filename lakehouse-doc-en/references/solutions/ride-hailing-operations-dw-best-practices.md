@@ -692,7 +692,7 @@ Data flow architecture:
 
 ## Notes
 
-- **Bloomfilter Index does not automatically apply to existing data**: `CREATE BLOOMFILTER INDEX` only takes effect for data written after the index is created. Existing trip data will not be covered by the index; the BLOOMFILTER type does not support `BUILD INDEX` rebuilding — covering existing data requires rebuilding the table.
+- **Bloomfilter Index does not automatically apply to existing data**: `CREATE BLOOMFILTER INDEX` only takes effect for data written after the index is created. Existing trip data is not covered automatically; run `BUILD INDEX idx_bf_pickup_lon ON doc_ods_trips` to backfill the index.
 
 - **Partitioned Dynamic Tables must use static partition declarations**: `dws_hourly_stats` uses `PARTITIONED BY (time_period)` and must be refreshed per partition using `SESSION_CONFIGS()['dt.args.time_period']`. `REFRESH INTERVAL` cannot be set in the DDL; scheduling is managed through Studio Tasks.
 

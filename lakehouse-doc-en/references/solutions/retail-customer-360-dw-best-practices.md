@@ -813,7 +813,7 @@ Data flow architecture:
 
 - **MERGE INTO write mode and Dynamic Table incremental refresh**: When the ODS layer uses `MERGE INTO` for append writes, Dynamic Tables can track new and updated rows for normal incremental refresh. Using `INSERT OVERWRITE` for full replacement causes Dynamic Tables to fall back to a full recompute. Always use `INSERT INTO` or `MERGE INTO` to maintain append mode.
 
-- **Bloomfilter Index limitation on existing data**: `CREATE BLOOMFILTER INDEX` only automatically applies to data written after the index is created and provides no filtering acceleration for existing data. The `BLOOMFILTER` type does not support the `BUILD INDEX` command — covering existing data requires rebuilding the table.
+- **Bloomfilter Index requires backfill for existing data**: `CREATE BLOOMFILTER INDEX` only automatically applies to data written after the index is created. For existing data, run `BUILD INDEX idx_bf_customer_id ON doc_ods_orders` and `BUILD INDEX idx_bf_event_customer ON doc_ods_behavior_events` to backfill the indexes.
 
 - **Semantic View field naming**: Field names in `sv_churn_risk_customers` should use business language as much as possible (e.g., `days_since_last_purchase` rather than `recency_days`) to help Analytics Agent more accurately parse intent from natural language.
 

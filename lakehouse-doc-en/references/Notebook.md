@@ -96,3 +96,7 @@ Singdata Notebook uses a communication mechanism based on cell naming. Each cell
 * **Referencing by Name**: Access results directly via the cell name.
 
 ^
+
+## Related Documentation
+
+- [Notebook PySpark Mode](notebook-pyspark-mode.md)

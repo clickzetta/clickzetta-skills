@@ -632,7 +632,7 @@ doc_transaction_edge + doc_account_node (ODS)
 
 ## Notes
 
-- **Bloomfilter Index does not apply retroactively to existing data**: `CREATE BLOOMFILTER INDEX` only accelerates new data written after the index is created. Bloomfilter indexes do not support `BUILD INDEX`; to cover existing data you must rebuild the table. Inverted Index supports `BUILD INDEX` and can rebuild the index over existing data.
+- **Bloomfilter Index does not apply retroactively to existing data**: `CREATE BLOOMFILTER INDEX` only accelerates new data written after the index is created. To cover existing data, run `BUILD INDEX idx_bf_txn_src ON doc_transaction_edge` and `BUILD INDEX idx_bf_device_id ON doc_account_device_edge` in the `best_practice_fraud_graph` Schema. Inverted Index also supports `BUILD INDEX`.
 
 - **Dynamic Table incremental refresh semantics**: The first `REFRESH` performs a full snapshot computation. Subsequent incremental refreshes process only rows added or changed in the ODS layer since the last refresh checkpoint. If the ODS layer uses `INSERT OVERWRITE`, the Dynamic Table degrades to a full refresh. Use `APPEND` mode writes or continuous Kafka PIPE ingestion instead.
 
