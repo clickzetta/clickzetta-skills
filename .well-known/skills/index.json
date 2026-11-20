@@ -232,6 +232,18 @@
       ]
     },
     {
+      "name": "clickzetta-singsight-operate",
+      "description": "Operate a SingSight AI Agent observability project from the command line: query Trace/Span detail through cz-cli for troubleshooting and latency analysis, and use the SingSight Open API to preview evaluation scope, manage evaluators, run evaluations, read results, maintain evaluation datasets, and run regression evaluations.",
+      "files": [
+        "SKILL.md",
+        "references/config.md",
+        "references/filter.md",
+        "references/workflows.md",
+        "scripts/singsight.py",
+        "scripts/tests/test_singsight.py"
+      ]
+    },
+    {
       "name": "clickzetta-spark-flink-connector",
       "description": "Write data to ClickZetta Lakehouse using the Spark Connector or Flink Write Connector.",
       "files": [
