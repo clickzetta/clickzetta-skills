@@ -66,6 +66,9 @@ class FakeSingSight(BaseHTTPRequestHandler):
     def do_DELETE(self):
         self._handle("DELETE")
 
+    def do_PUT(self):
+        self._handle("PUT")
+
 
 FakeSingSight.fixtures = {
     "/open/api/v1/eval/jobs": [
@@ -73,6 +76,7 @@ FakeSingSight.fixtures = {
         {"id": 8, "status": "RUNNING", "datasetId": None, "evaluatorId": 4},
     ],
     "/open/api/v1/eval/jobs/8": {"id": 8, "status": "RUNNING"},
+    "/open/api/v1/eval/jobs/11": {"id": 11, "name": "created only", "status": "ACTIVE"},
     "/open/api/v1/eval/datasets/5": {"id": 5, "name": "used", "activeImports": 0},
     "/open/api/v1/eval/datasets/6": {"id": 6, "name": "free", "datasetTag": "free", "activeImports": 0},
     "/open/api/v1/evaluator": [
@@ -187,6 +191,60 @@ class SingSightCliTest(unittest.TestCase):
         self.assertEqual(FakeSingSight.requests[-1]["body"]["datasetId"], 9)
         self.assertNotIn("filter", FakeSingSight.requests[-1]["body"])
 
+    def test_trigger_eval_can_create_without_running(self):
+        _, out, _ = self.run_cli("trigger-eval", "--name", "job", "--evaluator-id", "3",
+                                 "--filter", json.dumps(TIME), "--no-run")
+        self.assertEqual(out["request"]["path"], "/open/api/v1/eval/jobs?runNow=false")
+        _, out, _ = self.run_cli("trigger-eval", "--name", "job", "--evaluator-id", "3", "--filter", json.dumps(TIME))
+        self.assertEqual(out["request"]["path"], "/open/api/v1/eval/jobs")
+
+    def test_rerun_dry_run_then_queue(self):
+        code, out, _ = self.run_cli("rerun", "7")
+        self.assertEqual(code, 0)
+        self.assertTrue(out["dry_run"])
+        self.assertNotIn("irreversible", out)
+        self.assertEqual(out["target"]["status"], "COMPLETE")
+        self.assertFalse(any(r["method"] == "POST" for r in FakeSingSight.requests))
+
+        self.run_cli("rerun", "7", "--yes")
+        self.assertEqual((FakeSingSight.requests[-1]["method"], FakeSingSight.requests[-1]["path"],
+                          FakeSingSight.requests[-1]["body"]), ("POST", "/open/api/v1/eval/jobs/7/runs", {}))
+        _, out, _ = self.run_cli("rerun", "7", "--source-run-id", "3")
+        self.assertEqual(out["request"]["body"], {"sourceRunId": 3})
+        self.assertIn("sourceRun", out["target"])
+
+    def test_rerun_refuses_a_job_with_an_active_run(self):
+        code, _, err = self.run_cli("rerun", "8")
+        self.assertEqual((code, err["code"]), (1, "TARGET_BUSY"))
+
+    def test_stop_eval_only_for_active_jobs(self):
+        code, _, err = self.run_cli("stop-eval", "7")
+        self.assertEqual(err["code"], "TARGET_NOT_RUNNING")
+        _, out, _ = self.run_cli("stop-eval", "8")
+        self.assertEqual(out["request"], {"method": "PUT", "path": "/open/api/v1/eval/jobs/8/stop", "body": None})
+        self.assertFalse(any(r["method"] == "PUT" for r in FakeSingSight.requests))
+        self.run_cli("stop-eval", "8", "--yes")
+        self.assertEqual(FakeSingSight.requests[-1]["method"], "PUT")
+
+    def test_run_history_and_results_of_a_run(self):
+        self.run_cli("eval-runs", "7")
+        self.assertEqual(FakeSingSight.requests[-1]["path"], "/open/api/v1/eval/jobs/7/runs?page=1&pageSize=20")
+        self.run_cli("eval-run", "7", "3")
+        self.assertEqual(FakeSingSight.requests[-1]["path"], "/open/api/v1/eval/jobs/7/runs/3")
+        self.run_cli("eval-results", "7", "--run-id", "3", "--order-by", "score", "--order", "ASC")
+        self.assertEqual(FakeSingSight.requests[-1]["path"],
+                         "/open/api/v1/eval/jobs/7/results?page=1&pageSize=20&runId=3&orderBy=score&order=ASC")
+        with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as exit_info:
+            singsight.main(["eval-results", "7", "--order-by", "raw_result"])
+        self.assertEqual(exit_info.exception.code, 2)
+
+    def test_job_created_without_a_run_is_idle(self):
+        _, out, _ = self.run_cli("eval-status", "11", "--wait", "30")
+        self.assertEqual(out["data"]["status"], "ACTIVE")
+        self.assertNotIn("wait_timed_out", out["data"])
+        _, out, _ = self.run_cli("delete-eval-job", "11")
+        self.assertTrue(out["dry_run"])
+
     def test_eval_source_must_be_exactly_one(self):
         code, _, err = self.run_cli("preview", "--filter", json.dumps(TIME), "--dataset-id", "1")
         self.assertEqual((code, err["code"]), (2, "INVALID_ARGUMENT"))
@@ -215,10 +273,14 @@ class SingSightCliTest(unittest.TestCase):
     def test_add_traces_payloads(self):
         _, out, _ = self.run_cli("add-traces", "5", "--eval-job-id", "7", "--max-score", "0.5")
         self.assertEqual(out["request"]["body"], {"evalJobId": 7, "jobScope": "RESULTS", "maxScore": 0.5})
+        _, out, _ = self.run_cli("add-traces", "5", "--eval-job-id", "7", "--run-id", "3")
+        self.assertEqual(out["request"]["body"], {"evalJobId": 7, "jobScope": "RESULTS", "runId": 3})
         ids = "a" * 32 + "," + "b" * 32 + "," + "a" * 32
         _, out, _ = self.run_cli("add-traces", "5", "--trace-ids", ids)
         self.assertEqual(out["request"]["body"], {"traceIds": ["a" * 32, "b" * 32]})
         for argv in (["--eval-job-id", "7", "--job-scope", "FILTER", "--min-score", "0.1"],
+                     ["--eval-job-id", "7", "--job-scope", "FILTER", "--run-id", "3"],
+                     ["--trace-ids", "a" * 32, "--run-id", "3"],
                      ["--eval-job-id", "7", "--trace-ids", "a" * 32],
                      ["--trace-ids", "xyz"],
                      ["--trace-ids", ",".join(f"{i:032x}" for i in range(101))]):

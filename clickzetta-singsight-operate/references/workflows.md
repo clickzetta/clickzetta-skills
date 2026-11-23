@@ -51,11 +51,36 @@
    ```
 
    `{{system:eval_text}}` is the trace text and `{{output:<step>}}` is an earlier step's output. Run `ss create-evaluator --spec @e.json` for the dry run, add `--yes` after the user confirms, and keep the returned `id`.
-4. `ss trigger-eval --name "<name>" --evaluator-id <id> --filter @f.json` for the dry run (this consumes evaluation quota); add `--yes` after the user confirms and keep the returned job `id`.
-5. `ss eval-status <job> --wait 600` returns once the status is `COMPLETE`, `ERROR`, or `STOPPED`. On timeout the result carries `wait_timed_out: true`; wait again.
-6. `ss eval-results <job> --page-size 20` shows scores and reasoning; `--max-score 0.5` shows only low scores. For the raw conversation, go back to workflow 1 with the `traceId`.
+4. `ss trigger-eval --name "<name>" --evaluator-id <id> --filter @f.json` for the dry run (this consumes evaluation quota); add `--yes` after the user confirms and keep the returned job `id`. To set the job up now and run it later, add `--no-run`; start it with `ss rerun <job>`.
+5. `ss eval-status <job> --wait 600` returns once the status is `COMPLETE`, `ERROR`, `STOPPED`, or `ACTIVE` (never run). On timeout the result carries `wait_timed_out: true`; wait again. To cancel, `ss stop-eval <job>` (dry run, confirm, `--yes`); a running run stops after its current step.
+6. `ss eval-results <job> --page-size 20` shows scores and reasoning of the latest complete run; `--max-score 0.5` shows only low scores, and `--order-by score --order ASC` puts the lowest first. For the raw conversation, go back to workflow 1 with the `traceId`.
+7. If every result is `PARSE_ERROR`, the model returned nothing. `ss eval-run <job> <runId>` shows the `aiModel` used; ask the user to fix the project's LLM evaluation model, then rerun (workflow 3).
 
-## 3. Dataset regression
+## 3. Rerun and compare runs
+
+A job keeps every run. Rerun it to measure judge noise, or after changing the evaluator's prompts.
+
+1. `ss rerun <job>` for the dry run: `target` shows the job and its status. It consumes evaluation quota; add `--yes` after the user confirms. `TARGET_BUSY` means a run is still queued or running.
+   - The new run evaluates the job's filter with the evaluator's **current** config.
+   - `--source-run-id <run>` reuses that run's data window instead.
+2. `ss eval-status <job> --wait 600`.
+3. `ss eval-runs <job>` lists runs newest first, each with `runNo`, `status`, `triggerSource`, `unitCount`, `errorCount`, `avgScore`, `passRate`, and `promptHash`. Runs with different `promptHash` used different evaluator configs; `ss eval-run <job> <runId>` shows the exact steps and prompts.
+4. Compare two runs trace by trace:
+
+   ```bash
+   # --full writes each result to a file and prints its path as output_file
+   ss eval-results <job> --run-id <run_a> --order-by traceId --order ASC --page-size 100 --full
+   ss eval-results <job> --run-id <run_b> --order-by traceId --order ASC --page-size 100 --full
+   jq -n --slurpfile a <file_a> --slurpfile b <file_b> '
+     ($a[0].items | map({(.traceId): .score}) | add) as $x
+     | ($b[0].items | map({(.traceId): .score}) | add) as $y
+     | [($x + $y) | keys[] | {traceId: ., a: $x[.], b: $y[.]}]
+     | map(select(.a != .b))'
+   ```
+
+   A page holds at most 100 items; use `--page` for more. Join on `traceId`, not row position: the two runs cover the same traces only when the filter, data window, and sampling rate are unchanged. Runs marked `legacy: true` predate run tracking and may mix several executions.
+
+## 4. Dataset regression
 
 A dataset is a static snapshot of traces, useful for comparing evaluators or agent versions on fixed samples.
 
@@ -63,7 +88,7 @@ A dataset is a static snapshot of traces, useful for comparing evaluators or age
 2. Add traces, preferably from an evaluation job:
 
    ```bash
-   # low-score samples from a live evaluation
+   # low-score samples from a live evaluation (latest complete run; --run-id <run> for another)
    ss add-traces <dataset_id> --eval-job-id <job> --max-score 0.5
    # every trace matched by that job's filter
    ss add-traces <dataset_id> --eval-job-id <job> --job-scope FILTER
@@ -82,11 +107,11 @@ A dataset is a static snapshot of traces, useful for comparing evaluators or age
    ```
 
 5. `ss preview --dataset-id <id>`, then `ss trigger-eval --name "<name>" --evaluator-id <id> --dataset-id <id>` (dry run, confirm, `--yes`).
-6. Compare `ss eval-results` of different jobs on the same dataset, trace by trace using `traceId`.
+6. After changing the evaluator, `ss rerun <job>` on the same job and compare its runs (workflow 3). The traces are a fixed snapshot, so score changes come from the evaluator, not from new data. To compare two different evaluators, trigger one job per evaluator and compare `eval-results` across jobs by `traceId`.
 
-## 4. Cleanup
+## 5. Cleanup
 
-Delete test objects in dependency order, each with a dry run and user confirmation first:
+Delete test objects in dependency order, each with a dry run and user confirmation first. Deleting a job also deletes its run history; result rows already in Lakehouse stay.
 
 ```bash
 ss delete-eval-job <job>
