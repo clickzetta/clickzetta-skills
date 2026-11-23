@@ -609,7 +609,7 @@ The `/` path has 13 hits with 3 threat behaviors. `/etc/passwd` and `/shell.php`
 
 ## Notes
 
-- **Bloomfilter Index only applies to new data**: After the index is created, run `BUILD INDEX idx_bf_source_ip ON TABLE doc_raw_logs` to rebuild it for existing historical data; it automatically applies to newly written data.
+- **Bloomfilter Index only applies to new data**: After the index is created, run `BUILD INDEX idx_bf_source_ip ON doc_raw_logs` to backfill it for existing historical data; it automatically applies to newly written data.
 - **Inverted Index tokenizer selection**: `user_agent` uses `english` (splits by word); `request_path` uses `keyword` (no splitting — whole match). Choosing the wrong tokenizer will cause `MATCH_ALL` to fail to match expected content.
 - **Dynamic Table does not set `REFRESH INTERVAL`**: Refresh scheduling must be managed through Studio Tasks, which lets you attach alerts and data quality checks to the same task.
 - **Dynamic Table static partition mode**: If you need to partition Silver/Gold layer Dynamic Tables by `log_date`, you must use `PARTITION BY` + static partition declaration — dynamic partition inference is not supported.

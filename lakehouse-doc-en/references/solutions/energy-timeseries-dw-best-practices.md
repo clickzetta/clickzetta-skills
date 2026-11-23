@@ -685,7 +685,7 @@ doc_kafka_raw_load          doc_pjme_load_raw
 
 - **Do not set REFRESH INTERVAL in Dynamic Table DDL**: None of the Dynamic Tables in this guide include `REFRESH INTERVAL` in their DDL. Refresh scheduling is managed centrally through Studio Tasks, which lets you attach monitoring alerts and data quality checks to the same task and makes it easy to adjust refresh frequency without rebuilding the Dynamic Table.
 
-- **Bloomfilter Index only applies to new data**: `CREATE BLOOMFILTER INDEX` takes effect for data written after the index is created. If the table already has a large volume of existing data, you would normally use `BUILD INDEX` to cover it — however, the `BLOOMFILTER` type does not currently support `BUILD INDEX`, so covering existing data requires rebuilding the table.
+- **Bloomfilter Index only applies to new data**: `CREATE BLOOMFILTER INDEX` takes effect for data written after the index is created. If the table already has a large volume of existing data, run `BUILD INDEX idx_bf_event_time ON doc_pjme_load_raw` to backfill the index.
 
 - **Idempotency of Silver layer aggregation**: The Silver layer Dynamic Table groups Bronze data by `DATE_TRUNC('hour', event_time)`. If Bronze contains multiple records within the same hour (e.g., minute-level data), `AVG` / `MAX` / `MIN` aggregate correctly. If Bronze is written with `INSERT OVERWRITE`, it causes the Dynamic Table to fall back to a full refresh — use append writes (`INSERT INTO`) instead.
 

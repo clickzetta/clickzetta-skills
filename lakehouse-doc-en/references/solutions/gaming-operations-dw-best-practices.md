@@ -763,7 +763,7 @@ Users who joined the cohort on May 18 (U005) have 100% D1 retention (3 consecuti
 
 - **Kafka PIPE DDL attempts to connect to the broker**: When running `CREATE PIPE`, the system verifies that the broker address and topic are reachable. If Kafka is not available in the development environment, create the target table first and simulate the ingestion process with direct INSERT after the PIPE is created.
 
-- **BLOOMFILTER INDEX does not apply to existing data**: `CREATE BLOOMFILTER INDEX` only takes effect on newly written data blocks. For existing data, run `BUILD INDEX ON TABLE ... (column)` to rebuild (BLOOMFILTER type does not support `BUILD INDEX`, so existing data cannot be indexed retroactively; consider INVERTED INDEX for range query scenarios instead).
+- **BLOOMFILTER INDEX does not automatically apply to existing data**: `CREATE BLOOMFILTER INDEX` only takes effect on newly written data blocks. For existing data, run `BUILD INDEX idx_bf_user_id ON doc_bronze_game_events` and `BUILD INDEX idx_bf_app_id ON doc_bronze_game_events` to backfill the indexes.
 
 - **GROUP_BITMAP requires integer input**: If user IDs are strings (such as "U001"), they must be converted to integers before using BITMAP functions. A common approach is to maintain a `user_id → int_id` mapping table in the Bronze layer and use `int_id` for BITMAP operations after joining in the Silver layer.
 

@@ -707,7 +707,7 @@ segment × fuel_type × region_code · claim_rate_pct / high_risk_rate_pct
 
 - **Column Masking works transparently on Dynamic Tables**: When the DWD layer queries ODS, non-authorized users see `customer_age` as a masked age-band integer, and this masked value is also what is stored in the DWD table. If the actuarial team needs exact precision, they should query ODS directly with a privileged account.
 
-- **Bloomfilter Index does not automatically apply to existing data**: `CREATE BLOOMFILTER INDEX` only takes effect for data written after the index is created. For existing data in the table, the Bloomfilter filtering acceleration is limited. The `BLOOMFILTER` type does not support `BUILD INDEX`; covering existing data requires rebuilding the table.
+- **Bloomfilter Index does not automatically apply to existing data**: `CREATE BLOOMFILTER INDEX` only takes effect for data written after the index is created. To get filtering acceleration on existing data, run `BUILD INDEX idx_bf_policy_id ON doc_ods_insurance_policy` to backfill the index.
 
 - **RBAC permission change synchronization**: Column Masking whitelist changes take effect immediately, but GRANT/REVOKE permission changes may require users to restart their sessions before taking effect in some scenarios.
 

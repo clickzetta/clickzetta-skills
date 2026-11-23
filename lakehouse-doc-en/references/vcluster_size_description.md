@@ -31,7 +31,7 @@ The detailed specifications of various calculation clusters are as follows:
 | --------------------------------------- | ----------------------------------- | ----------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | General Purpose&#xA; (GP Vcluster)      | 1                                   | 256                                 | 1                           | 1 (Specification examples: 1, 2, 3, 4, 5, 6...256)                                                                                                                                                     |
 | Analytical&#xA; (AP Vcluster)           | 1                                   | 256                                 | 1                           | Powers of 2 (Specification examples: 1, 2, 4, 8, 16, 32, 64, 128, 256)                                                                                                                                 |
-| Integration&#xA; (Integration Vcluster) | 0.25                                | 256                                 | 0.5                         | 1 (Specification sequence: there are two special small specifications of 0.25 CRU and 0.5 CRU, the step size for other specifications is 1. Specification examples: 0.25, 0.5, 1, 2, 3, 4, 5, 6...256) |
+| Integration&#xA; (Integration Vcluster) | 0.05 | 256                                 | 0.25 | 0.025 CRU (examples: 0.05, 0.075, 0.1, 0.125...256) |
 
 The amount of computing resources consumed by each cluster per hour is its CRU specification\*1 hour, i.e., the unit is CRU\*hour. For example, an analytical calculation cluster with a specification of 3 CRU running for 1 hour consumes 3 CRU \* 1 hour = 3 CRU\*hour. The cost is also calculated according to the "CRU\*hour" unit price in the region where the calculation cluster is located.
 
@@ -68,7 +68,7 @@ objectProperties
 [WITH PROPERRIES ("key"="value"  "key"="value" ...)]
 -- Parameter changes   
 objectProperties ::=
-            VCLUSTER_SIZE = NUM --0.25-256. Compatible with XSMALL | SMALL | MEDIUM | LARGE | XLARGE | 2XLARGE | 3XLARGE | 4XLARGE | 5XLARGE 
+            VCLUSTER_SIZE = NUM --Integration: 0.05-256; other types: 1-256. Compatible with XSMALL | SMALL | MEDIUM | LARGE | XLARGE | 2XLARGE | 3XLARGE | 4XLARGE | 5XLARGE
 ```
 
 ### Create a New Compute Cluster on the Web

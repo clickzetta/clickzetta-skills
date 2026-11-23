@@ -773,7 +773,7 @@ MES System (Kafka)                   Manual Sampling (CSV)
 
 - **Partitioned Dynamic Tables must declare static_partitions**: Dynamic Tables with `PARTITIONED BY` must set `TBLPROPERTIES ('static_partitions' = 'true')`. Without this declaration, the system uses dynamic partition inference, which may cause existing partition data to be overwritten or lost during incremental refresh.
 
-- **Bloomfilter Index does not automatically apply to existing data**: `CREATE BLOOMFILTER INDEX` only takes effect for data written after the index is created. It does not support `BUILD INDEX` to cover existing data (the BLOOMFILTER type lacks this capability; covering existing data requires rebuilding the table).
+- **Bloomfilter Index does not automatically apply to existing data**: `CREATE BLOOMFILTER INDEX` only takes effect for data written after the index is created. For existing data, run `BUILD INDEX idx_bf_product_id ON doc_defect_events` to backfill the index.
 
 - **Dynamic Table refresh scheduling is managed through Studio Task**: Do not rely on `REFRESH INTERVAL` in the DDL for production scheduling. Configure a Cron expression in Studio Task instead — this lets you bind alert rules and data quality checks to the same task for unified observability.
 

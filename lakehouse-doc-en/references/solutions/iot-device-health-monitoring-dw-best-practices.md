@@ -496,7 +496,7 @@ kafka_raw_events        bronze_sensor_events
 
 ## Notes
 
-- **Bloomfilter Index does not apply retroactively to existing data**: `CREATE BLOOMFILTER INDEX` only applies to data written after the index is created. For tables with large amounts of pre-existing data, the Bloomfilter filtering speed-up is limited. Note that Bloomfilter indexes do not support `BUILD INDEX`; to cover existing data you must rebuild the table.
+- **Bloomfilter Index does not apply retroactively to existing data**: `CREATE BLOOMFILTER INDEX` only applies to data written after the index is created. For tables with large amounts of pre-existing data, run `BUILD INDEX idx_bf_device_id ON bronze_sensor_events` to backfill the index.
 
 - **Dynamic Table incremental refresh depends on Bronze layer change tracking**: The first `REFRESH` performs a full snapshot computation. Subsequent incremental refreshes process only rows added or changed in the Bronze layer since the last refresh checkpoint. Using `INSERT OVERWRITE` to write to the Bronze layer causes the Dynamic Table to degrade to a full refresh.
 

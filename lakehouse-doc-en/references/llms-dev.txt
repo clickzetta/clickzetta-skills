@@ -1,40 +1,78 @@
 # Singdata Lakehouse — Development Manual
 
 - [Java SDK](https://singdata.com/documents/java_sdk_guide): Overview of the clickzetta-java SDK providing JDBC queries, real-time streaming writes, and high-throughput Bulkload, with a contents table and comparison of the three write methods and their use cases.
+  <!-- keywords: Java SDK, JDBC queries, Streaming writes, Bulkload -->
 - [Java SDK Summary](https://singdata.com/documents/java_reference/java-sdk-summary): An introduction to the clickzetta-java SDK providing the JDBC driver, real-time write, and bulk write capabilities, covering Maven setup, notes, and a JDBC usage example.
+  <!-- keywords: Java SDK, JDBC queries, Data upload -->
 - [Java SDK Version History](https://singdata.com/documents/version-update): Java SDK update records listing recent versions and their changes, including vector type writes, COPY deprecation in favor of PUT, JSON and TIMESTAMP_NTZ support, with download links.
+  <!-- keywords: Java SDK versions, Release history, SDK downloads -->
 - [Initialize Client](https://singdata.com/documents/java_reference/client): Documents initializing ClickZettaClient in Java via JDBC URL or builder parameters (instance, service, username, vcluster, schema) for creating RowStreams and JDBC connections, plus closing the client.
+  <!-- keywords: ClickZettaClient, Java SDK, Client initialization, JDBC connections -->
 - [Query Using JDBC](https://singdata.com/documents/java_reference/jdbc): JDBC usage guide for the clickzetta-java SDK, covering Maven dependency, connection string format and parameters, driver class, two connection-initialization methods, and query execution examples.
+  <!-- keywords: JDBC driver, Connection configuration, SQL queries -->
 - [Real-time Data Ingestion](https://singdata.com/documents/java_reference/realtime-upload): Explains the principle of real-time writing to Lakehouse via the Java SDK, covering the ingestion service, hybrid tables, data commit, applicable scenarios, stream creation, and write options.
+  <!-- keywords: Real-time data ingestion, Streaming writes, Python SDK -->
 - [Batch Data Ingestion (Bulkload)](https://singdata.com/documents/java_reference/bulkload): Covers Batch Data Ingestion (Bulkload), including its core concepts, configuration steps, usage examples, and operational considerations: Bulkload is the Java SDK's high-throughput bulk write interface, suitable for importing local files, external system query results, or historical data in bulk into Lakehouse tables.
+  <!-- keywords: Bulkload, Bulk write streams, Batch ingestion -->
 - [Bulkload Java SDK (Quick Start)](https://singdata.com/documents/java_reference/bulkload-upload): Introduces the high-throughput Java SDK Bulkload interface, covering the upload-then-commit workflow, general VCluster recommendation, and shard-ID optimization for concurrent writes above 1GB.
+  <!-- keywords: Java SDK, bulk loading -->
 - [Bulkload Introduction](https://singdata.com/documents/bulkload-summary): Quick start for Lakehouse Bulkload, a high-throughput batch write SDK, explaining upload-to-object-storage principles, the bulkloadStream.close trigger, compute resources, shard optimization, and applicable versus unsuitable scenarios.
+  <!-- keywords: Bulkload, Batch ingestion, SDK interfaces -->
 - [Bulkload Java SDK](https://singdata.com/documents/bulkloadv1-java-sdk): Guide to batch data upload using the deprecated BulkLoadV1 Java API, covering Maven dependencies, creating a BulkloadStream, partition options, APPEND/OVERWRITE modes, and writing simple and complex-type rows.
+  <!-- keywords: Java SDK, Bulkload, Batch writes -->
 - [Python SDK (SQL Interface)](https://singdata.com/documents/python_sdk_guide): Overview of the clickzetta-connector Python SDK, covering its four integration methods (Database API, SQLAlchemy, Bulkload, and real-time writes) with a comparison of use cases and links to detailed references.
+  <!-- keywords: Python SDK, DB-API 2.0, SQLAlchemy, Bulkload -->
 - [Python SDK Summary](https://singdata.com/documents/python_reference/python-sdk-summary): Overview of the Lakehouse Python SDK, describing the PEP-249-compliant clickzetta-connector with bulkload support and the clickzetta-sqlalchemy adapter, with connection parameters and usage examples for each.
+  <!-- keywords: Python SDK, database interface, SQLAlchemy -->
 - [Query Using Python Database API](https://singdata.com/documents/python_reference/connector): Documents the official clickzetta-connector Python SDK following PEP-249, covering installation, establishing connections, executing queries, parameter binding, batch insert, and asynchronous execution.
+  <!-- keywords: Python Database API, database connection, SQL queries -->
 - [Python Connector Usage Examples](https://singdata.com/documents/python_reference/connector_examples): Provides runnable clickzetta-connector Python examples for common scenarios, covering establishing a connection, bulk inserting order data, and conditional querying with result processing.
+  <!-- keywords: Python Connector, connection examples, SQL queries -->
 - [Python Connector Advanced Usage](https://singdata.com/documents/python_reference/connector_advanced): Advanced features of the clickzetta-connector Python SDK, covering fetch_pandas for returning DataFrame results and arraysize for controlling the fetchmany batch size.
+  <!-- keywords: Python Connector, Pandas result fetching, Advanced connection options -->
 - [Query Using SQLAlchemy](https://singdata.com/documents/python_reference/sqlalchemy): A guide to the ClickZetta SQLAlchemy dialect adapter, covering installation, removing old dependencies, and quick-start examples for creating an engine and executing SQL queries via URL string.
+  <!-- keywords: SQLAlchemy, Python ORM, Lakehouse connection -->
 - [Bulkload Python SDK (Quick Start)](https://singdata.com/documents/python_reference/bulkload-upload): Describes the clickzetta-connector Python Bulkload API for sending data directly to storage without consuming compute during transfer, covering installation and both single-threaded and distributed upload patterns.
+  <!-- keywords: Python Bulkload SDK, Batch upload, Write streams -->
 - [Bulkload Python SDK](https://singdata.com/documents/bulkloadv1-python-sdk): A guide to batch data upload (BulkLoad) into Lakehouse using the Python clickzetta-connector SDK, covering installation, import principles, compute resources, shard optimization, and single-threaded writing.
+  <!-- keywords: Python SDK, Bulkload, Batch writes -->
 - [Real-time Data Ingestion Python SDK](https://singdata.com/documents/python-igs): The Lakehouse Python SDK real-time write feature, covering installation, the write principle, applicable scenarios, notes, data type mappings, and creating a real-time data stream.
+  <!-- keywords: real-time ingestion, Python SDK, primary keys -->
 - [Python SDK Version History](https://singdata.com/documents/python-sdk-version-history): Changelog for the clickzetta-connector Python connector, listing version 0.8.54 (project management migration) and 0.8.51 (improved login error messages and get_job_profile API).
+  <!-- keywords: Python SDK, Version history -->
 - [Python SQLAlchemy Version History](https://singdata.com/documents/python-sqlalchemy-version-history): A changelog documenting version history of the clickzetta-sqlalchemy package, listing release dates, installation commands, and changes for versions 0.8.53 and 0.8.55.
+  <!-- keywords: Python SQLAlchemy, Version history -->
 - [ZettaPark (DataFrame API)](https://singdata.com/documents/lakehousepython-zettapark): ZettaPark is the Python DataFrame API for Singdata Lakehouse — you write data processing logic in a pandas-like syntax, and ZettaPark automatically tr...
+  <!-- keywords: ZettaPark, DataFrame API, Python data processing -->
 - [ZettaPark Quick Start](https://singdata.com/documents/zettapark-quick-start): A quick start for ZettaPark, covering installation, establishing a session, querying data with DataFrames, and writing to a table within ten minutes.
+  <!-- keywords: ZettaPark, DataFrame API, session setup -->
 - [Zettapark DataFrame API Guide](https://singdata.com/documents/zettapark-dataframe-guide): A guide to the Zettapark Python DataFrame API, covering session creation, DataFrame creation, transformations, aggregations, joins, set operations, null handling, window functions, and table I/O.
+  <!-- keywords: ZettaPark DataFrame API, Data transformations, Window functions, Dynamic Table -->
 - [Zettapark Common Functions Reference](https://singdata.com/documents/zettapark-functions-guide): Reference for common functions in the ZettaPark functions module, covering string and other function categories with import setup and runnable DataFrame examples.
+  <!-- keywords: ZettaPark, function reference, DataFrame API -->
 - [Zettapark Data Engineering Practice](https://singdata.com/documents/zettapark-etl-guide): Zettapark data engineering practice guide using an order analytics scenario, covering session setup, prerequisite tables, and a multi-table join with aggregation and result-writing example.
+  <!-- keywords: ZettaPark ETL, DataFrame transformations, Window functions -->
 - [Zettapark Volume and File Operations](https://singdata.com/documents/zettapark-volume-guide): Guide to Zettapark Volume file operations, covering upload, download, list, delete, reading CSV/Parquet/JSON, and exporting DataFrames, with Named versus External Volume capability comparison and REFRESH notes.
+  <!-- keywords: ZettaPark Volume API, File upload, File download, File listing -->
 - [Zettapark Table Stream Consumption](https://singdata.com/documents/zettapark-stream-guide): Guide to reading Table Streams as DataFrames in Zettapark for CDC incremental processing, covering session setup, creating source tables with change tracking, and building incremental ETL pipelines.
+  <!-- keywords: ZettaPark, Table Stream, CDC, Incremental ETL -->
 - [Zettapark Dynamic Table Creation](https://singdata.com/documents/zettapark-dynamic-table-guide): A guide to creating dynamic tables from a DataFrame with Zettapark, covering prerequisites, defining transformation logic, and creating dynamic tables with automatic incremental refresh.
+  <!-- keywords: ZettaPark, Dynamic Table, DataFrame definitions, Incremental refresh -->
 - [Zettapark Feature Engineering](https://singdata.com/documents/zettapark-feature-engineering): A guide to feature engineering with Zettapark, which translates DataFrame operations into SQL for in-Lakehouse distributed execution to build structured feature tables from large-scale user behavior data.
+  <!-- keywords: ZettaPark, feature engineering, derived features -->
 - [Credit Scoring with Zettapark and Python ML](https://singdata.com/documents/credit-scoring-with-zettapark): A step-by-step tutorial building an end-to-end credit scoring machine learning pipeline using Zettapark for Python with scikit-learn, pandas, and seaborn.
+  <!-- keywords: Credit scoring, ZettaPark, scikit-learn, Feature engineering -->
 - [Develop Custom Functions](https://singdata.com/documents/RemoteFunction-as-udf): Covers Develop Custom Functions, including its core concepts, configuration steps, usage examples, and operational considerations: Singdata Lakehouse supports User-Defined Functions (UDF/UDAF/UDTF) through the External Function mechanism. Unlike built-in SQL functions, the execution logic of an External Function runs in a cloud-based function compute service (Alibaba Cloud FC, Tencent Cloud SCF, or AWS Lambda).
+  <!-- keywords: User-defined functions, SQL functions, External functions -->
 - [SQL Custom Functions Guide](https://singdata.com/documents/sql-function-guide): Covers SQL Custom Functions Guide, including its core concepts, configuration steps, usage examples, and operational considerations: SQL user-defined functions (SQL UDFs) let you encapsulate reusable computation logic in SQL expressions and call them just like built-in functions in your queries.
+  <!-- keywords: SQL UDF, Scalar functions, Table functions -->
 - [Introduction: External Function](https://singdata.com/documents/RemoteFunction-intro): Covers Introduction: External Function, including its core concepts, configuration steps, usage examples, and operational considerations: EXTERNAL FUNCTION (REMOTE FUNCTION) is a user-defined function (UDF) created in Singdata Lakehouse using Python or Java, executed via a remote service (supported remote services include: Alibaba Cloud Function Compute FC, Tencent Cloud SCF). During execution, it can call:
+  <!-- keywords: External Function, Python UDF, Java UDF, function compute -->
 - [Development Guide: External Function (Python3)](https://singdata.com/documents/RemoteFunction-dev-guide-python3): Covers Development Guide: External Function (Python3), including its core concepts, configuration steps, usage examples, and operational considerations: This guide helps developers learn how to write External Functions in Python to process data in Singdata Lakehouse.
+  <!-- keywords: Python external functions, Docker deployment, Remote function development -->
 - [Development Guide: External Function (Java)](https://singdata.com/documents/external-function-dev-guide-java): Covers Development Guide: External Function (Java), including its core concepts, configuration steps, usage examples, and operational considerations: This document explains how to develop UDF, UDAF, and UDTF External Functions using Java. Note: External Function is currently in preview. You must enable it using the control parameter described in this document.
+  <!-- keywords: Java external functions, UDF, UDTF, UDAF -->
 - [Usage Guide: External Function](https://singdata.com/documents/RemoteFunction-best-practice): Covers Usage Guide: External Function, including its core concepts, configuration steps, usage examples, and operational considerations: Through this usage guide, you will be able to:
+  <!-- keywords: External Function, Remote service connections, Function invocation -->
 - [Parameter Control](https://singdata.com/documents/sql-parmaters): Explains how to add or modify parameters via Workspace, Schema, and Table property settings, and how to set session-level parameters in a JDBC client session.
+  <!-- keywords: Query parameters, Session configuration -->
