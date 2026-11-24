@@ -65,6 +65,10 @@ DYNAMIC_FILTER_FIELDS = FILTER_FIELDS - {
 DATASET_TAG_PATTERN = re.compile(r"^[a-z][a-z0-9_]{0,63}$")
 TRACE_ID_PATTERN = re.compile(r"^[0-9a-fA-F]{16,64}$")
 EVAL_TERMINAL_STATUSES = {"COMPLETE", "ERROR", "STOPPED"}
+# A job created with --no-run stays ACTIVE until its first run: nothing to wait for, safe to delete.
+EVAL_IDLE_STATUSES = EVAL_TERMINAL_STATUSES | {"ACTIVE"}
+EVAL_ACTIVE_STATUSES = {"QUEUED", "RUNNING", "STOPPING"}
+RESULT_ORDER_FIELDS = ("traceId", "sessionId", "score", "evaluatedAt")
 IMPORT_TERMINAL_STATUSES = {"SUCCEEDED", "FAILED"}
 
 
@@ -437,8 +441,8 @@ def validate_add_traces(args: argparse.Namespace) -> dict:
             raise _invalid("--time-start/--time-end only apply to --trace-ids.")
         scope = args.job_scope or "RESULTS"
         payload: dict[str, Any] = {"evalJobId": args.eval_job_id, "jobScope": scope}
-        if (args.min_score is not None or args.max_score is not None) and scope != "RESULTS":
-            raise _invalid("--min-score/--max-score require --job-scope RESULTS.")
+        if (args.min_score is not None or args.max_score is not None or args.run_id is not None) and scope != "RESULTS":
+            raise _invalid("--min-score/--max-score/--run-id require --job-scope RESULTS.")
         for value, field in ((args.min_score, "min_score"), (args.max_score, "max_score")):
             if value is not None and not math.isfinite(value):
                 raise _invalid(f"{field} must be a finite number.")
@@ -448,9 +452,11 @@ def validate_add_traces(args: argparse.Namespace) -> dict:
             payload["minScore"] = args.min_score
         if args.max_score is not None:
             payload["maxScore"] = args.max_score
+        if args.run_id is not None:
+            payload["runId"] = args.run_id
         return payload
-    if args.job_scope or args.min_score is not None or args.max_score is not None:
-        raise _invalid("--job-scope/--min-score/--max-score only apply to --eval-job-id.")
+    if args.job_scope or args.min_score is not None or args.max_score is not None or args.run_id is not None:
+        raise _invalid("--job-scope/--min-score/--max-score/--run-id only apply to --eval-job-id.")
     ids = []
     for value in args.trace_ids:
         value = value.strip()
@@ -517,12 +523,13 @@ def emit(data: Any, command: str, max_bytes: int, full: bool) -> None:
     print(text)
 
 
-def emit_dry_run(method: str, path: str, body: Any, target: Any = None) -> None:
+def emit_dry_run(method: str, path: str, body: Any, target: Any = None, irreversible: bool = True) -> None:
     payload: dict[str, Any] = {"success": True, "dry_run": True,
                                "request": {"method": method, "path": path, "body": body}}
     if target is not None:
         payload["target"] = target
-        payload["irreversible"] = True
+        if irreversible:
+            payload["irreversible"] = True
     payload["next_action"] = "Show this request to the user; after they confirm, rerun the same command with --yes."
     print(_dump(payload))
 
@@ -617,9 +624,9 @@ def delete_target(client: SingSightClient, kind: str, target_id: int) -> tuple[s
     """Look up a delete target and refuse deletes that would break other objects."""
     if kind == "eval-job":
         job = client.request("GET", f"/open/api/v1/eval/jobs/{target_id}")
-        if job.get("status") not in EVAL_TERMINAL_STATUSES:
+        if job.get("status") not in EVAL_IDLE_STATUSES:
             raise SingSightError(
-                f"eval job {target_id} is {job.get('status')}; only finished jobs can be deleted.",
+                f"eval job {target_id} is {job.get('status')}; only jobs without an active run can be deleted.",
                 code="TARGET_BUSY", next_action="Wait for the job to finish (eval-status --wait), then retry.")
         summary = {k: job.get(k) for k in ("id", "name", "status", "evaluatorId", "datasetId", "createdAt")}
         return f"/open/api/v1/eval/jobs/{target_id}", summary
@@ -645,6 +652,32 @@ def delete_target(client: SingSightClient, kind: str, target_id: int) -> tuple[s
         raise _in_use("evaluator", target_id, job_ids)
     summary = {k: evaluator.get(k) for k in ("id", "name", "evaluatorGroup", "scoreType", "createdAt")}
     return f"/open/api/v1/evaluator/{target_id}", summary
+
+
+def _job_summary(job: dict) -> dict:
+    return {k: job.get(k) for k in ("id", "name", "status", "evaluatorId", "datasetId", "lastRunAt")}
+
+
+def run_target(client: SingSightClient, job_id: int, source_run_id: int | None) -> dict:
+    """The job a new run is queued for; refuses while another run of it is active."""
+    job = client.request("GET", f"/open/api/v1/eval/jobs/{job_id}")
+    if job.get("status") in EVAL_ACTIVE_STATUSES:
+        raise SingSightError(f"eval job {job_id} is {job.get('status')}; a job runs one run at a time.",
+                             code="TARGET_BUSY",
+                             next_action="Wait for the current run (eval-status --wait) or stop it (stop-eval), then retry.")
+    summary = _job_summary(job)
+    if source_run_id is not None:
+        run = client.request("GET", f"/open/api/v1/eval/jobs/{job_id}/runs/{source_run_id}")
+        summary["sourceRun"] = {k: run.get(k) for k in ("id", "runNo", "status", "windowStart", "windowEnd")}
+    return summary
+
+
+def stop_target(client: SingSightClient, job_id: int) -> dict:
+    job = client.request("GET", f"/open/api/v1/eval/jobs/{job_id}")
+    if job.get("status") not in {"QUEUED", "RUNNING"}:
+        raise SingSightError(f"eval job {job_id} is {job.get('status')}; only QUEUED or RUNNING jobs can be stopped.",
+                             code="TARGET_NOT_RUNNING")
+    return _job_summary(job)
 
 
 def resolve_schema(client: SingSightClient, settings: dict) -> str:
@@ -732,10 +765,32 @@ def dispatch(args: argparse.Namespace) -> int:
             if not isinstance(args.evaluator_params, dict) or len(args.evaluator_params) > 50:
                 raise _invalid("--evaluator-params must be a JSON object with at most 50 keys.")
             body["evaluatorParams"] = args.evaluator_params
-        return write("POST", "/open/api/v1/eval/jobs", body)
+        # runNow=false creates the job without queuing its first run.
+        return write("POST", "/open/api/v1/eval/jobs" + ("?runNow=false" if args.no_run else ""), body)
     if cmd == "eval-status":
-        return out(_poll(client, f"/open/api/v1/eval/jobs/{args.job_id}", EVAL_TERMINAL_STATUSES,
+        return out(_poll(client, f"/open/api/v1/eval/jobs/{args.job_id}", EVAL_IDLE_STATUSES,
                          args.wait, args.interval))
+    if cmd == "rerun":
+        path = f"/open/api/v1/eval/jobs/{args.job_id}/runs"
+        body = {"sourceRunId": args.source_run_id} if args.source_run_id is not None else {}
+        target = run_target(client, args.job_id, args.source_run_id)
+        if not args.yes:
+            emit_dry_run("POST", path, body, target, irreversible=False)
+            return 0
+        return out(client.request("POST", path, body=body))
+    if cmd == "stop-eval":
+        path = f"/open/api/v1/eval/jobs/{args.job_id}/stop"
+        target = stop_target(client, args.job_id)
+        if not args.yes:
+            emit_dry_run("PUT", path, None, target, irreversible=False)
+            return 0
+        client.request("PUT", path)
+        return out({"stopRequested": target})
+    if cmd == "eval-runs":
+        return out(client.request("GET", f"/open/api/v1/eval/jobs/{args.job_id}/runs",
+                                  params={"page": args.page, "pageSize": args.page_size}))
+    if cmd == "eval-run":
+        return out(client.request("GET", f"/open/api/v1/eval/jobs/{args.job_id}/runs/{args.run_id}"))
     if cmd == "eval-jobs":
         return out(client.request("GET", "/open/api/v1/eval/jobs/page",
                                   params={"page": args.page, "pageSize": args.page_size}))
@@ -744,7 +799,8 @@ def dispatch(args: argparse.Namespace) -> int:
             raise _invalid("--min-score must not exceed --max-score.")
         return out(client.request("GET", f"/open/api/v1/eval/jobs/{args.job_id}/results", params={
             "page": args.page, "pageSize": args.page_size, "minScore": args.min_score,
-            "maxScore": args.max_score, "serviceName": args.service_name}))
+            "maxScore": args.max_score, "serviceName": args.service_name, "runId": args.run_id,
+            "orderBy": args.order_by, "order": args.order}))
     if cmd == "datasets":
         return out(client.request("GET", "/open/api/v1/eval/datasets"))
     if cmd == "create-dataset":
@@ -822,19 +878,36 @@ def build_parser() -> argparse.ArgumentParser:
     p = add("create-evaluator", "create a project custom multi-step evaluator (write)")
     p.add_argument("--spec", type=json_arg, required=True, help="evaluator spec JSON, @file or -")
     confirm(p)
-    p = add("trigger-eval", "create and start an evaluation job; consumes evaluation quota (write)")
+    p = add("trigger-eval", "create an evaluation job and start its first run; consumes evaluation quota (write)")
     p.add_argument("--name", required=True)
+    p.add_argument("--no-run", action="store_true", help="only create the job; start it later with rerun")
     p.add_argument("--evaluator-id", type=positive_int, required=True)
     p.add_argument("--description")
     p.add_argument("--evaluator-params", type=json_arg, help="JSON object, @file or -")
     source_args(p)
     confirm(p)
-    p = add("eval-status", "status, current step and error of an evaluation job")
+    p = add("eval-status", "status, current step and error of an evaluation job (its latest run)")
     p.add_argument("job_id", type=positive_int)
     waiting(p)
-    paging(add("eval-jobs", "list evaluation jobs"), 50)
-    p = add("eval-results", "per-trace/span/session results of an evaluation job")
+    p = add("rerun", "queue another run of an evaluation job; consumes evaluation quota (write)")
     p.add_argument("job_id", type=positive_int)
+    p.add_argument("--source-run-id", type=positive_int, help="rerun this run: reuse its data window")
+    confirm(p)
+    p = add("stop-eval", "stop the active run of an evaluation job (write)")
+    p.add_argument("job_id", type=positive_int)
+    confirm(p)
+    p = add("eval-runs", "run history of an evaluation job, newest first, with per-run summary")
+    p.add_argument("job_id", type=positive_int)
+    paging(p, 20)
+    p = add("eval-run", "one run, including the evaluator snapshot it ran with")
+    p.add_argument("job_id", type=positive_int)
+    p.add_argument("run_id", type=positive_int)
+    paging(add("eval-jobs", "list evaluation jobs"), 50)
+    p = add("eval-results", "per-trace/span/session results of one run (default: latest COMPLETE run)")
+    p.add_argument("job_id", type=positive_int)
+    p.add_argument("--run-id", type=positive_int, help="results of this run instead of the default")
+    p.add_argument("--order-by", choices=RESULT_ORDER_FIELDS, help="default evaluatedAt")
+    p.add_argument("--order", choices=["ASC", "DESC"], help="default DESC")
     paging(p, 20)
     p.add_argument("--min-score", type=float)
     p.add_argument("--max-score", type=float)
@@ -851,6 +924,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--job-scope", choices=["RESULTS", "FILTER"], help="RESULTS (default) or FILTER")
     p.add_argument("--min-score", type=float)
     p.add_argument("--max-score", type=float)
+    p.add_argument("--run-id", type=positive_int, help="RESULTS scope: read this run's scores (default: latest COMPLETE)")
     p.add_argument("--trace-ids", type=trace_ids_arg, help=f"comma list or @file, max {MAX_EXPLICIT_TRACE_IDS}")
     p.add_argument("--time-start", help="trace-ids only: UTC ISO 8601 lower bound")
     p.add_argument("--time-end", help="trace-ids only: UTC ISO 8601 upper bound")
@@ -859,7 +933,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("import_id", type=positive_int)
     waiting(p)
     for name, help_text in (
-            ("delete-eval-job", "delete a finished evaluation job (write, irreversible)"),
+            ("delete-eval-job", "delete an evaluation job without an active run, and its run history (write, irreversible)"),
             ("delete-dataset", "delete a dataset and its trace snapshot; no job may reference it (write, irreversible)"),
             ("delete-evaluator", "delete a custom evaluator; no job may reference it (write, irreversible)")):
         p = add(name, help_text)

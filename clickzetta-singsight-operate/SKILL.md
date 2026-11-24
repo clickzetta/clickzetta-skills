@@ -1,11 +1,11 @@
 ---
 name: clickzetta-singsight-operate
 description: |
-  Operate a SingSight AI Agent observability project from the command line: query Trace/Span detail through cz-cli for troubleshooting and latency analysis, and use the SingSight Open API to preview evaluation scope, manage evaluators, run evaluations, read results, maintain evaluation datasets, and run regression evaluations. Works without the MCP server.
+  Operate a SingSight AI Agent observability project from the command line: query Trace/Span detail through cz-cli for troubleshooting and latency analysis, and use the SingSight Open API to preview evaluation scope, manage evaluators, run and rerun evaluations, compare runs, read results, maintain evaluation datasets, and run regression evaluations. Works without the MCP server.
 
-  Triggered when the user says "SingSight trace", "debug agent trace", "span causal chain", "run an evaluation", "evaluation results", "low-score traces", "evaluation dataset", "regression evaluation", "custom evaluator".
+  Triggered when the user says "SingSight trace", "debug agent trace", "span causal chain", "run an evaluation", "rerun the evaluation", "compare evaluation runs", "evaluation results", "low-score traces", "evaluation dataset", "regression evaluation", "custom evaluator".
 
-  Keywords: singsight, agent observability, trace, span, evaluation, evaluator, eval job, dataset, regression, llm judge, cz-cli
+  Keywords: singsight, agent observability, trace, span, evaluation, evaluator, eval job, eval run, rerun, dataset, regression, llm judge, cz-cli
 ---
 
 # SingSight Operate
@@ -34,15 +34,19 @@ To connect an agent to SingSight in the first place (sending OpenTelemetry data)
 | `ss preview (--filter F \| --dataset-id N)` | Matched count and samples, with evaluation semantics | `singsight_preview_eval_scope` |
 | `ss evaluators [--page --page-size]` | Available evaluators | `singsight_list_evaluators` |
 | `ss create-evaluator --spec S [--yes]` | Create a custom multi-step evaluator (write) | `singsight_create_custom_evaluator` |
-| `ss trigger-eval --name --evaluator-id (--filter F \| --dataset-id N) [--yes]` | Create and start an evaluation; consumes quota (write) | `singsight_trigger_eval` |
-| `ss eval-status JOB [--wait SEC]` | Status, current step, error | `singsight_get_eval_status` |
+| `ss trigger-eval --name --evaluator-id (--filter F \| --dataset-id N) [--no-run] [--yes]` | Create a job and start its first run; consumes quota (write). `--no-run` only creates it | `singsight_trigger_eval` |
+| `ss rerun JOB [--source-run-id R] [--yes]` | Queue another run of a job; consumes quota (write) | none |
+| `ss stop-eval JOB [--yes]` | Stop the job's queued or running run (write) | none |
+| `ss eval-status JOB [--wait SEC]` | Status, current step, error of the job's latest run | `singsight_get_eval_status` |
 | `ss eval-jobs [--page --page-size]` | Evaluation jobs | `singsight_list_eval_jobs` |
-| `ss eval-results JOB [--min-score --max-score --service-name --page --page-size]` | Per-item scores and reasoning | none |
+| `ss eval-runs JOB [--page --page-size]` | Run history, newest first, with per-run summary (units, errors, average score, pass rate) | none |
+| `ss eval-run JOB RUN` | One run, including the evaluator snapshot (steps and prompts) it ran with | none |
+| `ss eval-results JOB [--run-id R --order-by F --order ASC\|DESC --min-score --max-score --service-name --page --page-size]` | Per-item scores and reasoning of one run | none |
 | `ss datasets` | Evaluation datasets, including `datasetTag` | `singsight_list_datasets` |
 | `ss create-dataset --name [--tag --description] [--yes]` | Create an empty dataset (write) | `singsight_create_dataset` |
-| `ss add-traces DS (--eval-job-id J [--job-scope --min-score --max-score] \| --trace-ids IDS) [--yes]` | Import traces asynchronously (write, safe to retry) | `singsight_add_traces_to_dataset` |
+| `ss add-traces DS (--eval-job-id J [--job-scope --run-id --min-score --max-score] \| --trace-ids IDS) [--yes]` | Import traces asynchronously (write, safe to retry) | `singsight_add_traces_to_dataset` |
 | `ss import-status IMPORT [--wait SEC]` | Import status | `singsight_get_dataset_import_status` |
-| `ss delete-eval-job JOB [--yes]` | Delete a finished evaluation job (write, irreversible) | none |
+| `ss delete-eval-job JOB [--yes]` | Delete an evaluation job without an active run, with its run history (write, irreversible) | none |
 | `ss delete-dataset DS [--yes]` | Delete a dataset and its trace snapshot (write, irreversible) | none |
 | `ss delete-evaluator ID [--yes]` | Delete a custom evaluator (write, irreversible) | none |
 
@@ -51,16 +55,18 @@ To connect an agent to SingSight in the first place (sending OpenTelemetry data)
 ## Rules
 
 - **SQL**: query only tables in the schema returned by `schema-context`. `ai_agent_trace_detail` requires an `event_time` range; `ai_agent_eval_dataset_detail` requires `dataset_tag = '<datasetTag>'`. Add `LIMIT` (at most 100) to detail queries. Do not pass `--write`; this skill is read-only on Lakehouse.
-- **Writes** (`create-evaluator`, `trigger-eval`, `create-dataset`, `add-traces`, and the three `delete-*`): run without `--yes` first to get the `dry_run` request. Show the key parameters (name, evaluator, data source, sample size) to the user, and after they confirm, rerun the exact same command with `--yes`.
+- **Writes** (`create-evaluator`, `trigger-eval`, `rerun`, `stop-eval`, `create-dataset`, `add-traces`, and the three `delete-*`): run without `--yes` first to get the `dry_run` request. Show the key parameters (name, evaluator, data source, sample size) to the user, and after they confirm, rerun the exact same command with `--yes`.
 - **Deletes** only when the user explicitly asks to delete that object. The dry run returns `target` (name, status, trace count, ...) and `irreversible: true`; confirm each target with the user. Delete in dependency order: eval jobs, then datasets, then evaluators. The script refuses a dataset or evaluator still referenced by eval jobs (`TARGET_IN_USE`, with the job ids), built-in evaluators (`BUILT_IN_EVALUATOR`), unfinished jobs, and datasets with imports in progress (`TARGET_BUSY`). Deleting an eval job removes only the job record; result rows already written to Lakehouse stay.
 - **Before triggering an evaluation**, run `ss preview` with the same filter or dataset and tell the user the matched count.
+- **Runs**: a job can run many times; each run keeps its own results. A job has at most one queued or running run (`rerun` refuses with `TARGET_BUSY`). A rerun evaluates the job's filter (or the dataset's current contents) with the evaluator's **current** config; `--source-run-id` reuses that run's data window. `eval-results` and `add-traces --job-scope RESULTS` default to the latest `COMPLETE` run; pass `--run-id` to read another one. Before comparing two runs, check `promptHash` in `eval-runs`: a different hash means the evaluator changed between them.
+- **Job status** is that of its latest run: `ACTIVE` (created with `--no-run`, never run), `QUEUED`, `RUNNING`, `STOPPING`, `COMPLETE`, `ERROR`, `STOPPED`. An `ERROR` whose message says the run was interrupted means the executing instance went away; rerun the job.
 - **Do not hand-write evaluation SQL**; evaluations run only through `trigger-eval`.
 - **Adding traces to a dataset**: prefer `--eval-job-id` (for example, only low scores with `--max-score 0.5`). The source job must evaluate live traces, not a dataset. `--trace-ids` is capped at 100 and meant for a few hand-picked traces; do not pass large SQL results one by one.
 - **Time** is always UTC ISO 8601 with a timezone (for example `2026-11-19T00:00:00Z`); say it is UTC when showing times to the user.
 
 ## Output
 
-- Success: one JSON line on stdout, `{"success": true, "data": ...}`. Lists longer than 100 items and strings longer than 4000 characters are truncated and marked `"truncated": true`.
+- Success: one JSON line on stdout, `{"success": true, "data": ...}`. `eval-results` data includes the `runId` it read. Lists longer than 100 items and strings longer than 4000 characters are truncated and marked `"truncated": true`.
 - Results over 48 KB (`--max-bytes` to change), or any result with `--full`, are written to a private file under the cache directory, and stdout returns only `output_file`. Read the parts you need with `jq` or `grep` instead of printing the whole file.
 - Failure: one JSON line on stderr, `{"success": false, "code", "message", "retryable", "next_action"}`. Exit code 2 for invalid arguments, 1 otherwise. Retry once when `retryable` is true.
 - `ss sql` passes through cz-cli output and exit code.
@@ -71,7 +77,8 @@ See [references/workflows.md](references/workflows.md) for steps and example com
 
 1. **Trace troubleshooting**: locate failing traces with SQL, rebuild the causal chain from `trace_id` and `parent_span_id`, and report the `span_name` of the user-facing root span, its direct children, and the deepest failing span.
 2. **Live evaluation**: build a filter with `filter-options`, `preview`, pick or create an evaluator, `trigger-eval`, `eval-status --wait`, `eval-results`.
-3. **Dataset regression**: `create-dataset`, `add-traces --eval-job-id`, `import-status --wait`, `preview --dataset-id`, `trigger-eval --dataset-id`, then compare `eval-results` across jobs.
+3. **Rerun and compare runs**: `rerun`, `eval-status --wait`, `eval-runs` for per-run summaries, then `eval-results --run-id` for each run, trace by trace.
+4. **Dataset regression**: `create-dataset`, `add-traces --eval-job-id`, `import-status --wait`, `preview --dataset-id`, `trigger-eval --dataset-id`; rerun that job after each change and compare its runs.
 
 ## FAQ
 
@@ -83,3 +90,5 @@ See [references/workflows.md](references/workflows.md) for steps and example com
 | `WRITE_NOT_ALLOWED` from cz-cli | SQL is not read-only | This skill does not write to Lakehouse; use Open API commands |
 | add-traces rejected: job is based on a dataset | Source eval job evaluated a dataset | Use a live-trace eval job, or evaluate that dataset directly |
 | `TARGET_IN_USE` on delete | Eval jobs still reference the dataset or evaluator | Delete those jobs first |
+| `TARGET_BUSY` on rerun | The job already has a queued or running run | `eval-status --wait`, or `stop-eval`, then rerun |
+| Every result of a run is `PARSE_ERROR` | The model returned nothing (often a wrong or unavailable LLM evaluation model) | Check `aiModel` in `eval-run`, fix the project's LLM evaluation model, then rerun |
