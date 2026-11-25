@@ -68,6 +68,9 @@ EVAL_TERMINAL_STATUSES = {"COMPLETE", "ERROR", "STOPPED"}
 # A job created with --no-run stays ACTIVE until its first run: nothing to wait for, safe to delete.
 EVAL_IDLE_STATUSES = EVAL_TERMINAL_STATUSES | {"ACTIVE"}
 EVAL_ACTIVE_STATUSES = {"QUEUED", "RUNNING", "STOPPING"}
+SCHEDULE_FIELDS = {"frequency", "timezone", "start_at", "end_at"}
+SCHEDULE_FREQUENCIES = {"HOURLY", "DAILY", "WEEKLY"}
+SCHEDULE_FORBIDDEN_FILTER_FIELDS = {"time_start", "time_end", "date_range_days"}
 RESULT_ORDER_FIELDS = ("traceId", "sessionId", "score", "evaluatedAt")
 IMPORT_TERMINAL_STATUSES = {"SUCCEEDED", "FAILED"}
 
@@ -327,13 +330,40 @@ def validate_filter(filter_value: Any, require_time: bool = False) -> dict:
     return filter_value
 
 
-def _eval_source(filter_value: Any, dataset_id: int | None) -> dict:
-    """Exactly one evaluation source: a live-trace filter or a dataset snapshot."""
-    if (filter_value is None) == (dataset_id is None):
-        raise _invalid("Provide exactly one of --filter (live traces) or --dataset-id (dataset snapshot).")
+def _eval_source(filter_value: Any, dataset_id: int | None, scheduled: bool = False) -> dict:
+    """Exactly one evaluation source: a live-trace filter or a dataset snapshot.
+
+    A scheduled job takes each run's time range from its data window, so its filter is optional and must not carry
+    time_start / time_end / date_range_days.
+    """
+    if filter_value is not None and dataset_id is not None:
+        raise _invalid("Provide only one of --filter (live traces) or --dataset-id (dataset snapshot).")
     if dataset_id is not None:
         return {"datasetId": dataset_id}
+    if scheduled:
+        if filter_value is None:
+            return {}
+        timed = sorted(SCHEDULE_FORBIDDEN_FILTER_FIELDS & set(filter_value)) if isinstance(filter_value, dict) else []
+        if timed:
+            raise _invalid(f"a scheduled job's filter must not contain {', '.join(timed)}; "
+                           "each run evaluates the schedule's previous full period.")
+        return {"filter": validate_filter(filter_value)}
+    if filter_value is None:
+        raise _invalid("Provide exactly one of --filter (live traces) or --dataset-id (dataset snapshot).")
     return {"filter": validate_filter(filter_value, require_time=True)}
+
+
+def validate_schedule(value: Any) -> dict:
+    """Shape check of schedule_info; the server validates ranges and returns the normalized form."""
+    if not isinstance(value, dict):
+        raise _invalid("schedule must be a JSON object.")
+    unknown = sorted(set(value) - SCHEDULE_FIELDS)
+    if unknown:
+        raise _invalid(f"schedule contains unsupported fields: {', '.join(unknown)}")
+    frequency = value.get("frequency")
+    if not isinstance(frequency, dict) or frequency.get("type") not in SCHEDULE_FREQUENCIES:
+        raise _invalid("schedule.frequency.type must be HOURLY, DAILY or WEEKLY.")
+    return value
 
 
 def validate_custom_evaluator(spec: Any) -> dict:
@@ -655,7 +685,7 @@ def delete_target(client: SingSightClient, kind: str, target_id: int) -> tuple[s
 
 
 def _job_summary(job: dict) -> dict:
-    return {k: job.get(k) for k in ("id", "name", "status", "evaluatorId", "datasetId", "lastRunAt")}
+    return {k: job.get(k) for k in ("id", "name", "status", "triggerType", "evaluatorId", "datasetId", "lastRunAt")}
 
 
 def run_target(client: SingSightClient, job_id: int, source_run_id: int | None) -> dict:
@@ -670,6 +700,19 @@ def run_target(client: SingSightClient, job_id: int, source_run_id: int | None) 
         run = client.request("GET", f"/open/api/v1/eval/jobs/{job_id}/runs/{source_run_id}")
         summary["sourceRun"] = {k: run.get(k) for k in ("id", "runNo", "status", "windowStart", "windowEnd")}
     return summary
+
+
+def schedule_target(client: SingSightClient, job_id: int, require_status: str | None = None) -> dict:
+    """A scheduled job and its schedule state; refuses manual jobs and, when given, other schedule states."""
+    job = client.request("GET", f"/open/api/v1/eval/jobs/{job_id}")
+    if job.get("triggerType") != "SCHEDULED":
+        raise SingSightError(f"eval job {job_id} is a manual job; it has no schedule.", code="NOT_SCHEDULED",
+                             next_action="Run it with rerun, or create a scheduled job with trigger-eval --schedule.")
+    if require_status and job.get("scheduleStatus") != require_status:
+        raise SingSightError(f"eval job {job_id} schedule is {job.get('scheduleStatus')}, not {require_status}.",
+                             code="TARGET_" + ("NOT_ACTIVE" if require_status == "ACTIVE" else "NOT_PAUSED"))
+    return {k: job.get(k) for k in ("id", "name", "status", "scheduleStatus", "scheduleInfo", "nextFireAt",
+                                    "scheduleOwner", "scheduleMessage")}
 
 
 def stop_target(client: SingSightClient, job_id: int) -> dict:
@@ -756,17 +799,47 @@ def dispatch(args: argparse.Namespace) -> int:
     if cmd == "trigger-eval":
         if not args.name.strip():
             raise _invalid("--name must be a non-empty string.")
+        scheduled = args.schedule is not None
+        if args.run_now and not scheduled:
+            raise _invalid("--run-now only applies with --schedule; manual jobs run on creation unless --no-run.")
+        if scheduled and args.no_run:
+            raise _invalid("--no-run does not apply with --schedule: a scheduled job waits for its first fire.")
+        if scheduled and args.granularity == "SESSION":
+            raise _invalid("scheduled jobs support TRACE or SPAN granularity, not SESSION.")
         body = {"name": args.name.strip(), "evaluatorId": args.evaluator_id,
                 "granularity": args.granularity, "samplingRate": args.sampling_rate,
-                **_eval_source(args.filter, args.dataset_id)}
+                **_eval_source(args.filter, args.dataset_id, scheduled)}
+        if scheduled:
+            body["triggerType"] = "SCHEDULED"
+            body["scheduleInfo"] = validate_schedule(args.schedule)
         if args.description is not None:
             body["description"] = args.description
         if args.evaluator_params is not None:
             if not isinstance(args.evaluator_params, dict) or len(args.evaluator_params) > 50:
                 raise _invalid("--evaluator-params must be a JSON object with at most 50 keys.")
             body["evaluatorParams"] = args.evaluator_params
-        # runNow=false creates the job without queuing its first run.
-        return write("POST", "/open/api/v1/eval/jobs" + ("?runNow=false" if args.no_run else ""), body)
+        # Manual jobs run on creation unless runNow=false; scheduled jobs wait for their first fire unless runNow=true.
+        query = "?runNow=false" if args.no_run else "?runNow=true" if args.run_now else ""
+        return write("POST", "/open/api/v1/eval/jobs" + query, body)
+    if cmd == "schedule-preview":
+        return out(client.request("POST", "/open/api/v1/eval/jobs/schedule/preview",
+                                  params={"count": args.count}, body=validate_schedule(args.schedule)))
+    if cmd == "update-schedule":
+        path = f"/open/api/v1/eval/jobs/{args.job_id}/schedule"
+        body = validate_schedule(args.schedule)
+        target = schedule_target(client, args.job_id)
+        if not args.yes:
+            emit_dry_run("PUT", path, body, target, irreversible=False)
+            return 0
+        return out(client.request("PUT", path, body=body))
+    if cmd in ("pause-schedule", "resume-schedule"):
+        action = "pause" if cmd == "pause-schedule" else "resume"
+        path = f"/open/api/v1/eval/jobs/{args.job_id}/schedule/{action}"
+        target = schedule_target(client, args.job_id, "ACTIVE" if action == "pause" else "PAUSED")
+        if not args.yes:
+            emit_dry_run("PUT", path, None, target, irreversible=False)
+            return 0
+        return out(client.request("PUT", path))
     if cmd == "eval-status":
         return out(_poll(client, f"/open/api/v1/eval/jobs/{args.job_id}", EVAL_IDLE_STATUSES,
                          args.wait, args.interval))
@@ -847,7 +920,7 @@ def build_parser() -> argparse.ArgumentParser:
         return sub.add_parser(name, help=help_text, description=help_text, parents=[common])
 
     def source_args(p: argparse.ArgumentParser) -> None:
-        p.add_argument("--filter", type=json_arg, help="live-trace filter JSON, @file or - (needs time_start/time_end)")
+        p.add_argument("--filter", type=json_arg, help="live-trace filter JSON, @file or - (manual jobs need time_start/time_end)")
         p.add_argument("--dataset-id", type=positive_int, help="evaluate a dataset snapshot instead of a filter")
         p.add_argument("--granularity", choices=["TRACE", "SPAN", "SESSION"], default="TRACE")
         p.add_argument("--sampling-rate", type=sampling_rate, default=1.0)
@@ -880,16 +953,32 @@ def build_parser() -> argparse.ArgumentParser:
     confirm(p)
     p = add("trigger-eval", "create an evaluation job and start its first run; consumes evaluation quota (write)")
     p.add_argument("--name", required=True)
-    p.add_argument("--no-run", action="store_true", help="only create the job; start it later with rerun")
+    p.add_argument("--no-run", action="store_true", help="manual job: only create it; start it later with rerun")
+    p.add_argument("--schedule", type=json_arg,
+                   help="create a scheduled job: schedule_info JSON, @file or - (filter then has no time range)")
+    p.add_argument("--run-now", action="store_true", help="scheduled job: also run once now, on the latest window that has ended")
     p.add_argument("--evaluator-id", type=positive_int, required=True)
     p.add_argument("--description")
     p.add_argument("--evaluator-params", type=json_arg, help="JSON object, @file or -")
     source_args(p)
     confirm(p)
+    p = add("schedule-preview", "validate a schedule and show its next fires and data windows (read-only)")
+    p.add_argument("--schedule", type=json_arg, required=True, help="schedule_info JSON, @file or -")
+    p.add_argument("--count", type=positive_int, default=5, help="fires to show, at most 20")
+    p = add("update-schedule", "replace a scheduled job's schedule; fires restart from now, you become the owner (write)")
+    p.add_argument("job_id", type=positive_int)
+    p.add_argument("--schedule", type=json_arg, required=True, help="schedule_info JSON, @file or -")
+    confirm(p)
+    p = add("pause-schedule", "pause a scheduled job; a run in progress continues (write)")
+    p.add_argument("job_id", type=positive_int)
+    confirm(p)
+    p = add("resume-schedule", "resume a paused schedule; missed fires are caught up, you become the owner (write)")
+    p.add_argument("job_id", type=positive_int)
+    confirm(p)
     p = add("eval-status", "status, current step and error of an evaluation job (its latest run)")
     p.add_argument("job_id", type=positive_int)
     waiting(p)
-    p = add("rerun", "queue another run of an evaluation job; consumes evaluation quota (write)")
+    p = add("rerun", "queue another run of an evaluation job (scheduled job: run now); consumes evaluation quota (write)")
     p.add_argument("job_id", type=positive_int)
     p.add_argument("--source-run-id", type=positive_int, help="rerun this run: reuse its data window")
     confirm(p)
