@@ -77,6 +77,10 @@ FakeSingSight.fixtures = {
     ],
     "/open/api/v1/eval/jobs/8": {"id": 8, "status": "RUNNING"},
     "/open/api/v1/eval/jobs/11": {"id": 11, "name": "created only", "status": "ACTIVE"},
+    "/open/api/v1/eval/jobs/12": {"id": 12, "name": "nightly", "status": "COMPLETE", "triggerType": "SCHEDULED",
+                                  "scheduleStatus": "ACTIVE", "nextFireAt": "2026-11-25T18:00:00Z"},
+    "/open/api/v1/eval/jobs/13": {"id": 13, "name": "paused", "status": "COMPLETE", "triggerType": "SCHEDULED",
+                                  "scheduleStatus": "PAUSED"},
     "/open/api/v1/eval/datasets/5": {"id": 5, "name": "used", "activeImports": 0},
     "/open/api/v1/eval/datasets/6": {"id": 6, "name": "free", "datasetTag": "free", "activeImports": 0},
     "/open/api/v1/evaluator": [
@@ -197,6 +201,58 @@ class SingSightCliTest(unittest.TestCase):
         self.assertEqual(out["request"]["path"], "/open/api/v1/eval/jobs?runNow=false")
         _, out, _ = self.run_cli("trigger-eval", "--name", "job", "--evaluator-id", "3", "--filter", json.dumps(TIME))
         self.assertEqual(out["request"]["path"], "/open/api/v1/eval/jobs")
+
+    def test_trigger_eval_scheduled(self):
+        schedule = {"frequency": {"type": "DAILY", "at_time": "02:00"}, "timezone": "Asia/Shanghai"}
+        _, out, _ = self.run_cli("trigger-eval", "--name", "nightly", "--evaluator-id", "3",
+                                 "--schedule", json.dumps(schedule), "--filter", json.dumps({"has_error": True}))
+        self.assertEqual(out["request"]["path"], "/open/api/v1/eval/jobs")
+        self.assertEqual(out["request"]["body"]["triggerType"], "SCHEDULED")
+        self.assertEqual(out["request"]["body"]["scheduleInfo"], schedule)
+        self.assertEqual(out["request"]["body"]["filter"], {"has_error": True})
+        _, out, _ = self.run_cli("trigger-eval", "--name", "n", "--evaluator-id", "3",
+                                 "--schedule", json.dumps(schedule), "--run-now")
+        self.assertEqual(out["request"]["path"], "/open/api/v1/eval/jobs?runNow=true")
+        self.assertNotIn("filter", out["request"]["body"])
+        for argv in (["--schedule", json.dumps(schedule), "--filter", json.dumps(TIME)],
+                     ["--schedule", json.dumps(schedule), "--granularity", "SESSION"],
+                     ["--schedule", json.dumps(schedule), "--no-run"],
+                     ["--schedule", json.dumps({"frequency": {"type": "MINUTELY"}})],
+                     ["--schedule", json.dumps({**schedule, "overlap_policy": "SKIP"})],
+                     ["--filter", json.dumps(TIME), "--run-now"]):
+            with self.subTest(argv=argv):
+                code, _, err = self.run_cli("trigger-eval", "--name", "n", "--evaluator-id", "3", *argv)
+                self.assertEqual((code, err["code"]), (2, "INVALID_ARGUMENT"))
+        self.assertEqual(FakeSingSight.requests, [])
+
+    def test_schedule_preview_and_update(self):
+        schedule = {"frequency": {"type": "HOURLY", "every": 2}}
+        self.run_cli("schedule-preview", "--schedule", json.dumps(schedule), "--count", "3")
+        self.assertEqual((FakeSingSight.requests[-1]["method"], FakeSingSight.requests[-1]["path"],
+                          FakeSingSight.requests[-1]["body"]),
+                         ("POST", "/open/api/v1/eval/jobs/schedule/preview?count=3", schedule))
+        _, out, _ = self.run_cli("update-schedule", "12", "--schedule", json.dumps(schedule))
+        self.assertEqual(out["request"], {"method": "PUT", "path": "/open/api/v1/eval/jobs/12/schedule", "body": schedule})
+        self.assertEqual(out["target"]["scheduleStatus"], "ACTIVE")
+        self.assertNotIn("irreversible", out)
+        code, _, err = self.run_cli("update-schedule", "7", "--schedule", json.dumps(schedule))
+        self.assertEqual((code, err["code"]), (1, "NOT_SCHEDULED"))
+
+    def test_pause_and_resume_schedule(self):
+        _, out, _ = self.run_cli("pause-schedule", "12")
+        self.assertEqual(out["request"]["path"], "/open/api/v1/eval/jobs/12/schedule/pause")
+        self.assertFalse(any(r["method"] == "PUT" for r in FakeSingSight.requests))
+        self.run_cli("pause-schedule", "12", "--yes")
+        self.assertEqual((FakeSingSight.requests[-1]["method"], FakeSingSight.requests[-1]["path"]),
+                         ("PUT", "/open/api/v1/eval/jobs/12/schedule/pause"))
+        _, out, _ = self.run_cli("resume-schedule", "13")
+        self.assertEqual(out["request"]["path"], "/open/api/v1/eval/jobs/13/schedule/resume")
+        cases = [(["pause-schedule", "13"], "TARGET_NOT_ACTIVE"), (["resume-schedule", "12"], "TARGET_NOT_PAUSED"),
+                 (["pause-schedule", "7"], "NOT_SCHEDULED")]
+        for argv, expected in cases:
+            with self.subTest(argv=argv):
+                code, _, err = self.run_cli(*argv, "--yes")
+                self.assertEqual((code, err["code"]), (1, expected))
 
     def test_rerun_dry_run_then_queue(self):
         code, out, _ = self.run_cli("rerun", "7")

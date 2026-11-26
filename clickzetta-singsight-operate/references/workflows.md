@@ -109,7 +109,22 @@ A dataset is a static snapshot of traces, useful for comparing evaluators or age
 5. `ss preview --dataset-id <id>`, then `ss trigger-eval --name "<name>" --evaluator-id <id> --dataset-id <id>` (dry run, confirm, `--yes`).
 6. After changing the evaluator, `ss rerun <job>` on the same job and compare its runs (workflow 3). The traces are a fixed snapshot, so score changes come from the evaluator, not from new data. To compare two different evaluators, trigger one job per evaluator and compare `eval-results` across jobs by `traceId`.
 
-## 5. Cleanup
+## 5. Scheduled evaluation
+
+A scheduled job evaluates a new data window on every fire, for example yesterday's traces each night. Schedule fields are in [schedule.md](schedule.md).
+
+1. Build the filter as in workflow 2, without `time_start` / `time_end`.
+2. `ss schedule-preview --schedule @schedule.json` and show the user the next fires and the window each evaluates (always the previous full period). Say how often it fires: every fire consumes evaluation quota.
+3. Preview one window of data: `ss preview --filter` with the filter plus `time_start` / `time_end` taken from `recentFire.windowStart` / `windowEnd`.
+4. `ss trigger-eval --name <name> --evaluator-id <id> --schedule @schedule.json --filter @filter.json` for the dry run; `--yes` after the user confirms. The job waits for its first fire (`nextFireAt`); add `--run-now` to also run it once now on the latest window that has ended.
+5. Follow it with `ss eval-runs <job>`: scheduled runs have `triggerSource: SCHEDULE`, `scheduledFireAt`, and their window. Compare runs as in workflow 3; check `promptHash` before reading a score change as an agent change.
+6. Maintain it:
+   - `ss pause-schedule <job>` / `ss resume-schedule <job>`. On resume, fires missed while paused are caught up (at most 24 besides the latest).
+   - `ss update-schedule <job> --schedule @schedule.json` replaces the schedule; fires restart from now.
+   - `ss rerun <job> --source-run-id <run>` re-evaluates one fire's window, for example a `SKIPPED` or `ERROR` run.
+   - Resuming or editing makes you the schedule owner: later fires run with your permission. If `scheduleMessage` says the owner lost permission, someone with execution permission resumes it.
+
+## 6. Cleanup
 
 Delete test objects in dependency order, each with a dry run and user confirmation first. Deleting a job also deletes its run history; result rows already in Lakehouse stay.
 
